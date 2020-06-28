@@ -11,7 +11,6 @@ var selection_iter = 0;
 const level_timer = timer.timer(
   () => {
     chatbot_helper.say(`@${settings.channel} the timer has expired for this level!`);
-    chatbot_helper.say('!roll d10');
   },
   settings.level_timeout * 1000 * 60
 );
@@ -46,9 +45,9 @@ const level_list_message = (sender, current, levels) => {
       ? current.submitter + ' (current)'
       : '(no current level)';
 
-  result += levels.online.slice(0,5).reduce((acc, x) => acc + ', ' + x.submitter, '');
+  result += levels.online.slice(0, 5).reduce((acc, x) => acc + ', ' + x.submitter, '');
   result +=
-    '...' + (levels.online.length > 5 ? 'etc.' : '' +
+    '...' + (levels.online.length > 5 ? 'etc.' : '') +
     ' (' + levels.offline.length +
     ' offline)';
   return result;
@@ -124,37 +123,37 @@ async function HandleMessage(message, sender, respond) {
   ) {
     respond(quesoqueue.replace(sender.displayName, get_remainder(message)));
   } else if (message == '!level' && sender.isBroadcaster) {
-   let next_level = undefined;
+    let next_level = undefined;
     let selection_mode = settings.level_selection[selection_iter++];
     if (selection_iter >= settings.level_selection.length) {
-     selection_iter = 0;
+      selection_iter = 0;
     }
     switch (selection_mode) {
-     case 'next':
-      next_level = await quesoqueue.next();
-      break;
-     case 'subnext':
-      next_level = await quesoqueue.subnext();
-      break;
-     case 'modnext':
-      next_level = await quesoqueue.modnext();
-      break;
-     case 'random':
-      next_level = await quesoqueue.random();
-      break;
-     case 'subrandom':
-      next_level = await quesoqueue.subrandom();
-      break;
-     case 'modrandom':
-      next_level = await quesoqueue.modrandom();
-      break;
-     default:
-      selection_mode = 'default';
-      next_level = await quesoqueue.next();
+      case 'next':
+        next_level = await quesoqueue.next();
+        break;
+      case 'subnext':
+        next_level = await quesoqueue.subnext();
+        break;
+      case 'modnext':
+        next_level = await quesoqueue.modnext();
+        break;
+      case 'random':
+        next_level = await quesoqueue.random();
+        break;
+      case 'subrandom':
+        next_level = await quesoqueue.subrandom();
+        break;
+      case 'modrandom':
+        next_level = await quesoqueue.modrandom();
+        break;
+      default:
+        selection_mode = 'default';
+        next_level = await quesoqueue.next();
     }
     level_timer.restart();
     level_timer.pause();
-    respond('('+ selection_mode +') ' + next_level_message(next_level));
+    respond('(' + selection_mode + ') ' + next_level_message(next_level));
   } else if (message == '!next' && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
@@ -208,11 +207,11 @@ async function HandleMessage(message, sender, respond) {
     respond(current_level_message(quesoqueue.current()));
   } else if (message.startsWith('!list')) {
     if (can_list) {
-     can_list = false;
-     setTimeout(() => can_list = true, settings.message_cooldown * 1000);
-     respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
+      can_list = false;
+      setTimeout(() => can_list = true, settings.message_cooldown * 1000);
+      respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
     } else {
-     respond('Just...scroll up a little');
+      respond('Just...scroll up a little');
     }
   } else if (message == '!position') {
     respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
@@ -243,12 +242,12 @@ async function HandleMessage(message, sender, respond) {
     }
   } else if (message == '!order') {
     if (settings.level_selection.length == 0) {
-     respond('No order has been specified.');
+      respond('No order has been specified.');
     } else {
-     respond('Level order: ' +
-     settings.level_selection.reduce((acc, x) => acc + ', ' + x) +
-     '. Next level will be: ' +
-     settings.level_selection[selection_iter % settings.level_selection.length]);
+      respond('Level order: ' +
+        settings.level_selection.reduce((acc, x) => acc + ', ' + x) +
+        '. Next level will be: ' +
+        settings.level_selection[selection_iter % settings.level_selection.length]);
     }
   }
 }

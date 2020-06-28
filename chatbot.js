@@ -46,17 +46,17 @@ const chatbot_helper = function(username, password, channel) {
         };
         var chatter;
         if (tags.badges == null) {
-         chatter = build_chatter(tags.username,
-                                    tags['display-name'],
-                                    false,
-                                    false,
-                                    false);
+          chatter = build_chatter(tags.username,
+            tags['display-name'],
+            false,
+            false,
+            false);
         } else {
-        chatter = build_chatter(tags.username,
-                                    tags['display-name'],
-                                    tags.badges.subscriber != undefined,
-                                    tags.badges.moderator != undefined,
-                                    tags.badges.broadcaster != undefined);
+          chatter = build_chatter(tags.username,
+            tags['display-name'],
+            tags.badges.subscriber != undefined,
+            tags.badges.moderator != undefined,
+            tags.badges.broadcaster != undefined);
         }
         handle_func(command, chatter, respond);
       }

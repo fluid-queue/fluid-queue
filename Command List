@@ -10,6 +10,8 @@
 
 !level (channel owner only) - Gets a level from the queue respecting the level selection order found in the settings.
 
+!order - Shows the current level selection order found in the settings as well as how the next level will be selected when !level is used.
+
 !next (channel owner only) - Gets the next level from the queue.  If in random mode, it will get a random level instead.
 
 !random (channel owner only) - Gets a random level from the queue.

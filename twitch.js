@@ -32,23 +32,23 @@ const twitch = {
     var current_time = Date.now();
     recent_chatters[chatter.username] = current_time;
     if (chatter.isSubscriber) {
-     subscribers.add(chatter.username);
+      subscribers.add(chatter.username);
     }
     if (chatter.isMod) {
-     mods.add(chatter.username);
+      mods.add(chatter.username);
     }
   },
 
   setToLurk: (username) => {
-   lurkers.add(username);
+    lurkers.add(username);
   },
 
   notLurkingAnymore: (username) => {
-   if (lurkers.has(username)) {
-     lurkers.delete(username);
-     return true;
-   }
-   return false;
+    if (lurkers.has(username)) {
+      lurkers.delete(username);
+      return true;
+    }
+    return false;
   }
 };
 
