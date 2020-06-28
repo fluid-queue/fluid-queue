@@ -89,17 +89,44 @@ const queue = {
 
   punt: async () => {
     if (current_level === undefined) {
-      return undefined;
+      return "The nothing you aren't playing cannot be punted.";
     }
     var top = current_level;
     current_level = undefined;
-    var next = await queue.next();
     queue.add(top);
-    return next;
+    return 'Ok, adding the current level back into the queue.';
   },
 
   next: async () => {
     var list = await queue.list();
+    var both = list.online.concat(list.offline);
+    if (both.length === 0) {
+      current_level = undefined;
+    } else {
+      current_level = both.shift();
+    }
+    var index = levels.findIndex(x => x.code == current_level.code);
+    levels.splice(index, 1);
+    queue.save();
+    return current_level;
+  },
+
+  subnext: async () => {
+    var list = await queue.sublist();
+    var both = list.online.concat(list.offline);
+    if (both.length === 0) {
+      current_level = undefined;
+    } else {
+      current_level = both.shift();
+    }
+    var index = levels.findIndex(x => x.code == current_level.code);
+    levels.splice(index, 1);
+    queue.save();
+    return current_level;
+  },
+
+  modnext: async () => {
+    var list = await queue.modlist();
     var both = list.online.concat(list.offline);
     if (both.length === 0) {
       current_level = undefined;
@@ -146,12 +173,76 @@ const queue = {
     return current_level;
   },
 
+  subrandom: async () => {
+    var list = await queue.sublist();
+    var eligible_levels = list.online;
+    if (eligible_levels.length == 0) {
+      eligible_levels = list.offline;
+      if (eligible_levels.length == 0) {
+        current_level = undefined;
+        return current_level;
+      }
+    }
+
+    var random_index = Math.floor(Math.random() * eligible_levels.length);
+    current_level = eligible_levels[random_index];
+    var index = levels.findIndex(x => x.code == current_level.code);
+    levels.splice(index, 1);
+    queue.save();
+    return current_level;
+  },
+
+  modrandom: async () => {
+    var list = await queue.modlist();
+    var eligible_levels = list.online;
+    if (eligible_levels.length == 0) {
+      eligible_levels = list.offline;
+      if (eligible_levels.length == 0) {
+        current_level = undefined;
+        return current_level;
+      }
+    }
+
+    var random_index = Math.floor(Math.random() * eligible_levels.length);
+    current_level = eligible_levels[random_index];
+    var index = levels.findIndex(x => x.code == current_level.code);
+    levels.splice(index, 1);
+    queue.save();
+    return current_level;
+  },
+
   list: async () => {
     var online = new Array();
     var offline = new Array();
     await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.submitter));
-      offline = levels.filter(x => !online_users.has(x.submitter));
+      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
+      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
+    });
+    return {
+      online: online,
+      offline: offline
+    };
+  },
+
+  sublist: async () => {
+    var online = new Array();
+    var offline = new Array();
+    await twitch.getOnlineSubscribers(settings.channel).then(online_users => {
+      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
+      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
+    });
+    return {
+      online: online,
+      offline: offline
+    };
+  },
+
+  modlist: async () => {
+    var online = new Array();
+    var offline = new Array();
+    await twitch.getOnlineMods(settings.channel).then(online_users => {
+      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
+      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
     });
     return {
       online: online,
