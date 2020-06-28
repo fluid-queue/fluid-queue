@@ -30,7 +30,7 @@
 
 !current - Displays the username and code associated with the current level.
 
-!list - Gives an in-order list of levels in the queue.  It will display the current level, the levels of those currently online and shows how many offline levels there are.  In random mode the order of the list is randomized.
+!list / !queue - Gives an in-order list of levels in the queue.  It will display the current level, the levels of those currently online and shows how many offline levels there are.  In random mode the order of the list is randomized.
 
 !position - Tells someone where their level is in the queue.  In random mode this position will be randomized.
 

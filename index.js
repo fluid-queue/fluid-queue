@@ -85,7 +85,7 @@ const position_message = async (position, sender) => {
   } else if (position === 0) {
     return 'Your level is being played right now!';
   }
-  return 'You are currently ' + get_ordinal(position);
+  return sender + ', you are currently ' + get_ordinal(position);
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -205,7 +205,7 @@ async function HandleMessage(message, sender, respond) {
     }
   } else if (message == '!current') {
     respond(current_level_message(quesoqueue.current()));
-  } else if (message.startsWith('!list')) {
+  } else if (message.startsWith('!list') || message.startsWith('!queue')) {
     if (can_list) {
       can_list = false;
       setTimeout(() => can_list = true, settings.message_cooldown * 1000);
