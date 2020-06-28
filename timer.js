@@ -15,7 +15,7 @@ function Timer(callback, delay) {
 
   this.restart = function() {
     start = new Date();
-    remaining = original_delay
+    remaining = original_delay;
     clearTimeout(timerId);
     timerId = setTimeout(callback, remaining);
   };
