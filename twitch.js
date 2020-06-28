@@ -1,6 +1,8 @@
 const fetch = require("node-fetch");
 
 var recent_chatters = {};
+var subscribers = new Set();
+var mods = new Set();
 var lurkers = new Set();
 
 const twitch = {
@@ -16,9 +18,25 @@ const twitch = {
     return new Set([...online_users].filter(x => !lurkers.has(x)));
   },
 
-  markAsOnline: (username) => {
+  getOnlineSubscribers: async (channel) => {
+    var online_users = await twitch.getOnlineUsers(channel);
+    return new Set([...online_users].filter(x => subscribers.has(x)));
+  },
+
+  getOnlineMods: async (channel) => {
+    var online_users = await twitch.getOnlineUsers(channel);
+    return new Set([...online_users].filter(x => mods.has(x)));
+  },
+
+  noticeChatter: (chatter) => {
     var current_time = Date.now();
-    recent_chatters[username] = current_time;
+    recent_chatters[chatter.username] = current_time;
+    if (chatter.isSubscriber) {
+     subscribers.add(chatter.username);
+    }
+    if (chatter.isMod) {
+     mods.add(chatter.username);
+    }
   },
 
   setToLurk: (username) => {

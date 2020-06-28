@@ -4,5 +4,9 @@ module.exports = {
   password: '', // generated at https://twitchapps.com/tmi/
   channel: '', // channel where the bot will run
   max_size: 50,
-  level_timeout: 10
+  level_timeout: 10,
+  // Acceptable values: next, subnext, modnext, random, subrandom, modrandom
+  // example: ['next', 'subnext', 'random']
+  level_selection: [],
+  message_cooldown: 5,
 };

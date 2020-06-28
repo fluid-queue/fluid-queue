@@ -7,10 +7,11 @@ const timer = require('./timer.js');
 quesoqueue.load();
 
 var queue_open = false;
-var random_mode = false;
+var selection_iter = 0;
 const level_timer = timer.timer(
   () => {
     chatbot_helper.say(`@${settings.channel} the timer has expired for this level!`);
+    chatbot_helper.say('!roll d10');
   },
   settings.level_timeout * 1000 * 60
 );
@@ -27,7 +28,8 @@ const Level = (level_code, submitter) => {
   return { code: level_code, submitter: submitter };
 };
 
-const level_list_message = (current, levels) => {
+var can_list = true;
+const level_list_message = (sender, current, levels) => {
   if (
     current === undefined &&
     levels.online.length === 0 &&
@@ -38,27 +40,17 @@ const level_list_message = (current, levels) => {
   var result =
     levels.online.length +
     (current !== undefined ? 1 : 0) +
-    ' online level(s) in the queue: ';
+    ' online: ';
   result +=
     current !== undefined
       ? current.submitter + ' (current)'
       : '(no current level)';
 
-  if (random_mode) {
-    for (let i = levels.online.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [levels.online[i], levels.online[j]] = [
-        levels.online[j],
-        levels.online[i]
-      ];
-    }
-  }
-
-  result += levels.online.reduce((acc, x) => acc + ', ' + x.submitter, '');
+  result += levels.online.slice(0,5).reduce((acc, x) => acc + ', ' + x.submitter, '');
   result +=
-    '. There are also ' +
-    levels.offline.length +
-    ' offline level(s) in the queue.';
+    '...' + (levels.online.length > 5 ? 'etc.' : '' +
+    ' (' + levels.offline.length +
+    ' offline)';
   return result;
 };
 
@@ -94,14 +86,6 @@ const position_message = async (position, sender) => {
   } else if (position === 0) {
     return 'Your level is being played right now!';
   }
-  if (random_mode) {
-    var levels = await quesoqueue.list();
-    return (
-      "We're in random mode so idk..." +
-      get_ordinal(Math.ceil(Math.random() * levels.online.length)) +
-      '?'
-    );
-  }
   return 'You are currently ' + get_ordinal(position);
 };
 
@@ -109,54 +93,103 @@ const position_message = async (position, sender) => {
 // `message` is the full text of the message. `sender` is the username
 // of the person that sent the message.
 async function HandleMessage(message, sender, respond) {
-  if (sender === undefined || message === undefined) {
+  if (sender.username === undefined || message === undefined) {
     console.log('undefined data');
   }
-  twitch.markAsOnline(sender);
-  if (message == '!open' && sender == settings.channel) {
+  twitch.noticeChatter(sender);
+  if (message == '!open' && sender.isBroadcaster) {
     queue_open = true;
     respond('The queue is now open!');
-  } else if (message == '!close' && sender == settings.channel) {
+  } else if (message == '!close' && sender.isBroadcaster) {
     queue_open = false;
     respond('The queue is now closed!');
-  } else if (message == '!random' && sender == settings.channel) {
-    random_mode = !random_mode;
-    if (random_mode) {
-      respond('Random mode activated');
-    } else {
-      respond('Random mode deactivated');
-    }
   } else if (message.startsWith('!add')) {
-    if (queue_open || sender == settings.channel) {
+    if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message);
-      respond(quesoqueue.add(Level(level_code, sender)));
+      respond(quesoqueue.add(Level(level_code, sender.displayName)));
     } else {
       respond('Sorry, the queue is closed right now :c');
     }
-  } else if (message == '!remove' || message == '!leave') {
-    if (sender == settings.channel) {
+  } else if (message.startsWith('!remove') || message.startsWith('!leave')) {
+    if (sender.isBroadcaster) {
       var to_remove = get_remainder(message);
       respond(quesoqueue.modRemove(to_remove));
     } else {
-      respond(quesoqueue.remove(sender));
+      respond(quesoqueue.remove(sender.displayName));
     }
   } else if (
     message.startsWith('!replace') ||
     message.startsWith('!change') ||
     message.startsWith('!swap')
   ) {
-    respond(quesoqueue.replace(sender, get_remainder(message)));
-  } else if (message == '!next' && sender == settings.channel) {
+    respond(quesoqueue.replace(sender.displayName, get_remainder(message)));
+  } else if (message == '!level' && sender.isBroadcaster) {
+   let next_level = undefined;
+    let selection_mode = settings.level_selection[selection_iter++];
+    if (selection_iter >= settings.level_selection.length) {
+     selection_iter = 0;
+    }
+    switch (selection_mode) {
+     case 'next':
+      next_level = await quesoqueue.next();
+      break;
+     case 'subnext':
+      next_level = await quesoqueue.subnext();
+      break;
+     case 'modnext':
+      next_level = await quesoqueue.modnext();
+      break;
+     case 'random':
+      next_level = await quesoqueue.random();
+      break;
+     case 'subrandom':
+      next_level = await quesoqueue.subrandom();
+      break;
+     case 'modrandom':
+      next_level = await quesoqueue.modrandom();
+      break;
+     default:
+      selection_mode = 'default';
+      next_level = await quesoqueue.next();
+    }
     level_timer.restart();
     level_timer.pause();
-    var next_level = random_mode ? await quesoqueue.random() : await quesoqueue.next();
+    respond('('+ selection_mode +') ' + next_level_message(next_level));
+  } else if (message == '!next' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    let next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
-  } else if (message == '!punt' && sender == settings.channel) {
-    respond('Ok, adding the current level back into the queue.');
+  } else if (message == '!subnext' && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
-    respond(next_level_message(await quesoqueue.punt()));
-  } else if (message.startsWith('!dip') && sender == settings.channel) {
+    let next_level = await quesoqueue.subnext();
+    respond(next_level_message(next_level));
+  } else if (message == '!modnext' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    let next_level = await quesoqueue.modnext();
+    respond(next_level_message(next_level));
+  } else if (message == '!random' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    let next_level = await quesoqueue.random();
+    respond(next_level_message(next_level));
+  } else if (message == '!subrandom' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    let next_level = await quesoqueue.subrandom();
+    respond(next_level_message(next_level));
+  } else if (message == '!modrandom' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    let next_level = await quesoqueue.modrandom();
+    respond(next_level_message(next_level));
+  } else if (message == '!punt' && sender.isBroadcaster) {
+    level_timer.restart();
+    level_timer.pause();
+    respond(await quesoqueue.punt());
+  } else if (message.startsWith('!dip') && sender.isBroadcaster) {
     var username = get_remainder(message);
     level_timer.restart();
     level_timer.pause();
@@ -174,33 +207,48 @@ async function HandleMessage(message, sender, respond) {
   } else if (message == '!current') {
     respond(current_level_message(quesoqueue.current()));
   } else if (message.startsWith('!list')) {
-    respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
+    if (can_list) {
+     can_list = false;
+     setTimeout(() => can_list = true, settings.message_cooldown * 1000);
+     respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
+    } else {
+     respond('Just...scroll up a little');
+    }
   } else if (message == '!position') {
-    respond(await position_message(await quesoqueue.position(sender), sender));
-  } else if (message == '!start' && sender == settings.channel) {
+    respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
+  } else if (message == '!start' && sender.isBroadcaster) {
     level_timer.resume();
     respond('Timer started! Get going!');
-  } else if (message == '!resume' && sender == settings.channel) {
+  } else if (message == '!resume' && sender.isBroadcaster) {
     level_timer.resume();
     respond('Timer unpaused! Get going!');
-  } else if (message == '!pause' && sender == settings.channel) {
+  } else if (message == '!pause' && sender.isBroadcaster) {
     level_timer.pause();
     respond('Timer paused');
-  } else if (message == '!restart' && sender == settings.channel) {
+  } else if (message == '!restart' && sender.isBroadcaster) {
     level_timer.restart();
     respond('Starting the clock over! CP Hype!');
-  } else if (message == '!restore' && sender == settings.channel) {
+  } else if (message == '!restore' && sender.isBroadcaster) {
     quesoqueue.load();
     respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
-  } else if (message == '!clear' && sender == settings.channel) {
+  } else if (message == '!clear' && sender.isBroadcaster) {
     quesoqueue.clear();
     respond('Queue cleared! A fresh start.');
   } else if (message == '!lurk') {
-    twitch.setToLurk(sender);
-    respond(sender + ', your level will not be played until you use the !back command.');
+    twitch.setToLurk(sender.username);
+    respond(sender.displayName + ', your level will not be played until you use the !back command.');
   } else if (message == '!back') {
-    if (twitch.notLurkingAnymore(sender)) {
-      respond('Welcome back ' + sender + '!');
+    if (twitch.notLurkingAnymore(sender.username)) {
+      respond('Welcome back ' + sender.displayName + '!');
+    }
+  } else if (message == '!order') {
+    if (settings.level_selection.length == 0) {
+     respond('No order has been specified.');
+    } else {
+     respond('Level order: ' +
+     settings.level_selection.reduce((acc, x) => acc + ', ' + x) +
+     '. Next level will be: ' +
+     settings.level_selection[selection_iter % settings.level_selection.length]);
     }
   }
 }

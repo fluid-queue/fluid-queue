@@ -1,5 +1,15 @@
 const tmi = require('tmi.js');
 
+const build_chatter = function(username, displayName, isSubscriber, isMod, isBroadcaster) {
+  return {
+    username: username,
+    displayName: displayName,
+    isSubscriber: isSubscriber,
+    isMod: isMod,
+    isBroadcaster: isBroadcaster
+  }
+}
+
 const chatbot_helper = function(username, password, channel) {
   var tmi_settings = {
     identity: {
@@ -34,7 +44,21 @@ const chatbot_helper = function(username, password, channel) {
         const respond = (response_text) => {
           client.say(channel, response_text);
         };
-        handle_func(command, tags.username, respond);
+        var chatter;
+        if (tags.badges == null) {
+         chatter = build_chatter(tags.username,
+                                    tags['display-name'],
+                                    false,
+                                    false,
+                                    false);
+        } else {
+        chatter = build_chatter(tags.username,
+                                    tags['display-name'],
+                                    tags.badges.subscriber != undefined,
+                                    tags.badges.moderator != undefined,
+                                    tags.badges.broadcaster != undefined);
+        }
+        handle_func(command, chatter, respond);
       }
       // Register our event handlers (defined below)
       this.client.on('connected', onConnectedHandler);
