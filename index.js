@@ -24,7 +24,7 @@ const get_remainder = x => {
 };
 
 const Level = (level_code, submitter) => {
-  return { code: level_code, submitter: submitter };
+  return { code: level_code, submitter: submitter, tickets: 1 };
 };
 
 var can_list = true;
@@ -87,6 +87,38 @@ const position_message = async (position, sender) => {
   }
   return sender + ', you are currently ' + get_ordinal(position);
 };
+
+const chance_message = async (chance, sender) => {
+  if (chance == -1) {
+    return (
+      sender + ", looks like you're not in the queue. Try !add AAA-AAA-AAA."
+    );
+  } else if (chance === 0) {
+    return 'Your level is being played right now!';
+  }
+  return sender + ', your current chance of winning the random is ' + chance + '%';
+};
+
+const reward_message = async (chance, sender) => {
+  if (chance == -1) {
+    return (
+      `@${settings.channel}` + ' ' + sender + " redeemed the ticket reward without a submitted level :("
+    );
+  } else if (chance === 0) {
+    return `@${settings.channel}` + ' ' + sender + " redeemed the ticket reward while their level is played :(";
+  }
+  return sender + ', your current chance of winning the random increased to ' + chance + '%';
+};
+
+async function HandleReward(id, message, sender, respond) {
+  if (message == '!setup' && sender.isBroadcaster) {
+    quesoqueue.setTicketReward(id);
+    console.log(`-> reward id is set to ${id}`);
+    respond('Custom reward is set up!');
+  } else if (quesoqueue.isTicketReward(id)) {
+    respond(await reward_message(await quesoqueue.reward(sender.displayName), sender.displayName));
+  }
+}
 
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
@@ -215,6 +247,8 @@ async function HandleMessage(message, sender, respond) {
     }
   } else if (message == '!position') {
     respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
+  } else if (message == '!chance') {
+    respond(await chance_message(await quesoqueue.chance(sender.displayName), sender.displayName));
   } else if (message == '!start' && sender.isBroadcaster) {
     level_timer.resume();
     respond('Timer started! Get going!');
@@ -258,5 +292,5 @@ const chatbot_helper = chatbot.helper(
   settings.password,
   settings.channel
 );
-chatbot_helper.setup(HandleMessage);
+chatbot_helper.setup(HandleMessage, HandleReward);
 chatbot_helper.connect();

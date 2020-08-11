@@ -2,9 +2,11 @@ const settings = require('./settings.js');
 const twitch = require('./twitch.js').twitch();
 const fs = require('fs');
 
+var rewards = { ticket: null };
 var current_level = undefined;
 var levels = new Array();
 const cache_filename = "queso.save";
+const rewards_filename = "rewards.save";
 
 const isValidLevelCode = (level_code) => {
   const level_bit = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
@@ -87,6 +89,44 @@ const queue = {
     return -1;
   },
 
+  chance: async (username) => {
+    if (current_level != undefined && current_level.submitter == username) {
+      return 0;
+    }
+    var eligible_levels = queue.onlineOrOffline(await queue.list());
+    if (eligible_levels.length == 0) {
+      return -1;
+    }
+
+    var index = eligible_levels.findIndex(x => x.submitter == username);
+    var tickets = eligible_levels.reduce((sum, x) => sum + x.tickets, 0);
+    if (index != -1) {
+      var level = eligible_levels[index];
+      return Math.round(level.tickets * 10000 / tickets) / 100;
+    }
+    return -1;
+  },
+
+  reward: async (username) => {
+    if (current_level != undefined && current_level.submitter == username) {
+      return 0;
+    }
+    var eligible_levels = queue.onlineOrOffline(await queue.list());
+    if (eligible_levels.length == 0) {
+      return -1;
+    }
+
+    var index = eligible_levels.findIndex(x => x.submitter == username);
+    var tickets = eligible_levels.reduce((sum, x) => sum + x.tickets, 0);
+    if (index != -1) {
+      var level = eligible_levels[index];
+      level.tickets += 1;
+      queue.save();
+      return Math.round(level.tickets * 10000 / (tickets + 1)) / 100;
+    }
+    return -1;
+  },
+
   punt: async () => {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be punted.";
@@ -154,18 +194,35 @@ const queue = {
     return current_level;
   },
 
-  random: async () => {
-    var list = await queue.list();
+  onlineOrOffline: (list) => {
     var eligible_levels = list.online;
     if (eligible_levels.length == 0) {
       eligible_levels = list.offline;
-      if (eligible_levels.length == 0) {
-        current_level = undefined;
-        return current_level;
-      }
+    }
+    return eligible_levels;
+  },
+
+  random: async () => {
+    var eligible_levels = queue.onlineOrOffline(await queue.list());
+
+    if (eligible_levels.length == 0) {
+      current_level = undefined;
+      return current_level;
     }
 
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
+    return queue.choose_weighted(eligible_levels);
+  },
+
+  choose_weighted: (eligible_levels) => {
+    var tickets = eligible_levels.reduce((sum, x) => sum + x.tickets, 0);
+    var random_ticket = Math.floor(Math.random() * tickets);
+    for (var random_index = 0; random_index < eligible_levels.length; random_index++) {
+      var current_tickets = eligible_levels[random_index].tickets;
+      if (random_ticket < current_tickets) {
+        break;
+      }
+      random_ticket -= current_tickets;
+    }
     current_level = eligible_levels[random_index];
     var index = levels.findIndex(x => x.code == current_level.code);
     levels.splice(index, 1);
@@ -174,41 +231,25 @@ const queue = {
   },
 
   subrandom: async () => {
-    var list = await queue.sublist();
-    var eligible_levels = list.online;
+    var eligible_levels = queue.onlineOrOffline(await queue.sublist());
+
     if (eligible_levels.length == 0) {
-      eligible_levels = list.offline;
-      if (eligible_levels.length == 0) {
-        current_level = undefined;
-        return current_level;
-      }
+      current_level = undefined;
+      return current_level;
     }
 
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
-    current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.code == current_level.code);
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    return queue.choose_weighted(eligible_levels);
   },
 
   modrandom: async () => {
-    var list = await queue.modlist();
-    var eligible_levels = list.online;
+    var eligible_levels = queue.onlineOrOffline(await queue.modlist());
+
     if (eligible_levels.length == 0) {
-      eligible_levels = list.offline;
-      if (eligible_levels.length == 0) {
-        current_level = undefined;
-        return current_level;
-      }
+      current_level = undefined;
+      return current_level;
     }
 
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
-    current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.code == current_level.code);
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    return queue.choose_weighted(eligible_levels);
   },
 
   list: async () => {
@@ -259,11 +300,34 @@ const queue = {
     fs.writeFileSync(cache_filename, new_data);
   },
 
+  setTicketReward: (id) => {
+    rewards.ticket = id;
+    queue.saveRewards();
+  },
+
+  isTicketReward: (id) => {
+    return rewards.ticket != null && rewards.ticket == id;
+  },
+
+  saveRewards: () => {
+    var new_data = JSON.stringify(rewards, null, 2);
+    fs.writeFileSync(rewards_filename, new_data);
+  },
+
   load: () => {
     if (fs.existsSync(cache_filename)) {
       var raw_data = fs.readFileSync(cache_filename);
       levels = JSON.parse(raw_data);
+      levels.forEach(level => {
+        if (level['tickets'] == null) {
+          level.tickets = 1;
+        }
+      });
       current_level = undefined;
+    }
+    if (fs.existsSync(rewards_filename)) {
+      var raw_data = fs.readFileSync(rewards_filename);
+      rewards = JSON.parse(raw_data);
     }
   },
 

@@ -28,7 +28,7 @@ const chatbot_helper = function(username, password, channel) {
       this.client.connect();
     },
 
-    setup: function(handle_func) {
+    setup: function(handle_func, reward_func) {
       var client = this.client;
       // Called every time the bot connects to Twitch chat
       function onConnectedHandler(addr, port) {
@@ -59,6 +59,9 @@ const chatbot_helper = function(username, password, channel) {
             tags.badges.broadcaster != undefined);
         }
         handle_func(command, chatter, respond);
+        if (tags['custom-reward-id'] != null) {
+          reward_func(tags['custom-reward-id'], command, chatter, respond);
+        }
       }
       // Register our event handlers (defined below)
       this.client.on('connected', onConnectedHandler);
