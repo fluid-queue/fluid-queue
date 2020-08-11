@@ -1,3 +1,32 @@
+# Weighted Random
+
+This is a fork of https://github.com/diceguyd30/queso_to_go_template.
+
+This branch adds the possibility for weighted randoms.
+
+### New commands:
+
+`!chance` - Shows you the chance of winning random. 
+
+### How to setup the ticket reward:
+
+* Add a reward to your channel where `Require Viewer to Enter Text` is enabled.
+* Start this version of queuso queue (do not forget to edit `settings.js`).
+* Now redeem the custom reward yourself and type `!setup`.
+* The bot should respond with `Custom reward is set up!`.
+* When you close queuso queue the custom reward id is saved in the `rewards.save` file.
+
+### How does it work?
+
+When selecting a random level normally the chance of winning is `1/n`, where `n` is the number of submitted levels.
+With the modifications each entry in the queue has a number of tickets associated and by default this number is 1.
+Whenever a viewer redeems the custom channel point reward they get another ticket. That is like having a second queue entry.
+This channel point reward can be used multiple times. There is no limit on the number of tickets associated with a queue entry.
+The chance of winning is the amount of tickets your queue entry has divided by the total amount of tickets.
+
+# Original README
+
+
 These are the steps necessary to make sure your bot is authorized to perform the
 actions it needs to.  Each step will assist in filling out one of the variables
 located in `settings.js`.
