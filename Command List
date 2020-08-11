@@ -34,6 +34,8 @@
 
 !position - Tells someone where their level is in the queue.  In random mode this position will be randomized.
 
+!chance - Tells someone their chance of winning random.
+
 !start (channel owner only) - Begins the level timer.  The value for this timer is in settings.js and is in minutes.  At the end of the timer, a message will be displayed in chat.
 
 !resume (channel owner only) - Resumes a paused level timer.
