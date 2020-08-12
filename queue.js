@@ -16,57 +16,58 @@ const isValidLevelCode = (level_code) => {
 const queue = {
   add: (level) => {
     if (levels.length >= settings.max_size) {
-      return "Sorry, the level queue is full!";
+      return "full";
     }
     if (!isValidLevelCode(level.code)) {
-      return "I'm pretty sure '" + level.code + "' isn't a valid code. Try again.";
+      return "invalid";
     }
     if (current_level != undefined && current_level.submitter == level.submitter && level.submitter != settings.channel) {
-      return "Wait for your level to be completed before you submit again.";
+      return "current";
     }
 
     var result = levels.find(x => x.submitter == level.submitter);
     if (result == undefined || level.submitter == settings.channel) {
       levels.push(level);
       queue.save();
-      return level.submitter + ", " + level.code + " has been added to the queue.";
+      return "added";
     } else {
-      return "Sorry, viewers are limited to one submission at a time.";
+      return "limit";
     }
   },
 
   modRemove: (username) => {
     if (username == '') {
-      return "You can use !remove <username> to kick out someone else's level;  if you want to skip the current one, use !next.";
+      return undefined;
     }
-
+    var old_level = levels.find(x => x.submitter == username);
     levels = levels.filter(x => x.submitter != username);
-    return "Ok, I removed " + username + "'s level from the queue.";
+    return { username, ...old_level };
   },
 
   remove: (username) => {
     if (current_level != undefined && current_level.submitter == username) {
-      return "We're playing that level right now!  Don't take this away from us!";
+      return undefined;
     }
+    var old_level = levels.find(x => x.submitter == username);
     levels = levels.filter(x => x.submitter != username);
-    return username + "'s level removed from the queue.";
+    return { username, ...old_level };
   },
 
   replace: (username, new_level_code) => {
     if (!isValidLevelCode(new_level_code)) {
-      return "I'm pretty sure '" + new_level_code + "' isn't a valid code.  Try again.";
+      return "invalid";
     }
     var old_level = levels.find(x => x.submitter == username);
     if (old_level != undefined) {
       old_level.code = new_level_code;
       queue.save();
-      return "Ok " + username + ", your code in the queue is now " + new_level_code + ".";
+      return "replaced";
     } else if (current_level != undefined && current_level.submitter == username) {
       current_level.code = new_level_code;
       queue.save();
-      return "Ok " + username + ", your code in the queue is now " + new_level_code + ".";
+      return "replacedCurrent";
     } else {
-      return "I didn't find a level for " + username + " in the queue. Use !add to add one.";
+      return "unavailable";
     }
   },
 
@@ -89,12 +90,12 @@ const queue = {
 
   punt: async () => {
     if (current_level === undefined) {
-      return "The nothing you aren't playing cannot be punted.";
+      return undefined;
     }
     var top = current_level;
     current_level = undefined;
     queue.add(top);
-    return 'Ok, adding the current level back into the queue.';
+    return top;
   },
 
   next: async () => {
