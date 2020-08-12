@@ -1,0 +1,6 @@
+# node/npm specific files
+/node_modules/
+/package-lock.json
+
+# queso queue specific files
+/*.save
