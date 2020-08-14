@@ -79,31 +79,27 @@ const position_message = async (position, sender) => {
 
 const chance_message = async (chance, sender) => {
   if (chance == -1) {
-    return (
-      sender + ", looks like you're not in the queue. Try !add AAA-AAA-AAA."
-    );
+    return __mf('queue.chance.unavailable', {sender, ...global_lang});
   } else if (chance === 0) {
-    return 'Your level is being played right now!';
+    return __mf('queue.chance.current', {sender, ...global_lang});
   }
-  return sender + ', your current chance of winning the random is ' + chance + '%';
+  return __mf('queue.chance.chance', {chance, sender, ...global_lang});
 };
 
 const reward_message = async (chance, sender) => {
   if (chance == -1) {
-    return (
-      `@${settings.channel}` + ' ' + sender + " redeemed the ticket reward without a submitted level :("
-    );
+    return __mf('reward.ticket.redeem.unavailable', {sender, ...global_lang});
   } else if (chance === 0) {
-    return `@${settings.channel}` + ' ' + sender + " redeemed the ticket reward while their level is played :(";
+    return __mf('reward.ticket.redeem.current', {sender, ...global_lang});
   }
-  return sender + ', your current chance of winning the random increased to ' + chance + '%';
+  return __mf('reward.ticket.redeem.chance', {chance, sender, ...global_lang});
 };
 
 async function HandleReward(id, message, sender, respond) {
   if (message == '!setup' && sender.isBroadcaster) {
     quesoqueue.setTicketReward(id);
     console.log(`-> reward id is set to ${id}`);
-    respond('Custom reward is set up!');
+    respond(__mf('reward.ticket.setup', {sender: sender.displayName, ...global_lang}));
   } else if (quesoqueue.isTicketReward(id)) {
     respond(await reward_message(await quesoqueue.reward(sender.displayName), sender.displayName));
   }

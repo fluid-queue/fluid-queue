@@ -7,6 +7,16 @@
 		"resume": "Timer unpaused! Get going!",
 		"restart": "Starting the clock over! CP Hype!"
 	},
+	"reward": {
+		"ticket": {
+			"setup": "Custom reward is set up!",
+			"redeem": {
+				"unavailable": "@{channel} {sender} redeemed the ticket reward without a submitted level :(",
+				"current": "@{channel} {sender} redeemed the ticket reward while their level is played :(",
+				"chance": "{sender}, your current chance of winning the random increased to {chance,number,#.##%}"
+			}
+		}
+	},
 	"queue": {
 		"list": {
 			"empty": "There are no levels in the queue :c",
@@ -65,6 +75,11 @@
 		"modRemove": {
 			"unavailable": "You can use {command_remove} <username> to kick out someone else''s level;  if you want to skip the current one, use !next.",
 			"current": "Ok, I removed {username}''s level from the queue."
+		},
+		"chance": {
+			"unavailable": "{sender}, looks like you''re not in the queue.  Try !add AAA-AAA-AAA.",
+			"current": "Your level is being played right now!",
+			"chance": "{sender}, your current chance of winning the random is {chance,number,#.##%}"
 		}
 	}
 }
