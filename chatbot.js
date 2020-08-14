@@ -42,7 +42,9 @@ const chatbot_helper = function(username, password, channel) {
         // Remove whitespace from chat message
         const command = message.trim();
         const respond = (response_text) => {
-          client.say(channel, response_text);
+          if (response_text !== undefined) { // if i18n errors the response_text might be undefined
+            client.say(channel, response_text);
+          }
         };
         var chatter;
         if (tags.badges == null) {

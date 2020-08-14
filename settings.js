@@ -9,4 +9,6 @@ module.exports = {
   // example: ['next', 'subnext', 'random']
   level_selection: [],
   message_cooldown: 5,
+  locale: 'en', // the selected language
+  locales: ['en'], // all installed language files (within the locales folder)
 };
