@@ -6,6 +6,10 @@ const timer = require('./timer.js');
 const i18n = require("i18n");
 const global_lang = { channel: settings.channel, command_add: '!add', command_back: '!back', command_remove: '!remove' };
 
+function percent(value, lc) {
+  return new Intl.NumberFormat(lc, { style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+}
+
 i18n.configure({
   locales: settings.locales,
   directory: __dirname + '/locales',
@@ -83,7 +87,7 @@ const chance_message = async (chance, sender) => {
   } else if (chance === 0) {
     return __mf('queue.chance.current', {sender, ...global_lang});
   }
-  return __mf('queue.chance.chance', {chance, sender, ...global_lang});
+  return __mf('queue.chance.chance', {chance: percent(chance), sender, ...global_lang});
 };
 
 const reward_message = async (chance, sender) => {
@@ -92,7 +96,7 @@ const reward_message = async (chance, sender) => {
   } else if (chance === 0) {
     return __mf('reward.ticket.redeem.current', {sender, ...global_lang});
   }
-  return __mf('reward.ticket.redeem.chance', {chance, sender, ...global_lang});
+  return __mf('reward.ticket.redeem.chance', {chance: percent(chance), sender, ...global_lang});
 };
 
 async function HandleReward(id, message, sender, respond) {

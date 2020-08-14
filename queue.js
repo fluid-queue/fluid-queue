@@ -103,7 +103,7 @@ const queue = {
     var tickets = eligible_levels.reduce((sum, x) => sum + x.tickets, 0);
     if (index != -1) {
       var level = eligible_levels[index];
-      return Math.round(level.tickets * 10000 / tickets) / 100;
+      return level.tickets / tickets;
     }
     return -1;
   },
@@ -123,7 +123,7 @@ const queue = {
       var level = eligible_levels[index];
       level.tickets += 1;
       queue.save();
-      return Math.round(level.tickets * 10000 / (tickets + 1)) / 100;
+      return level.tickets / tickets;
     }
     return -1;
   },
