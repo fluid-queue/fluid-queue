@@ -4,7 +4,7 @@ const quesoqueue = require('./queue.js').quesoqueue();
 const twitch = require('./twitch.js').twitch();
 const timer = require('./timer.js');
 const i18n = require("i18n");
-const global_lang = { channel: settings.channel, command_add: '!add', command_back: '!back', command_remove: '!remove' };
+const global_lang = { channel: settings.channel, command_add: '!add', command_back: '!back', command_remove: '!remove', command_random: '!random'};
 
 function percent(value, lc) {
   return new Intl.NumberFormat(lc, { style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
