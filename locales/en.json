@@ -18,29 +18,29 @@
 			"level": "{type, select, undefined {} other {({type}) }}Next is {code}, submitted by {submitter}"
 		},
 		"current": {
-			"empty": "We're not playing a level right now! D:",
+			"empty": "We''re not playing a level right now! D:",
 			"level": "Currently playing {code}, submitted by {submitter}"
 		},
 		"position": {
 			"position": "{sender}, you are currently {position, selectordinal, one{#st} two{#nd} few{#rd} other{#th}}",
-			"unavailable": "{sender}, looks like you're not in the queue. Try {command_add} AAA-AAA-AAA.",
+			"unavailable": "{sender}, looks like you''re not in the queue. Try {command_add} AAA-AAA-AAA.",
 			"current": "Your level is being played right now!"
 		},
 		"open": "The queue is now open!",
 		"close": "The queue is now closed!",
 		"add": {
 			"full": "Sorry, the level queue is full!",
-			"invalid": "I'm pretty sure '{code}' isn't a valid code. Try again.",
+			"invalid": "I''m pretty sure ''{code}'' isn''t a valid code. Try again.",
 			"current": "Wait for your level to be completed before you submit again.",
 			"added": "{submitter}, {code} has been added to the queue.",
 			"limit": "Sorry, viewers are limited to one submission at a time.",
 			"closed": "Sorry, the queue is closed right now :c"
 		},
 		"replace": {
-			"invalid": "I'm pretty sure '{code}' isn't a valid code.  Try again.",
+			"invalid": "I''m pretty sure ''{code}'' isn''t a valid code.  Try again.",
 			"replaced": "Ok {submitter}, your code in the queue is now {code}.",
 			"replacedCurrent": "Ok {submitter}, your code in the queue is now {code}.",
-			"unavailable": "I didn't find a level for {submitter} in the queue. Use {command_add} to add one."
+			"unavailable": "I didn''t find a level for {submitter} in the queue. Use {command_add} to add one."
 		},
 		"clear": "Queue cleared! A fresh start.",
 		"order": {
@@ -52,19 +52,19 @@
 		"back": "Welcome back {sender}!",
 		"dip": {
 			"unavailable": "No levels in the queue were submitted by {username}",
-			"current": "{submitter}'s level {code} has been pulled up from the queue."
+			"current": "{submitter}''s level {code} has been pulled up from the queue."
 		},
 		"punt": {
-			"unavailable": "The nothing you aren't playing cannot be punted.",
+			"unavailable": "The nothing you aren''t playing cannot be punted.",
 			"current": "Ok, adding the current level back into the queue."
 		},
 		"remove": {
-			"unavailable": "We're playing that level right now!  Don't take this away from us!",
-			"current": "{username}'s level removed from the queue."
+			"unavailable": "We''re playing that level right now!  Don''t take this away from us!",
+			"current": "{username}''s level removed from the queue."
 		},
 		"modRemove": {
-			"unavailable": "You can use {command_remove} <username> to kick out someone else's level;  if you want to skip the current one, use !next.",
-			"current": "Ok, I removed {username}'s level from the queue."
+			"unavailable": "You can use {command_remove} <username> to kick out someone else''s level;  if you want to skip the current one, use !next.",
+			"current": "Ok, I removed {username}''s level from the queue."
 		}
 	}
 }
