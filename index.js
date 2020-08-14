@@ -20,7 +20,7 @@ var queue_open = false;
 var selection_iter = 0;
 const level_timer = timer.timer(
   () => {
-    chatbot_helper.say(__('timer.expired', global_lang));
+    chatbot_helper.say(__mf('timer.expired', global_lang));
   },
   settings.level_timeout * 1000 * 60
 );
@@ -44,37 +44,37 @@ const level_list_message = (sender, current, levels) => {
     levels.online.length === 0 &&
     levels.offline.length === 0
   ) {
-    return __('queue.list.empty', {sender, ...global_lang});
+    return __mf('queue.list.empty', {sender, ...global_lang});
   }
 
-  let levels5 = levels.online.slice(0, 5).reduce((acc, x) => acc + __('listSeparator') + x.submitter, '');
+  let levels5 = levels.online.slice(0, 5).reduce((acc, x) => acc + __mf('listSeparator') + x.submitter, '');
   let etc = levels.online.length > 5;
   let online = levels.online.length + (current !== undefined ? 1 : 0);
   let offline = levels.offline.length;
-  return __mf('queue.list.message_mf', {...current, levels: levels5, etc, online, offline, sender, ...global_lang});
+  return __mf('queue.list.message', {...current, levels: levels5, etc, online, offline, sender, ...global_lang});
 };
 
 const next_level_message = (level, sender = undefined, type = undefined) => {
   if (level === undefined) {
-    return __mf('queue.next.empty_mf', {type, sender, ...global_lang});
+    return __mf('queue.next.empty', {type, sender, ...global_lang});
   }
-  return __mf('queue.next.level_mf', {...level, type, sender, ...global_lang});
+  return __mf('queue.next.level', {...level, type, sender, ...global_lang});
 };
 
 const current_level_message = (level, sender = undefined) => {
   if (level === undefined) {
-    return __('queue.current.empty', {sender, ...global_lang});
+    return __mf('queue.current.empty', {sender, ...global_lang});
   }
-  return __('queue.current.level', {...level, sender, ...global_lang});
+  return __mf('queue.current.level', {...level, sender, ...global_lang});
 };
 
 const position_message = async (position, sender) => {
   if (position == -1) {
-    return __('queue.position.unavailable', {sender, ...global_lang});
+    return __mf('queue.position.unavailable', {sender, ...global_lang});
   } else if (position === 0) {
-    return __('queue.position.current', {sender, ...global_lang});
+    return __mf('queue.position.current', {sender, ...global_lang});
   }
-  return __mf('queue.position.position_mf', {position, sender, ...global_lang});
+  return __mf('queue.position.position', {position, sender, ...global_lang});
 };
 
 const chance_message = async (chance, sender) => {
@@ -119,18 +119,18 @@ async function HandleMessage(message, sender, respond) {
   twitch.noticeChatter(sender);
   if (message == '!open' && sender.isBroadcaster) {
     queue_open = true;
-    respond(__('queue.open', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('queue.open', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!close' && sender.isBroadcaster) {
     queue_open = false;
-    respond(__('queue.close', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('queue.close', {sender: sender.displayName, ...global_lang}));
   } else if (message.startsWith('!add')) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message);
       let level = Level(level_code, sender.displayName);
       let result = quesoqueue.add(level);
-      respond(__(`queue.add.${result}`, {...level, sender: sender.displayName, ...global_lang}));
+      respond(__mf(`queue.add.${result}`, {...level, sender: sender.displayName, ...global_lang}));
     } else {
-      respond(__('queue.add.closed', {sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.add.closed', {sender: sender.displayName, ...global_lang}));
     }
   } else if (message.startsWith('!remove') || message.startsWith('!leave')) {
     var result = undefined;
@@ -144,9 +144,9 @@ async function HandleMessage(message, sender, respond) {
       command = "remove";
     }
     if (result === undefined) {
-      respond(__(`queue.${command}.unavailable`, {sender: sender.displayName, ...global_lang}));
+      respond(__mf(`queue.${command}.unavailable`, {sender: sender.displayName, ...global_lang}));
     } else {
-      respond(__(`queue.${command}.current`, {...result, sender: sender.displayName, ...global_lang}));
+      respond(__mf(`queue.${command}.current`, {...result, sender: sender.displayName, ...global_lang}));
     }
   } else if (
     message.startsWith('!replace') ||
@@ -156,7 +156,7 @@ async function HandleMessage(message, sender, respond) {
     let level_code = get_remainder(message);
     let level = Level(level_code, sender.displayName);
     let result = quesoqueue.replace(level.submitter, level.code);
-    respond(__(`queue.replace.${result}`, {...level, sender: sender.displayName, ...global_lang}));
+    respond(__mf(`queue.replace.${result}`, {...level, sender: sender.displayName, ...global_lang}));
   } else if (message == '!level' && sender.isBroadcaster) {
     let next_level = undefined;
     let selection_mode = settings.level_selection[selection_iter++];
@@ -224,9 +224,9 @@ async function HandleMessage(message, sender, respond) {
     level_timer.pause();
     let punt_level = await quesoqueue.punt();
     if (punt_level !== undefined) {
-      respond(__('queue.punt.current', {...punt_level, sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.punt.current', {...punt_level, sender: sender.displayName, ...global_lang}));
     } else {
-      respond(__('queue.punt.unavailable', {sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.punt.unavailable', {sender: sender.displayName, ...global_lang}));
     }
   } else if (message.startsWith('!dip') && sender.isBroadcaster) {
     var username = get_remainder(message);
@@ -234,9 +234,9 @@ async function HandleMessage(message, sender, respond) {
     level_timer.pause();
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
-      respond(__('queue.dip.current', {...dip_level, sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.dip.current', {...dip_level, sender: sender.displayName, ...global_lang}));
     } else {
-      respond(__('queue.dip.unavailable', {username, sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.dip.unavailable', {username, sender: sender.displayName, ...global_lang}));
     }
   } else if (message == '!current') {
     respond(current_level_message(quesoqueue.current(), sender.displayName));
@@ -246,7 +246,7 @@ async function HandleMessage(message, sender, respond) {
       setTimeout(() => can_list = true, settings.message_cooldown * 1000);
       respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
     } else {
-      respond(__('queue.list.messageCooldown', {sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.list.messageCooldown', {sender: sender.displayName, ...global_lang}));
     }
   } else if (message == '!position') {
     respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
@@ -254,36 +254,36 @@ async function HandleMessage(message, sender, respond) {
     respond(await chance_message(await quesoqueue.chance(sender.displayName), sender.displayName));
   } else if (message == '!start' && sender.isBroadcaster) {
     level_timer.resume();
-    respond(__('timer.start', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('timer.start', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!resume' && sender.isBroadcaster) {
     level_timer.resume();
-    respond(__('timer.resume', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('timer.resume', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!pause' && sender.isBroadcaster) {
     level_timer.pause();
-    respond(__('timer.pause', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('timer.pause', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!restart' && sender.isBroadcaster) {
     level_timer.restart();
-    respond(__('timer.restart', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('timer.restart', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!restore' && sender.isBroadcaster) {
     quesoqueue.load();
     respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
   } else if (message == '!clear' && sender.isBroadcaster) {
     quesoqueue.clear();
-    respond(__('queue.clear', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('queue.clear', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!lurk') {
     twitch.setToLurk(sender.username);
-    respond(__('queue.lurk', {sender: sender.displayName, ...global_lang}));
+    respond(__mf('queue.lurk', {sender: sender.displayName, ...global_lang}));
   } else if (message == '!back') {
     if (twitch.notLurkingAnymore(sender.username)) {
-      respond(__('queue.back', {sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.back', {sender: sender.displayName, ...global_lang}));
     }
   } else if (message == '!order') {
     if (settings.level_selection.length == 0) {
-      respond(__('queue.order.unavailable', {sender: sender.displayName, ...global_lang}));
+      respond(__mf('queue.order.unavailable', {sender: sender.displayName, ...global_lang}));
     } else {
-      let order = settings.level_selection.map(type => __mf('queue.order.type_mf', {type})).reduce((acc, x) => acc + __('listSeparator') + x);
-      let next = __mf('queue.order.type_mf', {type: settings.level_selection[selection_iter % settings.level_selection.length]});
-      respond(__('queue.order.current', {order, next, sender: sender.displayName, ...global_lang}));
+      let order = settings.level_selection.map(type => __mf('queue.order.type', {type})).reduce((acc, x) => acc + __mf('listSeparator') + x);
+      let next = __mf('queue.order.type', {type: settings.level_selection[selection_iter % settings.level_selection.length]});
+      respond(__mf('queue.order.current', {order, next, sender: sender.displayName, ...global_lang}));
     }
   }
 }
