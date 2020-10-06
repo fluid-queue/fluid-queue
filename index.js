@@ -28,7 +28,7 @@ const Level = (level_code, submitter) => {
 };
 
 var can_list = true;
-const level_list_message = (sender, current, levels) => {
+const level_list_message = (current, levels) => {
   if (
     current === undefined &&
     levels.online.length === 0 &&
@@ -88,6 +88,19 @@ const position_message = async (position, sender) => {
   return sender + ', you are currently ' + get_ordinal(position);
 };
 
+const command = (message, commands) => {
+  return commands.some(command => command == message);
+};
+
+const arg_command = (message, commands) => {
+  var index = message.indexOf(' ');
+  var check = message;
+  if (index != -1) {
+    check = message.substr(0, index);
+  }
+  return commands.some(command => command == check);
+};
+
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
 // of the person that sent the message.
@@ -96,33 +109,29 @@ async function HandleMessage(message, sender, respond) {
     console.log('undefined data');
   }
   twitch.noticeChatter(sender);
-  if (message == '!open' && sender.isBroadcaster) {
+  if (command(message, settings.commands.open) && sender.isBroadcaster) {
     queue_open = true;
     respond('The queue is now open!');
-  } else if (message == '!close' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.close) && sender.isBroadcaster) {
     queue_open = false;
     respond('The queue is now closed!');
-  } else if (message.startsWith('!add')) {
+  } else if (arg_command(message, settings.commands.add)) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message);
       respond(quesoqueue.add(Level(level_code, sender.displayName)));
     } else {
       respond('Sorry, the queue is closed right now :c');
     }
-  } else if (message.startsWith('!remove') || message.startsWith('!leave')) {
+  } else if (arg_command(message, settings.commands.remove)) {
     if (sender.isBroadcaster) {
       var to_remove = get_remainder(message);
       respond(quesoqueue.modRemove(to_remove));
     } else {
       respond(quesoqueue.remove(sender.displayName));
     }
-  } else if (
-    message.startsWith('!replace') ||
-    message.startsWith('!change') ||
-    message.startsWith('!swap')
-  ) {
+  } else if (arg_command(message, settings.commands.replace)) {
     respond(quesoqueue.replace(sender.displayName, get_remainder(message)));
-  } else if (message == '!level' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.level) && sender.isBroadcaster) {
     let next_level = undefined;
     let selection_mode = settings.level_selection[selection_iter++];
     if (selection_iter >= settings.level_selection.length) {
@@ -154,41 +163,41 @@ async function HandleMessage(message, sender, respond) {
     level_timer.restart();
     level_timer.pause();
     respond('(' + selection_mode + ') ' + next_level_message(next_level));
-  } else if (message == '!next' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.next) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
-  } else if (message == '!subnext' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.subnext) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.subnext();
     respond(next_level_message(next_level));
-  } else if (message == '!modnext' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.modnext) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.modnext();
     respond(next_level_message(next_level));
-  } else if (message == '!random' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.random) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.random();
     respond(next_level_message(next_level));
-  } else if (message == '!subrandom' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.subrandom) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.subrandom();
     respond(next_level_message(next_level));
-  } else if (message == '!modrandom' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.modrandom) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.modrandom();
     respond(next_level_message(next_level));
-  } else if (message == '!punt' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.punt) && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     respond(await quesoqueue.punt());
-  } else if (message.startsWith('!dip') && sender.isBroadcaster) {
+  } else if (arg_command(message, settings.commands.dip) && sender.isBroadcaster) {
     var username = get_remainder(message);
     level_timer.restart();
     level_timer.pause();
@@ -203,44 +212,44 @@ async function HandleMessage(message, sender, respond) {
     } else {
       respond('No levels in the queue were submitted by ' + username);
     }
-  } else if (message == '!current') {
+  } else if (command(message, settings.commands.current)) {
     respond(current_level_message(quesoqueue.current()));
-  } else if (message.startsWith('!list') || message.startsWith('!queue')) {
+  } else if (arg_command(message, settings.commands.list)) {
     if (can_list) {
       can_list = false;
       setTimeout(() => can_list = true, settings.message_cooldown * 1000);
-      respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
+      respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
     } else {
       respond('Just...scroll up a little');
     }
-  } else if (message == '!position') {
+  } else if (command(message, settings.commands.position)) {
     respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
-  } else if (message == '!start' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.start) && sender.isBroadcaster) {
     level_timer.resume();
     respond('Timer started! Get going!');
-  } else if (message == '!resume' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.resume) && sender.isBroadcaster) {
     level_timer.resume();
     respond('Timer unpaused! Get going!');
-  } else if (message == '!pause' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.pause) && sender.isBroadcaster) {
     level_timer.pause();
     respond('Timer paused');
-  } else if (message == '!restart' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.restart) && sender.isBroadcaster) {
     level_timer.restart();
     respond('Starting the clock over! CP Hype!');
-  } else if (message == '!restore' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.restore) && sender.isBroadcaster) {
     quesoqueue.load();
     respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
-  } else if (message == '!clear' && sender.isBroadcaster) {
+  } else if (command(message, settings.commands.clear) && sender.isBroadcaster) {
     quesoqueue.clear();
     respond('Queue cleared! A fresh start.');
-  } else if (message == '!lurk') {
+  } else if (command(message, settings.commands.lurk)) {
     twitch.setToLurk(sender.username);
     respond(sender.displayName + ', your level will not be played until you use the !back command.');
-  } else if (message == '!back') {
+  } else if (command(message, settings.commands.back)) {
     if (twitch.notLurkingAnymore(sender.username)) {
       respond('Welcome back ' + sender.displayName + '!');
     }
-  } else if (message == '!order') {
+  } else if (command(message, settings.commands.order)) {
     if (settings.level_selection.length == 0) {
       respond('No order has been specified.');
     } else {
