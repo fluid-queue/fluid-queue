@@ -9,4 +9,5 @@ module.exports = {
   // example: ['next', 'subnext', 'random']
   level_selection: [],
   message_cooldown: 5,
+  game_version: 2, // 1 for SMM1, 2 for SMM2
 };

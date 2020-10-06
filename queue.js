@@ -4,12 +4,22 @@ const fs = require('fs');
 
 var current_level = undefined;
 var levels = new Array();
-const cache_filename = "queso.save";
+
+const cache_filename =
+  settings.game_version == 1
+  ? "queso-mm1.save"
+  : "queso.save";
+const code =
+  settings.game_version == 1
+  ? "[A-Fa-f0-9]{4}"
+  : "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
+const delim = '[-. ]?';
+const valid_level_code =
+  settings.game_version == 1
+  ? `^${code}${delim}0{4}${delim}${code}${delim}${code}$`
+  : `^${code}${delim}${code}${delim}${code}$`;
 
 const isValidLevelCode = (level_code) => {
-  const level_bit = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
-  const delim_bit = '[-. ]?';
-  const valid_level_code = level_bit + delim_bit + level_bit + delim_bit + level_bit;
   return level_code.match(valid_level_code);
 };
 
