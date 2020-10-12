@@ -23,8 +23,8 @@ const get_remainder = x => {
   return x.substr(index + 1);
 };
 
-const Level = (level_code, submitter) => {
-  return { code: level_code, submitter: submitter };
+const Level = (level_code, submitter, username) => {
+  return { code: level_code, submitter: submitter, username: username };
 };
 
 var can_list = true;
@@ -105,7 +105,7 @@ async function HandleMessage(message, sender, respond) {
   } else if (message.startsWith('!add')) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message);
-      respond(quesoqueue.add(Level(level_code, sender.displayName)));
+      respond(quesoqueue.add(Level(level_code, sender.displayName, sender.username)));
     } else {
       respond('Sorry, the queue is closed right now :c');
     }
