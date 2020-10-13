@@ -267,7 +267,7 @@ const queue = {
       if (levels.some(username_missing)) {
         console.warn(`Usernames are not set in the file ${cache_filename}!`);
         console.warn('Assuming that usernames are lowercase Display Names which does work with Localized Display Names.');
-        console.warn('To be save clear the queue with !clear.');
+        console.warn('To be safe, clear the queue with !clear.');
         levels.forEach(level => {
           if (username_missing(level)) {
             level.username = level.submitter.toLowerCase();
