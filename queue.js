@@ -257,8 +257,8 @@ const queue = {
     var online = new Array();
     var offline = new Array();
     await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
-      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
+      online = levels.filter(x => online_users.has(x.username));
+      offline = levels.filter(x => !online_users.has(x.username));
     });
     return {
       online: online,
@@ -270,8 +270,8 @@ const queue = {
     var online = new Array();
     var offline = new Array();
     await twitch.getOnlineSubscribers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
-      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
+      online = levels.filter(x => online_users.has(x.username));
+      offline = levels.filter(x => !online_users.has(x.username));
     });
     return {
       online: online,
@@ -283,8 +283,8 @@ const queue = {
     var online = new Array();
     var offline = new Array();
     await twitch.getOnlineMods(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.submitter.toLowerCase()));
-      offline = levels.filter(x => !online_users.has(x.submitter.toLowerCase()));
+      online = levels.filter(x => online_users.has(x.username));
+      offline = levels.filter(x => !online_users.has(x.username));
     });
     return {
       online: online,
@@ -319,11 +319,24 @@ const queue = {
     if (fs.existsSync(cache_filename)) {
       var raw_data = fs.readFileSync(cache_filename);
       levels = JSON.parse(raw_data);
-      levels.forEach(level => {
-        if (level['tickets'] == null) {
-          level.tickets = 1;
-        }
-      });
+      const username_missing = level => !level.hasOwnProperty('username');
+      if (levels.some(username_missing)) {
+        console.warn(`Usernames are not set in the file ${cache_filename}!`);
+        console.warn('Assuming that usernames are lowercase Display Names which does work with Localized Display Names.');
+        console.warn('To be safe, clear the queue with !clear.');
+        levels.forEach(level => {
+          if (username_missing(level)) {
+            level.username = level.submitter.toLowerCase();
+          }
+        });
+      }
+      if (levels.some(tickets_missing)) {
+        levels.forEach(level => {
+          if (tickets_missing(level)) {
+            level.tickets = 1;
+          }
+        });
+      }
       current_level = undefined;
     }
     if (fs.existsSync(rewards_filename)) {

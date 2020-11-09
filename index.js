@@ -37,8 +37,8 @@ const get_remainder = x => {
   return x.substr(index + 1);
 };
 
-const Level = (level_code, submitter) => {
-  return { code: level_code, submitter: submitter, tickets: 1 };
+const Level = (level_code, submitter, username) => {
+  return { code: level_code, submitter: submitter, username: username, tickets: 1 };
 };
 
 var can_list = true;
@@ -126,7 +126,7 @@ async function HandleMessage(message, sender, respond) {
   } else if (message.startsWith('!add')) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message);
-      let level = Level(level_code, sender.displayName);
+      let level = Level(level_code, sender.displayName, sender.username);
       let result = quesoqueue.add(level);
       respond(__mf(`queue.add.${result}`, {...level, sender: sender.displayName, ...global_lang}));
     } else {
