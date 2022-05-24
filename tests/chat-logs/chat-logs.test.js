@@ -114,7 +114,7 @@ beforeEach(() => {
 });
 
 // load index.js and test it being setup correctly
-function requireIndex(mockFs = undefined, mockSettings = undefined) {
+function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = undefined) {
     let fs;
     let settings;
     let chatbot;
@@ -124,6 +124,16 @@ function requireIndex(mockFs = undefined, mockSettings = undefined) {
     let handle_func;
 
     jest.isolateModules(() => {
+        // remove timers
+        jest.clearAllTimers();
+
+        // setup time
+        jest.useFakeTimers();
+
+        if (mockTime !== undefined) {
+            jest.setSystemTime(mockTime);
+        }
+
         // setup random mock
         const chance = jestChance.getChance();
         random = jest
@@ -138,6 +148,11 @@ function requireIndex(mockFs = undefined, mockSettings = undefined) {
             mockFs.mkdirSync(path.resolve('.'), { recursive: true });
             mockFs.writeFileSync(path.resolve('./waitingUsers.txt'), '[]');
             mockFs.writeFileSync(path.resolve('./userWaitTime.txt'), '[]');
+        } else {
+            // copy files
+            const files = mockFs.toJSON();
+            mockFs = new Volume();
+            mockFs.fromJSON(files);
         }
         // setup virtual file system
         jest.mock('fs', () => mockFs);
@@ -304,7 +319,7 @@ for (const file of testFiles) {
                 };
             };
             if (command == 'restart') {
-                test = requireIndex(test.fs, test.settings);
+                test = requireIndex(test.fs, test.settings, new Date());
                 test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
             } else if (command == 'accuracy') {
                 accuracy = parseInt(rest);
