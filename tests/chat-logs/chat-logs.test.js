@@ -70,19 +70,20 @@ const advanceTime = async (ms, accuracy = 0) => {
 
 const setTime = async (time, accuracy = 0) => {
     let prevTime = new Date();
-    var newTime = new Date(`2022-04-21T${time}Z`);
-    var diff = newTime - prevTime;
-    if (diff < 0) {
+    let newTime = new Date();
+    let timeArray = time.split(':').map(x => parseInt(x, 10));
+    newTime.setUTCHours(timeArray[0]);
+    newTime.setUTCMinutes(timeArray[1]);
+    newTime.setUTCSeconds(timeArray[2]);
+    if (newTime < prevTime) {
         // add one day in case of time going backwards
-        // TODO: do this better
-        newTime = new Date(`2022-04-22T${time}Z`);
-        diff = newTime - prevTime;
+        newTime.setUTCDate(newTime.getUTCDate() + 1);
     }
-
+    const diff = newTime - prevTime;
     if (diff > 0) {
         await advanceTime(diff, accuracy);
     } else if (diff < 0) {
-        fail(`Time went backwards, from ${mockTime} to ${newTime} (${time})`);
+        fail(`Time went backwards, from ${prevTime} to ${newTime} (${time})`);
     }
 }
 
