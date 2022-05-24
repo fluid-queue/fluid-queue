@@ -16,6 +16,12 @@ const chatbot_helper = function(username, password, channel) {
       username: username,
       password: password
     },
+    connection: {
+      reconnect: true,
+      maxReconnectAttempts: 50,
+      secure: true,
+      timeout: 20000
+    },
     channels: [
       channel
     ]
@@ -38,7 +44,6 @@ const chatbot_helper = function(username, password, channel) {
       // Called every time a message comes in
       function onMessageHandler(channel, tags, message, self) {
         if (self) { return; } // Ignore messages from the bot
-
         // Remove whitespace from chat message
         const command = message.trim();
         const respond = (response_text) => {

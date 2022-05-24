@@ -9,12 +9,14 @@ const twitch = {
   getOnlineUsers: async (channel) => {
     const channel_url = "https://tmi.twitch.tv/group/user/" + channel + "/chatters";
     var online_users = new Set();
-
-    await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
-
+    try {
+      await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
+    } catch (error) {
+      console.log('Error with getting online users. Skipping.');
+      return;
+    }
     var current_time = Date.now();
     Object.keys(recent_chatters).filter(x => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)).forEach(x => online_users.add(x));
-
     return new Set([...online_users].filter(x => !lurkers.has(x)));
   },
 
@@ -43,14 +45,28 @@ const twitch = {
     lurkers.add(username);
   },
 
+  checkLurk: (username) => {
+    if (lurkers.has(username)) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
   notLurkingAnymore: (username) => {
     if (lurkers.has(username)) {
       lurkers.delete(username);
       return true;
     }
     return false;
+  },
+
+  getWaitTime: async (chatter) => {
+
   }
 };
+
+
 
 module.exports = {
   twitch: () => { return twitch; }

@@ -1,0 +1,22 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+[02:15:35] ~%?liquidnya: !clear
+[02:15:35] @^helperblock: The queue has been cleared!
+[23:21:13] ~%?liquidnya: !add MD0-1MD-SLA
+[23:21:14] @^helperblock: liquidnya, that is an invalid level code.
+
+# this code is invalid because its checksum is invalid
+[23:21:21] ~%?liquidnya: !add MD0-2MD-SLG
+[23:21:22] @^helperblock: liquidnya, that is an invalid level code.
+
+[23:21:33] ~%?liquidnya: !add
+[23:21:33] @^helperblock: liquidnya, that is an invalid level code.
+
+queso.save []

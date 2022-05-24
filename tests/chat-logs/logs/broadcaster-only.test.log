@@ -1,0 +1,98 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":["next", "random"],"message_cooldown":5}
+# chatters
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+[19:37:17] @^FurretWalkBot: !open
+[19:37:22] @^FurretWalkBot: !close
+[19:37:42] @^FurretWalkBot: !add NB0-1MD-SLG
+[19:37:42] @^helperblock: Sorry, the queue is closed right now.
+[19:37:57] ~%?liquidnya: !add NB0-1MD-SLG
+[19:37:57] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+# `!remove <username>` behaves like `!remove`
+
+[19:38:05] @^FurretWalkBot: !remove liquidnya
+[19:38:05] @^helperblock: FurretWalkBot, your level has been removed from the queue.
+[19:38:14] @^FurretWalkBot: !remove liquidnya
+[19:38:15] @^helperblock: FurretWalkBot, your level has been removed from the queue.
+[19:38:21] @^FurretWalkBot: !remove liquidnya
+[19:38:21] @^helperblock: FurretWalkBot, your level has been removed from the queue.
+
+# you can remove yourself even though you are not in the queue
+# TODO: is this a bug?
+
+[19:39:03] @^FurretWalkBot: !list
+[19:39:03] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[19:39:45] @^FurretWalkBot: !level
+[19:39:52] @^FurretWalkBot: !next
+[19:39:57] @^FurretWalkBot: !subnext
+[19:39:59] @^FurretWalkBot: !modnext
+[19:40:04] @^FurretWalkBot: !random
+[19:40:06] @^FurretWalkBot: !subrandom
+[19:40:11] @^FurretWalkBot: !modrandom
+[19:40:17] @^FurretWalkBot: !punt
+[19:40:24] @^FurretWalkBot: !dismiss
+[19:40:27] @^FurretWalkBot: !skip
+[19:40:29] @^FurretWalkBot: !complete
+[19:40:31] @^FurretWalkBot: !completed
+[19:40:37] @^FurretWalkBot: !select liquidnya
+[19:40:50] @^FurretWalkBot: !start
+[19:40:55] @^FurretWalkBot: !resume
+[19:41:01] @^FurretWalkBot: !pause
+[19:41:02] @^FurretWalkBot: !restart
+[19:41:06] @^FurretWalkBot: !clear
+
+queso.save [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}]
+
+[19:41:48] ~%?liquidnya: !open
+[19:41:49] @^helperblock: The queue is now open!
+[19:41:50] ~%?liquidnya: !close
+[19:41:51] @^helperblock: The queue is now closed!
+[19:41:56] ~%?liquidnya: !add NB0-1MD-SLG
+[19:41:57] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+[19:42:03] ~%?liquidnya: !remove liquidnya
+[19:42:03] @^helperblock: liquidnya's level has been removed from the queue.
+
+queso.save []
+
+[19:42:12] ~%?liquidnya: !level
+[19:42:14] @^helperblock: (next) The queue is empty.
+[19:42:14] ~%?liquidnya: !next
+[19:42:16] @^helperblock: The queue is empty.
+[19:42:21] ~%?liquidnya: !subnext
+[19:42:22] @^helperblock: The queue is empty.
+[19:42:25] ~%?liquidnya: !modnext
+[19:42:26] @^helperblock: The queue is empty.
+[19:42:27] ~%?liquidnya: !random
+[19:42:28] @^helperblock: The queue is empty.
+[19:42:30] ~%?liquidnya: !subrandom
+[19:42:31] @^helperblock: The queue is empty.
+[19:42:32] ~%?liquidnya: !modrandom
+[19:42:35] @^helperblock: The queue is empty.
+[19:42:37] ~%?liquidnya: !punt
+[19:42:38] @^helperblock: The nothing you aren't playing cannot be punted.
+[19:42:44] ~%?liquidnya: !dismiss
+[19:42:45] @^helperblock: The nothing you aren't playing cannot be dismissed.
+[19:42:47] ~%?liquidnya: !skip
+[19:42:48] @^helperblock: The nothing you aren't playing cannot be dismissed.
+[19:42:49] ~%?liquidnya: !complete
+[19:42:50] @^helperblock: The nothing you aren't playing cannot be dismissed.
+[19:42:53] ~%?liquidnya: !completed
+[19:42:56] @^helperblock: The nothing you aren't playing cannot be dismissed.
+[19:42:59] ~%?liquidnya: !select liquidnya
+[19:42:59] @^helperblock: No levels in the queue were submitted by liquidnya.
+[19:43:04] ~%?liquidnya: !start
+[19:43:04] @^helperblock: Timer started! Get going!
+[19:43:06] ~%?liquidnya: !resume
+[19:43:07] @^helperblock: Timer unpaused! Get going!
+[19:43:08] ~%?liquidnya: !pause
+[19:43:09] @^helperblock: Timer paused
+[19:43:10] ~%?liquidnya: !restart
+[19:43:11] @^helperblock: Starting the clock over! CP Hype!
+[19:43:15] ~%?liquidnya: !clear
+[19:43:16] @^helperblock: The queue has been cleared!

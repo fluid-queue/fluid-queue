@@ -1,6 +1,7 @@
-# node/npm specific files
+# node modules
 /node_modules/
-/package-lock.json
 
-# queso queue specific files
+# QuesoQueue specific files
 /*.save
+/userWaitTime.txt
+/waitingUsers.txt

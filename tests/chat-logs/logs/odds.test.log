@@ -1,0 +1,39 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+# set test timer accuracy to 1 minute to accuratly test the weight
+accuracy 60000
+
+[02:15:35] ~%?liquidnya: !clear
+[02:15:35] @^helperblock: The queue has been cleared!
+
+[16:26:45] ~%?liquidnya: !open
+[16:26:45] @^helperblock: The queue is now open!
+
+[16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
+[16:26:46] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
+
+queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+
+[16:26:47] @^FurretWalkBot: !odds
+
+# TODO: is this a bug?
+
+[16:26:48] @^helperblock: FurretWalkBot, you have a 0.0% chance of getting chosen in weighted random.
+
+
+[17:29:49] @^FurretWalkBot: !odds
+[17:29:49] @^helperblock: FurretWalkBot, you have a 100.0% chance of getting chosen in weighted random.
+
+[17:30:49] @^FurretWalkBot: !pos
+[17:30:50] @^helperblock: FurretWalkBot, you are currently in the 1st position.
+[17:31:30] ~%?liquidnya: !next
+[17:31:45] @^helperblock: Now playing NB0-1MD-SLG submitted by FurretWalkBot.
+[17:33:45] @^FurretWalkBot: !odds
+[17:33:46] @^helperblock: Your level is being played right now!

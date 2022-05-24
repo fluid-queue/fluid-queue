@@ -1,0 +1,31 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":["next", "random"],"message_cooldown":5}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+[00:02:06] ~%?liquidnya: !clear
+[00:02:07] @^helperblock: The queue has been cleared!
+[00:02:21] ~%?liquidnya: !list
+[00:02:22] @^helperblock: There are no levels in the queue.
+[00:37:23] ~%?liquidnya: !open
+[00:37:24] @^helperblock: The queue is now open!
+[00:37:32] @^FurretWalkBot: !add NB0-1MD-SLG
+[00:37:32] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
+[00:37:35] ~%?liquidnya: !level
+[00:37:37] @^helperblock: (next) Now playing NB0-1MD-SLG submitted by FurretWalkBot.
+
+restart
+
+[00:37:56] ~%?liquidnya: !level
+# notice: this is a "next" and not "random"
+[00:37:57] @^helperblock: (next) The queue is empty.
+[00:38:07] @^FurretWalkBot: !add NB0-1MD-SLG
+# the queue is closed when the queue is restarted
+[00:38:07] @^helperblock: Sorry, the queue is closed right now.
+[00:39:13] ~%?liquidnya: !level
+# here the queue goes to "random" now
+[00:39:15] @^helperblock: (random) The queue is empty.
