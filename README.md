@@ -40,6 +40,8 @@ The settings.json file contains several options to make the bot as customizable 
 
 `start_open` is the toggle for whether or not the queue will start open. The default value is false.
 
+`enable_absolute_position` is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position). The default value is false.
+
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is 100.
 
 `level_timeout` is the amount of time in minutes a level can be played before the bot will inform you that time is up. The default value is 9999.
@@ -95,7 +97,7 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!random`* will select a random level from the queue.
 
-`!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight. 
+`!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
 
 `!subnext`* will select the next subscriber's level from the queue.
 
@@ -120,4 +122,4 @@ It is important to note that all commands that draw a level (with exception to `
 
 ## Will you add [insert feature here]?
 
-Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request. 
+Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.

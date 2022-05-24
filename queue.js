@@ -271,6 +271,20 @@ const queue = {
     return -1;
   },
 
+  absoluteposition: async (username) => {
+    if (current_level != undefined && current_level.submitter == username) {
+      return 0;
+    }
+    if (levels.length == 0) {
+      return -1;
+    }
+    var index = levels.findIndex(x => x.submitter == username);
+    if (index != -1) {
+      return (index + 1) + ((current_level != undefined) ? 1 : 0);
+    }
+    return -1;
+  },
+
   submittedlevel: async (username) => {
     if (current_level != undefined && current_level.username == username) {
       return 0;

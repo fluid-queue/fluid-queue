@@ -103,7 +103,12 @@ const position_message = async (position, sender) => {
   } else if (position === 0) {
     return 'Your level is being played right now!';
   }
-  return sender + ', you are currently in the ' + get_ordinal(position) + ' position.';
+  if (settings.enable_absolute_position) {
+    let absPosition = await quesoqueue.absoluteposition(sender);
+    return sender + ', you are currently in the online ' + get_ordinal(position) + ' position and the offline ' + get_ordinal(absPosition) + ' position.';
+  } else {
+    return sender + ', you are currently in the ' + get_ordinal(position) + ' position.';
+  }
 };
 
 const weightedchance_message = async (chance, sender) => {
