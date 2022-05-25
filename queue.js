@@ -10,6 +10,7 @@ var current_level = undefined;
 var levels = new Array()
 var waitingUsers;
 var userWaitTime;
+var customCodesMap = new Map();
 const cache_filename = "queso.save";
 
 const delim = '[-. ]?';
@@ -23,7 +24,7 @@ if (fs.existsSync('./waitingUsers.txt')) {
     waitingUsers = JSON.parse(fs.readFileSync('./waitingUsers.txt'));
     console.log('waitingUsers.txt has been successfully validated.');
   } catch (err) {
-    fs.writeFile('waitingUsers.txt', '[]', (err) => {
+    fs.writeFileSync('waitingUsers.txt', '[]', (err) => {
       if (err) {
         console.warn('An error occurred when trying to prepare waitingUsers.txt. Weighted chance will not function.');
         return;
@@ -33,7 +34,7 @@ if (fs.existsSync('./waitingUsers.txt')) {
     });
   }
 } else {
-  fs.writeFile('waitingUsers.txt', '[]', (err) => {
+  fs.writeFileSync('waitingUsers.txt', '[]', (err) => {
     if (err) {
       console.warn('An error occurred when trying to create waitingUsers.txt. Weighted chance will not function.');
       return;
@@ -47,7 +48,7 @@ if (fs.existsSync('./userWaitTime.txt')) {
     userWaitTime = JSON.parse(fs.readFileSync('./userWaitTime.txt'));
     console.log('userWaitTime.txt has been successfully validated.');
   } catch (err) {
-    fs.writeFile('userWaitTime.txt', '[]', (err) => {
+    fs.writeFileSync('userWaitTime.txt', '[]', (err) => {
       if (err) {
         console.warn('An error occurred when trying to prepare userWaitTime.txt. Weighted chance will not function.');
         return;
@@ -57,7 +58,7 @@ if (fs.existsSync('./userWaitTime.txt')) {
     });
   }
 } else {
-  fs.writeFile('userWaitTime.txt', '[]', (err) => {
+  fs.writeFileSync('userWaitTime.txt', '[]', (err) => {
     if (err) {
       console.warn('An error occurred when trying to create userWaitTime.txt. Weighted chance will not function.');
       return;
@@ -65,6 +66,62 @@ if (fs.existsSync('./userWaitTime.txt')) {
     console.log('userWaitTime.txt has been successfully created and validated.');
   });
 }
+
+// Check if custom codes are enabled and, if so, validate that the correct files exist.
+if (settings.custom_codes_enabled) {
+  let baseMap = new Map();
+  if (fs.existsSync('./customCodes.json')) {
+    try {
+      customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      console.log('customCodes.json has been successfully validated.');
+    } catch (err) {
+      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(baseMap.entries())), (err) => {
+        if (err) {
+          console.warn('An error occurred when trying to prepare customCodes.json. Custom codes will not function.');
+          return;
+        }
+        customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+        console.log('customCodes.json has been successfully updated and validated.');
+      });
+    }
+  } else {
+    fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(baseMap.entries())), (err) => {
+      if (err) {
+        console.warn('An error occurred when trying to create customCodes.json. Custom codes will not function.');
+        return;
+      }
+      customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      console.log('customCodes.json has been successfully created and validated.');
+    });
+  }
+}
+
+  // Check if romhacks are enabled and, if so, ensure that the romhack key exists in the custom codes.
+  if (settings.romhacks_enabled && settings.custom_codes_enabled) {
+    if (customCodesMap.has('ROMhack')) {
+      console.log('ROMhacks are enabled and allowed to be submitted.');
+    } else {
+      customCodesMap.set('ROMhack', 'R0M-HAK-LVL');
+      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
+        if (err) {
+          console.warn("An error occurred when trying to enable ROMhacks. The queue will not accept ROMhacks as a result.");
+        }
+      });
+      console.log('ROMhacks are enabled and allowed to be submitted.');
+    }
+  } else if (settings.custom_codes_enabled) {
+    if (!customCodesMap.has('ROMhack')) {
+      // Don't do anything, no need to alert the user.
+    } else {
+      customCodesMap.delete('ROMhack');
+      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
+        if (err) {
+          console.warn("An error occurred when trying to disable ROMhacks. The queue will continue to accept ROMhacks as a result.");
+        }
+      });
+      console.log('ROMhacks are now disabled and will not be accepted.');
+    }
+  }
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.
@@ -110,7 +167,7 @@ function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThre
 // - a `valid` field which will be true iff a level/maker code has the correct syntax and is one that can be generated by the game
 // - and a `validSyntax` field which will be true iff a level/maker code has the correct syntax
 const extractValidCode = (levelCode) => {
-  if (levelCode == 'R0M-HAK-LVL') {
+  if ((levelCode == 'R0M-HAK-LVL') && (settings.romhacks_enabled)) {
     return { code: `R0M-HAK-LVL`, valid: true, validSyntax: true };
   }
 
@@ -600,6 +657,50 @@ const queue = {
       // Display name (submitter) or username (username) matches
       return level.submitter == usernameArgument || level.username == usernameArgument;
     };
+  },
+
+  customCodeManagement: (codeArguments) => {
+    let args = codeArguments.split(' ');
+    if ((args[0] == 'add') && (args.length == 3)) {
+      args[2] = args[2].toUpperCase();
+      if (customCodesMap.has(args[1])) {
+        return "The custom code " + args[1] + " already exists.";
+      }
+      customCodesMap.set(args[1], args[2]);
+      fs.writeFile('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
+        if (err) {
+          return "An error occurred while trying to add your custom code.";
+        }
+      });
+      return "Your custom code " + args[1] + " for ID " + args[2] + " has been added.";
+    } else if ((args[0] == 'remove') && (args.length == 2)) {
+      if (!customCodesMap.has(args[1])) {
+        return "The custom code " + args[1] + " could not be found.";
+      }
+      customCodesMap.delete(args[1]);
+      fs.writeFile('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
+        if (err) {
+          return "An error occurred while trying to remove that custom code.";
+        }
+      });
+      return "The custom code " + args[1] + " has been removed.";
+    } else {
+      return "Invalid arguments. The correct syntax is !customcode {add/remove} {customCode} {ID}.";
+    }
+  },
+
+  customCodes: () => {
+    let response = "";
+    let iterator = customCodesMap.keys();
+    for (i = 0; i < customCodesMap.size; i++) {
+      response = response + iterator.next().value + ', ';
+    }
+    response = response.substring(0, response.length-2);
+    if (response == "") {
+      return 'There are no custom codes set.';
+    } else {
+      return 'The current custom codes are: ' + response + '.';
+    }
   },
 
   save: () => {

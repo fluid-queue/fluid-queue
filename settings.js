@@ -5,6 +5,8 @@ module.exports = {
   channel: '', // channel where the bot will run
   start_open: false, // whether or not the queue will start open
   enable_absolute_position: false, // whether or not absolute position (offline position) will be stated alongside relative position (online position)
+  custom_codes_enabled: false, // whether or not custom codes are allowed to be submitted to the queue, allowed to be created, and allowed to be removed
+  romhacks_enabled: false, // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
   max_size: 100, // the max amount of levels in the queue
   level_timeout: 9999, // The length of time in minutes a level can be played before the timer will go off
   // Acceptable values: next, subnext, modnext, random, weightedrandom, subrandom, modrandom

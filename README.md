@@ -42,6 +42,10 @@ The settings.json file contains several options to make the bot as customizable 
 
 `enable_absolute_position` is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position). The default value is false.
 
+`custom_codes_enabled` is the toggle for whether or not custom codes are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section.
+
+`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom codes list depending on this toggle.
+
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is 100.
 
 `level_timeout` is the amount of time in minutes a level can be played before the bot will inform you that time is up. The default value is 9999.
@@ -112,6 +116,8 @@ It is important to note that all commands that draw a level (with exception to `
 `!select`* will select a specific user's level, provided it is defined after the command.
 
 `!punt`* will move the currently selected level to the back of the queue.
+
+`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove} {customCode} {ID}` where add/remove is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the *queue* are not case sensitive, they are case sensitive with this command.
 
 
 
