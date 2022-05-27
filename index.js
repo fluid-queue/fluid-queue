@@ -194,9 +194,14 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith('!swap')
   ) {
     let level_code = get_remainder(message.toUpperCase());
-    var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
-    if (codeMatch !== -1) {
-      level_code = customCodes[codeMatch];
+    if (settings.custom_codes_enabled) {
+      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      let customNames = Array.from(customCodesMap.keys());
+      let customCodes = Array.from(customCodesMap.values());
+      var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
+      if (codeMatch !== -1) {
+        level_code = customCodes[codeMatch];
+      }
     }
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == '!level' && sender.isBroadcaster) {
