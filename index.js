@@ -312,12 +312,7 @@ async function HandleMessage(message, sender, respond) {
     if (can_list) {
       can_list = false;
       setTimeout(() => can_list = true, settings.message_cooldown * 1000);
-      let quesoQueueList = await quesoqueue.list();
-      if (quesoQueueList == null) {
-        respond('An error occurred trying to list the queue. Please try again.');
-      } else {
-        respond(level_list_message(sender.displayName, quesoqueue.current(), quesoQueueList));
-      }
+      respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
     } else {
       respond('Scroll up to see the queue.');
     }
@@ -341,12 +336,7 @@ async function HandleMessage(message, sender, respond) {
     respond('Starting the clock over! CP Hype!');
   } else if (message == '!restore' && sender.isBroadcaster) {
     quesoqueue.load();
-    let quesoQueueList = await quesoqueue.list();
-    if (typeof quesoQueueList === 'undefined') {
-      respond('An error occurred trying to list the queue. Please use !list instead.');
-    } else {
-      respond(level_list_message(quesoqueue.current(), quesoQueueList));
-    }
+    respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
   } else if (message == '!clear' && sender.isBroadcaster) {
     quesoqueue.clear();
     respond('The queue has been cleared!');

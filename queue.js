@@ -607,24 +607,14 @@ const queue = {
   list: async () => {
     var online = new Array();
     var offline = new Array();
-    var errorCheck;
     await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      if (online_users == null) {
-        errorCheck = true;
-        return;
-      } else {
-        online = levels.filter(x => online_users.has(x.username));
-        offline = levels.filter(x => !online_users.has(x.username));
-      }
+      online = levels.filter(x => online_users.has(x.username));
+      offline = levels.filter(x => !online_users.has(x.username));
     });
-    if (errorCheck) {
-      return null;
-    } else {
-      return {
-        online: online,
-        offline: offline
-      };
-    }
+    return {
+      online: online,
+      offline: offline
+    };
   },
 
   sublist: async () => {

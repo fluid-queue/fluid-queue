@@ -4,7 +4,6 @@ var recent_chatters = {};
 var subscribers = new Set();
 var mods = new Set();
 var lurkers = new Set();
-var workingSet;
 
 const twitch = {
   getOnlineUsers: async (channel) => {
@@ -13,14 +12,12 @@ const twitch = {
     try {
       await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
     } catch (error) {
-      console.log('Error with getting online users. Using previously known working list instead.');
-      online_users = workingSet;
-      return online_users;
+      console.log('Error with getting online users. Skipping.');
+      return;
     }
     var current_time = Date.now();
     Object.keys(recent_chatters).filter(x => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)).forEach(x => online_users.add(x));
-    workingSet = new Set([...online_users].filter(x => !lurkers.has(x)));
-    return workingSet;
+    return new Set([...online_users].filter(x => !lurkers.has(x)));
   },
 
   getOnlineSubscribers: async (channel) => {
