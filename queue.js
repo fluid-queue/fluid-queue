@@ -10,6 +10,7 @@ var current_level = undefined;
 var levels = new Array()
 var waitingUsers;
 var userWaitTime;
+var userOnlineTime;
 var customCodesMap = new Map();
 const cache_filename = "queso.save";
 
@@ -31,7 +32,13 @@ let openOrCreate = (fileName, newContent, errorMessage) => {
     }
   }
   try {
-    fs.writeFileSync(fileName, newContent);
+    let content;
+    if (typeof newContent === 'function') {
+      content = newContent();
+    } else {
+      content = newContent;
+    }
+    fs.writeFileSync(fileName, content);
     const fileContents = JSON.parse(fs.readFileSync(fileName));
     console.log(`${fileName} has been successfully created and validated.`);
     return fileContents;
@@ -45,6 +52,7 @@ let openOrCreate = (fileName, newContent, errorMessage) => {
 // Check if files for waitingUsers and/or userWaitTime exists, and if they are readable using JSON.parse()
 waitingUsers = openOrCreate('./waitingUsers.txt', '[]', 'Weighted chance will not function.');
 userWaitTime = openOrCreate('./userWaitTime.txt', '[]', 'Weighted chance will not function.');
+userOnlineTime = openOrCreate('./userOnlineTime.txt', () => JSON.stringify(waitingUsers.map((_user) => (new Date()).toISOString())), 'Online time will not be calculated correctly.');
 
 // Check if custom codes are enabled and, if so, validate that the correct files exist.
 if (settings.custom_codes_enabled) {
@@ -139,17 +147,21 @@ const extractValidCode = (levelCode) => {
 setIntervalAsync(
   async () => {
     var list = await queue.list();
+    const now = (new Date()).toISOString();
     for (let i = 0; i < list.online.length; i++) {
       if (!waitingUsers.includes(list.online[i].username)) {
         waitingUsers.push(list.online[i].username);
         userWaitTime.push(1);
+        userOnlineTime.push(now);
       } else {
         let userIndex = waitingUsers.indexOf(list.online[i].username);
         userWaitTime[userIndex] = userWaitTime[userIndex] + 1;
+        userOnlineTime[userIndex] = now;
       }
     }
     fs.writeFileSync('./waitingUsers.txt', JSON.stringify(waitingUsers));
     fs.writeFileSync('./userWaitTime.txt', JSON.stringify(userWaitTime));
+    fs.writeFileSync('./userOnlineTime.txt', JSON.stringify(userOnlineTime));
   },
   60000
 )
@@ -438,6 +450,7 @@ const queue = {
     if (chosenUserOverallIndex != -1) {
       waitingUsers.splice(chosenUserOverallIndex, 1);
       userWaitTime.splice(chosenUserOverallIndex, 1);
+      userOnlineTime.splice(chosenUserOverallIndex, 1);
     }
   },
 
