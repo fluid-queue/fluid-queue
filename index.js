@@ -3,6 +3,7 @@ const chatbot = require('./chatbot.js');
 const quesoqueue = require('./queue.js').quesoqueue();
 const twitch = require('./twitch.js').twitch();
 const timer = require('./timer.js');
+const fs = require('fs');
 
 quesoqueue.load();
 
@@ -103,7 +104,12 @@ const position_message = async (position, sender) => {
   } else if (position === 0) {
     return 'Your level is being played right now!';
   }
-  return sender + ', you are currently in the ' + get_ordinal(position) + ' position.';
+  if (settings.enable_absolute_position) {
+    let absPosition = await quesoqueue.absoluteposition(sender);
+    return sender + ', you are currently in the online ' + get_ordinal(position) + ' position and the offline ' + get_ordinal(absPosition) + ' position.';
+  } else {
+    return sender + ', you are currently in the ' + get_ordinal(position) + ' position.';
+  }
 };
 
 const weightedchance_message = async (chance, sender) => {
@@ -132,9 +138,6 @@ const submitted_message = async (level, sender) => {
   return sender + ', you have submitted ' + level + ' to the queue.';
 };
 
-var customNames = ['Kamek', 'Barb', 'HahaCat', 'Mango', 'morpha3Horror', 'Buzz', 'Hill', 'Bigman', 'Water', 'Ludwig', 'Trakkan', 'Ampha', 'Cape', 'Minimg', 'Dobbsworks', 'MMA', 'RyanRocks', 'Narwhal', 'Bryson', 'Bee', 'Realm', 'Koopas', 'Hektor', 'NotLikeThis', 'Teos', 'Dias', 'Catears', 'fusionE', 'Dimitri', 'PQ', 'Meow', 'PW4-MYW-3BL', 'Chon', 'Dom', 'Hugoat', 'JPuff', 'Don', 'Nelesio', 'Hexaroot', 'Bones', 'Square', 'AJK', '2enomalous', 'Required', 'Garlic', 'Ludwig1', 'Woof', 'MistaX8', 'Just', 'Quag', 'TanukiDan', 'Maddy', 'Verwalter', 'Billy', 'Icicles', 'Kitsune', 'Josh', 'JD', 'Zoë', 'Bengy', 'Silent', 'LinkSagan', 'MysteryDesert', 'TJD', '1-1', 'Zenomalous', 'Gerhard', 'Roman', 'R0b', 'Minchen', 'Loon', '🌵', 'S3pti', 'Alfonsso', 'mafkAdd', 'Rogend', 'Jerp', 'Amozui', 'Otter', 'Nontra', 'TDK', 'Bowsette', 'Ticy', 'STPW', 'Funa', 'Phanto', 'Sacha', 'ROMhack'];
-var customCodes = ['2PV-J29-2PF', '08Q-6KN-YTF', '6T1-S5C-P9G', 'QR7-T5D-GQG', '4ST-85C-LKG', 'DCR-RFM-2MG', '8DD-V5N-MSF', 'YNC-YFP-QNG', 'NB0-1MD-SLG', 'S5K-CP2-YKF', '6DW-DRS-D8G', 'SLH-DKQ-XMF', 'VHB-WMY-CFF', 'L14-CSG-9JF', 'S2C-HX7-01G', '0F7-1F8-QKF', '2P2-FYD-BGF', 'VPQ-B7K-GNF', '4M6-HMF-J7G', 'GMM-YN4-VRG', '8NB-NQT-FNF', '060-TV5-B1H', 'BH5-LP4-3JG', 'DG4-PMP-7KF', 'QTP-6X2-52G', '7HJ-089-GRG', 'VNG-4D3-8WF', 'RRY-N6J-VHG', '4L8-W82-H5G', '2Y6-F1L-2FG', 'L0L-PKM-6SF', 'F1L-398-Q3G', 'RP5-9Y8-RHF', 'DLJ-V98-7PG', '66D-XBN-R9G', 'XQV-LJP-S7G', 'WW3-XMG-6RF', '06K-8YH-92G', 'XGD-WY4-Q6G', 'S95-815-GQF', 'B0D-LL7-NTG', 'N20-6D8-QNF', 'BBF-PSF-5CG', '4SF-80T-31G', 'G5C-F42-6TG', 'S5K-CP2-YKF', 'QXR-3BM-8RG', 'LXF-LK7-CBG', 'GFQ-T4B-HDF', 'FYQ-K83-SPG', 'D09-WH5-3NF', 'JVY-3W4-11H', 'J25-950-LRF', 'F1F-BGV-MFF', '9XD-PHC-BBG', '3WC-2QB-X9G', 'YGP-JM3-0PG', 'KJW-HLM-HQF', '3FC-07X-TSG', 'DXJ-B26-5PF', 'D0R-2MH-7RG', 'QHM-GFK-2NF', 'GKD-KH2-8RF', '5TL-RG0-0MG', 'TGQ-NH4-QNF', 'BSJ-GV3-S3G', 'WST-4SL-8PG', 'Q81-L9K-42G', '9KV-S8L-0FF', 'W0W-308-8JF', ' HWS-XYP-SHF', '9HB-988-5FF', 'Y30-5NK-LLF', '66L-DV7-BHG', 'RKQ-CHP-QVF', 'CLK-L9Q-HYG', '26P-2HB-FSF','26F-DJF-BKG', 'SSB-TL8-6JF', '89T-X1F-MGF', 'QVN-V80-9DF', '714-D58-94G', 'Y3C-2R3-MYG', 'K47-2T6-S1H', 'Y43-R8L-T4G', '6WX-4RS-BSF', 'LF4-P8F-6WG', 'R0M-HAK-LVL'];
-
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
 // of the person that sent the message.
@@ -162,18 +165,17 @@ async function HandleMessage(message, sender, respond) {
   } else if (message == '!close' && sender.isBroadcaster) {
     queue_open = false;
     respond('The queue is now closed!');
-  } else if (message == '!customcodes') {
-    var printCustomNames = '';
-    for (i = 0; i < customNames.length; i++) {
-      printCustomNames = printCustomNames + customNames[i] + ', ';
-    }
-    respond('The current custom codes are: ' + printCustomNames.substring(0, printCustomNames.length-2) + '.');
   } else if (message.toLowerCase().startsWith('!add')) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message.toUpperCase());
-      var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
-      if (codeMatch !== -1) {
-        level_code = customCodes[codeMatch];
+      if (settings.custom_codes_enabled) {
+        let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+        let customNames = Array.from(customCodesMap.keys());
+        let customCodes = Array.from(customCodesMap.values());
+        var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
+        if (codeMatch !== -1) {
+          level_code = customCodes[codeMatch];
+        }
       }
       respond(quesoqueue.add(Level(level_code, sender.displayName, sender.username)));
     } else {
@@ -192,9 +194,14 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith('!swap')
   ) {
     let level_code = get_remainder(message.toUpperCase());
-    var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
-    if (codeMatch !== -1) {
-      level_code = customCodes[codeMatch];
+    if (settings.custom_codes_enabled) {
+      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      let customNames = Array.from(customCodesMap.keys());
+      let customCodes = Array.from(customCodesMap.values());
+      var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
+      if (codeMatch !== -1) {
+        level_code = customCodes[codeMatch];
+      }
     }
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == '!level' && sender.isBroadcaster) {
@@ -333,6 +340,17 @@ async function HandleMessage(message, sender, respond) {
   } else if (message == '!clear' && sender.isBroadcaster) {
     quesoqueue.clear();
     respond('The queue has been cleared!');
+  } else if ((message.startsWith('!customcode') || (message == '!customcodes')) && (settings.custom_codes_enabled)) {
+    if (sender.isBroadcaster) {
+      var codeArguments = get_remainder(message);
+      if (codeArguments == "") {
+        respond(quesoqueue.customCodes());
+      } else {
+        respond(await quesoqueue.customCodeManagement(codeArguments));
+      }
+    } else {
+      respond(await quesoqueue.customCodes());
+    }
   } else if (message == '!brb') {
     twitch.setToLurk(sender.username);
     respond('See you later, ' + sender.displayName + '! Your level will not be played until you use the !back command.');

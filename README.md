@@ -1,3 +1,4 @@
+[![Node.js CI](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml/badge.svg)](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml)
 
 # Queso Queue Plus
 
@@ -38,6 +39,12 @@ The settings.json file contains several options to make the bot as customizable 
 `channel` is the channel that the bot will run in. This should be your Twitch account username.
 
 `start_open` is the toggle for whether or not the queue will start open. The default value is false.
+
+`enable_absolute_position` is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position). The default value is false.
+
+`custom_codes_enabled` is the toggle for whether or not custom codes are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section.
+
+`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom codes list depending on this toggle.
 
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is 100.
 
@@ -94,7 +101,7 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!random`* will select a random level from the queue.
 
-`!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight. 
+`!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
 
 `!subnext`* will select the next subscriber's level from the queue.
 
@@ -110,6 +117,8 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!punt`* will move the currently selected level to the back of the queue.
 
+`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove} {customCode} {ID}` where add/remove is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the *queue* are not case sensitive, they are case sensitive with this command.
+
 
 
 
@@ -119,4 +128,4 @@ It is important to note that all commands that draw a level (with exception to `
 
 ## Will you add [insert feature here]?
 
-Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request. 
+Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.

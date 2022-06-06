@@ -70,19 +70,20 @@ const advanceTime = async (ms, accuracy = 0) => {
 
 const setTime = async (time, accuracy = 0) => {
     let prevTime = new Date();
-    var newTime = new Date(`2022-04-21T${time}Z`);
-    var diff = newTime - prevTime;
-    if (diff < 0) {
+    let newTime = new Date();
+    let timeArray = time.split(':').map(x => parseInt(x, 10));
+    newTime.setUTCHours(timeArray[0]);
+    newTime.setUTCMinutes(timeArray[1]);
+    newTime.setUTCSeconds(timeArray[2]);
+    if (newTime < prevTime) {
         // add one day in case of time going backwards
-        // TODO: do this better
-        newTime = new Date(`2022-04-22T${time}Z`);
-        diff = newTime - prevTime;
+        newTime.setUTCDate(newTime.getUTCDate() + 1);
     }
-
+    const diff = newTime - prevTime;
     if (diff > 0) {
         await advanceTime(diff, accuracy);
     } else if (diff < 0) {
-        fail(`Time went backwards, from ${mockTime} to ${newTime} (${time})`);
+        fail(`Time went backwards, from ${prevTime} to ${newTime} (${time})`);
     }
 }
 
@@ -113,7 +114,7 @@ beforeEach(() => {
 });
 
 // load index.js and test it being setup correctly
-function requireIndex(mockFs = undefined, mockSettings = undefined) {
+function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = undefined) {
     let fs;
     let settings;
     let chatbot;
@@ -123,6 +124,16 @@ function requireIndex(mockFs = undefined, mockSettings = undefined) {
     let handle_func;
 
     jest.isolateModules(() => {
+        // remove timers
+        jest.clearAllTimers();
+
+        // setup time
+        jest.useFakeTimers();
+
+        if (mockTime !== undefined) {
+            jest.setSystemTime(mockTime);
+        }
+
         // setup random mock
         const chance = jestChance.getChance();
         random = jest
@@ -135,6 +146,11 @@ function requireIndex(mockFs = undefined, mockSettings = undefined) {
         if (mockFs === undefined) {
             mockFs = new Volume();
             mockFs.mkdirSync(path.resolve('.'), { recursive: true });
+        } else {
+            // copy files
+            const files = mockFs.toJSON();
+            mockFs = new Volume();
+            mockFs.fromJSON(files);
         }
         // setup virtual file system
         jest.mock('fs', () => mockFs);
@@ -301,7 +317,7 @@ for (const file of testFiles) {
                 };
             };
             if (command == 'restart') {
-                test = requireIndex(test.fs, test.settings);
+                test = requireIndex(test.fs, test.settings, new Date());
                 test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
             } else if (command == 'accuracy') {
                 accuracy = parseInt(rest);
