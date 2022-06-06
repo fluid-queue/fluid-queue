@@ -146,8 +146,6 @@ function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = u
         if (mockFs === undefined) {
             mockFs = new Volume();
             mockFs.mkdirSync(path.resolve('.'), { recursive: true });
-            mockFs.writeFileSync(path.resolve('./waitingUsers.txt'), '[]');
-            mockFs.writeFileSync(path.resolve('./userWaitTime.txt'), '[]');
         } else {
             // copy files
             const files = mockFs.toJSON();

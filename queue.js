@@ -18,110 +18,65 @@ const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
 const codeStrict = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]';
 const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStrict})`);
 
-// Check if files for waitingUsers and/or userWaitTime exists, and if they are readable using JSON.parse()
-if (fs.existsSync('./waitingUsers.txt')) {
-  try {
-    waitingUsers = JSON.parse(fs.readFileSync('./waitingUsers.txt'));
-    console.log('waitingUsers.txt has been successfully validated.');
-  } catch (err) {
-    fs.writeFileSync('waitingUsers.txt', '[]', (err) => {
-      if (err) {
-        console.warn('An error occurred when trying to prepare waitingUsers.txt. Weighted chance will not function.');
-        return;
-      }
-      waitingUsers = JSON.parse(fs.readFileSync('./waitingUsers.txt'));
-      console.log('waitingUsers.txt has been successfully updated and validated.');
-    });
-  }
-} else {
-  fs.writeFileSync('waitingUsers.txt', '[]', (err) => {
-    if (err) {
-      console.warn('An error occurred when trying to create waitingUsers.txt. Weighted chance will not function.');
-      return;
+let openOrCreate = (fileName, newContent, errorMessage) => {
+  if (fs.existsSync(fileName)) {
+    try {
+      const fileContents = JSON.parse(fs.readFileSync(fileName));
+      console.log(`${fileName} has been successfully validated.`);
+      return fileContents;
+    } catch (err) {
+      console.warn('An error occurred when trying to load %s. %s', fileName, errorMessage, err);
+      // let it crash!
+      throw err;
     }
-    console.log('waitingUsers.txt has been successfully created and validated.');
-  });
-}
+  }
+  try {
+    fs.writeFileSync(fileName, newContent);
+    const fileContents = JSON.parse(fs.readFileSync(fileName));
+    console.log(`${fileName} has been successfully created and validated.`);
+    return fileContents;
+  } catch (err) {
+    console.warn('An error occurred when trying to create %s. %s', fileName, errorMessage, err);
+    // let it crash!
+    throw err;
+  }
+};
 
-if (fs.existsSync('./userWaitTime.txt')) {
-  try {
-    userWaitTime = JSON.parse(fs.readFileSync('./userWaitTime.txt'));
-    console.log('userWaitTime.txt has been successfully validated.');
-  } catch (err) {
-    fs.writeFileSync('userWaitTime.txt', '[]', (err) => {
-      if (err) {
-        console.warn('An error occurred when trying to prepare userWaitTime.txt. Weighted chance will not function.');
-        return;
-      }
-      userWaitTime = JSON.parse(fs.readFileSync('./userWaitTime.txt'));
-      console.log('userWaitTime.txt has been successfully updated and validated.');
-    });
-  }
-} else {
-  fs.writeFileSync('userWaitTime.txt', '[]', (err) => {
-    if (err) {
-      console.warn('An error occurred when trying to create userWaitTime.txt. Weighted chance will not function.');
-      return;
-    }
-    console.log('userWaitTime.txt has been successfully created and validated.');
-  });
-}
+// Check if files for waitingUsers and/or userWaitTime exists, and if they are readable using JSON.parse()
+waitingUsers = openOrCreate('./waitingUsers.txt', '[]', 'Weighted chance will not function.');
+userWaitTime = openOrCreate('./userWaitTime.txt', '[]', 'Weighted chance will not function.');
 
 // Check if custom codes are enabled and, if so, validate that the correct files exist.
 if (settings.custom_codes_enabled) {
-  let baseMap = new Map();
-  if (fs.existsSync('./customCodes.json')) {
-    try {
-      customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
-      console.log('customCodes.json has been successfully validated.');
-    } catch (err) {
-      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(baseMap.entries())), (err) => {
-        if (err) {
-          console.warn('An error occurred when trying to prepare customCodes.json. Custom codes will not function.');
-          return;
-        }
-        customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
-        console.log('customCodes.json has been successfully updated and validated.');
-      });
-    }
-  } else {
-    fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(baseMap.entries())), (err) => {
-      if (err) {
-        console.warn('An error occurred when trying to create customCodes.json. Custom codes will not function.');
-        return;
-      }
-      customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
-      console.log('customCodes.json has been successfully created and validated.');
-    });
-  }
+  customCodesMap = new Map(openOrCreate('./customCodes.json', '[]', 'Custom codes will not function.'));
 }
 
-  // Check if romhacks are enabled and, if so, ensure that the romhack key exists in the custom codes.
-  if (settings.romhacks_enabled && settings.custom_codes_enabled) {
-    if (customCodesMap.has('ROMhack')) {
-      console.log('ROMhacks are enabled and allowed to be submitted.');
-    } else {
-      customCodesMap.set('ROMhack', 'R0M-HAK-LVL');
-      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
-        if (err) {
-          console.warn("An error occurred when trying to enable ROMhacks. The queue will not accept ROMhacks as a result.");
-        }
-      });
-      console.log('ROMhacks are enabled and allowed to be submitted.');
+// Check if romhacks are enabled and, if so, ensure that the romhack key exists in the custom codes.
+if (settings.romhacks_enabled && settings.custom_codes_enabled) {
+  if (customCodesMap.has('ROMhack')) {
+    console.log('ROMhacks are enabled and allowed to be submitted.');
+  } else {
+    customCodesMap.set('ROMhack', 'R0M-HAK-LVL');
+    try {
+      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())));
+    } catch (err) {
+      console.warn("An error occurred when trying to enable ROMhacks. The queue will not accept ROMhacks as a result.", err);
     }
-  } else if (settings.custom_codes_enabled) {
-    if (!customCodesMap.has('ROMhack')) {
-      // Don't do anything, no need to alert the user.
-    } else {
-      customCodesMap.delete('ROMhack');
-      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
-        if (err) {
-          console.warn("An error occurred when trying to disable ROMhacks. The queue will continue to accept ROMhacks as a result.");
-        }
-      });
-      console.log('ROMhacks are now disabled and will not be accepted.');
-    }
+    console.log('ROMhacks are enabled and allowed to be submitted.');
   }
+} else if (settings.custom_codes_enabled) {
+  if (!customCodesMap.has('ROMhack')) {
+    // Don't do anything, no need to alert the user.
+  } else {
+    customCodesMap.delete('ROMhack');
+    try {
+      fs.writeFileSync('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())));
+    } catch (err) {
+      console.warn("An error occurred when trying to disable ROMhacks. The queue will continue to accept ROMhacks as a result.", err);
+    }
+    console.log('ROMhacks are now disabled and will not be accepted.');
+  }
+}
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.

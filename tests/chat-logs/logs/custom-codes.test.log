@@ -1,0 +1,25 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+[19:34:55] ~%?liquidnya: !customcode remove test
+[19:34:57] @^helperblock: The custom code test could not be found.
+[19:35:05] ~%?liquidnya: !customcode add test NB0-1MD-SLG
+[19:35:05] @^helperblock: Your custom code test for ID NB0-1MD-SLG has been added.
+[19:35:12] ~%?liquidnya: !add test
+[19:35:12] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+# test if codes were persisted
+restart
+
+[19:35:42] ~%?liquidnya: !add test
+[19:35:42] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+[19:36:54] ~%?liquidnya: !customcode remove test
+[19:36:54] @^helperblock: The custom code test has been removed.
+[19:36:58] ~%?liquidnya: !add test
+[19:36:58] @^helperblock: liquidnya, that is an invalid level code.
