@@ -38,6 +38,7 @@ if (fs.existsSync('./waitingUsers.txt')) {
       console.warn('An error occurred when trying to create waitingUsers.txt. Weighted chance will not function.');
       return;
     }
+    waitingUsers = JSON.parse(fs.readFileSync('./waitingUsers.txt'));
     console.log('waitingUsers.txt has been successfully created and validated.');
   });
 }
@@ -62,6 +63,7 @@ if (fs.existsSync('./userWaitTime.txt')) {
       console.warn('An error occurred when trying to create userWaitTime.txt. Weighted chance will not function.');
       return;
     }
+    userWaitTime = JSON.parse(fs.readFileSync('./userWaitTime.txt'));
     console.log('userWaitTime.txt has been successfully created and validated.');
   });
 }
