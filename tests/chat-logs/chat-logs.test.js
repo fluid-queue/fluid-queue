@@ -11,6 +11,7 @@ const fs = require('fs');
 const { codeFrameColumns } = require('@babel/code-frame');
 
 // constants
+const START_TIME = new Date('2022-04-21T00:00:00Z'); // every test will start with this time
 const AsyncFunction = (async () => { }).constructor;
 const defaultTestChatters = {
     _links: {},
@@ -110,7 +111,7 @@ beforeEach(() => {
     setChatters(defaultTestChatters);
 
     // reset time
-    jest.setSystemTime(new Date('2022-04-21T00:00:00Z'));
+    jest.setSystemTime(START_TIME);
 });
 
 // load index.js and test it being setup correctly
@@ -132,6 +133,8 @@ function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = u
 
         if (mockTime !== undefined) {
             jest.setSystemTime(mockTime);
+        } else {
+            jest.setSystemTime(START_TIME);
         }
 
         // setup random mock

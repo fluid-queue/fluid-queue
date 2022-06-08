@@ -105,20 +105,20 @@ const loadQueueV1 = () => {
             });
         }
         // Find the current level
-        const is_current = level => hasOwn(level, 'current_level') && level.current_level;
+        const isCurrent = level => hasOwn(level, 'current_level') && level.current_level;
         // Make sure to remove the current_property levels for all levels
-        const rm_current = level => { let result = { ...level }; delete result.current_level; return result; };
-        const currentLevels = levels.filter(is_current).map(rm_current);
+        const rmCurrent = level => { let result = { ...level }; delete result.current_level; return result; };
+        const currentLevels = levels.filter(isCurrent).map(rmCurrent);
         if (currentLevels.length == 1) {
             currentLevel = currentLevels[0];
-            levels = levels.filter(x => !is_current(x)).map(rm_current);
+            levels = levels.filter(x => !isCurrent(x)).map(rmCurrent);
         } else {
             if (currentLevels.length > 1) {
                 console.warn('More than one level in the queue is marked as the current level.');
                 console.warn('This will be ignored and no level will be marked as the current level.');
             }
             currentLevel = undefined;
-            levels = levels.map(rm_current);
+            levels = levels.map(rmCurrent);
         }
     }
     // load wait time
