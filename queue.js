@@ -20,30 +20,6 @@ const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
 const codeStrict = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]';
 const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStrict})`);
 
-let openOrCreate = (fileName, newContent, errorMessage) => {
-  if (fs.existsSync(fileName)) {
-    try {
-      const fileContents = JSON.parse(fs.readFileSync(fileName));
-      console.log(`${fileName} has been successfully validated.`);
-      return fileContents;
-    } catch (err) {
-      console.warn('An error occurred when trying to load %s. %s', fileName, errorMessage, err);
-      // let it crash!
-      throw err;
-    }
-  }
-  try {
-    fs.writeFileSync(fileName, newContent);
-    const fileContents = JSON.parse(fs.readFileSync(fileName));
-    console.log(`${fileName} has been successfully created and validated.`);
-    return fileContents;
-  } catch (err) {
-    console.warn('An error occurred when trying to create %s. %s', fileName, errorMessage, err);
-    // let it crash!
-    throw err;
-  }
-};
-
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.
 // For max data id threshold, if you only want to have a max maker id threshold, send the 2nd argument as null.
@@ -570,22 +546,14 @@ const queue = {
         return "The custom code " + args[1] + " already exists.";
       }
       customCodesMap.set(args[1], args[2]);
-      fs.writeFile('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
-        if (err) {
-          return "An error occurred while trying to add your custom code.";
-        }
-      });
+      persistence.saveCustomCodesSync(customCodesMap);
       return "Your custom code " + args[1] + " for ID " + args[2] + " has been added.";
     } else if ((args[0] == 'remove') && (args.length == 2)) {
       if (!customCodesMap.has(args[1])) {
         return "The custom code " + args[1] + " could not be found.";
       }
       customCodesMap.delete(args[1]);
-      fs.writeFile('customCodes.json', JSON.stringify(Array.from(customCodesMap.entries())), (err) => {
-        if (err) {
-          return "An error occurred while trying to remove that custom code.";
-        }
-      });
+      persistence.saveCustomCodesSync(customCodesMap);
       return "The custom code " + args[1] + " has been removed.";
     } else {
       return "Invalid arguments. The correct syntax is !customcode {add/remove} {customCode} {ID}.";
@@ -632,7 +600,7 @@ const queue = {
 
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
-      customCodesMap = new Map(openOrCreate('./customCodes.json', '[]', 'Custom codes will not function.'));
+      customCodesMap = persistence.loadCustomCodesSync();
     }
 
     // Check if romhacks are enabled and, if so, ensure that the romhack key exists in the custom codes.

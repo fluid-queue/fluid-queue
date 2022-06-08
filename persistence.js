@@ -7,6 +7,7 @@ const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.t
 const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
 const VERSION_V2 = '2.0';
 const VERSION_CHECK_V2 = /^2(\.|$)/; // the version that is being accepted
+const CUSTOM_CODES_FILENAME = './customCodes.json';
 
 // structure of file format V1:
 // queso.save
@@ -59,6 +60,27 @@ const loadFileDefault = (fileName, newContent, errorMessage) => {
     return newContent;
 };
 
+const loadFileOrCreate = (fileName, createFunction, errorMessage) => {
+    const load = (create = false) => {
+        try {
+            if (create) {
+                createFunction();
+            }
+            const fileContents = JSON.parse(fs.readFileSync(fileName));
+            console.log('%s has been successfully%s validated.', fileName, create ? ' created and' : '');
+            return fileContents;
+        } catch (err) {
+            console.warn('An error occurred when trying to %s %s. %s', create ? 'create' : 'load', fileName, errorMessage, err);
+            // let it crash!
+            throw err;
+        }
+    };
+    if (fs.existsSync(fileName)) {
+        return load();
+    }
+    return load(true);
+};
+
 const loadQueueV1 = () => {
     const cache_filename = FILENAME_V1.queso;
     let levels = new Array();
@@ -98,8 +120,14 @@ const loadQueueV1 = () => {
     // load wait time
     const waitingUsers = loadFileDefault(FILENAME_V1.waitingUsers, [], 'Weighted chance will not function.');
     const userWaitTime = loadFileDefault(FILENAME_V1.userWaitTime, [], 'Weighted chance will not function.');
+    if (waitingUsers.length != userWaitTime.length) {
+        throw new Error(`Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userWaitTime}.`);
+    }
     const userOnlineTime = loadFileDefault(FILENAME_V1.userOnlineTime, undefined, 'Online time will not be calculated correctly.');
-    // convert wait time to map
+    if (userOnlineTime !== undefined && waitingUsers.length != userOnlineTime.length) {
+        throw new Error(`Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userOnlineTime}.`);
+    }
+    // convert wait time to object
     const waiting = waitingToObject(waitingUsers, userWaitTime, userOnlineTime);
     return {
         currentLevel,
@@ -142,7 +170,7 @@ const loadQueueV2 = () => {
     } else if (typeof state.version !== 'string') {
         throw new Error(`Queue save file ${fileName}: version is not of type string.`);
     } else if (!VERSION_CHECK_V2.test(state.version)) {
-        throw new Error(`Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${VERSION_V2}".`);
+        throw new Error(`Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${VERSION_V2}". Save file is assumed to be incompatible. Did you downgrade versions?`);
     }
     if (state.currentLevel === null) {
         state.currentLevel = undefined;
@@ -151,9 +179,21 @@ const loadQueueV2 = () => {
     return state;
 };
 
+const createEmptyQueueSync = () => {
+    const empty = {
+        currentLevel: undefined,
+        queue: [],
+        waiting: {},
+    };
+    saveQueueSync(empty.currentLevel, empty.queue, empty.waiting);
+    console.log(`${FILENAME_V2.fileName} has been successfully created.`);
+};
+
 const loadQueueSync = () => {
     // try to load queue version 2 if file exists
     if (fs.existsSync(FILENAME_V2.fileName)) {
+        // for now notice the user of previous save files that can be removed
+        // TODO: this is optional and can be removed
         Object.values(FILENAME_V1).forEach(file => {
             if (fs.existsSync(file)) {
                 console.log(`${file} is no longer needed and can be deleted.`);
@@ -163,24 +203,31 @@ const loadQueueSync = () => {
     }
     // if version 2 file does not exist and any version 1 file exists try to convert version 1 to version 2
     if (Object.values(FILENAME_V1).some(file => fs.existsSync(file))) {
-        const state = loadQueueV1();
-        console.log(`Save file data successfully converted.`);
-        saveQueueSync(state.currentLevel, state.queue, state.waiting);
-        console.log(`${FILENAME_V2.fileName} has been successfully created.`);
-        return state;
+        const stateV1 = loadQueueV1();
+        saveQueueSync(stateV1.currentLevel, stateV1.queue, stateV1.waiting);
+        console.log(`${FILENAME_V2.fileName} has been successfully created from previous save files.`);
+        const stateV2 = loadQueueV2();
+        // at this point assume everything was converted successfully (an error would have been thrown instead)
+        // now delete version 1 files
+        Object.values(FILENAME_V1).forEach(file => {
+            if (fs.existsSync(file)) {
+                try {
+                    fs.unlinkSync(file);
+                    console.log(`${file} has been deleted successfully.`);
+                } catch (err) {
+                    console.warn('%s could not be deleted.', file, err);
+                    // this error can be safely ignored!
+                }
+            }
+        });
+        return stateV2;
     }
     // create an empty save file
-    const empty = {
-        currentLevel: undefined,
-        queue: [],
-        waiting: {},
-    };
-    saveQueueSync(empty.currentLevel, empty.queue, empty.waiting);
-    console.log(`${FILENAME_V2.fileName} has been successfully created.`);
-    return empty;
+    createEmptyQueueSync();
+    return loadQueueV2();
 };
 
-const createSaveFile = (currentLevel, queue, waiting) => {
+const createSaveFileContent = (currentLevel, queue, waiting) => {
     return JSON.stringify(
         {
             version: VERSION_V2,
@@ -194,11 +241,40 @@ const createSaveFile = (currentLevel, queue, waiting) => {
 };
 
 const saveQueueSync = (currentLevel, queue, waiting) => {
-    writeFileAtomicSync(FILENAME_V2.fileName, createSaveFile(currentLevel, queue, waiting));
+    try {
+        writeFileAtomicSync(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting));
+    } catch (err) {
+        console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
+        // ignore this error and keep going
+        // hopefully this issue is gone on the next save
+        // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+    }
 };
 
 const saveQueue = async (currentLevel, queue, waiting, callback = undefined) => {
-    await writeFileAtomic(FILENAME_V2.fileName, createSaveFile(currentLevel, queue, waiting), callback);
+    try {
+        await writeFileAtomic(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting), callback);
+    } catch (err) {
+        console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
+        // ignore this error and keep going
+        // hopefully this issue is gone on the next save
+        // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+    }
+};
+
+const loadCustomCodesSync = () => {
+    return new Map(loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync(new Map()), 'Custom codes will not function.'));
+};
+
+const saveCustomCodesSync = (customCodesMap) => {
+    try {
+        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify(Array.from(customCodesMap.entries())));
+    } catch (err) {
+        console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', CUSTOM_CODES_FILENAME, err);
+        // ignore this error and keep going
+        // hopefully this issue is gone on the next save
+        // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+    }
 };
 
 const createDataDirectory = () => {
@@ -214,4 +290,6 @@ module.exports = {
     createDataDirectory,
     waitingToObject,
     waitingFromObject,
+    loadCustomCodesSync,
+    saveCustomCodesSync,
 };
