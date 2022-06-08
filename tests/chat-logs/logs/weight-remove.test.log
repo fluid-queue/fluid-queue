@@ -25,7 +25,8 @@ accuracy 60000
 [16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:26:46] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queso.save [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"},{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"},{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:26:47] @^FurretWalkBot: !odds
 

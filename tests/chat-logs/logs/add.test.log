@@ -58,4 +58,5 @@ settings {"username":"helperblock","password":"","channel":"liquidnya","max_size
 [02:25:49] @^FurretWalkBot: !list
 [02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
 
-queso.save [{"code":"NB0-1MD-SLG","current_level":true,"submitter":"liquidnya","username":"liquidnya"},{"code":"MY2-H2M-DSG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel {"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}
+queue.json/queue [{"code":"MY2-H2M-DSG","submitter":"FurretWalkBot","username":"furretwalkbot"}]

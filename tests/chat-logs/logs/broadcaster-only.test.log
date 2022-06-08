@@ -47,7 +47,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [19:41:02] @^FurretWalkBot: !restart
 [19:41:06] @^FurretWalkBot: !clear
 
-queso.save [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}]
 
 [19:41:48] ~%?liquidnya: !open
 [19:41:49] @^helperblock: The queue is now open!
@@ -58,7 +59,8 @@ queso.save [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"
 [19:42:03] ~%?liquidnya: !remove liquidnya
 [19:42:03] @^helperblock: liquidnya's level has been removed from the queue.
 
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 
 [19:42:12] ~%?liquidnya: !level
 [19:42:14] @^helperblock: (next) The queue is empty.

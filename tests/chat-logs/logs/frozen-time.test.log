@@ -14,7 +14,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:26:45] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:26:45] @^FurretWalkBot: !odds
 

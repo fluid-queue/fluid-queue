@@ -325,9 +325,15 @@ for (const file of testFiles) {
                 replaceSettings(test.settings, JSON.parse(rest));
             } else if (command == 'chatters') {
                 setChatters(JSON.parse(rest));
-            } else if (command == 'queso.save') {
+            } else if (command.startsWith('queue.json')) {
                 try {
-                    expect(JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../queso.save')))).toEqual(JSON.parse(rest));
+                    const memberIdx = command.indexOf('/');
+                    let jsonData = JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../data/queue.json')));
+                    if (memberIdx != -1) {
+                        const member = command.substring(memberIdx + 1);
+                        jsonData = jsonData[member];
+                    }
+                    expect(jsonData).toEqual(JSON.parse(rest));
                 } catch (error) {
                     error.message += errorMessage(position());
                     throw error;

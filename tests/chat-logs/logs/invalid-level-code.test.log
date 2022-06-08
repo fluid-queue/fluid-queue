@@ -19,4 +19,5 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [23:21:33] ~%?liquidnya: !add
 [23:21:33] @^helperblock: liquidnya, that is an invalid level code.
 
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
