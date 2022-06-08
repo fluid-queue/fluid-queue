@@ -12,6 +12,7 @@ var current_level = undefined;
 var levels = new Array()
 var waitingUsers;
 var userWaitTime;
+var userOnlineTime;
 var customCodesMap = new Map();
 
 const delim = '[-. ]?';
@@ -100,7 +101,7 @@ const extractValidCode = (levelCode) => {
   return { code: levelCode, valid: false, validSyntax: false };
 }
 
- async function selectionchance(displayName, username) {
+async function selectionchance(displayName, username) {
   var list = await queue.list();
   var online_users = list.online;
 
@@ -384,6 +385,7 @@ const queue = {
     if (chosenUserOverallIndex != -1) {
       waitingUsers.splice(chosenUserOverallIndex, 1);
       userWaitTime.splice(chosenUserOverallIndex, 1);
+      userOnlineTime.splice(chosenUserOverallIndex, 1);
     }
   },
 
@@ -605,11 +607,11 @@ const queue = {
   },
 
   save: () => {
-    persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime));
+    persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
   },
 
   saveAsync: async () => {
-    await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime));
+    await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
   },
 
   load: () => {
@@ -626,6 +628,7 @@ const queue = {
     const waitingLists = persistence.waitingFromObject(state.waiting);
     waitingUsers = waitingLists.waitingUsers;
     userWaitTime = waitingLists.userWaitTime;
+    userOnlineTime = waitingLists.lastOnlineTime;
 
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
@@ -667,13 +670,16 @@ const queue = {
 
   waitingTimerTick: async () => {
     var list = await queue.list();
+    const now = (new Date()).toISOString();
     for (let i = 0; i < list.online.length; i++) {
       if (!waitingUsers.includes(list.online[i].username)) {
         waitingUsers.push(list.online[i].username);
         userWaitTime.push(1);
+        userOnlineTime.push(now);
       } else {
         let userIndex = waitingUsers.indexOf(list.online[i].username);
         userWaitTime[userIndex] = userWaitTime[userIndex] + 1;
+        userOnlineTime[userIndex] = now;
       }
     }
     queue.save();
