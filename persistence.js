@@ -45,6 +45,10 @@ const CUSTOM_CODES_FILENAME = './customCodes.json';
 //     - waitTime: integer, the wait time in minutes
 //     - lastOnlineTime: string, ISO 8601 timestamp
 
+const hasOwn = (object, property) => {
+    return Object.prototype.hasOwnProperty.call(object, property)
+}
+
 const loadFileDefault = (fileName, newContent, errorMessage) => {
     if (fs.existsSync(fileName)) {
         try {
@@ -89,7 +93,7 @@ const loadQueueV1 = () => {
     if (fs.existsSync(cache_filename)) {
         const raw_data = fs.readFileSync(cache_filename);
         levels = JSON.parse(raw_data);
-        const username_missing = level => !Object.hasOwn(level, 'username');
+        const username_missing = level => !hasOwn(level, 'username');
         if (levels.some(username_missing)) {
             console.warn(`Usernames are not set in the file ${cache_filename}!`);
             console.warn('Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.');
@@ -101,7 +105,7 @@ const loadQueueV1 = () => {
             });
         }
         // Find the current level
-        const is_current = level => Object.hasOwn(level, 'current_level') && level.current_level;
+        const is_current = level => hasOwn(level, 'current_level') && level.current_level;
         // Make sure to remove the current_property levels for all levels
         const rm_current = level => { let result = { ...level }; delete result.current_level; return result; };
         const currentLevels = levels.filter(is_current).map(rm_current);
@@ -165,7 +169,7 @@ const waitingFromObject = (waiting) => {
 const loadQueueV2 = () => {
     const fileName = FILENAME_V2.fileName;
     const state = JSON.parse(fs.readFileSync(fileName));
-    if (!Object.hasOwn(state, 'version')) {
+    if (!hasOwn(state, 'version')) {
         throw new Error(`Queue save file ${fileName}: no version field.`);
     } else if (typeof state.version !== 'string') {
         throw new Error(`Queue save file ${fileName}: version is not of type string.`);
