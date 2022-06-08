@@ -27,8 +27,6 @@ queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liqu
 
 [16:28:48] @^FurretWalkBot: !odds
 
-# TODO: is this a bug?
-
 restart
 
 [16:28:48] @^helperblock: FurretWalkBot, you have a 50.0% chance of getting chosen in weighted random.
