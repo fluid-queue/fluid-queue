@@ -127,6 +127,13 @@ const queue = {
     var result = levels.find(x => x.submitter == level.submitter);
     if (result == undefined || level.submitter == settings.channel) {
       levels.push(level);
+      // add wait time of 1 and add last online time of now
+      if (!waitingUsers.includes(level.username)) {
+        const now = (new Date()).toISOString();
+        waitingUsers.push(level.username);
+        userWaitTime.push(1);
+        userOnlineTime.push(now);
+      }
       queue.save();
       if (level.code == 'R0M-HAK-LVL') {
         return level.submitter + ", your ROMhack has been added to the queue.";

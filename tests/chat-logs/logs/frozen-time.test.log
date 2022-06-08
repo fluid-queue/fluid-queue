@@ -18,10 +18,7 @@ queue.json/currentLevel null
 queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:26:45] @^FurretWalkBot: !odds
-
-# TODO: is this a bug?
-
-[16:26:45] @^helperblock: FurretWalkBot, you have a 0.0% chance of getting chosen in weighted random.
+[16:26:45] @^helperblock: FurretWalkBot, you have a 100.0% chance of getting chosen in weighted random.
 [16:26:45] @^FurretWalkBot: !pos
 [16:26:45] @^helperblock: FurretWalkBot, you are currently in the 1st position.
 [16:26:45] ~%?liquidnya: !next
