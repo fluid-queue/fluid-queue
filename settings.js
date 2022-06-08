@@ -15,4 +15,5 @@ module.exports = {
   message_cooldown: 5, // the length of time in seconds one must wait before !list will work again
   dataIdCourseThreshold: undefined, // change this to the number of the maximum allowed data ID for course ids
   dataIdMakerThreshold: undefined, // change this to the number of the maximum allowed data ID for maker ids
+  prettySaveFiles: false, // change this to true if the save files in ./data/*.json should be formatted
 };

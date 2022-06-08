@@ -13,7 +13,6 @@ var levels = new Array()
 var waitingUsers;
 var userWaitTime;
 var customCodesMap = new Map();
-const cache_filename = "queso.save";
 
 const delim = '[-. ]?';
 const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';

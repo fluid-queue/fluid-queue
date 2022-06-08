@@ -1,3 +1,4 @@
+const settings = require('./settings.js');
 const fs = require('fs');
 const writeFileAtomic = require('write-file-atomic');
 const writeFileAtomicSync = require('write-file-atomic').sync;
@@ -146,47 +147,62 @@ const loadQueueV2 = () => {
     if (state.currentLevel === null) {
         state.currentLevel = undefined;
     }
-    state.waiting = new Map(Object.entries(state.waiting));
     console.log(`${fileName} has been successfully validated.`);
     return state;
 };
 
 const loadQueueSync = () => {
     // try to load queue version 2 if file exists
-    // if version 2 file does not exist, try to convert version 1 to version 2
-    // if version 1 files do not exist, create an empty save file
     if (fs.existsSync(FILENAME_V2.fileName)) {
+        Object.values(FILENAME_V1).forEach(file => {
+            if (fs.existsSync(file)) {
+                console.log(`${file} is no longer needed and can be deleted.`);
+            }
+        });
         return loadQueueV2();
     }
-    // load version 1 (or create new save)
-    const state = loadQueueV1();
-    saveQueueSync(state.currentLevel, state.queue, state.waiting);
+    // if version 2 file does not exist and any version 1 file exists try to convert version 1 to version 2
+    if (Object.values(FILENAME_V1).some(file => fs.existsSync(file))) {
+        const state = loadQueueV1();
+        console.log(`Save file data successfully converted.`);
+        saveQueueSync(state.currentLevel, state.queue, state.waiting);
+        console.log(`${FILENAME_V2.fileName} has been successfully created.`);
+        return state;
+    }
+    // create an empty save file
+    const empty = {
+        currentLevel: undefined,
+        queue: [],
+        waiting: {},
+    };
+    saveQueueSync(empty.currentLevel, empty.queue, empty.waiting);
     console.log(`${FILENAME_V2.fileName} has been successfully created.`);
-    return state;
+    return empty;
+};
+
+const createSaveFile = (currentLevel, queue, waiting) => {
+    return JSON.stringify(
+        {
+            version: VERSION_V2,
+            currentLevel: currentLevel === undefined ? null : currentLevel,
+            queue,
+            waiting,
+        },
+        null,
+        settings.prettySaveFiles ? 2 : 0
+    );
 };
 
 const saveQueueSync = (currentLevel, queue, waiting) => {
-    const state = {
-        version: VERSION_V2,
-        currentLevel: currentLevel === undefined ? null : currentLevel,
-        queue,
-        waiting,
-    };
-    writeFileAtomicSync(FILENAME_V2.fileName, JSON.stringify(state));
+    writeFileAtomicSync(FILENAME_V2.fileName, createSaveFile(currentLevel, queue, waiting));
 };
 
 const saveQueue = async (currentLevel, queue, waiting, callback = undefined) => {
-    const state = {
-        version: VERSION_V2,
-        currentLevel: currentLevel === undefined ? null : currentLevel,
-        queue,
-        waiting,
-    };
-    await writeFileAtomic(FILENAME_V2.fileName, JSON.stringify(state), callback);
+    await writeFileAtomic(FILENAME_V2.fileName, createSaveFile(currentLevel, queue, waiting), callback);
 };
 
 const createDataDirectory = () => {
-    if (!fs.existsSync(FILENAME_V2.directory)){
+    if (!fs.existsSync(FILENAME_V2.directory)) {
         fs.mkdirSync(FILENAME_V2.directory, { recursive: true });
     }
 };
