@@ -4,6 +4,7 @@ var recent_chatters = {};
 var subscribers = new Set();
 var mods = new Set();
 var lurkers = new Set();
+var lastOnlineUsers;
 
 const twitch = {
   getOnlineUsers: async (channel) => {
@@ -11,9 +12,14 @@ const twitch = {
     var online_users = new Set();
     try {
       await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
+      lastOnlineUsers = online_users;
     } catch (error) {
-      console.log('Error with getting online users. Skipping.');
-      return;
+      if (typeof lastOnlineUsers !== 'undefined') {
+        online_users = lastOnlineUsers;
+        console.log('Error with getting online users. Using old list.');
+      } else {
+        console.log('Error with getting online users. Using recent chatters due to there being no available old list.');
+      }
     }
     var current_time = Date.now();
     Object.keys(recent_chatters).filter(x => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)).forEach(x => online_users.add(x));
