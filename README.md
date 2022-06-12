@@ -95,7 +95,11 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!position` will output the user's position in the queue, provided they have one.
 
-`!level`* will select a level from the queue with respect to the order definined in the settings.js file.
+`!submitted`/`!entry`/`!mylevel`/`!mylvl` will output the user's submitted level code, provided they have submitted a level.
+
+`!weightedchance`/`!odds`/`!chance`/`!chances` will output the user's chances of getting selected in weighted random.
+
+`!level`* will select a level from the queue with respect to the order defined in the settings.js file.
 
 `!next`* will select the next level from the queue.
 
