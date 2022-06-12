@@ -318,9 +318,9 @@ async function HandleMessage(message, sender, respond) {
     }
   } else if ((message == '!position') || (message == '!pos')) {
     respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
-  } else if ((message == '!weightedchance') || (message == '!odds')) {
+  } else if ((message == '!weightedchance') || (message == '!odds') || (message == '!chance') || (message == '!chances')) {
     respond(await weightedchance_message(await quesoqueue.weightedchance(sender.displayName, sender.username), sender.displayName));
-  } else if (message == '!submitted') {
+  } else if ((message == '!submitted') || (message == '!entry') || (message == '!mylevel') || (message == '!mylvl')) {
     respond(await submitted_message(await quesoqueue.submittedlevel(sender.username), sender.displayName));
   } else if (message == '!start' && sender.isBroadcaster) {
     level_timer.resume();
