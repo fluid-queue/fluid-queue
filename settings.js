@@ -1,18 +1,54 @@
-// Special settings for the bot
-module.exports = {
-  username: '', // bot account username on Twitch (or yours)
-  password: '', // generated at https://twitchapps.com/tmi/
-  channel: '', // channel where the bot will run
-  start_open: false, // whether or not the queue will start open
-  enable_absolute_position: false, // whether or not absolute position (offline position) will be stated alongside relative position (online position)
-  custom_codes_enabled: false, // whether or not custom codes are allowed to be submitted to the queue, allowed to be created, and allowed to be removed
-  romhacks_enabled: false, // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
-  max_size: 100, // the max amount of levels in the queue
-  level_timeout: 9999, // The length of time in minutes a level can be played before the timer will go off
-  // Acceptable values: next, subnext, modnext, random, weightedrandom, subrandom, modrandom
-  // example: ['next', 'subnext', 'random']
-  level_selection: [],
-  message_cooldown: 5, // the length of time in seconds one must wait before !list will work again
-  dataIdCourseThreshold: undefined, // change this to the number of the maximum allowed data ID for course ids
-  dataIdMakerThreshold: undefined, // change this to the number of the maximum allowed data ID for maker ids
+const fs = require("fs");
+
+/**
+ * @readonly
+ */
+const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "subrandom", "modrandom"]
+/**
+ *
+ * @typedef settings
+ * @property {string} username - username bot will use to connect to twitch
+ * @property {string} password - oauth token generated at https://twitchapps.com/tmi/
+ * @property {string} channel - channel for bot to run in
+ * @property {boolean} [start_open] - whether queue will start open
+ * @property {boolean} [enable_absolute_position] - display position including offline levels
+ * @property {boolean} [custom_codes_enabled] - allow custom codes
+ * @property {boolean} [romhacks_enabled] - allow romhacks *if* custom codes are enabled
+ * @property {number} [max_size] - max number of levels in the queue
+ * @property {number} [level_timeout] - number of minutes on one level before timer goes off
+ * @property {typeof order_options[number][]} level_selection - order of methods used to pick next level
+ * @property {number} [message_cooldown] - number of seconds between list commands
+ * @property {number} [dataIdCourseThreshold] - maximum allowed data id for course ids if set
+ * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
+ */
+
+/** @type {settings} */
+const settings = JSON.parse(
+  fs.readFileSync("settings.json", { encoding: "utf8" })
+);
+
+/** @type {{[key: string]: (setting: any) => boolean}} */
+const settings_validations = {
+  username: (name) => typeof name === "string",
+  password: (pass) => typeof pass === "string" && pass.startsWith("oauth"),
+  channel: (channel) => typeof channel === "string",
+  start_open: (open) => typeof open === "boolean",
+  enable_absolute_position: (absolute_position) => typeof absolute_position === "boolean",
+  custom_codes_enabled: cc => typeof cc === "boolean",
+  romhacks_enabled: hacks => typeof hacks === "boolean", // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
+  max_size: max => typeof max === "number",
+  level_selection: (selections) => [...selections].every(next => order_options.includes(next)),
+  message_cooldown: cool => typeof cool === "number",
+  dataIdCourseThreshold: threshold => typeof threshold === "number",
+  dataIdMakerThreshold: threshold => typeof threshold === "number"
 };
+
+for (const key in settings) {
+  if (Object.hasOwnProperty.call(settings, key)) {
+    if (!settings_validations[key](settings[key])) {
+      throw new Error(`problem with ${key}`)
+    }
+  }
+}
+
+module.exports = settings;
