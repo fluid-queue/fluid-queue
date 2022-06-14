@@ -46,8 +46,15 @@ const settings_validations = {
 
 for (const key in settings) {
   if (Object.hasOwnProperty.call(settings, key)) {
-    if (!settings_validations[key](settings[key])) {
-      throw new Error(`problem with ${key}`)
+    try {
+        if (!settings_validations[key](settings[key])) {
+        throw new Error(`problem with ${key}`)
+      }
+    } catch(e) {
+      if (e instanceof TypeError) {
+        throw new TypeError(`${key} is not a valid option!`)
+      }
+      throw e;
     }
   }
 }
