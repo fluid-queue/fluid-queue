@@ -1,26 +1,26 @@
-const settings = require('./settings.js');
-const chatbot = require('./chatbot.js');
-const quesoqueue = require('./queue.js').quesoqueue();
-const twitch = require('./twitch.js').twitch();
-const timer = require('./timer.js');
-const fs = require('fs');
+const settings = require("./settings.js");
+const chatbot = require("./chatbot.js");
+const quesoqueue = require("./queue.js").quesoqueue();
+const twitch = require("./twitch.js").twitch();
+const timer = require("./timer.js");
+const fs = require("fs");
 
 quesoqueue.load();
 
 var queue_open = settings.start_open;
 var selection_iter = 0;
-var percentChance;
-const level_timer = timer.timer(
-  () => {
-    chatbot_helper.say(`@${settings.channel} the timer has expired for this level!`);
-  },
-  settings.level_timeout * 1000 * 60
-);
+let level_timer;
+if (settings.level_timeout)
+  level_timer = timer.timer(() => {
+    chatbot_helper.say(
+      `@${settings.channel} the timer has expired for this level!`
+    );
+  }, settings.level_timeout * 1000 * 60);
 
-const get_remainder = x => {
-  var index = x.indexOf(' ');
+const get_remainder = (x) => {
+  var index = x.indexOf(" ");
   if (index == -1) {
-    return '';
+    return "";
   }
   return x.substr(index + 1);
 };
@@ -36,62 +36,86 @@ const level_list_message = (sender, current, levels) => {
     levels.online.length === 0 &&
     levels.offline.length === 0
   ) {
-    return 'There are no levels in the queue.';
+    return "There are no levels in the queue.";
   }
   var result =
-    levels.online.length +
-    (current !== undefined ? 1 : 0) +
-    ' online: ';
+    levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
   result +=
     current !== undefined
-      ? current.submitter + ' (current)'
-      : '(no current level)';
+      ? current.submitter + " (current)"
+      : "(no current level)";
 
-  result += levels.online.slice(0, 5).reduce((acc, x) => acc + ', ' + x.submitter, '');
+  result += levels.online
+    .slice(0, 5)
+    .reduce((acc, x) => acc + ", " + x.submitter, "");
   result +=
-    '...' + (levels.online.length > 5 ? 'etc.' : '') +
-    ' (' + levels.offline.length +
-    ' offline)';
+    "..." +
+    (levels.online.length > 5 ? "etc." : "") +
+    " (" +
+    levels.offline.length +
+    " offline)";
   return result;
 };
 
-const next_level_message = level => {
+const next_level_message = (level) => {
   if (level === undefined) {
-    return 'The queue is empty.';
+    return "The queue is empty.";
   }
-  if (level.code == 'R0M-HAK-LVL') {
-    return ('Now playing a ROMhack submitted by ' + level.submitter + '.');
+  if (level.code == "R0M-HAK-LVL") {
+    return "Now playing a ROMhack submitted by " + level.submitter + ".";
   } else {
-    return 'Now playing ' + level.code + ' submitted by ' + level.submitter + '.';
+    return (
+      "Now playing " + level.code + " submitted by " + level.submitter + "."
+    );
   }
 };
 
 const weighted_level_message = (level) => {
   if (level === undefined) {
-    return 'The queue is empty.';
+    return "The queue is empty.";
   }
-  if (level.code == 'R0M-HAK-LVL') {
-    return ('Now playing a ROMhack submitted by ' + level.submitter + ' with a ' + level.selectionChance + '% chance of selection.');
+  if (level.code == "R0M-HAK-LVL") {
+    return (
+      "Now playing a ROMhack submitted by " +
+      level.submitter +
+      " with a " +
+      level.selectionChance +
+      "% chance of selection."
+    );
   } else {
-    return ('Now playing ' + level.code + ' submitted by ' + level.submitter + ' with a ' + level.selectionChance + '% chance of selection.');
+    return (
+      "Now playing " +
+      level.code +
+      " submitted by " +
+      level.submitter +
+      " with a " +
+      level.selectionChance +
+      "% chance of selection."
+    );
   }
 };
 
-const current_level_message = level => {
+const current_level_message = (level) => {
   if (level === undefined) {
     return "We're not playing a level right now!";
   }
-  if (level.code == 'R0M-HAK-LVL') {
-    return ('Currently playing a ROMhack submitted by ' + level.submitter + '.');
+  if (level.code == "R0M-HAK-LVL") {
+    return "Currently playing a ROMhack submitted by " + level.submitter + ".";
   } else {
-    return ('Currently playing ' + level.code + ' submitted by ' + level.submitter + '.');
+    return (
+      "Currently playing " +
+      level.code +
+      " submitted by " +
+      level.submitter +
+      "."
+    );
   }
 };
 
-const get_ordinal = num => {
-  var ends = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+const get_ordinal = (num) => {
+  var ends = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
   if (num % 100 >= 11 && num % 100 <= 13) {
-    return num + 'th';
+    return num + "th";
   }
   return num + ends[num % 10];
 };
@@ -102,13 +126,25 @@ const position_message = async (position, sender) => {
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
   } else if (position === 0) {
-    return 'Your level is being played right now!';
+    return "Your level is being played right now!";
   }
   if (settings.enable_absolute_position) {
     let absPosition = await quesoqueue.absoluteposition(sender);
-    return sender + ', you are currently in the online ' + get_ordinal(position) + ' position and the offline ' + get_ordinal(absPosition) + ' position.';
+    return (
+      sender +
+      ", you are currently in the online " +
+      get_ordinal(position) +
+      " position and the offline " +
+      get_ordinal(absPosition) +
+      " position."
+    );
   } else {
-    return sender + ', you are currently in the ' + get_ordinal(position) + ' position.';
+    return (
+      sender +
+      ", you are currently in the " +
+      get_ordinal(position) +
+      " position."
+    );
   }
 };
 
@@ -118,13 +154,23 @@ const weightedchance_message = async (chance, sender) => {
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
   } else if (chance == -2) {
-    return (sender + ", you are in a BRB state, so you cannot be selected in weighted random. Try using !back and then checking again.");
+    return (
+      sender +
+      ", you are in a BRB state, so you cannot be selected in weighted random. Try using !back and then checking again."
+    );
   } else if (chance === 0) {
-    return 'Your level is being played right now!';
+    return "Your level is being played right now!";
   } else if (isNaN(chance)) {
-    return sender + ', you have a 0.0% chance of getting chosen in weighted random.';
+    return (
+      sender + ", you have a 0.0% chance of getting chosen in weighted random."
+    );
   }
-  return sender + ', you have a ' + chance + '% chance of getting chosen in weighted random.';
+  return (
+    sender +
+    ", you have a " +
+    chance +
+    "% chance of getting chosen in weighted random."
+  );
 };
 
 const submitted_message = async (level, sender) => {
@@ -133,9 +179,9 @@ const submitted_message = async (level, sender) => {
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
   } else if (level == -0) {
-    return 'Your level is being played right now!';
+    return "Your level is being played right now!";
   }
-  return sender + ', you have submitted ' + level + ' to the queue.';
+  return sender + ", you have submitted " + level + " to the queue.";
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -144,7 +190,7 @@ const submitted_message = async (level, sender) => {
 
 async function HandleMessage(message, sender, respond) {
   if (sender.username === undefined || message === undefined) {
-    console.log('undefined data');
+    console.log("undefined data");
   }
   twitch.noticeChatter(sender);
 
@@ -156,32 +202,38 @@ async function HandleMessage(message, sender, respond) {
   if (args.length == 0) {
     message = cmd;
   } else {
-    message = cmd + ' ' + args;
+    message = cmd + " " + args;
   }
 
-  if (message == '!open' && sender.isBroadcaster) {
+  if (message == "!open" && sender.isBroadcaster) {
     queue_open = true;
-    respond('The queue is now open!');
-  } else if (message == '!close' && sender.isBroadcaster) {
+    respond("The queue is now open!");
+  } else if (message == "!close" && sender.isBroadcaster) {
     queue_open = false;
-    respond('The queue is now closed!');
-  } else if (message.toLowerCase().startsWith('!add')) {
+    respond("The queue is now closed!");
+  } else if (message.toLowerCase().startsWith("!add")) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message.toUpperCase());
       if (settings.custom_codes_enabled) {
-        let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+        let customCodesMap = new Map(
+          JSON.parse(fs.readFileSync("./customCodes.json"))
+        );
         let customNames = Array.from(customCodesMap.keys());
         let customCodes = Array.from(customCodesMap.values());
-        var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
+        var codeMatch = customNames
+          .map((a) => a.toUpperCase())
+          .indexOf(level_code);
         if (codeMatch !== -1) {
           level_code = customCodes[codeMatch];
         }
       }
-      respond(quesoqueue.add(Level(level_code, sender.displayName, sender.username)));
+      respond(
+        quesoqueue.add(Level(level_code, sender.displayName, sender.username))
+      );
     } else {
-      respond('Sorry, the queue is closed right now.');
+      respond("Sorry, the queue is closed right now.");
     }
-  } else if (message.startsWith('!remove') || message.startsWith('!leave')) {
+  } else if (message.startsWith("!remove") || message.startsWith("!leave")) {
     if (sender.isBroadcaster) {
       var to_remove = get_remainder(message);
       respond(quesoqueue.modRemove(to_remove));
@@ -189,158 +241,207 @@ async function HandleMessage(message, sender, respond) {
       respond(quesoqueue.remove(sender.displayName));
     }
   } else if (
-    message.startsWith('!replace') ||
-    message.startsWith('!change') ||
-    message.startsWith('!swap')
+    message.startsWith("!replace") ||
+    message.startsWith("!change") ||
+    message.startsWith("!swap")
   ) {
     let level_code = get_remainder(message.toUpperCase());
     if (settings.custom_codes_enabled) {
-      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      let customCodesMap = new Map(
+        JSON.parse(fs.readFileSync("./customCodes.json"))
+      );
       let customNames = Array.from(customCodesMap.keys());
       let customCodes = Array.from(customCodesMap.values());
-      var codeMatch = customNames.map(a => a.toUpperCase()).indexOf(level_code);
+      var codeMatch = customNames
+        .map((a) => a.toUpperCase())
+        .indexOf(level_code);
       if (codeMatch !== -1) {
         level_code = customCodes[codeMatch];
       }
     }
     respond(quesoqueue.replace(sender.displayName, level_code));
-  } else if (message == '!level' && sender.isBroadcaster) {
+  } else if (message == "!level" && sender.isBroadcaster) {
     let next_level = undefined;
     let selection_mode = settings.level_selection[selection_iter++];
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
     }
     switch (selection_mode) {
-      case 'next':
+      case "next":
         next_level = await quesoqueue.next();
         break;
-      case 'subnext':
+      case "subnext":
         next_level = await quesoqueue.subnext();
         break;
-      case 'modnext':
+      case "modnext":
         next_level = await quesoqueue.modnext();
         break;
-      case 'random':
+      case "random":
         next_level = await quesoqueue.random();
         break;
-      case 'subrandom':
+      case "subrandom":
         next_level = await quesoqueue.subrandom();
         break;
-      case 'modrandom':
+      case "modrandom":
         next_level = await quesoqueue.modrandom();
         break;
-      case 'weightedrandom':
+      case "weightedrandom":
         next_level = await quesoqueue.weightedrandom();
         break;
       default:
-        selection_mode = 'default';
+        selection_mode = "default";
         next_level = await quesoqueue.next();
     }
     level_timer.restart();
     level_timer.pause();
-    if (selection_mode == 'weightedrandom') {
-      respond('(' + selection_mode + ') ' + weighted_level_message(next_level));
+    if (selection_mode == "weightedrandom") {
+      respond("(" + selection_mode + ") " + weighted_level_message(next_level));
     } else {
-      respond('(' + selection_mode + ') ' + next_level_message(next_level));
+      respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
-  } else if (message == '!next' && sender.isBroadcaster) {
+  } else if (message == "!next" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
-  } else if (message == '!subnext' && sender.isBroadcaster) {
+  } else if (message == "!subnext" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.subnext();
     respond(next_level_message(next_level));
-  } else if (message == '!modnext' && sender.isBroadcaster) {
+  } else if (message == "!modnext" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.modnext();
     respond(next_level_message(next_level));
-  } else if (message == '!random' && sender.isBroadcaster) {
+  } else if (message == "!random" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.random();
     respond(next_level_message(next_level));
-  } else if (message == '!weightedrandom' && sender.isBroadcaster) {
+  } else if (message == "!weightedrandom" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.weightedrandom();
     respond(weighted_level_message(next_level));
-  } else if (message == '!subrandom' && sender.isBroadcaster) {
+  } else if (message == "!subrandom" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.subrandom();
     respond(next_level_message(next_level));
-  } else if (message == '!modrandom' && sender.isBroadcaster) {
+  } else if (message == "!modrandom" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     let next_level = await quesoqueue.modrandom();
     respond(next_level_message(next_level));
-  } else if (message == '!punt' && sender.isBroadcaster) {
+  } else if (message == "!punt" && sender.isBroadcaster) {
     level_timer.restart();
     level_timer.pause();
     respond(await quesoqueue.punt());
-  } else if ((message == '!dismiss' || message == '!skip' || message.startsWith('!complete')) && sender.isBroadcaster) {
+  } else if (
+    (message == "!dismiss" ||
+      message == "!skip" ||
+      message.startsWith("!complete")) &&
+    sender.isBroadcaster
+  ) {
     level_timer.restart();
     level_timer.pause();
     respond(await quesoqueue.dismiss());
-  } else if (message.startsWith('!select') && sender.isBroadcaster) {
+  } else if (message.startsWith("!select") && sender.isBroadcaster) {
     var username = get_remainder(message);
     level_timer.restart();
     level_timer.pause();
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
-      if (dip_level.code == 'R0M-HAK-LVL') {
-        respond("Now playing a ROMhack submitted by " + dip_level.submitter + ".");
+      if (dip_level.code == "R0M-HAK-LVL") {
+        respond(
+          "Now playing a ROMhack submitted by " + dip_level.submitter + "."
+        );
       } else {
         respond(
           "Now playing " +
-          dip_level.code +
-          " submitted by " +
-          dip_level.submitter +
-          "."
+            dip_level.code +
+            " submitted by " +
+            dip_level.submitter +
+            "."
         );
       }
     } else {
-      respond('No levels in the queue were submitted by ' + username + '.');
+      respond("No levels in the queue were submitted by " + username + ".");
     }
-  } else if (message == '!current') {
+  } else if (message == "!current") {
     respond(current_level_message(quesoqueue.current()));
-  } else if (message.startsWith('!list') || message.startsWith('!queue')) {
-    if (can_list) {
-      can_list = false;
-      setTimeout(() => can_list = true, settings.message_cooldown * 1000);
-      respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
+  } else if (message.startsWith("!list") || message.startsWith("!queue")) {
+    if (settings.message_cooldown) {
+      if (can_list) {
+        can_list = false;
+        setTimeout(() => (can_list = true), settings.message_cooldown * 1000);
+        respond(
+          level_list_message(
+            sender.displayName,
+            quesoqueue.current(),
+            await quesoqueue.list()
+          )
+        );
+      } else {
+        respond("Scroll up to see the queue.");
+      }
     } else {
-      respond('Scroll up to see the queue.');
+      respond(level_list_message(sender.displayName, quesoqueue.current(), await quesoqueue.list()));
     }
-  } else if ((message == '!position') || (message == '!pos')) {
-    respond(await position_message(await quesoqueue.position(sender.displayName), sender.displayName));
-  } else if ((message == '!weightedchance') || (message == '!odds') || (message == '!chance') || (message == '!chances')) {
-    respond(await weightedchance_message(await quesoqueue.weightedchance(sender.displayName, sender.username), sender.displayName));
-  } else if ((message == '!submitted') || (message == '!entry') || (message == '!mylevel') || (message == '!mylvl')) {
-    respond(await submitted_message(await quesoqueue.submittedlevel(sender.username), sender.displayName));
-  } else if (message == '!start' && sender.isBroadcaster) {
+  } else if (message == "!position" || message == "!pos") {
+    respond(
+      await position_message(
+        await quesoqueue.position(sender.displayName),
+        sender.displayName
+      )
+    );
+  } else if (
+    message == "!weightedchance" ||
+    message == "!odds" ||
+    message == "!chance" ||
+    message == "!chances"
+  ) {
+    respond(
+      await weightedchance_message(
+        await quesoqueue.weightedchance(sender.displayName, sender.username),
+        sender.displayName
+      )
+    );
+  } else if (
+    message == "!submitted" ||
+    message == "!entry" ||
+    message == "!mylevel" ||
+    message == "!mylvl"
+  ) {
+    respond(
+      await submitted_message(
+        await quesoqueue.submittedlevel(sender.username),
+        sender.displayName
+      )
+    );
+  } else if (message == "!start" && sender.isBroadcaster) {
     level_timer.resume();
-    respond('Timer started! Get going!');
-  } else if (message == '!resume' && sender.isBroadcaster) {
+    respond("Timer started! Get going!");
+  } else if (message == "!resume" && sender.isBroadcaster) {
     level_timer.resume();
-    respond('Timer unpaused! Get going!');
-  } else if (message == '!pause' && sender.isBroadcaster) {
+    respond("Timer unpaused! Get going!");
+  } else if (message == "!pause" && sender.isBroadcaster) {
     level_timer.pause();
-    respond('Timer paused');
-  } else if (message == '!restart' && sender.isBroadcaster) {
+    respond("Timer paused");
+  } else if (message == "!restart" && sender.isBroadcaster) {
     level_timer.restart();
-    respond('Starting the clock over! CP Hype!');
-  } else if (message == '!restore' && sender.isBroadcaster) {
+    respond("Starting the clock over! CP Hype!");
+  } else if (message == "!restore" && sender.isBroadcaster) {
     quesoqueue.load();
     respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
-  } else if (message == '!clear' && sender.isBroadcaster) {
+  } else if (message == "!clear" && sender.isBroadcaster) {
     quesoqueue.clear();
-    respond('The queue has been cleared!');
-  } else if ((message.startsWith('!customcode') || (message == '!customcodes')) && (settings.custom_codes_enabled)) {
+    respond("The queue has been cleared!");
+  } else if (
+    (message.startsWith("!customcode") || message == "!customcodes") &&
+    settings.custom_codes_enabled
+  ) {
     if (sender.isBroadcaster) {
       var codeArguments = get_remainder(message);
       if (codeArguments == "") {
@@ -351,21 +452,29 @@ async function HandleMessage(message, sender, respond) {
     } else {
       respond(await quesoqueue.customCodes());
     }
-  } else if (message == '!brb') {
+  } else if (message == "!brb") {
     twitch.setToLurk(sender.username);
-    respond('See you later, ' + sender.displayName + '! Your level will not be played until you use the !back command.');
-  } else if (message == '!back') {
+    respond(
+      "See you later, " +
+        sender.displayName +
+        "! Your level will not be played until you use the !back command."
+    );
+  } else if (message == "!back") {
     if (twitch.notLurkingAnymore(sender.username)) {
-      respond('Welcome back, ' + sender.displayName + '!');
+      respond("Welcome back, " + sender.displayName + "!");
     }
-  } else if (message == '!order') {
+  } else if (message == "!order") {
     if (settings.level_selection.length == 0) {
-      respond('No order has been specified.');
+      respond("No order has been specified.");
     } else {
-      respond('Level order: ' +
-        settings.level_selection.reduce((acc, x) => acc + ', ' + x) +
-        '. Next level will be: ' +
-        settings.level_selection[selection_iter % settings.level_selection.length]);
+      respond(
+        "Level order: " +
+          settings.level_selection.reduce((acc, x) => acc + ", " + x) +
+          ". Next level will be: " +
+          settings.level_selection[
+            selection_iter % settings.level_selection.length
+          ]
+      );
     }
   }
 }

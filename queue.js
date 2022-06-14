@@ -81,6 +81,11 @@ if (settings.romhacks_enabled && settings.custom_codes_enabled) {
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.
 // For max data id threshold, if you only want to have a max maker id threshold, send the 2nd argument as null.
+/**
+ * @param {string} courseIdString
+ * @param {number | undefined} dataIdCourseThreshold
+ * @param {number | undefined} dataIdMakerThreshold
+ */
 function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThreshold)
 {
   //console.log(courseIdString);
@@ -189,7 +194,7 @@ console.log("userWait time is " + userChance + " and the total odds are " + tota
 
 const queue = {
   add: (level) => {
-    if (levels.length >= settings.max_size) {
+    if (settings.max_size && levels.length >= settings.max_size) {
       return "Sorry, the level queue is full!";
     }
     let code = extractValidCode(level.code);

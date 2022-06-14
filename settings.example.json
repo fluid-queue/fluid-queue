@@ -1,0 +1,15 @@
+{
+    "username": "coolguy (required)",
+    "channel": "coolguy (required)",
+    "password": "oauth supersecretplease(required)",
+    "start_open": true,
+    "enable_absolute_position": true,
+    "custom_codes_enabled": true,
+    "romhacks_enabled": true,
+    "max_size": 5,
+    "level_timeout": 100,
+    "level_selection": ["next", "random"],
+    "message_cooldown": 10,
+    "dataIdCourseThreshold": 11223344,
+    "dataIdMakerThreshold": 11223344
+} 
