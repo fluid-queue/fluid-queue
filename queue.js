@@ -621,22 +621,24 @@ const queue = {
       );
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
-      const [customName, realName] = rest;
+      const [rawCustomName, realName] = rest;
+      const customName = rawCustomName.toUpperCase()
 
       if (customCodesMap.has(customName)) {
         return `The custom code ${customName} already exists`;
         }
       customCodesMap.set(customName, realName);
       save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ${realName} has been added`;
+      return `Your custom code ${rawCustomName} for ID ${realName} has been added.`;
     } else if (command == "remove" && rest.length == 1) {
-      const [customName] = rest;
+      const [rawCustomName] = rest;
+      const customName = rawCustomName.toUpperCase()
       if (!customCodesMap.has(customName)) {
-        return `The custom code ${customName} could not be found.`;
+        return `The custom code ${rawCustomName} could not be found.`;
       }
       customCodesMap.delete(customName);
       save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${customName} has been removed.`;
+      return `The custom code ${rawCustomName} has been removed.`;
     } else {
       return "Invalid arguments. The correct syntax is !customcode {add/remove} {customCode} {ID}.";
     }
