@@ -215,16 +215,9 @@ async function HandleMessage(message, sender, respond) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message.toUpperCase());
       if (settings.custom_codes_enabled) {
-        let customCodesMap = new Map(
-          JSON.parse(fs.readFileSync("./customCodes.json"))
-        );
-        let customNames = Array.from(customCodesMap.keys());
-        let customCodes = Array.from(customCodesMap.values());
-        var codeMatch = customNames
-          .map((a) => a.toUpperCase())
-          .indexOf(level_code);
-        if (codeMatch !== -1) {
-          level_code = customCodes[codeMatch];
+        let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+        if (customCodesMap.has(level_code)) {
+          level_code = customCodesMap.get(level_code);
         }
       }
       respond(
@@ -247,16 +240,9 @@ async function HandleMessage(message, sender, respond) {
   ) {
     let level_code = get_remainder(message.toUpperCase());
     if (settings.custom_codes_enabled) {
-      let customCodesMap = new Map(
-        JSON.parse(fs.readFileSync("./customCodes.json"))
-      );
-      let customNames = Array.from(customCodesMap.keys());
-      let customCodes = Array.from(customCodesMap.values());
-      var codeMatch = customNames
-        .map((a) => a.toUpperCase())
-        .indexOf(level_code);
-      if (codeMatch !== -1) {
-        level_code = customCodes[codeMatch];
+      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      if (customCodesMap.has(level_code)){
+        level_code = customCodesMap.get(level_code)
       }
     }
     respond(quesoqueue.replace(sender.displayName, level_code));
