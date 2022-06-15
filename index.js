@@ -292,51 +292,69 @@ async function HandleMessage(message, sender, respond) {
         selection_mode = "default";
         next_level = await quesoqueue.next();
     }
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     if (selection_mode == "weightedrandom") {
       respond("(" + selection_mode + ") " + weighted_level_message(next_level));
     } else {
       respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
   } else if (message == "!next" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
   } else if (message == "!subnext" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.subnext();
     respond(next_level_message(next_level));
   } else if (message == "!modnext" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.modnext();
     respond(next_level_message(next_level));
   } else if (message == "!random" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.random();
     respond(next_level_message(next_level));
   } else if (message == "!weightedrandom" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.weightedrandom();
     respond(weighted_level_message(next_level));
   } else if (message == "!subrandom" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.subrandom();
     respond(next_level_message(next_level));
   } else if (message == "!modrandom" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     let next_level = await quesoqueue.modrandom();
     respond(next_level_message(next_level));
   } else if (message == "!punt" && sender.isBroadcaster) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     respond(await quesoqueue.punt());
   } else if (
     (message == "!dismiss" ||
@@ -344,13 +362,17 @@ async function HandleMessage(message, sender, respond) {
       message.startsWith("!complete")) &&
     sender.isBroadcaster
   ) {
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     respond(await quesoqueue.dismiss());
   } else if (message.startsWith("!select") && sender.isBroadcaster) {
     var username = get_remainder(message);
-    level_timer.restart();
-    level_timer.pause();
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
       if (dip_level.code == "R0M-HAK-LVL") {
@@ -420,16 +442,16 @@ async function HandleMessage(message, sender, respond) {
         sender.displayName
       )
     );
-  } else if (message == "!start" && sender.isBroadcaster) {
+  } else if (settings.level_timeout && message == "!start" && sender.isBroadcaster) {
     level_timer.resume();
     respond("Timer started! Get going!");
-  } else if (message == "!resume" && sender.isBroadcaster) {
+  } else if (settings.level_timeout && message == "!resume" && sender.isBroadcaster) {
     level_timer.resume();
     respond("Timer unpaused! Get going!");
-  } else if (message == "!pause" && sender.isBroadcaster) {
+  } else if (settings.level_timeout && message == "!pause" && sender.isBroadcaster) {
     level_timer.pause();
     respond("Timer paused");
-  } else if (message == "!restart" && sender.isBroadcaster) {
+  } else if (settings.level_timeout && message == "!restart" && sender.isBroadcaster) {
     level_timer.restart();
     respond("Starting the clock over! CP Hype!");
   } else if (message == "!restore" && sender.isBroadcaster) {

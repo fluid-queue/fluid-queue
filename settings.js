@@ -37,16 +37,24 @@ const settings_validations = {
   custom_codes_enabled: cc => typeof cc === "boolean",
   romhacks_enabled: hacks => typeof hacks === "boolean", // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
   max_size: max => typeof max === "number",
+  level_timeout: timeout => timeout == null || typeof timeout === "number",
   level_selection: (selections) => [...selections].every(next => order_options.includes(next)),
   message_cooldown: cool => typeof cool === "number",
-  dataIdCourseThreshold: threshold => typeof threshold === "number",
-  dataIdMakerThreshold: threshold => typeof threshold === "number"
+  dataIdCourseThreshold: threshold => threshold == null || typeof threshold === "number",
+  dataIdMakerThreshold: threshold => threshold == null || typeof threshold === "number"
 };
 
 for (const key in settings) {
   if (Object.hasOwnProperty.call(settings, key)) {
-    if (!settings_validations[key](settings[key])) {
-      throw new Error(`problem with ${key}`)
+    try {
+        if (!settings_validations[key](settings[key])) {
+        throw new Error(`problem with ${key}`)
+      }
+    } catch(e) {
+      if (e instanceof TypeError) {
+        throw new TypeError(`${key} is not a valid option!`)
+      }
+      throw e;
     }
   }
 }
