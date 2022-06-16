@@ -20,7 +20,7 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [message_cooldown] - number of seconds between list commands
  * @property {number} [dataIdCourseThreshold] - maximum allowed data id for course ids if set
  * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
- * @property {boolean} prettySaveFiles - true if and only if the save files in ./data/*.json should be formatted
+ * @property {boolean} [prettySaveFiles] - true if and only if the save files in ./data/*.json should be formatted
  */
 
 /** @type {settings} */
