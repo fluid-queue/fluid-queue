@@ -8,3 +8,6 @@
 /customCodes.json
 /userOnlineTime.txt
 /data/
+
+# Secrets
+settings.json

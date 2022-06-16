@@ -21,7 +21,10 @@ Next, install the dependencies for the project using the following command:
   npm install
 ```
 
-After that, configure the settings.js file (detailed below). Finally, run the following command to start the bot:
+After that, copy and configure the settings.json file (detailed below). Finally, run the following command to start the bot:
+```bash
+cp settings.example.json settings.json
+```
 
 ```bash
   npm start run
@@ -48,11 +51,11 @@ The settings.json file contains several options to make the bot as customizable 
 
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is 100.
 
-`level_timeout` is the amount of time in minutes a level can be played before the bot will inform you that time is up. The default value is 9999.
+`level_timeout` is the amount of time in minutes a level can be played before the bot will inform you that time is up. The default is to not
 
 `level_selection` is an array that defines the order that levels will be selected in upon using `!level`. Once the order is completed, it will loop.
 
-`message_cooldown` is the amount of time in seconds that a user must wait before !list will display the levels in the queue after a previous use. The default value is 5.
+`message_cooldown` is the amount of time in seconds that a user must wait before !list will display the levels in the queue after a previous use. 
 
 `dataIdCourseThreshold` is the highest allowed data ID for course IDs. This is used to stop levels that do not exist from entering the queue, however it is very difficult to know and/or dynamically change this amount accordingly. As such, the default value is undefined, which ignores the restriction.
 
@@ -95,7 +98,11 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!position` will output the user's position in the queue, provided they have one.
 
-`!level`* will select a level from the queue with respect to the order definined in the settings.js file.
+`!submitted`/`!entry`/`!mylevel`/`!mylvl` will output the user's submitted level code, provided they have submitted a level.
+
+`!weightedchance`/`!odds`/`!chance`/`!chances` will output the user's chances of getting selected in weighted random.
+
+`!level`* will select a level from the queue with respect to the order defined in the settings.js file.
 
 `!next`* will select the next level from the queue.
 

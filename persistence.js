@@ -270,10 +270,13 @@ const loadCustomCodesSync = () => {
     return new Map(loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync(new Map()), 'Custom codes will not function.'));
 };
 
-const saveCustomCodesSync = (customCodesMap) => {
+const saveCustomCodesSync = (customCodesMap, errorMessage = undefined) => {
     try {
-        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify(Array.from(customCodesMap.entries())));
+        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify([...customCodesMap]));
     } catch (err) {
+        if (errorMessage !== undefined) {
+            console.warn(errorMessage);
+        }
         console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', CUSTOM_CODES_FILENAME, err);
         // ignore this error and keep going
         // hopefully this issue is gone on the next save
