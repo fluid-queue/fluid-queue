@@ -19,7 +19,7 @@ const defaultTestChatters = {
 };
 const defaultTestSettings = {
     username: 'queso_queue_test_username',
-    password: '',
+    password: 'oauth:test',
     channel: 'queso_queue_test_channel',
     max_size: 50,
     level_timeout: 10,
@@ -156,15 +156,13 @@ function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = u
         jest.mock('fs', () => mockFs);
         fs = require('fs');
 
-        // setup settings mock
-        jest.mock('../../settings.js', () => { return {}; });
-
-        // import settings and replace them
-        settings = require('../../settings.js');
+        // write settings.json file
         if (mockSettings === undefined) {
             mockSettings = defaultTestSettings;
         }
-        replaceSettings(settings, mockSettings);
+        mockFs.writeFileSync('./settings.json', JSON.stringify(mockSettings));
+        // import settings
+        settings = require('../../settings.js');
 
         // import libraries
         chatbot = require('../../chatbot.js');
