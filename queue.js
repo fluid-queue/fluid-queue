@@ -1,6 +1,5 @@
 const settings = require('./settings.js');
 const twitch = require('./twitch.js').twitch();
-const fs = require('fs');
 const { setIntervalAsync } = require('set-interval-async/dynamic');
 const persistence = require('./persistence.js');
 const standardBase30 = '0123456789abcdefghijklmnopqrst'
@@ -591,9 +590,10 @@ const queue = {
     persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
   },
 
-  saveAsync: async () => {
-    await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
-  },
+  // TODO: could be used instead of the sync variant
+  // saveAsync: async () => {
+  //   await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+  // },
 
   load: () => {
     if (loaded) {
