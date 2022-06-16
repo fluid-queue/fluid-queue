@@ -7,14 +7,8 @@ const { fail } = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { codeFrameColumns } = require('@babel/code-frame');
-const { simRequireIndex, simSetTime, simSetChatters, fetchMock, START_TIME } = require('../simulation.js');
+const { simRequireIndex, simSetTime, simSetChatters, buildChatter, fetchMock, START_TIME, EMPTY_CHATTERS } = require('../simulation.js');
 
-// constants
-const defaultTestChatters = {
-    _links: {},
-    chatter_count: 0,
-    chatters: { broadcaster: [], vips: [], moderators: [], staff: [], admins: [], global_mods: [], viewers: [] }
-};
 const isPronoun = (text) => {
     return text == 'Any' || text == 'Other' || text.includes('/');
 };
@@ -30,15 +24,11 @@ const replaceSettings = (settings, newSettings) => {
 beforeEach(() => {
     // reset fetch
     fetchMock.mockClear();
-    simSetChatters(defaultTestChatters);
+    simSetChatters(EMPTY_CHATTERS);
 
     // reset time
     jest.setSystemTime(START_TIME);
 });
-
-const build_chatter = function (username, displayName, isSubscriber, isMod, isBroadcaster) {
-    return { username, displayName, isSubscriber, isMod, isBroadcaster };
-}
 
 test('setup', () => {
     simRequireIndex();
@@ -93,7 +83,7 @@ const parseMessage = (line) => {
     trimLen -= message.length;
     return {
         message: message.trim(),
-        sender: build_chatter(username, displayName, isSubscriber, isMod, isBroadcaster),
+        sender: buildChatter(username, displayName, isSubscriber, isMod, isBroadcaster),
         column: idx + 2 + column,
         trimLen: trimLen,
     };

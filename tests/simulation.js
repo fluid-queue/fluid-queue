@@ -16,11 +16,17 @@ const DEFAULT_TEST_SETTINGS = {
     level_selection: ['next', 'subnext', 'modnext', 'random', 'subrandom', 'modrandom'],
     message_cooldown: 5,
 };
+// constants
+const EMPTY_CHATTERS = {
+    _links: {},
+    chatter_count: 0,
+    chatters: { broadcaster: [], vips: [], moderators: [], staff: [], admins: [], global_mods: [], viewers: [] }
+};
 // async function type
 const AsyncFunction = (async () => { }).constructor;
 
 // mock variables
-var mockChatters = undefined;
+var mockChatters = EMPTY_CHATTERS;
 
 // mocks
 jest.mock('../chatbot.js');
@@ -49,6 +55,12 @@ const simSetChatters = (newChatters) => {
         };
     }
     mockChatters = newChatters;
+};
+
+const createMockFs = () => {
+    const volume = new Volume();
+    volume.mkdirSync(path.resolve('.'), { recursive: true });
+    return volume;
 };
 
 /**
@@ -106,8 +118,7 @@ function simRequireIndex(mockFs = undefined, mockSettings = undefined, mockTime 
 
         // create virtual file system
         if (mockFs === undefined) {
-            mockFs = new Volume();
-            mockFs.mkdirSync(path.resolve('.'), { recursive: true });
+            mockFs = createMockFs();
         } else {
             // copy files
             const files = mockFs.toJSON();
@@ -219,12 +230,19 @@ const simSetTime = async (time, accuracy = 0) => {
     }
 }
 
+const buildChatter = function (username, displayName, isSubscriber, isMod, isBroadcaster) {
+    return { username, displayName, isSubscriber, isMod, isBroadcaster };
+}
+
 module.exports = {
     simRequireIndex,
     simAdvanceTime,
     simSetTime,
     simSetChatters,
+    buildChatter,
+    createMockFs,
     fetchMock: fetch,
     START_TIME,
-    DEFAULT_TEST_SETTINGS
+    DEFAULT_TEST_SETTINGS,
+    EMPTY_CHATTERS
 };
