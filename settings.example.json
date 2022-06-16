@@ -11,5 +11,6 @@
     "level_selection": ["next", "random"],
     "message_cooldown": 10,
     "dataIdCourseThreshold": 11223344,
-    "dataIdMakerThreshold": 11223344
+    "dataIdMakerThreshold": 11223344,
+    "prettySaveFiles": false
 } 

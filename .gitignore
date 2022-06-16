@@ -6,6 +6,8 @@
 /userWaitTime.txt
 /waitingUsers.txt
 /customCodes.json
+/userOnlineTime.txt
+/data/
 
 # Secrets
 settings.json

@@ -1,0 +1,30 @@
+{
+    "version": "2.0",
+    "currentLevel": {
+        "code": "BW2-G2R-CMG",
+        "submitter": "liquidnya",
+        "username": "liquidnya"
+    },
+    "queue": [
+        {
+            "code": "QWF-3K9-84G",
+            "submitter": "FurretWalkBot",
+            "username": "furretwalkbot"
+        },
+        {
+            "code": "BRL-F70-CLG",
+            "submitter": "helperblock",
+            "username": "helperblock"
+        }
+    ],
+    "waiting": {
+        "furretwalkbot": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
+    }
+}
