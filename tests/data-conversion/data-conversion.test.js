@@ -29,7 +29,7 @@ beforeEach(() => {
     consoleErrorMock.mockClear();
 });
 
-const copy = (mockFs, mockFileName, realFs, realFileName) => {
+const copy = (mockFs, realFs, mockFileName, realFileName) => {
     if (realFs.existsSync(realFileName)) {
         mockFs.writeFileSync(mockFileName, realFs.readFileSync(realFileName));
     }
@@ -37,10 +37,16 @@ const copy = (mockFs, mockFileName, realFs, realFileName) => {
 
 const loadFileSystem = (testFolder) => {
     let mockFs = createMockFs();
-    copy(mockFs, './queso.save', fs, path.resolve(__dirname, `data/${testFolder}/queso.save`));
-    copy(mockFs, './userWaitTime.txt', fs, path.resolve(__dirname, `data/${testFolder}/userWaitTime.txt`));
-    copy(mockFs, './waitingUsers.txt', fs, path.resolve(__dirname, `data/${testFolder}/waitingUsers.txt`));
+    copy(mockFs, fs, './queso.save', path.resolve(__dirname, `data/${testFolder}/queso.save`));
+    copy(mockFs, fs, './userWaitTime.txt', path.resolve(__dirname, `data/${testFolder}/userWaitTime.txt`));
+    copy(mockFs, fs, './waitingUsers.txt', path.resolve(__dirname, `data/${testFolder}/waitingUsers.txt`));
     return mockFs;
+};
+
+const checkResult = (mockFs, realFs, testFolder) => {
+    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
+    let queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/queue.json`)));
+    expect(queue_real).toEqual(queue_expect);
 };
 
 test('conversion-test-empty', () => {
@@ -52,9 +58,7 @@ test('conversion-test-empty', () => {
     // should load without errors!
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(fs.readFileSync(path.resolve(__dirname, `data/test-empty/queue.json`)));
-    expect(queue_real).toEqual(queue_expect);
+    checkResult(mockFs, fs, test);
 });
 
 test('conversion-test-1', () => {
@@ -65,9 +69,7 @@ test('conversion-test-1', () => {
     // should load without errors, but a warning in the console
     expect(consoleWarnMock).toHaveBeenCalledWith("Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.");
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(fs.readFileSync(path.resolve(__dirname, `data/${test}/queue.json`)));
-    expect(queue_real).toEqual(queue_expect);
+    checkResult(mockFs, fs, test);
     // no old files have been created
     expect(mockFs.existsSync('./queso.save')).toBe(false);
     expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false);
@@ -82,9 +84,7 @@ test('conversion-test-2', () => {
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(fs.readFileSync(path.resolve(__dirname, `data/${test}/queue.json`)));
-    expect(queue_real).toEqual(queue_expect);
+    checkResult(mockFs, fs, test);
     // old files have been deleted
     expect(mockFs.existsSync('./queso.save')).toBe(false);
     expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false);
@@ -99,9 +99,7 @@ test('conversion-test-3', () => {
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(fs.readFileSync(path.resolve(__dirname, `data/${test}/queue.json`)));
-    expect(queue_real).toEqual(queue_expect);
+    checkResult(mockFs, fs, test);
     // old files have been deleted
     expect(mockFs.existsSync('./queso.save')).toBe(false);
     expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false);
@@ -116,9 +114,22 @@ test('conversion-test-4', () => {
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-    let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(fs.readFileSync(path.resolve(__dirname, `data/${test}/queue.json`)));
-    expect(queue_real).toEqual(queue_expect);
+    checkResult(mockFs, fs, test);
+    // old files have been deleted
+    expect(mockFs.existsSync('./queso.save')).toBe(false);
+    expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false);
+    expect(mockFs.existsSync('./waitingUsers.txt')).toBe(false);
+});
+
+test('conversion-test-5', () => {
+    const test = 'test-5';
+    let mockFs = loadFileSystem(test);
+    const index = simRequireIndex(mockFs);
+    mockFs = index.fs;
+    // should load without errors and no exception was thrown
+    expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+    expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+    checkResult(mockFs, fs, test);
     // old files have been deleted
     expect(mockFs.existsSync('./queso.save')).toBe(false);
     expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false);
