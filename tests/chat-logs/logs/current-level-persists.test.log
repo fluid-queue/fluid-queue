@@ -1,5 +1,5 @@
 # "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
 # chatters 
 chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
 # chatty chat log
