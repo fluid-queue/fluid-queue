@@ -18,5 +18,18 @@
             "username": "helperblock"
         }
     ],
-    "waiting": {}
+    "waiting": {
+        "liquidnya": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "furretwalkbot": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
+    }
 }

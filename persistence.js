@@ -87,6 +87,7 @@ const loadFileOrCreate = (fileName, createFunction, errorMessage) => {
 
 const loadQueueV1 = () => {
     const cache_filename = FILENAME_V1.queso;
+    const now = (new Date()).toISOString();
     let levels = new Array();
     let currentLevel = undefined;
     // load levels
@@ -132,7 +133,17 @@ const loadQueueV1 = () => {
         throw new Error(`Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userOnlineTime}.`);
     }
     // convert wait time to object
-    const waiting = waitingToObject(waitingUsers, userWaitTime, userOnlineTime);
+    const waiting = waitingToObject(waitingUsers, userWaitTime, userOnlineTime, now);
+    // now add anyone who is in the queue, but not waiting
+    // note: the current level does not have a wait time!
+    levels.forEach((level) => {
+        if (!hasOwn(waiting, level.username)) {
+            waiting[level.username] = {
+                waitTime: 1,
+                lastOnlineTime: now,
+            };
+        }
+    });
     return {
         currentLevel,
         queue: levels,
@@ -140,8 +151,10 @@ const loadQueueV1 = () => {
     };
 };
 
-const waitingToObject = (waitingUsers, userWaitTime, userOnlineTime = undefined) => {
-    const now = (new Date()).toISOString();
+const waitingToObject = (waitingUsers, userWaitTime, userOnlineTime = undefined, now = undefined) => {
+    if (now === undefined) {
+        now = (new Date()).toISOString();
+    }
     const waiting = {};
     for (let index = 0; index < waitingUsers.length; index++) {
         const username = waitingUsers[index];

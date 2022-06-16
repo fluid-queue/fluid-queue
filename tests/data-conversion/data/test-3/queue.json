@@ -17,5 +17,14 @@
             "username": "helperblock"
         }
     ],
-    "waiting": {}
+    "waiting": {
+        "furretwalkbot": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 1,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
+    }
 }
