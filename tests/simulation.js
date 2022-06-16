@@ -76,7 +76,7 @@ const createMockFs = () => {
  * @property {function():number} random the Math.random mock
  * @property {Object} quesoqueue the queue instance that `index.js` is using
  * @property {function(string, {username: string; displayName: string; isSubscriber: boolean; isMod: boolean; isBroadcaster: boolean;}, function(string):void):void} handle_func the function of the chatbot that receives chat messages
- */
+*/
 
 /**
  * load `index.js` and test it being setup correctly
@@ -95,77 +95,90 @@ function simRequireIndex(mockFs = undefined, mockSettings = undefined, mockTime 
     let quesoqueue;
     let handle_func;
 
-    jest.isolateModules(() => {
-        // remove timers
-        jest.clearAllTimers();
+    try {
+        jest.isolateModules(() => {
+            // remove timers
+            jest.clearAllTimers();
 
-        // setup time
-        jest.useFakeTimers();
+            // setup time
+            jest.useFakeTimers();
 
-        if (mockTime !== undefined) {
-            jest.setSystemTime(mockTime);
-        } else {
-            jest.setSystemTime(START_TIME);
-        }
+            if (mockTime !== undefined) {
+                jest.setSystemTime(mockTime);
+            } else {
+                jest.setSystemTime(START_TIME);
+            }
 
-        // setup random mock
-        const chance = jestChance.getChance();
-        random = jest
-            .spyOn(global.Math, 'random')
-            .mockImplementation(() => {
-                return chance.random();
-            });
+            // setup random mock
+            const chance = jestChance.getChance();
+            random = jest
+                .spyOn(global.Math, 'random')
+                .mockImplementation(() => {
+                    return chance.random();
+                });
 
-        // create virtual file system
-        if (mockFs === undefined) {
-            mockFs = createMockFs();
-        } else {
-            // copy files
-            const files = mockFs.toJSON();
-            mockFs = new Volume();
-            mockFs.fromJSON(files);
-        }
-        // setup virtual file system
-        jest.mock('fs', () => mockFs);
-        fs = require('fs');
+            // create virtual file system
+            if (mockFs === undefined) {
+                mockFs = createMockFs();
+            } else {
+                // copy files
+                const files = mockFs.toJSON();
+                mockFs = new Volume();
+                mockFs.fromJSON(files);
+            }
+            // setup virtual file system
+            jest.mock('fs', () => mockFs);
+            fs = require('fs');
 
-        // write settings.json file
-        if (mockSettings === undefined) {
-            mockSettings = DEFAULT_TEST_SETTINGS;
-        }
-        mockFs.writeFileSync('./settings.json', JSON.stringify(mockSettings));
-        // import settings
-        settings = require('../settings.js');
+            // write settings.json file
+            if (mockSettings === undefined) {
+                mockSettings = DEFAULT_TEST_SETTINGS;
+            }
+            mockFs.writeFileSync('./settings.json', JSON.stringify(mockSettings));
+            // import settings
+            settings = require('../settings.js');
 
-        // import libraries
-        chatbot = require('../chatbot.js');
-        const queue = require('../queue.js');
+            // import libraries
+            chatbot = require('../chatbot.js');
+            const queue = require('../queue.js');
 
-        // spy on the quesoqueue that index will use
-        const quesoqueueSpy = jest.spyOn(queue, 'quesoqueue');
+            // spy on the quesoqueue that index will use
+            const quesoqueueSpy = jest.spyOn(queue, 'quesoqueue');
 
-        // run index.js
-        require('../index.js');
+            // run index.js
+            require('../index.js');
 
-        // get hold of the queue
-        expect(quesoqueueSpy).toHaveBeenCalledTimes(1);
-        quesoqueue = quesoqueueSpy.mock.results[0].value;
-        quesoqueueSpy.mockRestore();
+            // get hold of the queue
+            expect(quesoqueueSpy).toHaveBeenCalledTimes(1);
+            quesoqueue = quesoqueueSpy.mock.results[0].value;
+            quesoqueueSpy.mockRestore();
 
-        // get hold of chatbot_helper
-        expect(chatbot.helper).toHaveBeenCalledTimes(1);
-        chatbot_helper = chatbot.helper.mock.results[0].value;
+            // get hold of chatbot_helper
+            expect(chatbot.helper).toHaveBeenCalledTimes(1);
+            chatbot_helper = chatbot.helper.mock.results[0].value;
 
-        expect(chatbot_helper.setup).toHaveBeenCalledTimes(1)
-        expect(chatbot_helper.connect).toHaveBeenCalledTimes(1);
-        expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
-        expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
+            expect(chatbot_helper.setup).toHaveBeenCalledTimes(1)
+            expect(chatbot_helper.connect).toHaveBeenCalledTimes(1);
+            expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
+            expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
 
-        // get hold of the handle function
-        // the first argument of setup has to be an AsyncFunction
-        expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(AsyncFunction);
-        handle_func = chatbot_helper.setup.mock.calls[0][0];
-    });
+            // get hold of the handle function
+            // the first argument of setup has to be an AsyncFunction
+            expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(AsyncFunction);
+            handle_func = chatbot_helper.setup.mock.calls[0][0];
+        });
+    } catch (err) {
+        err.simIndex = {
+            fs,
+            settings,
+            chatbot,
+            chatbot_helper,
+            random,
+            quesoqueue,
+            handle_func,
+        };
+        throw err;
+    }
 
     return {
         fs,
