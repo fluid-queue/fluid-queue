@@ -1,5 +1,5 @@
 # "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
 # chatters
 chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
 # chatty chat log
@@ -11,43 +11,56 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [23:32:29] @^helperblock: The queue has been cleared!
 [23:32:30] ~%?liquidnya: !open
 [23:32:30] @^helperblock: The queue is now open!
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 [23:32:50] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:32:51] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:33:16] ~%?liquidnya: !remove @FurretWalkBot
 [23:33:17] @^helperblock: @FurretWalkBot's level has been removed from the queue.
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 [23:33:24] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:25] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:33:30] ~%?liquidnya: !remove FurretWalkBot
 [23:33:31] @^helperblock: FurretWalkBot's level has been removed from the queue.
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 [23:33:39] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:39] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:33:50] ~%?liquidnya: !remove @furretwalkbot
 [23:33:50] @^helperblock: @furretwalkbot's level has been removed from the queue.
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 [23:33:55] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:55] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:33:58] ~%?liquidnya: !remove furretwalkbot
 [23:33:58] @^helperblock: furretwalkbot's level has been removed from the queue.
-queso.save []
+queue.json/currentLevel null
+queue.json/queue []
 [23:34:04] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:34:04] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:34:11] ~%?liquidnya: !remove FURRETWALKBOT
 [23:34:11] @^helperblock: No levels from FURRETWALKBOT were found in the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:34:16] ~%?liquidnya: !remove @FURRETWALKBOT
 [23:34:16] @^helperblock: No levels from @FURRETWALKBOT were found in the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 [23:34:23] ~%?liquidnya: !remove @@furretwalkbot
 [23:34:24] @^helperblock: No levels from @@furretwalkbot were found in the queue.
-queso.save [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 # The username argument is not split with spaces
 # TODO: is this a bug?

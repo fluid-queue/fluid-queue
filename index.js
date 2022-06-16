@@ -4,6 +4,9 @@ const quesoqueue = require("./queue.js").quesoqueue();
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
 const fs = require("fs");
+var gracefulFs = require("graceful-fs")
+// patch fs to use the graceful-fs, to retry a file rename under windows
+gracefulFs.gracefulify(fs)
 
 quesoqueue.load();
 

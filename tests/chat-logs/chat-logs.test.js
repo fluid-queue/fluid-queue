@@ -2,217 +2,36 @@
 
 // imports
 const jestChance = require('jest-chance');
-// var tk = require('timekeeper');
 const readline = require('readline');
 const { fail } = require('assert');
-const { Volume } = require('memfs');
 const path = require('path');
 const fs = require('fs');
 const { codeFrameColumns } = require('@babel/code-frame');
+const { simRequireIndex, simSetTime, simSetChatters, buildChatter, fetchMock, START_TIME, EMPTY_CHATTERS } = require('../simulation.js');
 
-// constants
-const AsyncFunction = (async () => { }).constructor;
-const defaultTestChatters = {
-    _links: {},
-    chatter_count: 0,
-    chatters: { broadcaster: [], vips: [], moderators: [], staff: [], admins: [], global_mods: [], viewers: [] }
-};
-const defaultTestSettings = {
-    username: 'queso_queue_test_username',
-    password: '',
-    channel: 'queso_queue_test_channel',
-    max_size: 50,
-    level_timeout: 10,
-    level_selection: ['next', 'subnext', 'modnext', 'random', 'subrandom', 'modrandom'],
-    message_cooldown: 5,
-};
 const isPronoun = (text) => {
     return text == 'Any' || text == 'Other' || text.includes('/');
 };
 
-// mock variables
-var mockChatters = undefined;
-
-// mocks
-jest.mock('../../chatbot.js');
-jest.mock('node-fetch', () => jest.fn());
-
-// only import after mocking!
-const fetch = require("node-fetch");
-
-// mock fetch
-fetch.mockImplementation(() =>
-    Promise.resolve({
-        json: () => Promise.resolve(mockChatters),
-    })
-);
-
 // fake timers
 jest.useFakeTimers();
-
-const flushPromises = () => {
-    return new Promise(jest.requireActual("timers").setImmediate);
-};
-
-const advanceTime = async (ms, accuracy = 0) => {
-    // advance by accuracy intervals
-    if (accuracy > 0) {
-        for (let i = 0; i < ms; i += accuracy) {
-            let advance = Math.min(accuracy, ms - i);
-            jest.advanceTimersByTime(advance);
-            await flushPromises();
-        }
-    } else {
-        jest.advanceTimersByTime(ms);
-        await flushPromises();
-    }
-};
-
-const setTime = async (time, accuracy = 0) => {
-    let prevTime = new Date();
-    let newTime = new Date();
-    let timeArray = time.split(':').map(x => parseInt(x, 10));
-    newTime.setUTCHours(timeArray[0]);
-    newTime.setUTCMinutes(timeArray[1]);
-    newTime.setUTCSeconds(timeArray[2]);
-    if (newTime < prevTime) {
-        // add one day in case of time going backwards
-        newTime.setUTCDate(newTime.getUTCDate() + 1);
-    }
-    const diff = newTime - prevTime;
-    if (diff > 0) {
-        await advanceTime(diff, accuracy);
-    } else if (diff < 0) {
-        fail(`Time went backwards, from ${prevTime} to ${newTime} (${time})`);
-    }
-}
 
 const replaceSettings = (settings, newSettings) => {
     Object.keys(settings).forEach(key => { delete settings[key]; });
     Object.assign(settings, newSettings);
 };
 
-const setChatters = (newChatters) => {
-    // automatically create a correct chatters object
-    if (!newChatters.hasOwnProperty('chatters')) {
-        newChatters = {
-            _links: {},
-            chatter_count: Object.values(newChatters).flat().length,
-            chatters: newChatters
-        };
-    }
-    mockChatters = newChatters;
-};
-
 beforeEach(() => {
     // reset fetch
-    fetch.mockClear();
-    setChatters(defaultTestChatters);
+    fetchMock.mockClear();
+    simSetChatters(EMPTY_CHATTERS);
 
     // reset time
-    jest.setSystemTime(new Date('2022-04-21T00:00:00Z'));
+    jest.setSystemTime(START_TIME);
 });
 
-// load index.js and test it being setup correctly
-function requireIndex(mockFs = undefined, mockSettings = undefined, mockTime = undefined) {
-    let fs;
-    let settings;
-    let chatbot;
-    let chatbot_helper;
-    let random;
-    let quesoqueue;
-    let handle_func;
-
-    jest.isolateModules(() => {
-        // remove timers
-        jest.clearAllTimers();
-
-        // setup time
-        jest.useFakeTimers();
-
-        if (mockTime !== undefined) {
-            jest.setSystemTime(mockTime);
-        }
-
-        // setup random mock
-        const chance = jestChance.getChance();
-        random = jest
-            .spyOn(global.Math, 'random')
-            .mockImplementation(() => {
-                return chance.random();
-            });
-
-        // create virtual file system
-        if (mockFs === undefined) {
-            mockFs = new Volume();
-            mockFs.mkdirSync(path.resolve('.'), { recursive: true });
-        } else {
-            // copy files
-            const files = mockFs.toJSON();
-            mockFs = new Volume();
-            mockFs.fromJSON(files);
-        }
-        // setup virtual file system
-        jest.mock('fs', () => mockFs);
-        fs = require('fs');
-
-        // setup settings mock
-        jest.mock('../../settings.js', () => { return {}; });
-
-        // import settings and replace them
-        settings = require('../../settings.js');
-        if (mockSettings === undefined) {
-            mockSettings = defaultTestSettings;
-        }
-        replaceSettings(settings, mockSettings);
-
-        // import libraries
-        chatbot = require('../../chatbot.js');
-        const queue = require('../../queue.js');
-
-        // spy on the quesoqueue that index will use
-        const quesoqueueSpy = jest.spyOn(queue, 'quesoqueue');
-
-        // run index.js
-        require('../../index.js');
-
-        // get hold of the queue
-        expect(quesoqueueSpy).toHaveBeenCalledTimes(1);
-        quesoqueue = quesoqueueSpy.mock.results[0].value;
-        quesoqueueSpy.mockRestore();
-
-        // get hold of chatbot_helper
-        expect(chatbot.helper).toHaveBeenCalledTimes(1);
-        chatbot_helper = chatbot.helper.mock.results[0].value;
-
-        expect(chatbot_helper.setup).toHaveBeenCalledTimes(1)
-        expect(chatbot_helper.connect).toHaveBeenCalledTimes(1);
-        expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
-        expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
-
-        // get hold of the handle function
-        // the first argument of setup has to be an AsyncFunction
-        expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(AsyncFunction);
-        handle_func = chatbot_helper.setup.mock.calls[0][0];
-    });
-
-    return {
-        fs,
-        settings,
-        chatbot,
-        chatbot_helper,
-        random,
-        quesoqueue,
-        handle_func,
-    };
-};
-
-const build_chatter = function (username, displayName, isSubscriber, isMod, isBroadcaster) {
-    return { username, displayName, isSubscriber, isMod, isBroadcaster };
-}
-
 test('setup', () => {
-    requireIndex();
+    simRequireIndex();
 });
 
 const parseMessage = (line) => {
@@ -264,7 +83,7 @@ const parseMessage = (line) => {
     trimLen -= message.length;
     return {
         message: message.trim(),
-        sender: build_chatter(username, displayName, isSubscriber, isMod, isBroadcaster),
+        sender: buildChatter(username, displayName, isSubscriber, isMod, isBroadcaster),
         column: idx + 2 + column,
         trimLen: trimLen,
     };
@@ -276,7 +95,7 @@ for (const file of testFiles) {
 
     const fileName = path.relative('.', path.resolve(__dirname, `logs/${file}`));
     test(fileName, async () => {
-        let test = requireIndex();
+        let test = simRequireIndex();
 
         var replyMessageQueue = [];
         var accuracy = 0;
@@ -317,17 +136,23 @@ for (const file of testFiles) {
                 };
             };
             if (command == 'restart') {
-                test = requireIndex(test.fs, test.settings, new Date());
+                test = simRequireIndex(test.fs, test.settings, new Date());
                 test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
             } else if (command == 'accuracy') {
                 accuracy = parseInt(rest);
             } else if (command == 'settings') {
                 replaceSettings(test.settings, JSON.parse(rest));
             } else if (command == 'chatters') {
-                setChatters(JSON.parse(rest));
-            } else if (command == 'queso.save') {
+                simSetChatters(JSON.parse(rest));
+            } else if (command.startsWith('queue.json')) {
                 try {
-                    expect(JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../queso.save')))).toEqual(JSON.parse(rest));
+                    const memberIdx = command.indexOf('/');
+                    let jsonData = JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../data/queue.json')));
+                    if (memberIdx != -1) {
+                        const member = command.substring(memberIdx + 1);
+                        jsonData = jsonData[member];
+                    }
+                    expect(jsonData).toEqual(JSON.parse(rest));
                 } catch (error) {
                     error.message += errorMessage(position());
                     throw error;
@@ -341,8 +166,10 @@ for (const file of testFiles) {
             } else if (command == 'random') {
                 test.random
                     .mockImplementationOnce(() => parseFloat(rest));
+            } else if (command == 'fs-fail') {
+                jest.spyOn(test.fs, rest).mockImplementationOnce((a, b, c, d = undefined, e = undefined) => { throw new Error('fail on purpose in test'); });
             } else if (command.startsWith('[') && command.endsWith(']')) {
-                await setTime(command.substring(1, command.length - 1), accuracy);
+                await simSetTime(command.substring(1, command.length - 1), accuracy);
                 // const time = new Date();
                 const chat = parseMessage(rest);
                 position = () => {

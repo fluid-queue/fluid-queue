@@ -1,7 +1,7 @@
 {
-    "username": "coolguy (required)",
-    "channel": "coolguy (required)",
-    "password": "oauth supersecretplease(required)",
+    "username": "coolbot (required, lowercase username of the bot account)",
+    "channel": "coolstreamer (required, lowercase username of your chat)",
+    "password": "oauth supersecretplease (required)",
     "start_open": true,
     "enable_absolute_position": true,
     "custom_codes_enabled": true,
@@ -11,5 +11,6 @@
     "level_selection": ["next", "random"],
     "message_cooldown": 10,
     "dataIdCourseThreshold": 11223344,
-    "dataIdMakerThreshold": 11223344
+    "dataIdMakerThreshold": 11223344,
+    "prettySaveFiles": false
 } 

@@ -1,73 +1,23 @@
 const settings = require('./settings.js');
 const twitch = require('./twitch.js').twitch();
-const fs = require('fs');
 const { setIntervalAsync } = require('set-interval-async/dynamic');
+const persistence = require('./persistence.js');
 const standardBase30 = '0123456789abcdefghijklmnopqrst'
 const nintendoBase30 = '0123456789BCDFGHJKLMNPQRSTVWXY'
 const arbitraryXorValue = 377544828
 
+var loaded = false;
 var current_level = undefined;
 var levels = new Array()
 var waitingUsers;
 var userWaitTime;
+var userOnlineTime;
 var customCodesMap = new Map();
-const cache_filename = "queso.save";
 
 const delim = '[-. ]?';
 const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
 const codeStrict = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]';
 const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStrict})`);
-
-let openOrCreate = (fileName, newContent, errorMessage) => {
-  if (fs.existsSync(fileName)) {
-    try {
-      const fileContents = JSON.parse(fs.readFileSync(fileName));
-      console.log(`${fileName} has been successfully validated.`);
-      return fileContents;
-    } catch (err) {
-      console.warn('An error occurred when trying to load %s. %s', fileName, errorMessage, err);
-      // let it crash!
-      throw err;
-    }
-  }
-  try {
-    fs.writeFileSync(fileName, newContent);
-    const fileContents = JSON.parse(fs.readFileSync(fileName));
-    console.log(`${fileName} has been successfully created and validated.`);
-    return fileContents;
-  } catch (err) {
-    console.warn('An error occurred when trying to create %s. %s', fileName, errorMessage, err);
-    // let it crash!
-    throw err;
-  }
-};
-
-// Check if files for waitingUsers and/or userWaitTime exists, and if they are readable using JSON.parse()
-waitingUsers = openOrCreate('./waitingUsers.txt', '[]', 'Weighted chance will not function.');
-userWaitTime = openOrCreate('./userWaitTime.txt', '[]', 'Weighted chance will not function.');
-
-// Check if custom codes are enabled and, if so, validate that the correct files exist.
-if (settings.custom_codes_enabled) {
-  customCodesMap = new Map(
-    openOrCreate("./customCodes.json", "[]", "Custom codes will not function.")
-  );
-  if (settings.romhacks_enabled) {
-    customCodesMap.has("ROMhack") ||
-      customCodesMap.set("ROMhack", "R0M-HAK-LVL");
-    console.log("ROMhacks are enabled and allowed to be submitted.");
-  } else {
-    customCodesMap.has("ROMhack") && customCodesMap.delete("ROMhack");
-    console.log("ROMhacks are now disabled and will not be accepted.");
-    }
-    try {
-    fs.writeFileSync(
-      "customCodes.json",
-      JSON.stringify([...customCodesMap])
-    );
-    } catch (err) {
-    console.warn("An error occurred when trying to set custom codes.", err);
-  }
-}
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.
@@ -131,26 +81,7 @@ const extractValidCode = (levelCode) => {
   return { code: levelCode, valid: false, validSyntax: false };
 }
 
-// Waiting time timer
-setIntervalAsync(
-  async () => {
-    var list = await queue.list();
-    for (let i = 0; i < list.online.length; i++) {
-      if (!waitingUsers.includes(list.online[i].username)) {
-        waitingUsers.push(list.online[i].username);
-        userWaitTime.push(1);
-      } else {
-        let userIndex = waitingUsers.indexOf(list.online[i].username);
-        userWaitTime[userIndex] = userWaitTime[userIndex] + 1;
-      }
-    }
-    fs.writeFileSync('./waitingUsers.txt', JSON.stringify(waitingUsers));
-    fs.writeFileSync('./userWaitTime.txt', JSON.stringify(userWaitTime));
-  },
-  60000
-)
-
- async function selectionchance(displayName, username) {
+async function selectionchance(displayName, username) {
   var list = await queue.list();
   var online_users = list.online;
 
@@ -200,6 +131,13 @@ const queue = {
     var result = levels.find(x => x.submitter == level.submitter);
     if (result == undefined || level.submitter == settings.channel) {
       levels.push(level);
+      // add wait time of 1 and add last online time of now
+      if (!waitingUsers.includes(level.username)) {
+        const now = (new Date()).toISOString();
+        waitingUsers.push(level.username);
+        userWaitTime.push(1);
+        userOnlineTime.push(now);
+      }
       queue.save();
       if (level.code == 'R0M-HAK-LVL') {
         return level.submitter + ", your ROMhack has been added to the queue.";
@@ -434,6 +372,7 @@ const queue = {
     if (chosenUserOverallIndex != -1) {
       waitingUsers.splice(chosenUserOverallIndex, 1);
       userWaitTime.splice(chosenUserOverallIndex, 1);
+      userOnlineTime.splice(chosenUserOverallIndex, 1);
     }
   },
 
@@ -612,13 +551,7 @@ const queue = {
 
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) =>
-      fs.writeFile(
-        "customCodes.json",
-        JSON.stringify([...customCodesMap]),
-        (err) => {
-          if (err) return errorMessage;
-      }
-      );
+      persistence.saveCustomCodesSync(customCodesMap, errorMessage);
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
       const [rawCustomName, realName] = rest;
@@ -654,46 +587,67 @@ const queue = {
   },
 
   save: () => {
-    var levels_to_save = levels;
-    if (current_level != undefined) {
-      levels_to_save = [{...current_level, current_level: true}].concat(levels_to_save);
-    }
-    var new_data = JSON.stringify(levels_to_save, null, 2);
-    fs.writeFileSync(cache_filename, new_data);
+    persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
   },
 
+  // TODO: could be used instead of the sync variant
+  // saveAsync: async () => {
+  //   await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+  // },
+
   load: () => {
-    if (fs.existsSync(cache_filename)) {
-      var raw_data = fs.readFileSync(cache_filename);
-      levels = JSON.parse(raw_data);
-      const username_missing = level => !level.hasOwnProperty('username');
-      if (levels.some(username_missing)) {
-        console.warn(`Usernames are not set in the file ${cache_filename}!`);
-        console.warn('Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.');
-        console.warn('To be safe, clear the queue with !clear.');
-        levels.forEach(level => {
-          if (username_missing(level)) {
-            level.username = level.submitter.toLowerCase();
-          }
-        });
-      }
-      // Find the current level
-      const is_current = level => level.hasOwnProperty('current_level') && level.current_level;
-      // Make sure to remove the current_property levels for all levels
-      const rm_current = level => { let result = { ...level }; delete result.current_level; return result; };
-      let current_levels = levels.filter(is_current).map(rm_current);
-      if (current_levels.length == 1) {
-        current_level = current_levels[0];
-        levels = levels.filter(x => !is_current(x)).map(rm_current);
+    if (loaded) {
+      return; // already loaded
+    }
+
+    // load queue state
+    persistence.createDataDirectory();
+    const state = persistence.loadQueueSync();
+    current_level = state.currentLevel;
+    levels = state.queue;
+    // split waiting map into lists
+    const waitingLists = persistence.waitingFromObject(state.waiting);
+    waitingUsers = waitingLists.waitingUsers;
+    userWaitTime = waitingLists.userWaitTime;
+    userOnlineTime = waitingLists.lastOnlineTime;
+
+    // Check if custom codes are enabled and, if so, validate that the correct files exist.
+    if (settings.custom_codes_enabled) {
+      customCodesMap = persistence.loadCustomCodesSync();
+      if (settings.romhacks_enabled) {
+        customCodesMap.has("ROMhack") ||
+          customCodesMap.set("ROMhack", "R0M-HAK-LVL");
+        console.log("ROMhacks are enabled and allowed to be submitted.");
       } else {
-        if (current_levels.length > 1) {
-          console.warn('More than one level in the queue is marked as the current level.');
-          console.warn('This will be ignored and no level will be marked as the current level.');
+        customCodesMap.has("ROMhack") && customCodesMap.delete("ROMhack");
+        console.log("ROMhacks are now disabled and will not be accepted.");
         }
-        current_level = undefined;
-        levels = levels.map(rm_current);
+        persistence.saveCustomCodesSync(customCodesMap, "An error occurred when trying to set custom codes.");
+    }
+
+    // Start the waiting time timer
+    setIntervalAsync(queue.waitingTimerTick, 60000);
+    
+    loaded = true;
+  },
+
+  waitingTimerTick: async () => {
+    var list = await queue.list();
+    const now = (new Date()).toISOString();
+    for (let i = 0; i < list.online.length; i++) {
+      if (!waitingUsers.includes(list.online[i].username)) {
+        waitingUsers.push(list.online[i].username);
+        userWaitTime.push(1);
+        userOnlineTime.push(now);
+      } else {
+        let userIndex = waitingUsers.indexOf(list.online[i].username);
+        userWaitTime[userIndex] = userWaitTime[userIndex] + 1;
+        userOnlineTime[userIndex] = now;
       }
     }
+    queue.save();
+    // TODO: use this instead?
+    // await queue.saveAsync();
   },
 
   clear: () => {

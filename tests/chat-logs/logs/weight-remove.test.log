@@ -1,5 +1,5 @@
 # "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
 # chatters 
 chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
 # chatty chat log
@@ -25,13 +25,13 @@ accuracy 60000
 [16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:26:46] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queso.save [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"},{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel null
+queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"},{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:26:47] @^FurretWalkBot: !odds
-
-# TODO: is this a bug?
-
-[16:26:48] @^helperblock: FurretWalkBot, you have a 0.0% chance of getting chosen in weighted random.
+[16:26:48] @^helperblock: FurretWalkBot, you have a 0.1% chance of getting chosen in weighted random.
+[16:26:48] ~%?liquidnya: !odds
+[16:26:48] @^helperblock: liquidnya, you have a 99.9% chance of getting chosen in weighted random.
 
 random 0.999
 
