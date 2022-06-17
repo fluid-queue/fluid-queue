@@ -21,6 +21,8 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [dataIdCourseThreshold] - maximum allowed data id for course ids if set
  * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
  * @property {boolean} [prettySaveFiles] - true if and only if the save files in ./data/*.json should be formatted
+ * @property {string[]} [locales] - list of supported locales
+ * @property {string} [locale] - the locale to use
  */
 
 /** @type {settings} */

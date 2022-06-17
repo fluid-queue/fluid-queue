@@ -1,0 +1,7 @@
+{
+    "queue": {
+        "list": {
+            "empty": "There are no levels in the queue."
+        }
+    }
+}

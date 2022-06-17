@@ -4,11 +4,26 @@ const quesoqueue = require("./queue.js").quesoqueue();
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
 const fs = require("fs");
-var gracefulFs = require("graceful-fs")
+const path = require("path");
+const i18n = require('i18n');
+var gracefulFs = require("graceful-fs");
+
 // patch fs to use the graceful-fs, to retry a file rename under windows
-gracefulFs.gracefulify(fs)
+gracefulFs.gracefulify(fs);
+
+// configure translation
+i18n.configure({
+  locales: settings.locales ? settings.locales : ['en'],
+  directory: path.join(__dirname, 'locales'),
+  objectNotation: true,
+});
+i18n.setLocale(settings.locale ? settings.locale : 'en');
 
 quesoqueue.load();
+
+const msg = (key, args = {}) => {
+  return i18n.__mf(key, { ...args, channel: settings.channel, commands: { add: '!add', back: '!back', remove: '!remove' } });
+};
 
 var queue_open = settings.start_open;
 var selection_iter = 0;
@@ -39,7 +54,7 @@ const level_list_message = (sender, current, levels) => {
     levels.online.length === 0 &&
     levels.offline.length === 0
   ) {
-    return "There are no levels in the queue.";
+    return msg("queue.list.empty");
   }
   var result =
     levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
