@@ -6,6 +6,7 @@
   "main": "index.js",
   "dependencies": {
     "graceful-fs": "^4.2.10",
+    "i18n": "^0.15.0",
     "node-fetch": "^2.6.1",
     "set-interval-async": "^2.0.3",
     "tmi.js": "^1.8.5",
