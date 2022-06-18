@@ -8,9 +8,12 @@
     "romhacks_enabled": false,
     "max_size": 100,
     "level_timeout": 9999,
-    "level_selection": ["next", "random"],
+    "level_selection": [
+        "next",
+        "random"
+    ],
     "message_cooldown": 5,
     "dataIdCourseThreshold": null,
     "dataIdMakerThreshold": null,
     "prettySaveFiles": false
-} 
+}
