@@ -1,0 +1,26 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+
+[02:19:13] ~%?liquidnya: !open
+[02:19:14] @^helperblock: The queue is now open!
+
+[02:19:42] @^FurretWalkBot: !add NB0-1MD-SLG
+[02:19:42] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
+
+[02:20:13] ~%?liquidnya: !next
+[02:20:14] @^helperblock: Now playing NB0-1MD-SLG submitted by FurretWalkBot.
+
+# level timer timeout!
+[02:30:14] @^helperblock: @liquidnya the timer has expired for this level!
+
+[02:50:13] ~%?liquidnya: UwU
+[03:50:13] ~%?liquidnya: UwU
+
+# TODO: test timer functions
