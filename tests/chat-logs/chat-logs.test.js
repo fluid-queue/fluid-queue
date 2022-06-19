@@ -136,7 +136,7 @@ for (const file of testFiles) {
                 };
             };
             if (command == 'restart') {
-                test = simRequireIndex(test.fs, test.settings, new Date());
+                test = simRequireIndex(test.volume, test.settings, new Date());
                 test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
             } else if (command == 'accuracy') {
                 accuracy = parseInt(rest);
@@ -167,7 +167,7 @@ for (const file of testFiles) {
                 test.random
                     .mockImplementationOnce(() => parseFloat(rest));
             } else if (command == 'fs-fail') {
-                jest.spyOn(test.fs, rest).mockImplementationOnce((a, b, c, d = undefined, e = undefined) => { throw new Error('fail on purpose in test'); });
+                jest.spyOn(test.fs, rest).mockImplementationOnce(() => { throw new Error('fail on purpose in test'); });
             } else if (command.startsWith('[') && command.endsWith(']')) {
                 await simSetTime(command.substring(1, command.length - 1), accuracy);
                 // const time = new Date();
