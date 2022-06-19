@@ -36,12 +36,12 @@ test('setup', () => {
 
 const parseMessage = (line) => {
     const idx = line.indexOf(':');
-    var user = line.substring(0, idx).trim();
-    var message = line.substring(idx + 1);
-    var isBroadcaster = false;
-    var isMod = false;
-    var isSubscriber = false;
-    var username = undefined;
+    let user = line.substring(0, idx).trim();
+    let message = line.substring(idx + 1);
+    let isBroadcaster = false;
+    let isMod = false;
+    let isSubscriber = false;
+    let username;
     while (true) {
         if (user.startsWith('~')) {
             isBroadcaster = true;
@@ -49,10 +49,10 @@ const parseMessage = (line) => {
             isMod = true;
         } else if (user.startsWith('%')) {
             isSubscriber = true;
-        } else if (user.startsWith('+') || user.startsWith('$')
-            || user.startsWith('^') || user.startsWith('*')
-            || user.startsWith('!') || user.startsWith('&')
-            || user.startsWith('\'') || user.startsWith('?')) {
+        } else if (user.startsWith('+') || user.startsWith('$') ||
+            user.startsWith('^') || user.startsWith('*') ||
+            user.startsWith('!') || user.startsWith('&') ||
+            user.startsWith('\'') || user.startsWith('?')) {
             // nothing to set
         } else {
             break;
@@ -69,7 +69,7 @@ const parseMessage = (line) => {
             username = maybeUsername;
         }
     }
-    var displayName = user;
+    let displayName = user;
     if (username === undefined) {
         username = displayName.toLowerCase();
     }
@@ -87,23 +87,19 @@ const parseMessage = (line) => {
         column: idx + 2 + column,
         trimLen: trimLen,
     };
-}
+};
 
-const testFiles = fs.readdirSync(path.resolve(__dirname, 'logs')).filter(file => file.endsWith('.test.log'));
-
-for (const file of testFiles) {
-
-    const fileName = path.relative('.', path.resolve(__dirname, `logs/${file}`));
-    test(fileName, async () => {
+const chatLogTest = (fileName) => {
+    return async () => {
         let test = simRequireIndex();
 
-        var replyMessageQueue = [];
-        var accuracy = 0;
+        let replyMessageQueue = [];
+        let accuracy = 0;
 
         function pushMessageWithStack(message) {
             let error = new Error("<Stack Trace Capture>");
             Error.captureStackTrace(error, pushMessageWithStack);
-            replyMessageQueue.push({ message: message, error: error });
+            replyMessageQueue.push({ message, error });
         }
 
         test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
@@ -118,10 +114,10 @@ for (const file of testFiles) {
         let errorMessage = (position) => {
             let contents = codeFrameColumns(fs.readFileSync(fileName).toString(), position);
             return '\n\n' + `given in test file ${fileName}:${lineno}` + '\n' + contents;
-        }
+        };
 
-        var lineno = 0;
-        for await (var line of rl) {
+        let lineno = 0;
+        for await (let line of rl) {
             lineno++;
             if (line.trim().startsWith('#') || line.trim().startsWith('//') || !line) {
                 continue;
@@ -129,11 +125,9 @@ for (const file of testFiles) {
             const idx = line.indexOf(' ');
             const command = idx == -1 ? line : line.substring(0, idx);
             const rest = idx == -1 ? undefined : line.substring(idx + 1);
-            let position = () => {
-                return {
-                    start: { column: idx + 2, line: lineno },
-                    end: { column: line.length + 1, line: lineno }
-                };
+            let position = {
+                start: { column: idx + 2, line: lineno },
+                end: { column: line.length + 1, line: lineno }
             };
             if (command == 'restart') {
                 test = simRequireIndex(test.volume, test.settings, new Date());
@@ -154,7 +148,7 @@ for (const file of testFiles) {
                     }
                     expect(jsonData).toEqual(JSON.parse(rest));
                 } catch (error) {
-                    error.message += errorMessage(position());
+                    error.message += errorMessage(position);
                     throw error;
                 }
             } else if (command == 'seed') {
@@ -172,11 +166,9 @@ for (const file of testFiles) {
                 await simSetTime(command.substring(1, command.length - 1), accuracy);
                 // const time = new Date();
                 const chat = parseMessage(rest);
-                position = () => {
-                    return {
-                        start: { column: idx + 1 + chat.column, line: lineno },
-                        end: { column: line.length + 1 - chat.trimLen, line: lineno }
-                    };
+                position = {
+                    start: { column: idx + 1 + chat.column, line: lineno },
+                    end: { column: line.length + 1 - chat.trimLen, line: lineno }
                 };
                 // console.log(`${time}`, chat.sender, 'sends', chat.message);
                 // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
@@ -187,21 +179,21 @@ for (const file of testFiles) {
                         try {
                             expect(replyMessageQueue).toContain(chat.message);
                         } catch (error) {
-                            error.message += errorMessage(position());
+                            error.message += errorMessage(position);
                             throw error;
                         }
                     }
                     try {
                         expect(shift.message).toBe(chat.message);
                     } catch (error) {
-                        error.stack = shift.error.stack.replace(shift.error.message, error.message + errorMessage(position()));
+                        error.stack = shift.error.stack.replace(shift.error.message, error.message + errorMessage(position));
                         throw error;
                     }
                 } else {
                     try {
                         await test.handle_func(chat.message, chat.sender, test.chatbot_helper.say);
                     } catch (error) {
-                        error.message += errorMessage(position());
+                        error.message += errorMessage(position);
                         throw error;
                     }
                 }
@@ -217,5 +209,12 @@ for (const file of testFiles) {
             error.stack = shift.error.stack.replace(shift.error.message, error.message + '\n\n' + `not given in test file ${fileName}`);
             throw error;
         }
-    });
+    };
+};
+
+const testFiles = fs.readdirSync(path.resolve(__dirname, 'logs')).filter(file => file.endsWith('.test.log'));
+
+for (const file of testFiles) {
+    const fileName = path.relative('.', path.resolve(__dirname, `logs/${file}`));
+    test(fileName, chatLogTest(fileName));
 }

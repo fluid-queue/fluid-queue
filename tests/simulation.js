@@ -90,7 +90,7 @@ const createMockVolume = (settings = undefined) => {
  * @param {number | Date} mockTime 
  * @returns {index} {@link index} 
  */
-function simRequireIndex(volume = undefined, mockSettings = undefined, mockTime = undefined) {
+const simRequireIndex = (volume = undefined, mockSettings = undefined, mockTime = undefined) => {
     let fs;
     let settings;
     let chatbot;
@@ -164,7 +164,7 @@ function simRequireIndex(volume = undefined, mockSettings = undefined, mockTime 
             expect(chatbot.helper).toHaveBeenCalledTimes(1);
             chatbot_helper = chatbot.helper.mock.results[0].value;
 
-            expect(chatbot_helper.setup).toHaveBeenCalledTimes(1)
+            expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
             expect(chatbot_helper.connect).toHaveBeenCalledTimes(1);
             expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
             expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
@@ -250,11 +250,11 @@ const simSetTime = async (time, accuracy = 0) => {
         // should not happen
         throw Error(`Time went backwards, from ${prevTime} to ${newTime} (${time})`);
     }
-}
+};
 
-const buildChatter = function (username, displayName, isSubscriber, isMod, isBroadcaster) {
+const buildChatter = (username, displayName, isSubscriber, isMod, isBroadcaster) => {
     return { username, displayName, isSubscriber, isMod, isBroadcaster };
-}
+};
 
 module.exports = {
     simRequireIndex,
