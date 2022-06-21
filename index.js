@@ -3,10 +3,10 @@ const chatbot = require("./chatbot.js");
 const quesoqueue = require("./queue.js").quesoqueue();
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
-const fs = require("fs");
-var gracefulFs = require("graceful-fs")
+const persistence = require("./persistence.js");
+
 // patch fs to use the graceful-fs, to retry a file rename under windows
-gracefulFs.gracefulify(fs)
+persistence.patchGlobalFs();
 
 quesoqueue.load();
 
@@ -218,7 +218,7 @@ async function HandleMessage(message, sender, respond) {
     if (queue_open || sender.isBroadcaster) {
       let level_code = get_remainder(message.toUpperCase());
       if (settings.custom_codes_enabled) {
-        let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+        let customCodesMap = persistence.loadCustomCodesSync();
         if (customCodesMap.has(level_code)) {
           level_code = customCodesMap.get(level_code);
         }
@@ -243,14 +243,14 @@ async function HandleMessage(message, sender, respond) {
   ) {
     let level_code = get_remainder(message.toUpperCase());
     if (settings.custom_codes_enabled) {
-      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
+      let customCodesMap = persistence.loadCustomCodesSync();
       if (customCodesMap.has(level_code)){
-        level_code = customCodesMap.get(level_code)
+        level_code = customCodesMap.get(level_code);
       }
     }
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
-    let next_level = undefined;
+    let next_level;
     let selection_mode = settings.level_selection[selection_iter++];
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
