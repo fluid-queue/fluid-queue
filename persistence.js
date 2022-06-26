@@ -265,11 +265,13 @@ const createSaveFileContent = (currentLevel, queue, waiting) => {
 const saveQueueSync = (currentLevel, queue, waiting) => {
     try {
         writeFileAtomicSync(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting));
+        return true;
     } catch (err) {
         console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
         // ignore this error and keep going
         // hopefully this issue is gone on the next save
         // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+        return false;
     }
 };
 

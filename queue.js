@@ -13,6 +13,7 @@ var waitingUsers;
 var userWaitTime;
 var userOnlineTime;
 var customCodesMap = new Map();
+var persist = true; // if false the queue will not save automatically
 
 const delim = '[-. ]?';
 const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
@@ -572,8 +573,34 @@ const queue = {
       customCodesMap.delete(customName);
       save("An error occurred while trying to remove that custom code.");
       return `The custom code ${rawCustomName} has been removed.`;
+    } else if ((command == "load" || command == "reload" || command == "restore") && rest.length == 0) {
+      queue.loadCustomCodes();
+      return "Reloaded custom codes from disk.";
     } else {
-      return "Invalid arguments. The correct syntax is !customcode {add/remove} {customCode} {ID}.";
+      return "Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}.";
+    }
+  },
+
+  persistenceManagement: async (/** @type {string}*/ subCommand) => {
+    if (subCommand == "on") {
+      persist = true;
+      return "Activated automatic queue persistence.";
+    } else if (subCommand == "off") {
+      persist = false;
+      return "Deactivated automatic queue persistence.";
+    } else if (subCommand == "save") {
+      // force save
+      const success = queue.save({ force: true });
+      if (success) {
+        return "Successfully persisted the queue state.";
+      } else {
+        return "Error while persisting queue state, see logs.";
+      }
+    } else if (subCommand == "load" || subCommand == "reload" || subCommand == "restore") {
+      queue.loadQueueState();
+      return "Reloaded queue state from disk.";
+    } else {
+      return "Invalid arguments. The correct syntax is !persistence {on/off/save/load}.";
     }
   },
 
@@ -586,8 +613,13 @@ const queue = {
     }
   },
 
-  save: () => {
-    persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+  save: (options = {}) => {
+    options = { force: false, ...options };
+    if (persist || options.force) {
+      return persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+    } else {
+      return false;
+    }
   },
 
   // TODO: could be used instead of the sync variant
@@ -595,13 +627,11 @@ const queue = {
   //   await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
   // },
 
-  load: () => {
-    if (loaded) {
-      return; // already loaded
-    }
+  isPersisting: () => {
+    return persist;
+  },
 
-    // load queue state
-    persistence.createDataDirectory();
+  loadQueueState: () => {
     const state = persistence.loadQueueSync();
     current_level = state.currentLevel;
     levels = state.queue;
@@ -610,7 +640,9 @@ const queue = {
     waitingUsers = waitingLists.waitingUsers;
     userWaitTime = waitingLists.userWaitTime;
     userOnlineTime = waitingLists.lastOnlineTime;
+  },
 
+  loadCustomCodes: () => {
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
       customCodesMap = persistence.loadCustomCodesSync();
@@ -624,6 +656,21 @@ const queue = {
         }
         persistence.saveCustomCodesSync(customCodesMap, "An error occurred when trying to set custom codes.");
     }
+  },
+
+  load: () => {
+    if (loaded) {
+      // only reload queue state
+      queue.loadQueueState();
+      // do not setup the timer again or reload custom codes
+      return;
+    }
+
+    // load queue state
+    queue.loadQueueState();
+
+    // load custom codes
+    queue.loadCustomCodes();
 
     // Start the waiting time timer
     setIntervalAsync(queue.waitingTimerTick, 60000);

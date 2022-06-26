@@ -157,6 +157,22 @@ for (const file of testFiles) {
                     error.message += errorMessage(position());
                     throw error;
                 }
+            } else if (command.startsWith('customCodes')) {
+                try {
+                    const memberIdx = command.indexOf('/');
+                    let jsonData = JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../customCodes.json')));
+                    if (memberIdx != -1) {
+                        const member = command.substring(memberIdx + 1);
+                        jsonData = jsonData[member];
+                    }
+                    expect(jsonData).toEqual(JSON.parse(rest));
+                } catch (error) {
+                    error.message += errorMessage(position());
+                    throw error;
+                }
+            } else if (command.startsWith('save')) {
+                const fileName = command.substring(command.indexOf(':') + 1);
+                test.fs.writeFileSync(path.resolve(__dirname, '../..', fileName), rest);
             } else if (command == 'seed') {
                 const chance = jestChance.getChance(rest);
                 test.random

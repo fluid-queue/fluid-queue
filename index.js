@@ -7,7 +7,7 @@ const persistence = require("./persistence.js");
 
 // patch fs to use the graceful-fs, to retry a file rename under windows
 persistence.patchGlobalFs();
-
+persistence.createDataDirectory();
 quesoqueue.load();
 
 var queue_open = settings.start_open;
@@ -443,9 +443,12 @@ async function HandleMessage(message, sender, respond) {
   } else if (settings.level_timeout && message == "!restart" && sender.isBroadcaster) {
     level_timer.restart();
     respond("Starting the clock over! CP Hype!");
-  } else if (message == "!restore" && sender.isBroadcaster) {
-    quesoqueue.load();
-    respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
+  } else if (message.startsWith("!persistence") && sender.isBroadcaster) {
+    const subCommand = get_remainder(message);
+    const response = await quesoqueue.persistenceManagement(subCommand);
+    console.log(subCommand);
+    console.log(response);
+    respond(`@${sender.displayName} ${response}`);
   } else if (message == "!clear" && sender.isBroadcaster) {
     quesoqueue.clear();
     respond("The queue has been cleared!");
