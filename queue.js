@@ -590,14 +590,18 @@ const queue = {
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
       const [customName, realName] = rest;
+      const levelCode = extractValidCode(realName);
+      if (!levelCode.valid) {
+        return "That is an invalid level code.";
+      }
 
       if (customCodes.has(customName)) {
         const existingName = customCodes.getName(customName);
         return `The custom code ${existingName} already exists`;
       }
-      customCodes.set(customName, realName);
+      customCodes.set(customName, levelCode.code);
       save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ID ${realName} has been added.`;
+      return `Your custom code ${customName} for ID ${levelCode.code} has been added.`;
     } else if (command == "remove" && rest.length == 1) {
       const [customName] = rest;
       if (!customCodes.has(customName)) {

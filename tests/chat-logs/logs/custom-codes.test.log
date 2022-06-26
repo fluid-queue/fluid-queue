@@ -50,3 +50,11 @@ save:customCodes.json [["Test","NB0-1MD-SLG"],["OwO","BW2-G2R-CMG"]]
 
 [19:35:42] ~%?liquidnya: !add owo
 [19:35:42] @^helperblock: liquidnya, BW2-G2R-CMG has been added to the queue.
+
+# invalid level code
+[23:21:13] ~%?liquidnya: !customcode add invalid-syntax MD0-1MD-SLA
+[23:21:14] @^helperblock: That is an invalid level code.
+
+# this code is invalid because its checksum is invalid
+[23:21:21] ~%?liquidnya: !customcode add invalid-checksum MD0-2MD-SLG
+[23:21:22] @^helperblock: That is an invalid level code.
