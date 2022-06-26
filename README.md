@@ -78,8 +78,6 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!clear`* will remove all levels from the queue, including the current level.
 
-`!restore`* will reload the queue if any changes were made to the cached queue file.
-
 `!add` adds a level or maker ID to the queue, provided a level code or maker ID follows the command.
 
 `!remove`/`!leave` will remove a user's submitted level or maker ID from the queue. If used by the channel owner, a name can be specified to remove another user's level or maker ID.
@@ -124,8 +122,18 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!punt`* will move the currently selected level to the back of the queue.
 
-`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove} {customCode} {ID}` where add/remove is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the *queue* are not case sensitive, they are case sensitive with this command.
+`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove/load} {customCode} {ID}` where `add`/`remove`/`load` is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the *queue* are not case sensitive, they are case sensitive with this command.
+`!customcode load` will reload the custom codes from the `./customCodes.json` file, so you can manually edit that file and then reload the codes without having to restart the queue.
 
+`!persistence` * will give control over how and if the queue data is loaded/saved:
+  - `!persistence save` will manually save the queue state (current level, queue, wait time) to `./data/queue.json`.
+  - `!persistence on` will set the queue to automatically save its state whenever changes occur. (this is the default behaviour)
+  - `!persistence off` will deactivate any changes to be saved.
+  - `!persistence load` will manually load the queue state (current level, queue, wait time) from `./data/queue.json`. Please use this with caution since reloading the state can result in lost data and it is recommended to:
+    - use `!persistence off` to prevent the queue from overriding changes you are going to make
+    - make changes to `./data/queue.json`
+    - use `!persistence load` to load these changes
+    - use `!persistence on` to reactivate automatic saves
 
 
 
