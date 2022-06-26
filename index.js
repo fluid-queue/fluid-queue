@@ -216,13 +216,7 @@ async function HandleMessage(message, sender, respond) {
     respond("The queue is now closed!");
   } else if (message.toLowerCase().startsWith("!add")) {
     if (queue_open || sender.isBroadcaster) {
-      let level_code = get_remainder(message.toUpperCase());
-      if (settings.custom_codes_enabled) {
-        let customCodesMap = persistence.loadCustomCodesSync();
-        if (customCodesMap.has(level_code)) {
-          level_code = customCodesMap.get(level_code);
-        }
-      }
+      let level_code = get_remainder(message);
       respond(
         quesoqueue.add(Level(level_code, sender.displayName, sender.username))
       );
@@ -241,13 +235,7 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith("!change") ||
     message.startsWith("!swap")
   ) {
-    let level_code = get_remainder(message.toUpperCase());
-    if (settings.custom_codes_enabled) {
-      let customCodesMap = persistence.loadCustomCodesSync();
-      if (customCodesMap.has(level_code)){
-        level_code = customCodesMap.get(level_code);
-      }
-    }
+    let level_code = get_remainder(message);
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
     let next_level;
@@ -464,7 +452,7 @@ async function HandleMessage(message, sender, respond) {
         respond(await quesoqueue.customCodeManagement(codeArguments));
       }
     } else {
-      respond(await quesoqueue.customCodes());
+      respond(quesoqueue.customCodes());
     }
   } else if (message == "!brb") {
     twitch.setToLurk(sender.username);

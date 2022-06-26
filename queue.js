@@ -12,7 +12,6 @@ var levels = new Array()
 var waitingUsers;
 var userWaitTime;
 var userOnlineTime;
-var customCodesMap = new Map();
 var persist = true; // if false the queue will not save automatically
 
 const delim = '[-. ]?';
@@ -62,6 +61,40 @@ function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThre
   return true;
 }
 
+const customCodes = {
+  map: new Map(),
+  has: (customCodeArg) => {
+    const customCode = customCodeArg.trim();
+    return customCodes.map.has(customCode.toUpperCase());
+  },
+  getLevelCode: (customCodeArg) => {
+    const customCode = customCodeArg.trim();
+    return customCodes.map.get(customCode.toUpperCase()).levelCode;
+  },
+  getName: (customCodeArg) => {
+    const customCode = customCodeArg.trim();
+    return customCodes.map.get(customCode.toUpperCase()).customCode;
+  },
+  listNames: () => {
+    return [...customCodes.map.values()].map(e => e.customCode);
+  },
+  set: (customCodeArg, levelCode) => {
+    const customCode = customCodeArg.trim();
+    customCodes.map.set(customCode.toUpperCase(), { customCode, levelCode });
+  },
+  delete: (customCodeArg) => {
+    const customCode = customCodeArg.trim();
+    customCodes.map.delete(customCode.toUpperCase());
+  },
+  fromCodeList: (codeList) => {
+    const entries = codeList.map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
+    customCodes.map = new Map(entries);
+  },
+  toCodeList: () => {
+    return [...customCodes.map.values()].map(e => [e.customCode, e.levelCode]);
+  },
+};
+
 // this function extracts a level code found in someones message
 // and returns that level code (if possible) and also checks it's validity
 // the returned object will contain
@@ -77,10 +110,19 @@ const extractValidCode = (levelCode) => {
   if (match) {
     let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
     let validity = courseIdValidity(courseIdString, settings.dataIdCourseThreshold, settings.dataIdMakerThreshold);
-    return { code: `${match[1]}-${match[2]}-${match[3]}`, valid: validity, validSyntax: true };
+    return { code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(), valid: validity, validSyntax: true };
   }
   return { code: levelCode, valid: false, validSyntax: false };
-}
+};
+
+const replaceCustomCode = (levelCode) => {
+  if (settings.custom_codes_enabled) {
+    if (customCodes.has(levelCode)) {
+      return customCodes.getLevelCode(levelCode);
+    }
+  }
+  return levelCode;
+};
 
 async function selectionchance(displayName, username) {
   var list = await queue.list();
@@ -120,7 +162,7 @@ const queue = {
     if (settings.max_size && levels.length >= settings.max_size) {
       return "Sorry, the level queue is full!";
     }
-    let code = extractValidCode(level.code);
+    let code = extractValidCode(replaceCustomCode(level.code));
     level.code = code.code;
     if (!code.valid) {
       return level.submitter + ", that is an invalid level code.";
@@ -174,7 +216,7 @@ const queue = {
   },
 
   replace: (username, new_level_code) => {
-    let code = extractValidCode(new_level_code);
+    let code = extractValidCode(replaceCustomCode(new_level_code));
     new_level_code = code.code;
     if (!code.valid) {
       return username + ", that level code is invalid."
@@ -542,37 +584,30 @@ const queue = {
     };
   },
 
-  matchUsername: (usernameArgument) => {
-    usernameArgument = usernameArgument.trim().replace(/^@/, '');
-    return level => {
-      // Display name (submitter) or username (username) matches
-      return level.submitter == usernameArgument || level.username == usernameArgument;
-    };
-  },
-
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) =>
-      persistence.saveCustomCodesSync(customCodesMap, errorMessage);
+      persistence.saveCustomCodesSync(customCodes.toCodeList(), errorMessage);
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
-      const [rawCustomName, realName] = rest;
-      const customName = rawCustomName.toUpperCase()
+      const [customName, realName] = rest;
 
-      if (customCodesMap.has(customName)) {
-        return `The custom code ${customName} already exists`;
-        }
-      customCodesMap.set(customName, realName);
-      save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${rawCustomName} for ID ${realName} has been added.`;
-    } else if (command == "remove" && rest.length == 1) {
-      const [rawCustomName] = rest;
-      const customName = rawCustomName.toUpperCase()
-      if (!customCodesMap.has(customName)) {
-        return `The custom code ${rawCustomName} could not be found.`;
+      if (customCodes.has(customName)) {
+        const existingName = customCodes.getName(customName);
+        return `The custom code ${existingName} already exists`;
       }
-      customCodesMap.delete(customName);
+      customCodes.set(customName, realName);
+      save("An error occurred while trying to add your custom code.");
+      return `Your custom code ${customName} for ID ${realName} has been added.`;
+    } else if (command == "remove" && rest.length == 1) {
+      const [customName] = rest;
+      if (!customCodes.has(customName)) {
+        return `The custom code ${customName} could not be found.`;
+      }
+      const deletedName = customCodes.getName(customName);
+      const deletedLevelCode = customCodes.getLevelCode(customName);
+      customCodes.delete(customName);
       save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${rawCustomName} has been removed.`;
+      return `The custom code ${deletedName} for ID ${deletedLevelCode} has been removed.`;
     } else if ((command == "load" || command == "reload" || command == "restore") && rest.length == 0) {
       queue.loadCustomCodes();
       return "Reloaded custom codes from disk.";
@@ -605,10 +640,11 @@ const queue = {
   },
 
   customCodes: () => {
-    const response = [...customCodesMap.keys()].join(", ");
-    if (response == "") {
+    const list = customCodes.listNames();
+    if (list.length == 0) {
       return "There are no custom codes set.";
     } else {
+      const response = list.join(", ");
       return "The current custom codes are: " + response + ".";
     }
   },
@@ -645,16 +681,16 @@ const queue = {
   loadCustomCodes: () => {
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
-      customCodesMap = persistence.loadCustomCodesSync();
+      customCodes.fromCodeList(persistence.loadCustomCodesSync());
       if (settings.romhacks_enabled) {
-        customCodesMap.has("ROMhack") ||
-          customCodesMap.set("ROMhack", "R0M-HAK-LVL");
+        customCodes.has("ROMhack") ||
+        customCodes.set("ROMhack", "R0M-HAK-LVL");
         console.log("ROMhacks are enabled and allowed to be submitted.");
       } else {
-        customCodesMap.has("ROMhack") && customCodesMap.delete("ROMhack");
+        customCodes.has("ROMhack") && customCodes.delete("ROMhack");
         console.log("ROMhacks are now disabled and will not be accepted.");
         }
-        persistence.saveCustomCodesSync(customCodesMap, "An error occurred when trying to set custom codes.");
+        persistence.saveCustomCodesSync(customCodes.toCodeList(), "An error occurred when trying to set custom codes.");
     }
   },
 

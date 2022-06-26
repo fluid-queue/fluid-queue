@@ -287,12 +287,13 @@ const saveQueue = async (currentLevel, queue, waiting, callback = undefined) => 
 };
 
 const loadCustomCodesSync = () => {
-    return new Map(loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync(new Map()), 'Custom codes will not function.'));
+    const codeList = loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync([]), 'Custom codes will not function.');
+    return codeList;
 };
 
-const saveCustomCodesSync = (customCodesMap, errorMessage = undefined) => {
+const saveCustomCodesSync = (codeList, errorMessage = undefined) => {
     try {
-        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify([...customCodesMap]));
+        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify(codeList));
     } catch (err) {
         if (errorMessage !== undefined) {
             console.warn(errorMessage);
