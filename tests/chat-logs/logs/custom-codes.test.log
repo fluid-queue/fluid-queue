@@ -25,8 +25,8 @@ restart
 [19:35:42] ~%?liquidnya: !add test
 [19:35:42] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
-[13:01:34] ~%?liquidnya (Fae/Faer): !customcodes
-[13:01:34] @^helperblock (Any): The current custom codes are: Test.
+[13:01:34] ~%?liquidnya: !customcodes
+[13:01:34] @^helperblock: The current custom codes are: Test.
 
 customCodes [["Test","NB0-1MD-SLG"]]
 
