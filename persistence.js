@@ -1,7 +1,8 @@
 const settings = require('./settings.js');
 const fs = require('fs');
+const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require('write-file-atomic');
-const writeFileAtomicSync = require('write-file-atomic').sync;
+const writeFileAtomicSync = writeFileAtomic.sync;
 
 const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.txt', userWaitTime: './userWaitTime.txt', waitingUsers: './waitingUsers.txt' };
 const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
@@ -45,14 +46,18 @@ const CUSTOM_CODES_FILENAME = './customCodes.json';
 //     - waitTime: integer, the wait time in minutes
 //     - lastOnlineTime: string, ISO 8601 timestamp
 
+const patchGlobalFs = () => {
+    gracefulFs.gracefulify(fs);
+};
+
 const hasOwn = (object, property) => {
-    return Object.prototype.hasOwnProperty.call(object, property)
-}
+    return Object.prototype.hasOwnProperty.call(object, property);
+};
 
 const loadFileDefault = (fileName, newContent, errorMessage) => {
     if (fs.existsSync(fileName)) {
         try {
-            const fileContents = JSON.parse(fs.readFileSync(fileName));
+            const fileContents = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
             console.log(`${fileName} has been successfully validated.`);
             return fileContents;
         } catch (err) {
@@ -70,7 +75,7 @@ const loadFileOrCreate = (fileName, createFunction, errorMessage) => {
             if (create) {
                 createFunction();
             }
-            const fileContents = JSON.parse(fs.readFileSync(fileName));
+            const fileContents = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
             console.log('%s has been successfully%s validated.', fileName, create ? ' created and' : '');
             return fileContents;
         } catch (err) {
@@ -88,11 +93,11 @@ const loadFileOrCreate = (fileName, createFunction, errorMessage) => {
 const loadQueueV1 = () => {
     const cache_filename = FILENAME_V1.queso;
     const now = (new Date()).toISOString();
-    let levels = new Array();
-    let currentLevel = undefined;
+    let levels = [];
+    let currentLevel;
     // load levels
     if (fs.existsSync(cache_filename)) {
-        const raw_data = fs.readFileSync(cache_filename);
+        const raw_data = fs.readFileSync(cache_filename, { encoding: "utf8" });
         levels = JSON.parse(raw_data);
         const username_missing = level => !hasOwn(level, 'username');
         if (levels.some(username_missing)) {
@@ -181,7 +186,7 @@ const waitingFromObject = (waiting) => {
 
 const loadQueueV2 = () => {
     const fileName = FILENAME_V2.fileName;
-    const state = JSON.parse(fs.readFileSync(fileName));
+    const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
     if (!hasOwn(state, 'version')) {
         throw new Error(`Queue save file ${fileName}: no version field.`);
     } else if (typeof state.version !== 'string') {
@@ -260,11 +265,13 @@ const createSaveFileContent = (currentLevel, queue, waiting) => {
 const saveQueueSync = (currentLevel, queue, waiting) => {
     try {
         writeFileAtomicSync(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting));
+        return true;
     } catch (err) {
         console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
         // ignore this error and keep going
         // hopefully this issue is gone on the next save
         // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+        return false;
     }
 };
 
@@ -280,12 +287,13 @@ const saveQueue = async (currentLevel, queue, waiting, callback = undefined) => 
 };
 
 const loadCustomCodesSync = () => {
-    return new Map(loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync(new Map()), 'Custom codes will not function.'));
+    const codeList = loadFileOrCreate(CUSTOM_CODES_FILENAME, () => saveCustomCodesSync([]), 'Custom codes will not function.');
+    return codeList;
 };
 
-const saveCustomCodesSync = (customCodesMap, errorMessage = undefined) => {
+const saveCustomCodesSync = (codeList, errorMessage = undefined) => {
     try {
-        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify([...customCodesMap]));
+        writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify(codeList));
     } catch (err) {
         if (errorMessage !== undefined) {
             console.warn(errorMessage);
@@ -312,4 +320,5 @@ module.exports = {
     waitingFromObject,
     loadCustomCodesSync,
     saveCustomCodesSync,
+    patchGlobalFs,
 };

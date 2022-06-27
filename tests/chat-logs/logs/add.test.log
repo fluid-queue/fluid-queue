@@ -60,3 +60,17 @@ settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya"
 
 queue.json/currentLevel {"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}
 queue.json/queue [{"code":"MY2-H2M-DSG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+
+# lowercase level codes work
+[02:24:35] ~%?liquidnya: !add nb0-1md-slg
+[02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+
+# lowercase level codes without dashes work
+[02:24:35] ~%?liquidnya: !add nb01mdslg
+[02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.

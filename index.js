@@ -3,11 +3,11 @@ const chatbot = require("./chatbot.js");
 const quesoqueue = require("./queue.js").quesoqueue();
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
-const fs = require("fs");
-var gracefulFs = require("graceful-fs")
-// patch fs to use the graceful-fs, to retry a file rename under windows
-gracefulFs.gracefulify(fs)
+const persistence = require("./persistence.js");
 
+// patch fs to use the graceful-fs, to retry a file rename under windows
+persistence.patchGlobalFs();
+persistence.createDataDirectory();
 quesoqueue.load();
 
 var queue_open = settings.start_open;
@@ -216,13 +216,7 @@ async function HandleMessage(message, sender, respond) {
     respond("The queue is now closed!");
   } else if (message.toLowerCase().startsWith("!add")) {
     if (queue_open || sender.isBroadcaster) {
-      let level_code = get_remainder(message.toUpperCase());
-      if (settings.custom_codes_enabled) {
-        let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
-        if (customCodesMap.has(level_code)) {
-          level_code = customCodesMap.get(level_code);
-        }
-      }
+      let level_code = get_remainder(message);
       respond(
         quesoqueue.add(Level(level_code, sender.displayName, sender.username))
       );
@@ -241,16 +235,10 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith("!change") ||
     message.startsWith("!swap")
   ) {
-    let level_code = get_remainder(message.toUpperCase());
-    if (settings.custom_codes_enabled) {
-      let customCodesMap = new Map(JSON.parse(fs.readFileSync('./customCodes.json')));
-      if (customCodesMap.has(level_code)){
-        level_code = customCodesMap.get(level_code)
-      }
-    }
+    let level_code = get_remainder(message);
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
-    let next_level = undefined;
+    let next_level;
     let selection_mode = settings.level_selection[selection_iter++];
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
@@ -443,9 +431,12 @@ async function HandleMessage(message, sender, respond) {
   } else if (settings.level_timeout && message == "!restart" && sender.isBroadcaster) {
     level_timer.restart();
     respond("Starting the clock over! CP Hype!");
-  } else if (message == "!restore" && sender.isBroadcaster) {
-    quesoqueue.load();
-    respond(level_list_message(quesoqueue.current(), await quesoqueue.list()));
+  } else if (message.startsWith("!persistence") && sender.isBroadcaster) {
+    const subCommand = get_remainder(message);
+    const response = await quesoqueue.persistenceManagement(subCommand);
+    console.log(subCommand);
+    console.log(response);
+    respond(`@${sender.displayName} ${response}`);
   } else if (message == "!clear" && sender.isBroadcaster) {
     quesoqueue.clear();
     respond("The queue has been cleared!");
@@ -461,7 +452,7 @@ async function HandleMessage(message, sender, respond) {
         respond(await quesoqueue.customCodeManagement(codeArguments));
       }
     } else {
-      respond(await quesoqueue.customCodes());
+      respond(quesoqueue.customCodes());
     }
   } else if (message == "!brb") {
     twitch.setToLurk(sender.username);
