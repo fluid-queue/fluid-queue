@@ -7,7 +7,7 @@ const { Waiting } = require("./waiting.js");
 
 const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.txt', userWaitTime: './userWaitTime.txt', waitingUsers: './waitingUsers.txt' };
 const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
-const VERSION_V2 = '2.0';
+const VERSION_V2 = '2.1';
 const VERSION_CHECK_V2 = /^2(\.|$)/; // the version that is being accepted
 const CUSTOM_CODES_FILENAME = './customCodes.json';
 
@@ -45,6 +45,7 @@ const CUSTOM_CODES_FILENAME = './customCodes.json';
 //   waiting information has the following fields:
 //     - userId (optional): the twitch user id
 //     - waitTime: integer, the wait time in minutes
+//     - waitTimeMs: integer, the milliseconds part of the wait time, between 0 (inclusive) and 59999 (inclusive)
 //     - lastOnlineTime: string, ISO 8601 timestamp
 
 const patchGlobalFs = () => {
