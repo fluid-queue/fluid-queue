@@ -1,0 +1,29 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true, "subWaitMultiplier": 1.2}
+# restart to start queue open (reload settings)
+restart
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+# set test timer accuracy to 1 minute to accuratly test the weight
+accuracy 60000
+
+[12:15:33] ~%?liquidnya: !persistence off
+[12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
+
+save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}],"waiting":{"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"waitTimeMs":12000}}}
+
+[12:15:48] ~%?liquidnya: !persistence load
+[12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
+
+[12:19:27] ~%?liquidnya: !persistence on
+[12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
+
+[12:24:28] ~%?liquidnya: !persistence save
+[12:24:28] @^helperblock: @liquidnya Successfully persisted the queue state.
+
+queue.json/waiting {"liquidnya":{"waitTime":15,"waitTimeMs":48000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}

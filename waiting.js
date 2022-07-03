@@ -19,7 +19,15 @@ const Waiting = {
         return Waiting.from({ waitTime, waitTimeMs: 0, lastOnlineTime: timeOrNow(now) });
     },
     update(factor, now = undefined) {
-        this.waitTime += factor; // TODO
+        const addMinutes = Math.floor(factor);
+        const addMs = Math.round((factor % 1) * 60000);
+        this.waitTimeMs += addMs;
+        // minute overflow
+        while (this.waitTimeMs >= 60000) {
+            this.waitTimeMs -= 60000;
+            this.waitTime += 1;
+        }
+        this.waitTime += addMinutes;
         this.lastOnlineTime = timeOrNow(now);
     },
     weight() {

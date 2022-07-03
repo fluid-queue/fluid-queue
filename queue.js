@@ -694,7 +694,11 @@ const queue = {
     const now = (new Date()).toISOString();
     list.online.map(v => v.username).forEach(username => {
       if (Object.prototype.hasOwnProperty.call(waiting, username)) {
-        waiting[username].update(1, now);
+        let factor = 1.0;
+        if (settings.subWaitMultiplier && twitch.isSubscriber(username)) {
+          factor = settings.subWaitMultiplier;
+        }
+        waiting[username].update(factor, now);
       } else {
         waiting[username] = Waiting.create(now);
       }
