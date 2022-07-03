@@ -2,6 +2,8 @@ const settings = require('./settings.js');
 const twitch = require('./twitch.js').twitch();
 const { setIntervalAsync } = require('set-interval-async/dynamic');
 const persistence = require('./persistence.js');
+const { Waiting } = require('./waiting.js');
+const { username } = require('./settings.js');
 const standardBase30 = '0123456789abcdefghijklmnopqrst'
 const nintendoBase30 = '0123456789BCDFGHJKLMNPQRSTVWXY'
 const arbitraryXorValue = 377544828
@@ -9,9 +11,7 @@ const arbitraryXorValue = 377544828
 var loaded = false;
 var current_level = undefined;
 var levels = new Array()
-var waitingUsers;
-var userWaitTime;
-var userOnlineTime;
+var waiting;
 var persist = true; // if false the queue will not save automatically
 
 const delim = '[-. ]?';
@@ -132,19 +132,9 @@ async function selectionchance(displayName, username) {
     return 0;
   }
 
-  var elegible_users = new Array();
-  for (let i = 0; i < online_users.length; i++) {
-    if (waitingUsers.includes(online_users[i].username)) {
-      elegible_users.push(online_users[i])
-    }
-  }
-  var elegible_users_time = new Array();
-  for (let i = 0; i < elegible_users.length; i++) {
-    elegible_users_time.push(userWaitTime[waitingUsers.indexOf(elegible_users[i].username)]);
-  }
+  const {elegible_users, elegible_users_time} = queue.elegible(online_users);
 
-  var userIndex = waitingUsers.indexOf(current_level.username);
-  var userChance = userWaitTime[userIndex];
+  var userChance = waiting[current_level.username].weight();
   var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0) + userChance;
   var chance = (userChance / totalOdds * 100).toFixed(1);
 
@@ -175,11 +165,8 @@ const queue = {
     if (result == undefined || level.submitter == settings.channel) {
       levels.push(level);
       // add wait time of 1 and add last online time of now
-      if (!waitingUsers.includes(level.username)) {
-        const now = (new Date()).toISOString();
-        waitingUsers.push(level.username);
-        userWaitTime.push(1);
-        userOnlineTime.push(now);
+      if (!Object.prototype.hasOwnProperty.call(waiting, level.username)) {
+        waiting[level.username] = Waiting.create();
       }
       queue.save();
       if (level.code == 'R0M-HAK-LVL') {
@@ -288,6 +275,20 @@ const queue = {
     return -1;
   },
 
+  elegible: (online_users) => {
+    const elegible_users = [];
+    const elegible_users_time = [];
+
+    online_users.forEach(user => {
+      if (Object.prototype.hasOwnProperty.call(waiting, user.username)) {
+        elegible_users.push(user);
+        elegible_users_time.push(waiting[user.username].weight());
+      }
+    });
+    
+    return { elegible_users, elegible_users_time };
+  },
+
   weightedchance: async (displayName, username) => {
     var list = await queue.list();
     var online_users = list.online;
@@ -304,16 +305,7 @@ const queue = {
       return -2;
     }
 
-    var elegible_users = new Array();
-    for (let i = 0; i < online_users.length; i++) {
-      if (waitingUsers.includes(online_users[i].username)) {
-        elegible_users.push(online_users[i])
-      }
-    }
-    var elegible_users_time = new Array();
-    for (let i = 0; i < elegible_users.length; i++) {
-      elegible_users_time.push(userWaitTime[waitingUsers.indexOf(elegible_users[i].username)]);
-    }
+    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
 
     if (index != -1) {
       let stringElegibleUsers = "";
@@ -322,8 +314,7 @@ const queue = {
       }
       console.log('Elegible users: ' + stringElegibleUsers);
       console.log('Elegible users time: ' + elegible_users_time);
-      var userIndex = waitingUsers.indexOf(username);
-      var userChance = userWaitTime[userIndex];
+      var userChance = waiting[username].weight();
       var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0);
       console.log(`The userChance is ${userChance} with totalOdds ${totalOdds}`);
       return (userChance / totalOdds * 100).toFixed(1);
@@ -411,11 +402,8 @@ const queue = {
   },
 
   removeWaiting: () => {
-    chosenUserOverallIndex = waitingUsers.indexOf(current_level.username);
-    if (chosenUserOverallIndex != -1) {
-      waitingUsers.splice(chosenUserOverallIndex, 1);
-      userWaitTime.splice(chosenUserOverallIndex, 1);
-      userOnlineTime.splice(chosenUserOverallIndex, 1);
+    if (Object.prototype.hasOwnProperty.call(waiting, current_level.username)) {
+      delete waiting[current_level.username];
     }
   },
 
@@ -486,23 +474,15 @@ const queue = {
   weightedrandom: async () => {
     var list = await queue.list();
     var online_users = list.online;
-    if (online_users.length == 0 || waitingUsers.length == 0) {
+    if (online_users.length == 0 || Object.keys(waiting).length == 0) {
       current_level = undefined;
       return current_level;
     }
-    var elegible_users = new Array();
-    for (let i = 0; i < online_users.length; i++) {
-      if (waitingUsers.includes(online_users[i].username)) {
-        elegible_users.push(online_users[i])
-      }
-    }
+
+    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
     if (elegible_users.length == 0) {
       current_level = undefined;
       return current_level;
-    }
-    var elegible_users_time = new Array();
-    for (let i = 0; i < elegible_users.length; i++) {
-      elegible_users_time.push(userWaitTime[waitingUsers.indexOf(elegible_users[i].username)]);
     }
 
     var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0);
@@ -523,16 +503,10 @@ const queue = {
 
     var index = levels.findIndex(x => x.username == current_level.username);
     levels.splice(index, 1);
+    removeWaiting();
     queue.save();
 
     let selectionChance = await selectionchance(current_level.username, current_level.submitter);
-
-    chosenUser = elegible_users[levelIndex].username;
-    chosenUserOverallIndex = waitingUsers.indexOf(chosenUser);
-    if (chosenUserOverallIndex != -1) {
-      waitingUsers.splice(chosenUserOverallIndex, 1);
-      userWaitTime.splice(chosenUserOverallIndex, 1);
-    }
 
     return { ...current_level, selectionChance };
   },
@@ -656,7 +630,7 @@ const queue = {
   save: (options = {}) => {
     options = { force: false, ...options };
     if (persist || options.force) {
-      return persistence.saveQueueSync(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+      return persistence.saveQueueSync(current_level, levels, waiting);
     } else {
       return false;
     }
@@ -664,7 +638,7 @@ const queue = {
 
   // TODO: could be used instead of the sync variant
   // saveAsync: async () => {
-  //   await persistence.saveQueue(current_level, levels, persistence.waitingToObject(waitingUsers, userWaitTime, userOnlineTime));
+  //   await persistence.saveQueue(current_level, levels, waiting);
   // },
 
   isPersisting: () => {
@@ -676,10 +650,7 @@ const queue = {
     current_level = state.currentLevel;
     levels = state.queue;
     // split waiting map into lists
-    const waitingLists = persistence.waitingFromObject(state.waiting);
-    waitingUsers = waitingLists.waitingUsers;
-    userWaitTime = waitingLists.userWaitTime;
-    userOnlineTime = waitingLists.lastOnlineTime;
+    waiting = state.waiting;
   },
 
   loadCustomCodes: () => {
@@ -721,17 +692,13 @@ const queue = {
   waitingTimerTick: async () => {
     var list = await queue.list();
     const now = (new Date()).toISOString();
-    for (let i = 0; i < list.online.length; i++) {
-      if (!waitingUsers.includes(list.online[i].username)) {
-        waitingUsers.push(list.online[i].username);
-        userWaitTime.push(1);
-        userOnlineTime.push(now);
+    list.online.map(v => v.username).forEach(username => {
+      if (Object.prototype.hasOwnProperty.call(waiting, username)) {
+        waiting[username].update(1, now);
       } else {
-        let userIndex = waitingUsers.indexOf(list.online[i].username);
-        userWaitTime[userIndex] = userWaitTime[userIndex] + 1;
-        userOnlineTime[userIndex] = now;
+        waiting[username] = Waiting.create(now);
       }
-    }
+    });
     queue.save();
     // TODO: use this instead?
     // await queue.saveAsync();

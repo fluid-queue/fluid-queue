@@ -42,7 +42,7 @@ const replaceSettings = (settings, newSettings) => {
 
 const setChatters = (newChatters) => {
     // automatically create a correct chatters object
-    if (!newChatters.hasOwnProperty('chatters')) {
+    if (!Object.hasOwnProperty.call(newChatters, 'chatters')) {
         newChatters = {
             _links: {},
             chatter_count: Object.values(newChatters).flat().length,

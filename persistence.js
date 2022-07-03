@@ -3,6 +3,7 @@ const fs = require('fs');
 const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require('write-file-atomic');
 const writeFileAtomicSync = writeFileAtomic.sync;
+const { Waiting } = require("./waiting.js");
 
 const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.txt', userWaitTime: './userWaitTime.txt', waitingUsers: './waitingUsers.txt' };
 const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
@@ -143,10 +144,7 @@ const loadQueueV1 = () => {
     // note: the current level does not have a wait time!
     levels.forEach((level) => {
         if (!hasOwn(waiting, level.username)) {
-            waiting[level.username] = {
-                waitTime: 1,
-                lastOnlineTime: now,
-            };
+            waiting[level.username] = Waiting.create(now);
         }
     });
     return {
@@ -165,23 +163,9 @@ const waitingToObject = (waitingUsers, userWaitTime, userOnlineTime = undefined,
         const username = waitingUsers[index];
         const waitTime = userWaitTime[index];
         const lastOnlineTime = userOnlineTime === undefined ? now : userOnlineTime[index];
-        waiting[username] = {
-            waitTime,
-            lastOnlineTime
-        };
+        waiting[username] = Waiting.fromV1(waitTime, lastOnlineTime);
     }
     return waiting;
-};
-
-const waitingFromObject = (waiting) => {
-    const waitingUsers = Object.keys(waiting);
-    const userWaitTime = waitingUsers.map(username => waiting[username].waitTime);
-    const lastOnlineTime = waitingUsers.map(username => waiting[username].lastOnlineTime);
-    return {
-        waitingUsers,
-        userWaitTime,
-        lastOnlineTime
-    };
 };
 
 const loadQueueV2 = () => {
@@ -197,6 +181,9 @@ const loadQueueV2 = () => {
     if (state.currentLevel === null) {
         state.currentLevel = undefined;
     }
+    // convert waiting entries to Waiting objects
+    state.waiting = Object.fromEntries(Object.entries(state.waiting)
+        .map(([key, value]) => [key, Waiting.from(value)]));
     console.log(`${fileName} has been successfully validated.`);
     return state;
 };
@@ -316,8 +303,6 @@ module.exports = {
     saveQueueSync,
     saveQueue,
     createDataDirectory,
-    waitingToObject,
-    waitingFromObject,
     loadCustomCodesSync,
     saveCustomCodesSync,
     patchGlobalFs,
