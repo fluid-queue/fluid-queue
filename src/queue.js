@@ -206,6 +206,10 @@ const queue = {
       return "You can use !remove <username> to kick out someone else's level.";
     }
 
+    // Unlurk the user regardless of whether they're in the queue
+    // It's unlikely they'll be on BRB and not in the queue, but it's worth protecting against
+    twitch.notLurkingAnymore(usernameArgument);
+
     var match = queue.matchUsername(usernameArgument);
     if (!levels.some(match)) {
       return "No levels from " + usernameArgument + " were found in the queue.";
@@ -216,6 +220,7 @@ const queue = {
   },
 
   remove: (username) => {
+    twitch.notLurkingAnymore(username); // If a user is leaving, they're not lurking
     if (current_level != undefined && current_level.submitter == username) {
       return "Sorry, we're playing that level right now!";
     }
