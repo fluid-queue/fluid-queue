@@ -41,18 +41,18 @@ random 0.999
 [16:31:48] ~%?liquidnya: !random
 [16:31:48] @^helperblock: Now playing NB0-1MD-SLG submitted by FurretWalkBot.
 
-queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"waitTimeMs":0}}
+queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"weightMin":6,"weightMsec":0}}
 
 restart
 
-queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"waitTimeMs":0}}
+queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"weightMin":6,"weightMsec":0}}
 
 [16:31:48] ~%?liquidnya: !punt
 [16:31:48] @^helperblock: Ok, adding the current level back into the queue.
 
 # FurretWalkBot doesn't have 0.0%, because everyone starts with a wait time of 1
 
-queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"waitTimeMs":0},"furretwalkbot":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":1,"waitTimeMs":0}}
+queue.json/waiting {"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"weightMin":6,"weightMsec":0},"furretwalkbot":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":1,"weightMin":1,"weightMsec":0}}
 
 [16:31:48] @^FurretWalkBot: !odds
 [16:31:48] @^helperblock: FurretWalkBot, you have a 14.3% chance of getting chosen in weighted random.

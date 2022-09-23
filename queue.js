@@ -698,7 +698,7 @@ const queue = {
         if (settings.subWaitMultiplier && twitch.isSubscriber(username)) {
           factor = settings.subWaitMultiplier;
         }
-        waiting[username].update(factor, now);
+        waiting[username].addOneMinute(factor, now);
       } else {
         waiting[username] = Waiting.create(now);
       }

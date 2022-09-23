@@ -45,7 +45,8 @@ const CUSTOM_CODES_FILENAME = './customCodes.json';
 //   waiting information has the following fields:
 //     - userId (optional): the twitch user id
 //     - waitTime: integer, the wait time in minutes
-//     - waitTimeMs: integer, the milliseconds part of the wait time, between 0 (inclusive) and 59999 (inclusive)
+//     - weightMin: integer, the weighted time for weighted random in minutes
+//     - weightMsec: integer, the milliseconds part of the weight time, between 0 (inclusive) and 59999 (inclusive)
 //     - lastOnlineTime: string, ISO 8601 timestamp
 
 const patchGlobalFs = () => {

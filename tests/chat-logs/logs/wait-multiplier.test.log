@@ -15,7 +15,7 @@ accuracy 60000
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
 
-save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}],"waiting":{"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"waitTimeMs":12000}}}
+save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}],"waiting":{"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"weightMin":6,"weightMsec":12000}}}
 
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
@@ -26,4 +26,16 @@ save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-
 [12:24:28] ~%?liquidnya: !persistence save
 [12:24:28] @^helperblock: @liquidnya Successfully persisted the queue state.
 
-queue.json/waiting {"liquidnya":{"waitTime":15,"waitTimeMs":48000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}
+queue.json/waiting {"liquidnya":{"waitTime":14,"weightMin":15,"weightMsec":48000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}
+
+[12:24:28] ~%?liquidnya: !persistence save
+[12:24:28] @^helperblock: @liquidnya Successfully persisted the queue state.
+
+restart
+
+queue.json/waiting {"liquidnya":{"waitTime":14,"weightMin":15,"weightMsec":48000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}
+
+[12:24:28] ~%?liquidnya: !persistence save
+[12:24:28] @^helperblock: @liquidnya Successfully persisted the queue state.
+
+queue.json/waiting {"liquidnya":{"waitTime":14,"weightMin":15,"weightMsec":48000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}
