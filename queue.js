@@ -503,10 +503,41 @@ const queue = {
 
     var index = levels.findIndex(x => x.username == current_level.username);
     levels.splice(index, 1);
-    removeWaiting();
-    queue.save();
 
     let selectionChance = await selectionchance(current_level.username, current_level.submitter);
+
+    queue.removeWaiting();
+    queue.save();
+
+    return { ...current_level, selectionChance };
+  },
+
+  weightednext: async () => {
+
+    var list = await queue.list();
+    var online_users = list.online;
+    if (online_users.length == 0 || Object.keys(waiting).length == 0) {
+      current_level = undefined;
+      return current_level;
+    }
+
+    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
+    if (elegible_users.length == 0) {
+      current_level = undefined;
+      return current_level;
+    }
+
+    const max = elegible_users_time.reduce((a, b) => Math.max(a, b));
+    const levelIndex = elegible_users_time.findIndex(x => x == max);
+    current_level = elegible_users[levelIndex];
+
+    const index = levels.findIndex(x => x.username == current_level.username);
+    levels.splice(index, 1);
+
+    let selectionChance = await selectionchance(current_level.username, current_level.submitter);
+
+    queue.removeWaiting();
+    queue.save();
 
     return { ...current_level, selectionChance };
   },

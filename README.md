@@ -61,7 +61,7 @@ The settings.json file contains several options to make the bot as customizable 
 
 `dataIdMakerThreshold` is the highest allowed data ID for maker IDs. This is used to stop maker IDs that do not exist from entering the queue, however it is very difficult to know and/or dynamically change this amount accordingly. As such, the default value is undefined, which ignores the restriction.
 
-`subWaitMultiplier` is the number added as a wait time for subscribers. The default value is `1.0`. Setting this to `1.2` for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting.
+`subWaitMultiplier` is the number added as a wait time for subscribers. The default value is `1.0`. Setting this to `1.2` for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to `1.0`.
 
 
 
@@ -107,6 +107,8 @@ It is important to note that all commands that draw a level (with exception to `
 `!random`* will select a random level from the queue.
 
 `!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
+
+`!weightednext`* will select the level from the queue with the most amount of time spent online and waiting in the queue. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
 
 `!subnext`* will select the next subscriber's level from the queue.
 
