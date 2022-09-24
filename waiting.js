@@ -23,9 +23,9 @@ const Waiting = {
     fromV1(waitTime, now = undefined) {
         return Waiting.from({ waitTime, weightMin: waitTime, weightMsec: 0, lastOnlineTime: timeOrNow(now) });
     },
-    addOneMinute(factor, now = undefined) {
-        const addMin = Math.floor(factor);
-        const addMsec = Math.round((factor % 1) * 60000);
+    addOneMinute(multiplier, now = undefined) {
+        const addMin = Math.floor(multiplier);
+        const addMsec = Math.round((multiplier % 1) * 60000);
         this.weightMsec += addMsec;
         // minute overflow
         while (this.weightMsec >= 60000) {
