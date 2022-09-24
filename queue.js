@@ -726,8 +726,8 @@ const queue = {
     list.online.map(v => v.username).forEach(username => {
       if (Object.prototype.hasOwnProperty.call(waiting, username)) {
         let multiplier = 1.0;
-        if (settings.subWaitMultiplier && twitch.isSubscriber(username)) {
-          multiplier = settings.subWaitMultiplier;
+        if (settings.subscriberWeightMultiplier && twitch.isSubscriber(username)) {
+          multiplier = settings.subscriberWeightMultiplier;
         }
         waiting[username].addOneMinute(multiplier, now);
       } else {

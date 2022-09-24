@@ -13,5 +13,5 @@
     "dataIdCourseThreshold": 11223344,
     "dataIdMakerThreshold": 11223344,
     "prettySaveFiles": false,
-    "subWaitMultiplier": 1.0
-} 
+    "subscriberWeightMultiplier": 1.0
+}

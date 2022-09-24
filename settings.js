@@ -21,7 +21,7 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [dataIdCourseThreshold] - maximum allowed data id for course ids if set
  * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
  * @property {boolean} [prettySaveFiles] - true if and only if the save files in ./data/*.json should be formatted
- * @property {number} [subWaitMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
+ * @property {number} [subscriberWeightMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
  */
 
 /** @type {settings} */
@@ -45,7 +45,7 @@ const settings_validations = {
   dataIdCourseThreshold: threshold => threshold == null || typeof threshold === "number",
   dataIdMakerThreshold: threshold => threshold == null || typeof threshold === "number",
   prettySaveFiles: (pretty) => typeof pretty === "boolean",
-  subWaitMultiplier: (multiplier) => typeof multiplier === "number" && multiplier >= 1.0,
+  subscriberWeightMultiplier: (multiplier) => typeof multiplier === "number" && multiplier >= 1.0,
 };
 
 for (const key in settings) {
