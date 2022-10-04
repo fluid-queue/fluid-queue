@@ -260,7 +260,7 @@ const position_message = async (position, weightedPosition, sender, username) =>
   }
 };
 
-const weightedchance_message = async (chance, sender) => {
+const weightedchance_message = async (chance, multiplier, sender) => {
   if (chance == -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
@@ -272,16 +272,13 @@ const weightedchance_message = async (chance, sender) => {
     );
   } else if (chance === 0) {
     return "Your level is being played right now!";
-  } else if (isNaN(chance)) {
-    return (
-      sender + ", you have a 0.0% chance of getting chosen in weighted random."
-    );
   }
   return (
     sender +
     ", you have a " +
     chance +
-    "% chance of getting chosen in weighted random."
+    "% chance of getting chosen in weighted random." +
+    (multiplier > 1.0 ? " (" + multiplier.toFixed(1) + " multiplier)" : "")
   );
 };
 
@@ -538,6 +535,7 @@ async function HandleMessage(message, sender, respond) {
     respond(
       await weightedchance_message(
         await quesoqueue.weightedchance(sender.displayName, sender.username),
+        quesoqueue.multiplier(sender.username),
         sender.displayName
       )
     );
