@@ -38,11 +38,11 @@ const loadVolume = (testFolder) => {
     return volume;
 };
 
-const loadFileSystemV2 = (testFolder, version = '2.0') => {
-    let mockFs = createMockFs();
-    mockFs.mkdirSync('./data');
-    copy(mockFs, fs, './data/queue.json', path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`));
-    return mockFs;
+const loadVolumeV2 = (testFolder, version = '2.0') => {
+    let volume = createMockVolume();
+    volume.mkdirSync('./data');
+    copy(volume, fs, './data/queue.json', path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`));
+    return volume;
 };
 
 const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
@@ -227,9 +227,9 @@ test('conversion-test-corrupt-4', () => {
 
 test('conversion-test-v2.0-to-v2.1', () => {
     const test = 'test-v2.0-to-v2.1';
-    let mockFs = loadFileSystemV2(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolumeV2(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
