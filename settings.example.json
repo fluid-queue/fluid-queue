@@ -1,17 +1,22 @@
 {
     "username": "coolbot (required, lowercase username of the bot account)",
+    "password": "supersecretplease (required, starts with oauth)",
     "channel": "coolstreamer (required, lowercase username of your chat)",
-    "password": "oauth supersecretplease (required)",
-    "start_open": true,
-    "enable_absolute_position": true,
-    "custom_codes_enabled": true,
-    "romhacks_enabled": true,
-    "max_size": 5,
-    "level_timeout": 100,
-    "level_selection": ["next", "random"],
+    "start_open": false,
+    "enable_absolute_position": false,
+    "custom_codes_enabled": false,
+    "romhacks_enabled": false,
+    "max_size": 100,
+    "level_timeout": null,
+    "level_selection": [
+        "next",
+        "random"
+    ],
     "message_cooldown": 10,
-    "dataIdCourseThreshold": 11223344,
-    "dataIdMakerThreshold": 11223344,
+    "dataIdCourseThreshold": null,
+    "dataIdMakerThreshold": null,
     "prettySaveFiles": false,
-    "subscriberWeightMultiplier": 1.0
+    "subscriberWeightMultiplier": 1.0,
+    "list": null,
+    "position": null
 }
