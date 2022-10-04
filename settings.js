@@ -39,7 +39,7 @@ const settings = JSON.parse(
 const settings_validations = {
   username: (name) => typeof name === "string",
   password: (pass) => typeof pass === "string" && pass.startsWith("oauth"),
-  channel: (channel) => typeof channel === "string" && /^[a-z0-9_]{3,}$/.test(channel), // channel needs to be a valid twitch username (this is used in the chatters URL in twitch.js)
+  channel: (channel) => typeof channel === "string" && /^[a-z0-9_]{2,}$/.test(channel), // channel needs to be a valid twitch username (this is used in the chatters URL in twitch.js)
   start_open: (open) => typeof open === "boolean",
   enable_absolute_position: (absolute_position) => typeof absolute_position === "boolean",
   custom_codes_enabled: cc => typeof cc === "boolean",
