@@ -17,7 +17,7 @@ const defaultTestSettings = {
 };
 
 // mock variables
-var mockChatters = undefined;
+var mockChatters;
 
 // mocks
 jest.mock('node-fetch', () => jest.fn());
@@ -61,15 +61,9 @@ beforeEach(() => {
     jest.setSystemTime(new Date('2022-04-21T00:00:00Z'));
 });
 
-const build_chatter = function (username, displayName, isSubscriber, isMod, isBroadcaster) {
-    return {
-        username: username,
-        displayName: displayName,
-        isSubscriber: isSubscriber,
-        isMod: isMod,
-        isBroadcaster: isBroadcaster
-    }
-}
+const buildChatter = (username, displayName, isSubscriber, isMod, isBroadcaster) => {
+    return { username, displayName, isSubscriber, isMod, isBroadcaster };
+};
 
 test('online users', async () => {
     let twitch;
@@ -97,7 +91,7 @@ test('online users', async () => {
 
     jest.setSystemTime(new Date('2022-04-21T00:00:00Z'));
     // notice chatter
-    twitch.noticeChatter(build_chatter('furretwalkbot', 'FurretWalkBot', false, true, false));
+    twitch.noticeChatter(buildChatter('furretwalkbot', 'FurretWalkBot', false, true, false));
     await expect(twitch.getOnlineUsers(settings.channel)).resolves.toEqual(new Set(['liquidnya', 'helperblock', 'redzebra_', 'furretwalkbot']));
 
     // after 4 minutes still online!
@@ -112,7 +106,7 @@ test('online users', async () => {
     twitch.setToLurk('helperblock');
     await expect(twitch.getOnlineUsers(settings.channel)).resolves.toEqual(new Set(['liquidnya', 'redzebra_']));
     // even when they still chat, they are not online
-    twitch.noticeChatter(build_chatter('helperblock', 'helperblock', false, true, false));
+    twitch.noticeChatter(buildChatter('helperblock', 'helperblock', false, true, false));
     await expect(twitch.getOnlineUsers(settings.channel)).resolves.toEqual(new Set(['liquidnya', 'redzebra_']));
 
     // unlurk makes them online again!

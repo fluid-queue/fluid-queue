@@ -1,14 +1,9 @@
 'use strict';
 
 // imports
-const jestChance = require('jest-chance');
-const readline = require('readline');
-const { fail } = require('assert');
 const path = require('path');
 const fs = require('fs');
-const { Volume } = require('memfs');
-const { codeFrameColumns } = require('@babel/code-frame');
-const { simRequireIndex, simSetTime, simSetChatters, buildChatter, createMockFs, fetchMock, START_TIME, EMPTY_CHATTERS } = require('../simulation.js');
+const { simRequireIndex, simSetChatters, createMockVolume, fetchMock, START_TIME, EMPTY_CHATTERS } = require('../simulation.js');
 
 // fake timers
 jest.useFakeTimers();
@@ -29,18 +24,18 @@ beforeEach(() => {
     consoleErrorMock.mockClear();
 });
 
-const copy = (mockFs, realFs, mockFileName, realFileName) => {
+const copy = (volume, realFs, mockFileName, realFileName) => {
     if (realFs.existsSync(realFileName)) {
-        mockFs.writeFileSync(mockFileName, realFs.readFileSync(realFileName));
+        volume.fromJSON({ [mockFileName]: realFs.readFileSync(realFileName, 'utf-8') }, path.resolve('.'));
     }
 };
 
-const loadFileSystem = (testFolder) => {
-    let mockFs = createMockFs();
-    copy(mockFs, fs, './queso.save', path.resolve(__dirname, `data/${testFolder}/queso.save`));
-    copy(mockFs, fs, './userWaitTime.txt', path.resolve(__dirname, `data/${testFolder}/userWaitTime.txt`));
-    copy(mockFs, fs, './waitingUsers.txt', path.resolve(__dirname, `data/${testFolder}/waitingUsers.txt`));
-    return mockFs;
+const loadVolume = (testFolder) => {
+    let volume = createMockVolume();
+    copy(volume, fs, './queso.save', path.resolve(__dirname, `data/${testFolder}/queso.save`));
+    copy(volume, fs, './userWaitTime.txt', path.resolve(__dirname, `data/${testFolder}/userWaitTime.txt`));
+    copy(volume, fs, './waitingUsers.txt', path.resolve(__dirname, `data/${testFolder}/waitingUsers.txt`));
+    return volume;
 };
 
 const loadFileSystemV2 = (testFolder, version = '2.0') => {
@@ -63,10 +58,10 @@ const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
 
 test('conversion-test-empty', () => {
     const test = 'test-empty';
-    let mockFs = loadFileSystem(test);
+    const volume = loadVolume(test);
     // empty file system
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors!
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -75,9 +70,9 @@ test('conversion-test-empty', () => {
 
 test('conversion-test-1', () => {
     const test = 'test-1';
-    let mockFs = loadFileSystem(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolume(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors, but a warning in the console
     expect(consoleWarnMock).toHaveBeenCalledWith("Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.");
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -90,9 +85,9 @@ test('conversion-test-1', () => {
 
 test('conversion-test-2', () => {
     const test = 'test-2';
-    let mockFs = loadFileSystem(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolume(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -105,9 +100,9 @@ test('conversion-test-2', () => {
 
 test('conversion-test-3', () => {
     const test = 'test-3';
-    let mockFs = loadFileSystem(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolume(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -120,9 +115,9 @@ test('conversion-test-3', () => {
 
 test('conversion-test-4', () => {
     const test = 'test-4';
-    let mockFs = loadFileSystem(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolume(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -135,9 +130,9 @@ test('conversion-test-4', () => {
 
 test('conversion-test-5', () => {
     const test = 'test-5';
-    let mockFs = loadFileSystem(test);
-    const index = simRequireIndex(mockFs);
-    mockFs = index.fs;
+    const volume = loadVolume(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
     // should load without errors and no exception was thrown
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
@@ -150,11 +145,12 @@ test('conversion-test-5', () => {
 
 test('conversion-test-corrupt-1', () => {
     const test = 'test-corrupt-1';
-    let mockFs = loadFileSystem(test);
-    
+    const volume = loadVolume(test);
+    let mockFs;
+
     const index = () => {
         try {
-            simRequireIndex(mockFs);
+            simRequireIndex(volume);
         } catch (err) {
             mockFs = err.simIndex.fs;
             throw err;
@@ -168,11 +164,12 @@ test('conversion-test-corrupt-1', () => {
 
 test('conversion-test-corrupt-2', () => {
     const test = 'test-corrupt-2';
-    let mockFs = loadFileSystem(test);
+    const volume = loadVolume(test);
+    let mockFs;
     
     const index = () => {
         try {
-            simRequireIndex(mockFs);
+            simRequireIndex(volume);
         } catch (err) {
             mockFs = err.simIndex.fs;
             throw err;
@@ -188,11 +185,12 @@ test('conversion-test-corrupt-2', () => {
 
 test('conversion-test-corrupt-3', () => {
     const test = 'test-corrupt-3';
-    let mockFs = loadFileSystem(test);
+    const volume = loadVolume(test);
+    let mockFs;
     
     const index = () => {
         try {
-            simRequireIndex(mockFs);
+            simRequireIndex(volume);
         } catch (err) {
             mockFs = err.simIndex.fs;
             throw err;
@@ -208,11 +206,12 @@ test('conversion-test-corrupt-3', () => {
 
 test('conversion-test-corrupt-4', () => {
     const test = 'test-corrupt-4';
-    let mockFs = loadFileSystem(test);
+    const volume = loadVolume(test);
+    let mockFs;
     
     const index = () => {
         try {
-            simRequireIndex(mockFs);
+            simRequireIndex(volume);
         } catch (err) {
             mockFs = err.simIndex.fs;
             throw err;
