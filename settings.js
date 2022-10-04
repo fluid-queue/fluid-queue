@@ -3,7 +3,11 @@ const fs = require("fs");
 /**
  * @readonly
  */
-const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "weightednext", "subrandom", "modrandom"]
+const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "weightednext", "subrandom", "modrandom"];
+/**
+ * @readonly
+ */
+ const list_options = ["position", "weight", "both", "none"];
 /**
  *
  * @typedef settings
@@ -22,6 +26,8 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
  * @property {boolean} [prettySaveFiles] - true if and only if the save files in ./data/*.json should be formatted
  * @property {number} [subscriberWeightMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
+ * @property {typeof list_options[number]} [position] - which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
+ * @property {typeof list_options[number]} [list] - how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  */
 
 /** @type {settings} */
@@ -44,8 +50,10 @@ const settings_validations = {
   message_cooldown: cool => typeof cool === "number",
   dataIdCourseThreshold: threshold => threshold == null || typeof threshold === "number",
   dataIdMakerThreshold: threshold => threshold == null || typeof threshold === "number",
-  prettySaveFiles: (pretty) => typeof pretty === "boolean",
-  subscriberWeightMultiplier: (multiplier) => typeof multiplier === "number" && multiplier >= 1.0,
+  prettySaveFiles: (pretty) => pretty == null || typeof pretty === "boolean",
+  subscriberWeightMultiplier: (multiplier) => multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
+  position: position => position == null || list_options.includes(position),
+  list: list => list == null || list_options.includes(list),
 };
 
 for (const key in settings) {

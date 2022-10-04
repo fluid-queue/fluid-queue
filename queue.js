@@ -8,16 +8,48 @@ const standardBase30 = '0123456789abcdefghijklmnopqrst'
 const nintendoBase30 = '0123456789BCDFGHJKLMNPQRSTVWXY'
 const arbitraryXorValue = 377544828
 
+/**
+ * @typedef waiting
+ * @property {() => number} weight
+ * @property {(multiplier: number, now?: string)} addOneMinute
+ * 
+ * @typedef level
+ * @property {string} code
+ * @property {string} submitter
+ * @property {string} username
+ * 
+ * @typedef onlineOfflineList
+ * @property {level[]} online
+ * @property {level[]} offline
+ */
+
+/** @type {boolean} */
 var loaded = false;
-var current_level = undefined;
-var levels = new Array()
-var waiting;
+/** @type {(level | undefined)} */
+var current_level;
+/** @type {level[]} */
+var levels = [];
+/** @type {Object.<string, waiting>} */
+var waiting = {};
+/** @type {boolean} */
 var persist = true; // if false the queue will not save automatically
 
 const delim = '[-. ]?';
 const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
 const codeStrict = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]';
 const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStrict})`);
+
+/**
+ * @typedef weightedListEntry
+ * @property {level} level
+ * @property {waiting} waiting
+ * @property {number} position
+ * 
+ * @typedef weightedList
+ * @property {number} totalWeight - 
+ * @property {weightedListEntry[]} entries - 
+ * @property {number} offlineLength - 
+ */
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
 // will make the function return false if the data id of the submitted level is greater than it.
@@ -124,29 +156,6 @@ const replaceCustomCode = (levelCode) => {
   return levelCode;
 };
 
-async function selectionchance(displayName, username) {
-  var list = await queue.list();
-  var online_users = list.online;
-
-  if (current_level === undefined) {
-    return 0;
-  }
-
-  const {elegible_users, elegible_users_time} = queue.elegible(online_users);
-
-  var userChance = waiting[current_level.username].weight();
-  var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0) + userChance;
-  var chance = (userChance / totalOdds * 100).toFixed(1);
-
-console.log("userWait time is " + userChance + " and the total odds are " + totalOdds);
-
-  if (chance > 100.0) {
-    return 100.0;
-  } else {
-    return chance;
-  }
-};
-
 const queue = {
   add: (level) => {
     if (settings.max_size && levels.length >= settings.max_size) {
@@ -230,31 +239,54 @@ const queue = {
     }
   },
 
-  position: async (username) => {
-    if (current_level != undefined && current_level.submitter == username) {
+  /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
+  position: async (username, list = undefined) => {
+    if (current_level != undefined && current_level.username == username) {
       return 0;
     }
     if (levels.length == 0) {
       return -1;
     }
 
-    var list = await queue.list();
+    if (list === undefined) {
+      list = await queue.list();
+    }
     var both = list.online.concat(list.offline);
-    var index = both.findIndex(x => x.submitter == username);
+    var index = both.findIndex(x => x.username == username);
     if (index != -1) {
       return (index + 1) + ((current_level != undefined) ? 1 : 0);
     }
     return -1;
   },
 
-  absoluteposition: async (username) => {
-    if (current_level != undefined && current_level.submitter == username) {
+  /** @type {(username: string) => Promise<number>} */
+  absolutePosition: async (username) => {
+    if (current_level != undefined && current_level.username == username) {
       return 0;
     }
     if (levels.length == 0) {
       return -1;
     }
-    var index = levels.findIndex(x => x.submitter == username);
+    var index = levels.findIndex(x => x.username == username);
+    if (index != -1) {
+      return (index + 1) + ((current_level != undefined) ? 1 : 0);
+    }
+    return -1;
+  },
+
+  /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
+  weightedPosition: async (username, list = undefined) => {
+    if (current_level != undefined && current_level.username == username) {
+      return 0;
+    }
+    if (levels.length == 0) {
+      return -1;
+    }
+    if (twitch.checkLurk(username)) {
+      return -2;
+    }
+    const weightedList = await queue.weightedList(true, list);
+    const index = weightedList.entries.findIndex(x => x.level.username == username);
     if (index != -1) {
       return (index + 1) + ((current_level != undefined) ? 1 : 0);
     }
@@ -275,26 +307,7 @@ const queue = {
     return -1;
   },
 
-  elegible: (online_users) => {
-    const elegible_users = [];
-    const elegible_users_time = [];
-
-    online_users.forEach(user => {
-      if (Object.prototype.hasOwnProperty.call(waiting, user.username)) {
-        elegible_users.push(user);
-        elegible_users_time.push(waiting[user.username].weight());
-      }
-    });
-    
-    return { elegible_users, elegible_users_time };
-  },
-
   weightedchance: async (displayName, username) => {
-    var list = await queue.list();
-    var online_users = list.online;
-    var both = list.online.concat(list.offline);
-    var index = both.findIndex(x => x.username == username);
-
     if (current_level != undefined && current_level.submitter == displayName) {
       return 0;
     }
@@ -305,19 +318,21 @@ const queue = {
       return -2;
     }
 
-    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
+    const weightedList = await queue.weightedList();
+
+    if (weightedList.entries.length == 0) {
+      return -1;
+    }
+
+    const index = weightedList.entries.findIndex(entry => entry.level.username == username);
 
     if (index != -1) {
-      let stringElegibleUsers = "";
-      for (let i = 0; i < elegible_users.length; i++) {
-        stringElegibleUsers = stringElegibleUsers + elegible_users[i].username + ", ";
-      }
-      console.log('Elegible users: ' + stringElegibleUsers);
-      console.log('Elegible users time: ' + elegible_users_time);
-      var userChance = waiting[username].weight();
-      var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0);
-      console.log(`The userChance is ${userChance} with totalOdds ${totalOdds}`);
-      return (userChance / totalOdds * 100).toFixed(1);
+      console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
+      console.log("Elegible users time: " + weightedList.entries.map(entry => entry.waiting.weight()));
+      const weight = weightedList.entries[index].waiting.weight();
+      const totalWeight = weightedList.totalWeight;
+      console.log(`${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`);
+      return queue.percent(weight, totalWeight);
     }
     return -1;
   },
@@ -348,6 +363,7 @@ const queue = {
     var both = list.online.concat(list.offline);
     if (both.length === 0) {
       current_level = undefined;
+      queue.save();
       return current_level;
     } else {
       current_level = both.shift();
@@ -418,6 +434,7 @@ const queue = {
       eligible_levels = list.offline;
       if (eligible_levels.length == 0) {
         current_level = undefined;
+        queue.save();
         return current_level;
       }
     }
@@ -438,6 +455,7 @@ const queue = {
       eligible_levels = list.offline;
       if (eligible_levels.length == 0) {
         current_level = undefined;
+        queue.save();
         return current_level;
       }
     }
@@ -458,6 +476,7 @@ const queue = {
       eligible_levels = list.offline;
       if (eligible_levels.length == 0) {
         current_level = undefined;
+        queue.save();
         return current_level;
       }
     }
@@ -472,69 +491,37 @@ const queue = {
   },
 
   weightedrandom: async () => {
-    var list = await queue.list();
-    var online_users = list.online;
-    if (online_users.length == 0 || Object.keys(waiting).length == 0) {
+    const weightedList = await queue.weightedList();
+
+    if (weightedList.entries.length == 0) {
       current_level = undefined;
+      queue.save();
       return current_level;
     }
 
-    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
-    if (elegible_users.length == 0) {
-      current_level = undefined;
-      return current_level;
-    }
+    const totalWeight = weightedList.totalWeight;
+    const randomNumber = Math.floor(Math.random() * totalWeight) + 1;
+    let levelIndex = 0;
+    let gettingThereSomeday = weightedList.entries[0].waiting.weight();
 
-    var totalOdds = elegible_users_time.reduce((a, b) => a + b, 0);
-    var randomNumber = Math.floor(Math.random() * totalOdds) + 1;
-    var levelIndex = 0;
-    var gettingThereSomeday = elegible_users_time[0];
-    console.log("Elegible users time: " + elegible_users_time);
+    console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
+    console.log("Elegible users time: " + weightedList.entries.map(entry => entry.waiting.weight()));
 
+    console.log("Random number: " + randomNumber);
+    console.log("Current cumulative time: " + gettingThereSomeday);
     while (gettingThereSomeday < randomNumber) {
       levelIndex++;
-      gettingThereSomeday = gettingThereSomeday + elegible_users_time[levelIndex];
-      console.log("Random number: " + randomNumber);
+      gettingThereSomeday = gettingThereSomeday + weightedList.entries[levelIndex].waiting.weight();
       console.log("Current cumulative time: " + gettingThereSomeday);
     }
 
     console.log("Chosen index was " + levelIndex + " after a cumulative time of " + gettingThereSomeday);
-    current_level = elegible_users[levelIndex];
-
-    var index = levels.findIndex(x => x.username == current_level.username);
-    levels.splice(index, 1);
-
-    let selectionChance = await selectionchance(current_level.username, current_level.submitter);
-
-    queue.removeWaiting();
-    queue.save();
-
-    return { ...current_level, selectionChance };
-  },
-
-  weightednext: async () => {
-
-    var list = await queue.list();
-    var online_users = list.online;
-    if (online_users.length == 0 || Object.keys(waiting).length == 0) {
-      current_level = undefined;
-      return current_level;
-    }
-
-    const { elegible_users, elegible_users_time } = queue.elegible(online_users);
-    if (elegible_users.length == 0) {
-      current_level = undefined;
-      return current_level;
-    }
-
-    const max = elegible_users_time.reduce((a, b) => Math.max(a, b));
-    const levelIndex = elegible_users_time.findIndex(x => x == max);
-    current_level = elegible_users[levelIndex];
+    current_level = weightedList.entries[levelIndex].level;
 
     const index = levels.findIndex(x => x.username == current_level.username);
     levels.splice(index, 1);
 
-    let selectionChance = await selectionchance(current_level.username, current_level.submitter);
+    const selectionChance = queue.percent(weightedList.entries[levelIndex].waiting.weight(), totalWeight);
 
     queue.removeWaiting();
     queue.save();
@@ -542,6 +529,63 @@ const queue = {
     return { ...current_level, selectionChance };
   },
 
+  /** @type {(sorted?: boolean, list?: onlineOfflineList) => Promise<weightedList>} */
+  weightedList: async (sorted = undefined, list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list();
+    }
+    const online_users = list.online;
+    if (online_users.length == 0 || Object.keys(waiting).length == 0) {
+      return { totalWeight: 0, entries: [], offlineLength: list.offline.length + online_users.length };
+    }
+
+    let entries = online_users
+      .filter(level => Object.prototype.hasOwnProperty.call(waiting, level.username))
+      .map((level, position) => { return { waiting: waiting[level.username], position: position, level: level }; });
+
+    if (sorted === undefined || sorted) {
+      entries = entries.sort((a, b) => b.waiting.weight() - a.waiting.weight() || a.position - b.position);
+    }
+    
+    const totalWeight = entries.reduce((sum, entry) => sum + entry.waiting.weight(), 0);
+  
+    return { totalWeight: totalWeight, entries: entries, offlineLength: list.offline.length + (online_users.length - entries.length) };
+  },
+
+  percent: (weight, totalWeight) => {
+    let percent = weight / totalWeight * 100.0;
+    if (percent > 100.0) {
+      percent = 100.0;
+    } else if (percent < 0.0) {
+      percent = 0.0;
+    }
+    return (percent).toFixed(1);
+  },
+
+  weightednext: async () => {
+    const weightedList = await queue.weightedList();
+
+    if (weightedList.entries.length == 0) {
+      current_level = undefined;
+      queue.save();
+      return current_level;
+    }
+    
+    current_level = weightedList.entries[0].level;
+
+    // index of the level can be different than 0
+    const index = levels.findIndex(x => x.username == current_level.username);
+    levels.splice(index, 1);
+
+    let selectionChance = queue.percent(weightedList.entries[0].waiting.weight(), weightedList.totalWeight);
+
+    queue.removeWaiting();
+    queue.save();
+
+    return { ...current_level, selectionChance };
+  },
+
+  /** @type {() => Promise<onlineOfflineList> } */
   list: async () => {
     var online = new Array();
     var offline = new Array();
