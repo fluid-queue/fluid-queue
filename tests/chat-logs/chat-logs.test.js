@@ -135,6 +135,8 @@ const chatLogTest = (fileName) => {
             } else if (command == 'accuracy') {
                 accuracy = parseInt(rest);
             } else if (command == 'settings') {
+                // TODO: ideally new settings would be written to settings.json
+                //       and settings.js could be reloaded instead to validate settings
                 replaceSettings(test.settings, JSON.parse(rest));
             } else if (command == 'chatters') {
                 simSetChatters(JSON.parse(rest));
