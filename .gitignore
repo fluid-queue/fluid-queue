@@ -9,5 +9,8 @@
 /userOnlineTime.txt
 /data/
 
+# JSHint config file
+.jshintrc
+
 # Secrets
 settings.json
