@@ -135,6 +135,10 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!subrandom`* will select a random subscriber's level from the queue.
 
+`!weightedsubrandom`* will select a random level from the subscribers using the amount of time spent online and waiting in the queue as weight.
+
+`!weightedsubnext`* will select the level from the queue with the most amount of time spent online and waiting in the queue and being subscribed. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
+
 `!modnext`* will select the next moderator's level from the queue.
 
 `!modrandom`* will select a random moderator's level from the queue.
