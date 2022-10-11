@@ -559,7 +559,14 @@ const queue = {
     } else if (isNaN(percent) || percent < 0.0) {
       percent = 0.0;
     }
-    return (percent).toFixed(1);
+    const percentString = (percent).toFixed(1);
+    if (percentString === '100.0' && weight != totalWeight) {
+      return '>99.9';
+    }
+    if (percentString === '0.0' && weight != 0) {
+      return '<0.1';
+    }
+    return percentString;
   },
 
   multiplier: (username) => {
