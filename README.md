@@ -31,12 +31,12 @@ cp settings.example.json settings.json
 Finally, run the following command to start the bot:
 
 ```bash
-  npm start run
+  npm run start
 ```
 
 To close the queue press `CTRL + C` inside the terminal.
 
-The command `npm start run` is the only command you will need to the next time you want to start the bot.
+The command `npm run start` is the only command you will need to the next time you want to start the bot.
 
 ## What does the settings.json contain?
 
