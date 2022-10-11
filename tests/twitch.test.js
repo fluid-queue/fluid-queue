@@ -1,5 +1,7 @@
 'use strict';
 
+const { replace, buildChatter } = require('./simulation.js');
+
 // constants
 const defaultTestChatters = {
     _links: {},
@@ -35,11 +37,6 @@ fetch.mockImplementation(() =>
 // fake timers
 jest.useFakeTimers();
 
-const replaceSettings = (settings, newSettings) => {
-    Object.keys(settings).forEach(key => { delete settings[key]; });
-    Object.assign(settings, newSettings);
-};
-
 const setChatters = (newChatters) => {
     // automatically create a correct chatters object
     if (!Object.hasOwnProperty.call(newChatters, 'chatters')) {
@@ -61,10 +58,6 @@ beforeEach(() => {
     jest.setSystemTime(new Date('2022-04-21T00:00:00Z'));
 });
 
-const buildChatter = (username, displayName, isSubscriber, isMod, isBroadcaster) => {
-    return { username, displayName, isSubscriber, isMod, isBroadcaster };
-};
-
 test('online users', async () => {
     let twitch;
     let settings;
@@ -74,7 +67,7 @@ test('online users', async () => {
 
         // import settings and replace them
         settings = require('../settings.js');
-        replaceSettings(settings, defaultTestSettings);
+        replace(settings, defaultTestSettings);
 
         // import twitch.js
         twitch = require('../twitch.js').twitch();

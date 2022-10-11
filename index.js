@@ -44,9 +44,7 @@ const level_list_message = (sender, current, levels) => {
   var result =
     levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
   result +=
-    current !== undefined
-      ? current.submitter + " (current)"
-      : "(no current level)";
+    current !== undefined ? current.submitter + " (current)" : "(no current level)";
 
   result += levels.online
     .slice(0, 5)
@@ -74,7 +72,7 @@ const level_weighted_list_message = (sender, current, weightedList) => {
 
   result += weightedList.entries
     .slice(0, 5)
-    .reduce((acc, x) => acc + ", " + x.level.submitter + " (" + quesoqueue.percent(x.waiting.weight(), weightedList.totalWeight) + "%)", "");
+    .reduce((acc, x) => acc + ", " + x.level.submitter + " (" + quesoqueue.percent(x.weight(), weightedList.totalWeight) + "%)", "");
   result += "...";
   result += (weightedList.entries.length > 5 ? "etc." : "");
   result += " (" + weightedList.offlineLength + " offline)";

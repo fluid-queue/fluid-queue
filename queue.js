@@ -42,7 +42,7 @@ const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStri
 /**
  * @typedef weightedListEntry
  * @property {level} level
- * @property {waiting} waiting
+ * @property {() => number} weight
  * @property {number} position
  * 
  * @typedef weightedList
@@ -328,8 +328,8 @@ const queue = {
 
     if (index != -1) {
       console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
-      console.log("Elegible users time: " + weightedList.entries.map(entry => entry.waiting.weight()));
-      const weight = weightedList.entries[index].waiting.weight();
+      console.log("Elegible users time: " + weightedList.entries.map(entry => entry.weight()));
+      const weight = weightedList.entries[index].weight();
       const totalWeight = weightedList.totalWeight;
       console.log(`${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`);
       return queue.percent(weight, totalWeight);
@@ -502,16 +502,16 @@ const queue = {
     const totalWeight = weightedList.totalWeight;
     const randomNumber = Math.floor(Math.random() * totalWeight) + 1;
     let levelIndex = 0;
-    let gettingThereSomeday = weightedList.entries[0].waiting.weight();
+    let gettingThereSomeday = weightedList.entries[0].weight();
 
     console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
-    console.log("Elegible users time: " + weightedList.entries.map(entry => entry.waiting.weight()));
+    console.log("Elegible users time: " + weightedList.entries.map(entry => entry.weight()));
 
     console.log("Random number: " + randomNumber);
     console.log("Current cumulative time: " + gettingThereSomeday);
     while (gettingThereSomeday < randomNumber) {
       levelIndex++;
-      gettingThereSomeday = gettingThereSomeday + weightedList.entries[levelIndex].waiting.weight();
+      gettingThereSomeday = gettingThereSomeday + weightedList.entries[levelIndex].weight();
       console.log("Current cumulative time: " + gettingThereSomeday);
     }
 
@@ -521,7 +521,7 @@ const queue = {
     const index = levels.findIndex(x => x.username == current_level.username);
     levels.splice(index, 1);
 
-    const selectionChance = queue.percent(weightedList.entries[levelIndex].waiting.weight(), totalWeight);
+    const selectionChance = queue.percent(weightedList.entries[levelIndex].weight(), totalWeight);
 
     queue.removeWaiting();
     queue.save();
@@ -541,13 +541,13 @@ const queue = {
 
     let entries = online_users
       .filter(level => Object.prototype.hasOwnProperty.call(waiting, level.username))
-      .map((level, position) => { return { waiting: waiting[level.username], position: position, level: level }; });
+      .map((level, position) => { return { weight: () => waiting[level.username].weight(), position: position, level: level }; });
 
     if (sorted === undefined || sorted) {
-      entries = entries.sort((a, b) => b.waiting.weight() - a.waiting.weight() || a.position - b.position);
+      entries = entries.sort((a, b) => b.weight() - a.weight() || a.position - b.position);
     }
     
-    const totalWeight = entries.reduce((sum, entry) => sum + entry.waiting.weight(), 0);
+    const totalWeight = entries.reduce((sum, entry) => sum + entry.weight(), 0);
   
     return { totalWeight: totalWeight, entries: entries, offlineLength: list.offline.length + (online_users.length - entries.length) };
   },
@@ -584,7 +584,7 @@ const queue = {
     const index = levels.findIndex(x => x.username == current_level.username);
     levels.splice(index, 1);
 
-    let selectionChance = queue.percent(weightedList.entries[0].waiting.weight(), weightedList.totalWeight);
+    let selectionChance = queue.percent(weightedList.entries[0].weight(), weightedList.totalWeight);
 
     queue.removeWaiting();
     queue.save();
@@ -719,8 +719,14 @@ const queue = {
   },
 
   // TODO: could be used instead of the sync variant
+  //       mixing sync and async might not be a good idea
   // saveAsync: async () => {
-  //   await persistence.saveQueue(current_level, levels, waiting);
+  //   options = { force: false, ...options };
+  //   if (persist || options.force) {
+  //     return await persistence.saveQueue(current_level, levels, waiting);
+  //   } else {
+  //     return false;
+  //   }
   // },
 
   isPersisting: () => {
