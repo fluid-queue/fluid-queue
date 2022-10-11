@@ -61,6 +61,7 @@ The settings.json file contains several options to make the bot as customizable 
 `level_timeout` is the amount of time in minutes a level can be played before the bot will inform you that time is up. The default value of `null` means that the timer is deactivated.
 
 `level_selection` is an array that defines the order that levels will be selected in upon using `!level`. Once the order is completed, it will loop.
+Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedrandom"`, `"weightednext"`, `"subrandom"`, `"modrandom"`, `"weightedsubrandom"`, and `"weightedsubnext"`
 
 `message_cooldown` is the amount of time in seconds that a user must wait before !list will display the levels in the queue after a previous use. 
 
@@ -72,6 +73,19 @@ The settings.json file contains several options to make the bot as customizable 
 
 `subscriberWeightMultiplier` is the number added as a wait time for subscribers. The default value is `1.0`. Setting this to `1.2` for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to `1.0`.
 
+`list` is the order of the `!list`/`!queue` command. The following values are possible:
+- `"position"` - the list will be sorted by time added. (`!next`)
+- `"weight"` - the list will be sorted by weighted chance (watch time, `!weightednext`).
+- `"both"` - the list will be sent twice, once sorted by time added and once sorted by weighted chance (watch time).
+- `"none"` - the `!list`/`!queue` commands will be disabled.
+- `null` - the setting is automatically determined by what is configured in `level_selection`.
+
+`position` is which position the `!position` command shows. The following values are possible:
+- `"position"` - the position of `!next`.
+- `"weight"` - the position of `!weightednext`.
+- `"both"` - both the position of `!next` and `!weightednext`.
+- `"none"` - the `!position` command will be disabled.
+- `null` - the setting is automatically determined by what is configured in `level_selection`.
 
 ## What commands are there?
 
