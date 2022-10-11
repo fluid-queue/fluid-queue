@@ -92,7 +92,7 @@ const next_level_message = (level) => {
   }
 };
 
-const weightedrandom_level_message = (level) => {
+const weightedrandom_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -102,7 +102,7 @@ const weightedrandom_level_message = (level) => {
       level.submitter +
       " with a " +
       level.selectionChance +
-      "% chance of selection."
+      "%" + percentSuffix + " chance of selection."
     );
   } else {
     return (
@@ -112,12 +112,12 @@ const weightedrandom_level_message = (level) => {
       level.submitter +
       " with a " +
       level.selectionChance +
-      "% chance of selection."
+      "%" + percentSuffix + " chance of selection."
     );
   }
 };
 
-const weightednext_level_message = (level) => {
+const weightednext_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -127,7 +127,7 @@ const weightednext_level_message = (level) => {
       level.submitter +
       " with the highest wait time of " +
       level.selectionChance +
-      "%."
+      "%" + percentSuffix + "."
     );
   } else {
     return (
@@ -137,7 +137,7 @@ const weightednext_level_message = (level) => {
       level.submitter +
       " with the highest wait time of " +
       level.selectionChance +
-      "%."
+      "%" + percentSuffix + "."
     );
   }
 };
@@ -372,6 +372,12 @@ async function HandleMessage(message, sender, respond) {
       case "weightednext":
         next_level = await quesoqueue.weightednext();
         break;
+      case "weightedsubrandom":
+        next_level = await quesoqueue.weightedsubrandom();
+        break;
+      case "weightedsubnext":
+        next_level = await quesoqueue.weightedsubnext();
+        break;
       default:
         selection_mode = "default";
         next_level = await quesoqueue.next();
@@ -384,6 +390,10 @@ async function HandleMessage(message, sender, respond) {
       respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level));
     } else if (selection_mode == "weightednext") {
       respond("(" + selection_mode + ") " + weightednext_level_message(next_level));
+    } else if (selection_mode == "weightedsubrandom") {
+      respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level, ' (subscriber)'));
+    } else if (selection_mode == "weightedsubnext") {
+      respond("(" + selection_mode + ") " + weightednext_level_message(next_level, ' (subscriber)'));
     } else {
       respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
@@ -429,6 +439,20 @@ async function HandleMessage(message, sender, respond) {
     }
     let next_level = await quesoqueue.weightedrandom();
     respond(weightedrandom_level_message(next_level));
+  } else if (message == "!weightedsubnext" && sender.isBroadcaster) {
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
+    let next_level = await quesoqueue.weightedsubnext();
+    respond(weightednext_level_message(next_level, ' (subscriber)'));
+  } else if (message == "!weightedsubrandom" && sender.isBroadcaster) {
+    if (settings.level_timeout) {
+      level_timer.restart();
+      level_timer.pause();
+    }
+    let next_level = await quesoqueue.weightedsubrandom();
+    respond(weightedrandom_level_message(next_level, ' (subscriber)'));
   } else if (message == "!subrandom" && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();

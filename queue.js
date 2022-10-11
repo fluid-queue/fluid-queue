@@ -318,7 +318,7 @@ const queue = {
       return -2;
     }
 
-    const weightedList = await queue.weightedList();
+    const weightedList = await queue.weightedList(false);
 
     if (weightedList.entries.length == 0) {
       return -1;
@@ -490,8 +490,8 @@ const queue = {
     return current_level;
   },
 
-  weightedrandom: async () => {
-    const weightedList = await queue.weightedList();
+  weightedrandom: async (list = undefined) => {
+    const weightedList = await queue.weightedList(false, list);
 
     if (weightedList.entries.length == 0) {
       current_level = undefined;
@@ -576,8 +576,8 @@ const queue = {
     return 1.0;
   },
 
-  weightednext: async () => {
-    const weightedList = await queue.weightedList();
+  weightednext: async (list = undefined) => {
+    const weightedList = await queue.weightedList(true, list);
 
     if (weightedList.entries.length == 0) {
       current_level = undefined;
@@ -597,6 +597,16 @@ const queue = {
     queue.save();
 
     return { ...current_level, selectionChance };
+  },
+
+  weightedsubrandom: async () => {
+    const list = await queue.sublist();
+    return await queue.weightedrandom(list);
+  },
+
+  weightedsubnext: async () => {
+    const list = await queue.sublist();
+    return await queue.weightednext(list);
   },
 
   /** @type {() => Promise<onlineOfflineList> } */
