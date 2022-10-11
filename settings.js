@@ -3,7 +3,7 @@ const fs = require("fs");
 /**
  * @readonly
  */
-const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "weightednext", "subrandom", "modrandom"];
+const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "weightednext", "subrandom", "modrandom", "weightedsubrandom", "weightedsubnext"];
 /**
  * @readonly
  */
