@@ -1,9 +1,12 @@
 const settings = require("./settings.js");
 const chatbot = require("./chatbot.js");
-const quesoqueue = require("./queue.js").quesoqueue();
+const queue = require("./queue.js");
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
 const persistence = require("./persistence.js");
+
+const quesoqueue = queue.quesoqueue();
+const { displayLevel } = queue;
 
 // patch fs to use the graceful-fs, to retry a file rename under windows
 persistence.patchGlobalFs();
@@ -87,7 +90,7 @@ const next_level_message = (level) => {
     return "Now playing a ROMhack submitted by " + level.submitter + ".";
   } else {
     return (
-      "Now playing " + level.code + " submitted by " + level.submitter + "."
+      "Now playing " + displayLevel(level) + " submitted by " + level.submitter + "."
     );
   }
 };
@@ -107,7 +110,7 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
   } else {
     return (
       "Now playing " +
-      level.code +
+      displayLevel(level) +
       " submitted by " +
       level.submitter +
       " with a " +
@@ -132,7 +135,7 @@ const weightednext_level_message = (level, percentSuffix = '') => {
   } else {
     return (
       "Now playing " +
-      level.code +
+      displayLevel(level) +
       " submitted by " +
       level.submitter +
       " with the highest wait time of " +
@@ -151,7 +154,7 @@ const current_level_message = (level) => {
   } else {
     return (
       "Currently playing " +
-      level.code +
+      displayLevel(level) +
       " submitted by " +
       level.submitter +
       "."
@@ -281,14 +284,14 @@ const weightedchance_message = async (chance, multiplier, sender) => {
 };
 
 const submitted_message = async (level, sender) => {
-  if (level == -1) {
+  if (level === -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
-  } else if (level == -0) {
+  } else if (level === -0) {
     return "Your level is being played right now!";
   }
-  return sender + ", you have submitted " + level + " to the queue.";
+  return sender + ", you have submitted " + displayLevel(level) + " to the queue.";
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -499,7 +502,7 @@ async function HandleMessage(message, sender, respond) {
       } else {
         respond(
           "Now playing " +
-            dip_level.code +
+          displayLevel(dip_level) +
             " submitted by " +
             dip_level.submitter +
             "."

@@ -18,5 +18,6 @@
     "prettySaveFiles": false,
     "subscriberWeightMultiplier": 1.0,
     "list": null,
-    "position": null
+    "position": null,
+    "showMakerCode": true
 }

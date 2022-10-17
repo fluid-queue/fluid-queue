@@ -28,7 +28,8 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [subscriberWeightMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
  * @property {typeof list_options[number]} [position] - which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  * @property {typeof list_options[number]} [list] - how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
- */
+ * @property {boolean} [showMakerCode] - if maker codes should be marked as such 
+*/
 
 /** @type {settings} */
 const settings = JSON.parse(
@@ -54,6 +55,7 @@ const settings_validations = {
   subscriberWeightMultiplier: (multiplier) => multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
   position: position => position == null || list_options.includes(position),
   list: list => list == null || list_options.includes(list),
+  showMakerCode: makerCode => makerCode == null || typeof makerCode === "boolean",
 };
 
 for (const key in settings) {

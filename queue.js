@@ -69,7 +69,7 @@ function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThre
   let courseBitsString = courseBits.toString(2)
   if (courseBitsString.length !== 44)
   {
-    return false
+    return {valid: false, makerCode: false};
   }
   let dataId = parseInt(courseBitsString.substring(32, 44).concat((courseBitsString.substring(10, 30))),2) ^ arbitraryXorValue
   let fieldA = parseInt(courseBitsString.substring(0, 4),2)
@@ -79,18 +79,18 @@ function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThre
 
   if (fieldA !== 8 || fieldB !== (dataId - 31) % 64 || (fieldD == 0 && dataId < 3000004) || fieldE != 1)
   {
-    return false
+    return {valid: false, makerCode: fieldD == 1};
   }
   else if (typeof dataIdMakerThreshold === 'number' && fieldD == 1)
   {
-    return dataId <= dataIdMakerThreshold;
+    return {valid: dataId <= dataIdMakerThreshold, makerCode: true};
   }
   else if (typeof dataIdCourseThreshold === 'number' && fieldD == 0)
   {
-    return dataId <= dataIdCourseThreshold;
+    return {valid: dataId <= dataIdCourseThreshold, makerCode: false};
   }
 
-  return true;
+  return {valid: true, makerCode: fieldD == 1};
 }
 
 const customCodes = {
@@ -135,16 +135,16 @@ const customCodes = {
 // - and a `validSyntax` field which will be true iff a level/maker code has the correct syntax
 const extractValidCode = (levelCode) => {
   if ((levelCode == 'R0M-HAK-LVL') && (settings.romhacks_enabled)) {
-    return { code: `R0M-HAK-LVL`, valid: true, validSyntax: true };
+    return { code: `R0M-HAK-LVL`, valid: true, validSyntax: true, makerCode: false };
   }
 
   let match = levelCode.match(levelCodeRegex);
   if (match) {
     let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
     let validity = courseIdValidity(courseIdString, settings.dataIdCourseThreshold, settings.dataIdMakerThreshold);
-    return { code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(), valid: validity, validSyntax: true };
+    return { ...validity, code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(), validSyntax: true };
   }
-  return { code: levelCode, valid: false, validSyntax: false };
+  return { code: levelCode, valid: false, validSyntax: false, makerCode: false };
 };
 
 const replaceCustomCode = (levelCode) => {
@@ -154,6 +154,19 @@ const replaceCustomCode = (levelCode) => {
     }
   }
   return levelCode;
+};
+
+const makerSuffix = (levelCode) => {
+  const makerCode = extractValidCode(levelCode).makerCode;
+  console.log(`"${levelCode}" -- ${makerCode}`);
+  if (makerCode && settings.showMakerCode) {
+    return " (maker code)";
+  }
+  return "";
+};
+
+const displayLevel = (level) => {
+  return level.code + makerSuffix(level.code);
 };
 
 const queue = {
@@ -181,7 +194,7 @@ const queue = {
       if (level.code == 'R0M-HAK-LVL') {
         return level.submitter + ", your ROMhack has been added to the queue.";
       } else {
-        return level.submitter + ", " + level.code + " has been added to the queue.";
+        return level.submitter + ", " + displayLevel(level) + " has been added to the queue.";
       }
     } else {
       return "Sorry, " + level.submitter + ", you may only submit one level at a time.";
@@ -217,14 +230,14 @@ const queue = {
     if (!code.valid) {
       return username + ", that level code is invalid."
     }
-    var old_level = levels.find(x => x.submitter == username);
-    if (old_level != undefined) {
-      old_level.code = new_level_code;
+    const findLevel = levels.find(x => x.submitter == username);
+    if (findLevel != undefined) {
+      findLevel.code = new_level_code;
       queue.save();
       if (new_level_code == 'R0M-HAK-LVL') {
         return username + ", your level in the queue has been replaced with your ROMhack."
       } else {
-        return username + ", your level in the queue has been replaced with " + new_level_code + ".";
+        return username + ", your level in the queue has been replaced with " + displayLevel(findLevel) + ".";
       }
     } else if (current_level != undefined && current_level.submitter == username) {
       current_level.code = new_level_code;
@@ -232,7 +245,7 @@ const queue = {
       if (new_level_code == 'R0M-HAK-LVL') {
         return username + ", your level in the queue has been replaced with your ROMhack."
       } else {
-        return username + ", your level in the queue has been replaced with " + new_level_code + ".";
+        return username + ", your level in the queue has been replaced with " + displayLevel(current_level) + ".";
       }
     } else {
       return username + ", you were not found in the queue. Use !add to add a level.";
@@ -302,7 +315,7 @@ const queue = {
     var both = list.online.concat(list.offline);
     var index = both.findIndex(x => x.username == username);
     if (index != -1) {
-      return both[index].code;
+      return both[index];
     }
     return -1;
   },
@@ -352,7 +365,7 @@ const queue = {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be dismissed.";
     }
-    let response = 'Dismissed ' + current_level.code + ' submitted by ' + current_level.submitter + '.';
+    let response = 'Dismissed ' + displayLevel(current_level) + ' submitted by ' + current_level.submitter + '.';
     current_level = undefined;
     queue.save();
     return response;
@@ -817,5 +830,7 @@ const queue = {
 };
 
 module.exports = {
-  quesoqueue: () => { return queue; }
+  quesoqueue: () => { return queue; },
+  extractValidCode,
+  displayLevel,
 };
