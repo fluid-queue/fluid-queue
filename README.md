@@ -87,7 +87,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 - `"none"` - the `!position` command will be disabled.
 - `null` - the setting is automatically determined by what is configured in `level_selection`.
 
-`showMakerCode` if set to true it will display `(maker code)` next to level codes in chat if the code is a maker code. The default value is `false`.
+`showMakerCode` if set to true it will display `(maker code)` next to level codes in chat if the code is a maker code. The default value is `true`.
 
 ## What commands are there?
 

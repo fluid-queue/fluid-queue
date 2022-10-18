@@ -159,7 +159,7 @@ const replaceCustomCode = (levelCode) => {
 const makerSuffix = (levelCode) => {
   const makerCode = extractValidCode(levelCode).makerCode;
   console.log(`"${levelCode}" -- ${makerCode}`);
-  if (makerCode && settings.showMakerCode) {
+  if (makerCode && settings.showMakerCode !== false) {
     return " (maker code)";
   }
   return "";
