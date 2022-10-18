@@ -346,7 +346,7 @@ async function HandleMessage(message, sender, respond) {
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
     let next_level;
-    let selection_mode = settings.level_selection[selection_iter++];
+    let selection_mode = settings.level_selection[(selection_iter++) % settings.level_selection.length];
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
     }
@@ -626,13 +626,12 @@ async function HandleMessage(message, sender, respond) {
     if (settings.level_selection.length == 0) {
       respond("No order has been specified.");
     } else {
+      const nextIndex = selection_iter % settings.level_selection.length;
+      let order = [...settings.level_selection]; // copy array
+      order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond(
-        "Level order: " +
-          settings.level_selection.reduce((acc, x) => acc + ", " + x) +
-          ". Next level will be: " +
-          settings.level_selection[
-            selection_iter % settings.level_selection.length
-          ]
+        "Next level order: " +
+        order.reduce((acc, x) => acc + ", " + x)
       );
     }
   }
