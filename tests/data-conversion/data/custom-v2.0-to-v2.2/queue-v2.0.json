@@ -1,0 +1,30 @@
+{
+    "version": "2.0",
+    "currentLevel": {
+        "code": "R0M-HAK-LVL",
+        "submitter": "FurretWalkBot",
+        "username": "furretwalkbot"
+    },
+    "queue": [
+        {
+            "code": "BW2-G2R-CMG",
+            "submitter": "liquidnya",
+            "username": "liquidnya"
+        },
+        {
+            "code": "R0M-HAK-LVL",
+            "submitter": "helperblock",
+            "username": "helperblock"
+        }
+    ],
+    "waiting": {
+        "liquidnya": {
+            "waitTime": 10,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 3,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
+    }
+}

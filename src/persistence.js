@@ -4,17 +4,14 @@ const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require("write-file-atomic");
 const writeFileAtomicSync = writeFileAtomic.sync;
 const { Waiting } = require("./waiting.js");
+const { v5: uuidv5 } = require('uuid');
 
-const FILENAME_V1 = {
-  queso: "./queso.save",
-  userOnlineTime: "./userOnlineTime.txt",
-  userWaitTime: "./userWaitTime.txt",
-  waitingUsers: "./waitingUsers.txt",
-};
-const FILENAME_V2 = { directory: "./data", fileName: "./data/queue.json" };
-const VERSION_V2 = "2.1";
+const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.txt', userWaitTime: './userWaitTime.txt', waitingUsers: './waitingUsers.txt' };
+const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
+const VERSION_V2 = '2.2';
 const VERSION_CHECK_V2 = /^2(\.|$)/; // the version that is being accepted
-const CUSTOM_CODES_FILENAME = "./customCodes.json";
+const CUSTOM_CODES_FILENAME = './customCodes.json';
+const QUEUE_NAMESPACE = '1e511052-e714-49bb-8564-b60915cf7279'; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 
 // structure of file format V1:
 // queso.save
@@ -43,6 +40,7 @@ const CUSTOM_CODES_FILENAME = "./customCodes.json";
 //     - currentLevel: null or the current level
 //     - queue: list of levels (not including the current level)
 //     - waiting: map of username to waiting information
+//     - custom: map of uuid to a description of what kind of level it is
 //   a level has the following fields:
 //     - code: contains the level code as a string
 //     - submitter: contains the display name of the submitter
@@ -165,53 +163,53 @@ const loadQueueV1 = () => {
       levels = levels.map(rmCurrent);
     }
   }
-  // load wait time
-  const waitingUsers = loadFileDefault(
-    FILENAME_V1.waitingUsers,
-    [],
-    "Weighted chance will not function."
-  );
-  const userWaitTime = loadFileDefault(
-    FILENAME_V1.userWaitTime,
-    [],
-    "Weighted chance will not function."
-  );
-  if (waitingUsers.length != userWaitTime.length) {
-    throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userWaitTime}.`
-    );
-  }
-  const userOnlineTime = loadFileDefault(
-    FILENAME_V1.userOnlineTime,
-    undefined,
-    "Online time will not be calculated correctly."
-  );
-  if (
-    userOnlineTime !== undefined &&
-    waitingUsers.length != userOnlineTime.length
-  ) {
-    throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userOnlineTime}.`
-    );
-  }
-  // convert wait time to object
-  const waiting = waitingToObject(
-    waitingUsers,
-    userWaitTime,
-    userOnlineTime,
-    now
-  );
-  // now add anyone who is in the queue, but not waiting
-  // note: the current level does not have a wait time!
-  levels.forEach((level) => {
-    if (!hasOwn(waiting, level.username)) {
-      waiting[level.username] = Waiting.create(now);
+    // load wait time
+    const waitingUsers = loadFileDefault(FILENAME_V1.waitingUsers, [], 'Weighted chance will not function.');
+    const userWaitTime = loadFileDefault(FILENAME_V1.userWaitTime, [], 'Weighted chance will not function.');
+    if (waitingUsers.length != userWaitTime.length) {
+        throw new Error(`Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userWaitTime}.`);
     }
-  });
-  return {
-    currentLevel,
-    queue: levels,
-    waiting,
+    const userOnlineTime = loadFileDefault(FILENAME_V1.userOnlineTime, undefined, 'Online time will not be calculated correctly.');
+    if (userOnlineTime !== undefined && waitingUsers.length != userOnlineTime.length) {
+        throw new Error(`Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userOnlineTime}.`);
+    }
+    // convert wait time to object
+    const waiting = waitingToObject(waitingUsers, userWaitTime, userOnlineTime, now);
+    // now add anyone who is in the queue, but not waiting
+    // note: the current level does not have a wait time!
+    levels.forEach((level) => {
+        if (!hasOwn(waiting, level.username)) {
+            waiting[level.username] = Waiting.create(now);
+        }
+    });
+    const custom = {};
+    // find UNC-LEA-RED and R0M-HAK-LVL levels
+    let hasUncleared = false;
+    let hasRomHack = false;
+    const checkLevel = (level) => {
+        if (level.code == 'UNC-LEA-RED') {
+            level.code = unclearedLevelCode();
+            hasUncleared = true;
+        } else if (level.code == 'R0M-HAK-LVL') {
+            level.code = romHackLevelCode();
+            hasRomHack = true;
+        }
+    };
+    levels.forEach(checkLevel);
+    if (currentLevel !== undefined) {
+        checkLevel(currentLevel);
+    }
+    if (hasUncleared) {
+        addUncleared(custom, false);
+    }
+    if (hasRomHack) {
+        addRomHack(custom, false);
+    }
+    return {
+        currentLevel,
+        queue: levels,
+        waiting,
+        custom,
   };
 };
 
@@ -235,141 +233,194 @@ const waitingToObject = (
   return waiting;
 };
 
+const romHackLevelCode = () => {
+    const romHackUuid = uuidv5('ROMhack', QUEUE_NAMESPACE);
+    return 'custom:' + romHackUuid;
+};
+
+const unclearedLevelCode = () => {
+    const unclearedUuid = uuidv5('Uncleared', QUEUE_NAMESPACE);
+    return 'custom:' + unclearedUuid;
+};
+
+const addRomHack = (custom, enabled = true) => {
+    const romHackUuid = uuidv5('ROMhack', QUEUE_NAMESPACE);
+    if (hasOwn(custom, romHackUuid)) {
+        const result = custom[romHackUuid].enabled != enabled;
+        custom[romHackUuid].enabled = enabled;
+        return result;
+    } else {
+        custom[romHackUuid] = {customCodes: ['ROMhack', 'R0M-HAK-LVL'], display: 'a ROMhack', enabled };
+        return true;
+    }
+};
+
+const addUncleared = (custom, enabled = true) => {
+    const unclearedUuid = uuidv5('Uncleared', QUEUE_NAMESPACE);
+    if (hasOwn(custom, unclearedUuid)) {
+        const result = custom[unclearedUuid].enabled != enabled;
+        custom[unclearedUuid].enabled = enabled;
+        return result;
+    } else {
+        custom[unclearedUuid] = {customCodes: ['Uncleared', 'UNC-LEA-RED', 'an uncleared level', 'uncleared level'], display: 'an uncleared level', enabled };
+        return true;
+    }
+};
+
+const removeRomHack = (custom) => {
+    const romHackUuid = uuidv5('ROMhack', QUEUE_NAMESPACE);
+    if (hasOwn(custom, romHackUuid)) {
+        delete custom[romHackUuid];
+        return true;
+    }
+    return false;
+};
+
+const removeUncleared = (custom) => {
+    const unclearedUuid = uuidv5('Uncleared', QUEUE_NAMESPACE);
+    if (hasOwn(custom, unclearedUuid)) {
+        delete custom[unclearedUuid];
+        return true;
+    }
+    return false;
+};
+
 const loadQueueV2 = () => {
-  const fileName = FILENAME_V2.fileName;
-  const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
-  if (!hasOwn(state, "version")) {
-    throw new Error(`Queue save file ${fileName}: no version field.`);
-  } else if (typeof state.version !== "string") {
-    throw new Error(
-      `Queue save file ${fileName}: version is not of type string.`
-    );
-  } else if (!VERSION_CHECK_V2.test(state.version)) {
-    throw new Error(
-      `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${VERSION_V2}". Save file is assumed to be incompatible. Did you downgrade versions?`
-    );
-  }
-  if (state.currentLevel === null) {
-    state.currentLevel = undefined;
-  }
-  // convert waiting entries to Waiting objects
-  state.waiting = Object.fromEntries(
-    Object.entries(state.waiting).map(([key, value]) => [
-      key,
-      Waiting.from(value),
-    ])
-  );
-  console.log(`${fileName} has been successfully validated.`);
-  return state;
+    const fileName = FILENAME_V2.fileName;
+    const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
+    if (!hasOwn(state, 'version')) {
+        throw new Error(`Queue save file ${fileName}: no version field.`);
+    } else if (typeof state.version !== 'string') {
+        throw new Error(`Queue save file ${fileName}: version is not of type string.`);
+    } else if (!VERSION_CHECK_V2.test(state.version)) {
+        throw new Error(`Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${VERSION_V2}". Save file is assumed to be incompatible. Did you downgrade versions?`);
+    }
+    if (state.currentLevel === null) {
+        state.currentLevel = undefined;
+    }
+    if (!hasOwn(state, 'custom')) {
+        // setup custom
+        state.custom = {};
+        // for version 2, 2.0, and 2.1 levels will be converted
+        if (/^2(\.(0|1))?$/.test(state.version)) {
+            // find UNC-LEA-RED and R0M-HAK-LVL levels
+            let hasUncleared = false;
+            let hasRomHack = false;
+            const checkLevel = (level) => {
+                if (level.code == 'UNC-LEA-RED') {
+                    level.code = unclearedLevelCode();
+                    hasUncleared = true;
+                } else if (level.code == 'R0M-HAK-LVL') {
+                    level.code = romHackLevelCode();
+                    hasRomHack = true;
+                }
+            };
+            state.queue.forEach(checkLevel);
+            if (state.currentLevel !== undefined) {
+                checkLevel(state.currentLevel);
+            }
+            if (hasUncleared) {
+                addUncleared(state.custom, false);
+            }
+            if (hasRomHack) {
+                addRomHack(state.custom, false);
+            }
+        }
+    }
+    // convert waiting entries to Waiting objects
+    state.waiting = Object.fromEntries(Object.entries(state.waiting)
+        .map(([key, value]) => [key, Waiting.from(value)]));
+    console.log(`${fileName} has been successfully validated.`);
+    return state;
 };
 
 const createEmptyQueueSync = () => {
-  const empty = {
-    currentLevel: undefined,
-    queue: [],
-    waiting: {},
-  };
-  saveQueueSync(empty.currentLevel, empty.queue, empty.waiting);
-  console.log(`${FILENAME_V2.fileName} has been successfully created.`);
+    const empty = {
+        currentLevel: undefined,
+        queue: [],
+        waiting: {},
+        custom: {},
+    };
+    saveQueueSync(empty.currentLevel, empty.queue, empty.waiting, empty.custom);
+    console.log(`${FILENAME_V2.fileName} has been successfully created.`);
 };
 
 const loadQueueSync = () => {
-  // try to load queue version 2 if file exists
-  if (fs.existsSync(FILENAME_V2.fileName)) {
-    // for now notice the user of previous save files that can be removed
-    // TODO: this is optional and can be removed
-    Object.values(FILENAME_V1).forEach((file) => {
-      if (fs.existsSync(file)) {
-        console.log(`${file} is no longer needed and can be deleted.`);
-      }
-    });
-    return loadQueueV2();
-  }
-  // if version 2 file does not exist and any version 1 file exists try to convert version 1 to version 2
-  if (Object.values(FILENAME_V1).some((file) => fs.existsSync(file))) {
-    const stateV1 = loadQueueV1();
-    saveQueueSync(stateV1.currentLevel, stateV1.queue, stateV1.waiting);
-    console.log(
-      `${FILENAME_V2.fileName} has been successfully created from previous save files.`
-    );
-    const stateV2 = loadQueueV2();
-    // at this point assume everything was converted successfully (an error would have been thrown instead)
-    // now delete version 1 files
-    Object.values(FILENAME_V1).forEach((file) => {
-      if (fs.existsSync(file)) {
-        try {
-          fs.unlinkSync(file);
-          console.log(`${file} has been deleted successfully.`);
-        } catch (err) {
-          console.warn("%s could not be deleted.", file, err);
-          // this error can be safely ignored!
-        }
-      }
-    });
-    return stateV2;
-  }
+    // try to load queue version 2 if file exists
+    if (fs.existsSync(FILENAME_V2.fileName)) {
+        // for now notice the user of previous save files that can be removed
+        // TODO: this is optional and can be removed
+        Object.values(FILENAME_V1).forEach(file => {
+            if (fs.existsSync(file)) {
+                console.log(`${file} is no longer needed and can be deleted.`);
+            }
+        });
+        return loadQueueV2();
+    }
+    // if version 2 file does not exist and any version 1 file exists try to convert version 1 to version 2
+    if (Object.values(FILENAME_V1).some(file => fs.existsSync(file))) {
+        const stateV1 = loadQueueV1();
+        saveQueueSync(stateV1.currentLevel, stateV1.queue, stateV1.waiting, stateV1.custom);
+        console.log(`${FILENAME_V2.fileName} has been successfully created from previous save files.`);
+        const stateV2 = loadQueueV2();
+        // at this point assume everything was converted successfully (an error would have been thrown instead)
+        // now delete version 1 files
+        Object.values(FILENAME_V1).forEach(file => {
+            if (fs.existsSync(file)) {
+                try {
+                    fs.unlinkSync(file);
+                    console.log(`${file} has been deleted successfully.`);
+                } catch (err) {
+                    console.warn('%s could not be deleted.', file, err);
+                    // this error can be safely ignored!
+                }
+            }
+        });
+        return stateV2;
+    }
   // create an empty save file
   createEmptyQueueSync();
   return loadQueueV2();
 };
 
-const createSaveFileContent = (currentLevel, queue, waiting) => {
-  return JSON.stringify(
-    {
-      version: VERSION_V2,
-      currentLevel: currentLevel === undefined ? null : currentLevel,
-      queue,
-      waiting,
-    },
-    null,
-    settings.prettySaveFiles ? 2 : 0
-  );
+const createSaveFileContent = (currentLevel, queue, waiting, custom) => {
+    return JSON.stringify(
+        {
+            version: VERSION_V2,
+            currentLevel: currentLevel === undefined ? null : currentLevel,
+            queue,
+            waiting,
+            custom,
+        },
+        null,
+        settings.prettySaveFiles ? 2 : 0
+    );
 };
 
-const saveQueueSync = (currentLevel, queue, waiting) => {
-  try {
-    writeFileAtomicSync(
-      FILENAME_V2.fileName,
-      createSaveFileContent(currentLevel, queue, waiting)
-    );
-    return true;
-  } catch (err) {
-    console.error(
-      "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      FILENAME_V2.fileName,
-      err
-    );
-    // ignore this error and keep going
-    // hopefully this issue is gone on the next save
-    // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
-    return false;
-  }
+const saveQueueSync = (currentLevel, queue, waiting, custom) => {
+    try {
+        writeFileAtomicSync(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting, custom));
+        return true;
+    } catch (err) {
+        console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
+        // ignore this error and keep going
+        // hopefully this issue is gone on the next save
+        // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+        return false;
+    }
 };
 
-const saveQueue = async (
-  currentLevel,
-  queue,
-  waiting,
-  callback = undefined
-) => {
-  try {
-    await writeFileAtomic(
-      FILENAME_V2.fileName,
-      createSaveFileContent(currentLevel, queue, waiting),
-      callback
-    );
-    return true;
-  } catch (err) {
-    console.error(
-      "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      FILENAME_V2.fileName,
-      err
-    );
-    // ignore this error and keep going
-    // hopefully this issue is gone on the next save
-    // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
-    return false;
-  }
+const saveQueue = async (currentLevel, queue, waiting, custom, callback = undefined) => {
+    try {
+        await writeFileAtomic(FILENAME_V2.fileName, createSaveFileContent(currentLevel, queue, waiting, custom), callback);
+        return true;
+    } catch (err) {
+        console.error('%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.', FILENAME_V2.fileName, err);
+        // ignore this error and keep going
+        // hopefully this issue is gone on the next save
+        // or maybe even solved by the user while the queue keeps running, e.g. not enough space on disk
+        return false;
+    }
 };
 
 const loadCustomCodesSync = () => {
@@ -406,11 +457,17 @@ const createDataDirectory = () => {
 };
 
 module.exports = {
-  loadQueueSync,
-  saveQueueSync,
-  saveQueue,
-  createDataDirectory,
-  loadCustomCodesSync,
-  saveCustomCodesSync,
-  patchGlobalFs,
+    loadQueueSync,
+    saveQueueSync,
+    saveQueue,
+    createDataDirectory,
+    loadCustomCodesSync,
+    saveCustomCodesSync,
+    patchGlobalFs,
+    romHackLevelCode,
+    unclearedLevelCode,
+    addRomHack,
+    addUncleared,
+    removeRomHack,
+    removeUncleared,
 };

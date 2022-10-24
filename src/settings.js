@@ -29,6 +29,7 @@ const list_options = ["position", "weight", "both", "none"];
  * @property {boolean} [enable_absolute_position] - display position including offline levels
  * @property {boolean} [custom_codes_enabled] - allow custom codes
  * @property {boolean} [romhacks_enabled] - allow romhacks *if* custom codes are enabled
+ * @property {boolean} [uncleared_enabled] - allow uncleared levels *if* custom codes are enabled
  * @property {number} [max_size] - max number of levels in the queue
  * @property {number} [level_timeout] - number of minutes on one level before timer goes off
  * @property {typeof order_options[number][]} level_selection - order of methods used to pick next level

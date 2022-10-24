@@ -18,18 +18,18 @@
             "username": "helperblock"
         }
     ],
-  "waiting": {
-    "liquidnya": {
-      "waitTime": 10,
-      "weightMin": 10,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-    },
-    "helperblock": {
-      "waitTime": 1,
-      "weightMin": 1,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    "waiting": {
+        "liquidnya": {
+            "waitTime": 10,
+            "weightMin": 10,
+            "weightMsec": 0,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 3,
+            "weightMin": 3,
+            "weightMsec": 0,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
     }
-  }
 }

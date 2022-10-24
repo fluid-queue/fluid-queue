@@ -1,0 +1,44 @@
+{
+    "version": "2.2",
+    "currentLevel": {
+        "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
+        "submitter": "FurretWalkBot",
+        "username": "furretwalkbot"
+    },
+    "custom": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+            "customCodes": [
+                "ROMhack",
+                "R0M-HAK-LVL"
+            ],
+            "display": "a ROMhack",
+            "enabled": false
+        }
+    },
+    "queue": [
+        {
+            "code": "BW2-G2R-CMG",
+            "submitter": "liquidnya",
+            "username": "liquidnya"
+        },
+        {
+            "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
+            "submitter": "helperblock",
+            "username": "helperblock"
+        }
+    ],
+    "waiting": {
+        "liquidnya": {
+            "waitTime": 10,
+            "weightMin": 10,
+            "weightMsec": 0,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
+        "helperblock": {
+            "waitTime": 3,
+            "weightMin": 3,
+            "weightMsec": 0,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        }
+    }
+}
