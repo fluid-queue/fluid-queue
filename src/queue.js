@@ -238,16 +238,7 @@ const queue = {
         waiting[level.username] = Waiting.create();
       }
       queue.save();
-      if (level.code == "R0M-HAK-LVL") {
-        return level.submitter + ", your ROMhack has been added to the queue.";
-      } else {
-        return (
-          level.submitter +
-          ", " +
-          displayLevel(level) +
-          " has been added to the queue."
-        );
-      }
+      return level.submitter + ", " + displayLevel(level) + " has been added to the queue.";
     } else {
       return (
         "Sorry, " +
@@ -294,38 +285,11 @@ const queue = {
     if (findLevel != undefined) {
       findLevel.code = new_level_code;
       queue.save();
-      if (new_level_code == "R0M-HAK-LVL") {
-        return (
-          username +
-          ", your level in the queue has been replaced with your ROMhack."
-        );
-      } else {
-        return (
-          username +
-          ", your level in the queue has been replaced with " +
-          displayLevel(findLevel) +
-          "."
-        );
-      }
-    } else if (
-      current_level != undefined &&
-      current_level.submitter == username
-    ) {
+      return username + ", your level in the queue has been replaced with " + displayLevel(findLevel) + ".";
+    } else if (current_level != undefined && current_level.submitter == username) {
       current_level.code = new_level_code;
       queue.save();
-      if (new_level_code == "R0M-HAK-LVL") {
-        return (
-          username +
-          ", your level in the queue has been replaced with your ROMhack."
-        );
-      } else {
-        return (
-          username +
-          ", your level in the queue has been replaced with " +
-          displayLevel(current_level) +
-          "."
-        );
-      }
+      return username + ", your level in the queue has been replaced with " + displayLevel(current_level) + ".";
     } else {
       return (
         username + ", you were not found in the queue. Use !add to add a level."
