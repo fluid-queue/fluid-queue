@@ -52,9 +52,11 @@ The settings.json file contains several options to make the bot as customizable 
 
 `enable_absolute_position` is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position). The default value is `false`.
 
-`custom_codes_enabled` is the toggle for whether or not custom codes are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section.
+`custom_codes_enabled` is the toggle for whether or not custom codes and custom level types are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section. Custom level types are levels without an actual level/maker ID.
 
-`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom codes list depending on this toggle.
+`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle.
+
+`uncleared_enabled` is a toggle for whether or not uncleared levels are allowed to be added to the queue. When enabled, users may type `!add Uncleared` to add an uncleared level to the queue. This is a convienent way to put an uncleared level to the queue without a real level code, so the streamer would then need to pick an uncleared level when the level shows up. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the Uncleared code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle. 
 
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is `100`.
 

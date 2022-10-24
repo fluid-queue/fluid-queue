@@ -1,11 +1,20 @@
 {
     "version": "2.2",
     "currentLevel": {
-        "code": "BW2-G2R-CMG",
+        "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
         "submitter": "liquidnya",
         "username": "liquidnya"
     },
-    "custom": {},
+    "custom": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+            "customCodes": [
+                "ROMhack",
+                "R0M-HAK-LVL"
+            ],
+            "display": "a ROMhack",
+            "enabled": false
+        }
+    },
     "queue": [
         {
             "code": "QWF-3K9-84G",
