@@ -1,0 +1,10 @@
+version: '3.8'
+
+services: 
+  fluid-queso-queue:
+    container_name: queso
+    build: 
+      context: ./.
+    image: fluidqueso:latest
+    restart: unless-stopped
+
