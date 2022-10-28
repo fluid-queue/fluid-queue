@@ -25,7 +25,7 @@ cp settings.example.json settings.json
 # now edit settings.json with your favorite text editor
 ```
 
-Next, build the image:
+Next, build and run the image (detached):
 
 ```bash
   docker-compose up -d 
