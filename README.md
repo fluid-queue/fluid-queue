@@ -9,17 +9,14 @@ A queue system for Mario Maker 2.
 
 ## How do I use this?
 
+You need to have docker engine and docker-compose installed on the system for this to work.  
+
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/ToransuShoujo/quesoqueue_plus
+  git clone https://github.com/liquidnya/fluid-queso-queue.git
 ```
 
-Next, install the dependencies for the project using the following command:
-
-```bash
-  npm install
-```
 
 After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. 
 ```bash
@@ -28,15 +25,18 @@ cp settings.example.json settings.json
 # now edit settings.json with your favorite text editor
 ```
 
-Finally, run the following command to start the bot:
+Next, build the image:
 
 ```bash
-  npm run start
+  docker-compose up -d 
 ```
 
 To close the queue press `CTRL + C` inside the terminal.
+```bash
+  docker-compose stop 
+```
 
-The command `npm run start` is the only command you will need to the next time you want to start the bot.
+The container will restart unless stopped, including through a reboot. 
 
 ## What does the settings.json contain?
 
