@@ -6,5 +6,7 @@ services:
     build: 
       context: ./.
     image: fluidqueso:latest
+    volumes:
+      - ./data:/app/data/
     restart: unless-stopped
 
