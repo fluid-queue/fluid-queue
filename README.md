@@ -28,12 +28,12 @@ cp settings.example.json settings.json
 Next, build and run the image (detached):
 
 ```bash
-  docker-compose up -d 
+  docker compose up -d 
 ```
 
 To close the queue press `CTRL + C` inside the terminal.
 ```bash
-  docker-compose stop 
+  docker compose stop 
 ```
 
 The container will restart unless stopped, including through a reboot. 
