@@ -4,14 +4,17 @@ const queue = require("./queue.js");
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
 const persistence = require("./persistence.js");
+const aliasManagement = require("./aliases.js");
 
 const quesoqueue = queue.quesoqueue();
+const aliases = aliasManagement.aliases();
 const { displayLevel } = queue;
 
 // patch fs to use the graceful-fs, to retry a file rename under windows
 persistence.patchGlobalFs();
 persistence.createDataDirectory();
 quesoqueue.load();
+aliases.loadAliases();
 
 var queue_open = settings.start_open;
 var selection_iter = 0;
@@ -315,7 +318,25 @@ async function HandleMessage(message, sender, respond) {
     message = cmd + " " + args;
   }
 
-  if (message == "!open" && sender.isBroadcaster) {
+  if((message.startsWith("!addAlias") || message.startsWith("!addalias")) && sender.isBroadcaster){
+    if(message.split(' ').length !== 3){
+      respond("The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op");
+    } else {
+      let splitMessage = message.split(' ');
+      if(aliases.addAlias(splitMessage[1], splitMessage[2])){
+        respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been added.");
+      } else {
+        if(!aliases.isCommand(splitMessage[1])){
+          let commands = aliases.getCommands().join(' ');
+          respond("The command entered is invalid. Valid commands are: " + commands);
+        } else if(aliases.isDisabled(splitMessage[1])){
+          respond("The command " + splitMessage[1] +" is currently disabled.");
+        } else {
+          respond("The alias " + splitMessage[2] + " has already been assigned.");
+        }
+      }
+    }
+  } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
     respond("The queue is now open!");
   } else if (message == "!close" && sender.isBroadcaster) {
