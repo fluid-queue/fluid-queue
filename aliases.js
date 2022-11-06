@@ -21,6 +21,7 @@ const defaultAliases = {
     open: ["!open"],
     order: ["!order"],
     pause: ["!pause"],
+    persistence: ["!persistence"],
     position: ["!position", "!pos"],
     punt: ["!punt"],
     random: ["!random"],
@@ -86,7 +87,7 @@ const Aliases = {
         return aliases[cmd].includes("disabled");
     },
     disableCommand: (cmd) => {
-        if(this.isDisabled(cmd)){
+        if(this.isDisabled(cmd) || !this.isCommand(cmd)){
             return false;
         }
         aliases[cmd].push("disabled");
@@ -94,7 +95,7 @@ const Aliases = {
         return true;
     },
     enableCommand: (cmd) => {
-        if(this.isDisabled(cmd)){
+        if(this.isDisabled(cmd) || !this.isCommand(cmd)){
             aliases[cmd].pop();
             this.saveAliases();
             return true;
@@ -108,7 +109,11 @@ const Aliases = {
         return aliases[cmd].includes(message.split(' ')[0]);
     },
     resetCommand : (cmd) => {
-        aliases[cmd] = defaultAliases[cmd];
+        if(this.isCommand(cmd)){
+            aliases[cmd] = defaultAliases[cmd];
+            return true;
+        }
+        return false;
     },
     getCommands: () => {
         return aliases.keys();

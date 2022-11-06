@@ -91,7 +91,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 
 ## What commands are there?
 
-The following list contains all commands and aliases accessible to you while using the queue. All commands marked with an asterisk are only accessible to the channel owner.
+The following list contains all commands and aliases accessible by default to you while using the queue. All commands marked with an asterisk are only accessible to the channel owner.
 
 It is important to note that all commands that draw a level (with exception to `!dismiss`) will first remove the currently selected level before drawing a new one.
 
@@ -166,7 +166,16 @@ It is important to note that all commands that draw a level (with exception to `
 
 
 
+### Aliases
+The following list of commands are available to manage aliases:
 
+`!aliases` will display the available aliases management commands and the available commands you can put aliases for.
+- `!addalias command alias` adds the alias `alias` for command `command`
+- `!enablecmd command` enables the command `command`
+- `!disablecmd command` disables the command `command` entirely.
+- `!resetcmd command` resets the command `command` to default values.
+
+The aliases are saved in a file in `./settings/aliases.json`. Please use this with caution. It might render the bot inoperable.
 
 
 
