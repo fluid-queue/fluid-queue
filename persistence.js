@@ -9,7 +9,7 @@ const FILENAME_V1 = { queso: './queso.save', userOnlineTime: './userOnlineTime.t
 const FILENAME_V2 = { directory: './data', fileName: './data/queue.json' };
 const VERSION_V2 = '2.1';
 const VERSION_CHECK_V2 = /^2(\.|$)/; // the version that is being accepted
-const CUSTOM_CODES_FILENAME = './data/customCodes.json';
+const CUSTOM_CODES_FILENAME = './customCodes.json';
 
 // structure of file format V1:
 // queso.save
