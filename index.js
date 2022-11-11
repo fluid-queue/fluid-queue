@@ -354,7 +354,7 @@ async function HandleMessage(message, sender, respond) {
         }
       } else if (splitMessage[0].toLowerCase() === "!disablecmd") {
         if(aliases.disableCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully enabled.")
+          respond("The command " + splitMessage[1] + " has been successfully disabled.")
         } else {
           if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
             let commands = aliases.getCommands().join(' ');
