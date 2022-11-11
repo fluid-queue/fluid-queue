@@ -1,8 +1,8 @@
-[![Node.js CI](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml/badge.svg)](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml)
+[![Node.js CI](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml/badge.svg)](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml)
 
-# Queso Queue Plus
+#  fluid-queue
 
-A queue system for Mario Maker 2.
+A queue system for Super Mario Maker 2 levels.
 
 
 
@@ -12,7 +12,7 @@ A queue system for Mario Maker 2.
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/ToransuShoujo/quesoqueue_plus
+  git clone https://github.com/fluid-queue/fluid-queue
 ```
 
 Next, install the dependencies for the project using the following command:
@@ -172,4 +172,4 @@ It is important to note that all commands that draw a level (with exception to `
 
 ## Will you add [insert feature here]?
 
-Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.
+Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/fluid-queue/fluid-queue/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.
