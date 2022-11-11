@@ -1,7 +1,7 @@
 {
-  "name": "quesoqueue_plus",
-  "version": "1.0.0",
-  "description": "A queue system for Mario Maker 2",
+  "name": "fluid-queue",
+  "version": "2.0.0",
+  "description": "A queue system for Super Mario Maker 2 levels",
   "license": "GPL-3.0",
   "main": "index.js",
   "dependencies": {
