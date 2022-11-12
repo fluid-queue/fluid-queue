@@ -25,6 +25,8 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [dataIdCourseThreshold] - maximum allowed data id for course ids if set
  * @property {number} [dataIdMakerThreshold] - maximum allowed data id for maker ids if set
  * @property {boolean} [prettySaveFiles] - true if and only if the save files in ./data/*.json should be formatted
+ * @property {string[]} [locales] - list of supported locales
+ * @property {string} [locale] - the locale to use
  * @property {number} [subscriberWeightMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
  * @property {typeof list_options[number]} [position] - which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  * @property {typeof list_options[number]} [list] - how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise

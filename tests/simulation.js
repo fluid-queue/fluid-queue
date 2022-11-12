@@ -2,6 +2,7 @@
 
 // imports
 const jestChance = require('jest-chance');
+const fs = require('fs');
 const { Volume, createFsFromVolume } = require('memfs');
 const path = require('path');
 
@@ -116,6 +117,14 @@ const simSetChatters = (newChatters) => {
 const createMockVolume = (settings = undefined) => {
     const volume = new Volume();
     volume.mkdirSync(path.resolve('.'), { recursive: true });
+    // const locales = fs.readdirSync('./locales').filter(file => file.endsWith('.json'));
+    // copy locales
+    volume.fromJSON(
+        {
+            './locales/en.json': fs.readFileSync('./locales/en.json', 'utf8'),
+        },
+        path.resolve('.')
+    );
     if (settings !== undefined) {
         volume.fromJSON({'./settings.json': JSON.stringify(settings)}, path.resolve('.'));
     }
