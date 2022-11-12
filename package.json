@@ -4,6 +4,10 @@
   "description": "A queue system for Super Mario Maker 2 levels",
   "license": "GPL-3.0",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fluid-queue/fluid-queue.git"
+  },
   "dependencies": {
     "graceful-fs": "^4.2.10",
     "node-fetch": "^3.3.0",
