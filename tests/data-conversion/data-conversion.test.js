@@ -38,9 +38,21 @@ const loadVolume = (testFolder) => {
     return volume;
 };
 
-const checkResult = (mockFs, realFs, testFolder) => {
+const loadVolumeV2 = (testFolder, version = '2.0') => {
+    let volume = createMockVolume();
+    volume.mkdirSync('./data');
+    copy(volume, fs, './data/queue.json', path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`));
+    return volume;
+};
+
+const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
     let queue_real = JSON.parse(mockFs.readFileSync('./data/queue.json'));
-    let queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/queue.json`)));
+    let queue_expect;
+    if (version === undefined) {
+        queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/queue.json`)));
+    } else {
+        queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`)));
+    }
     expect(queue_real).toEqual(queue_expect);
 };
 
@@ -211,4 +223,19 @@ test('conversion-test-corrupt-4', () => {
     expect(mockFs.existsSync('./queso.save')).toBe(true);
     expect(mockFs.existsSync('./userWaitTime.txt')).toBe(false); // this file is actually missing on purpose
     expect(mockFs.existsSync('./waitingUsers.txt')).toBe(true);
+});
+
+test('conversion-test-v2.0-to-v2.1', () => {
+    const test = 'test-v2.0-to-v2.1';
+    const volume = loadVolumeV2(test);
+    const index = simRequireIndex(volume);
+    const mockFs = index.fs;
+    // should load without errors and no exception was thrown
+    expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+    expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+    // still the same save file
+    checkResult(mockFs, fs, test, '2.0');
+    // after first save it will be changed
+    index.quesoqueue.save();
+    checkResult(mockFs, fs, test, '2.1');
 });

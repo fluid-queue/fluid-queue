@@ -26,6 +26,10 @@ const twitch = {
     return new Set([...online_users].filter(x => !lurkers.has(x)));
   },
 
+  isSubscriber: (username) => {
+    return subscribers.has(username);
+  },
+
   getOnlineSubscribers: async (channel) => {
     var online_users = await twitch.getOnlineUsers(channel);
     return new Set([...online_users].filter(x => subscribers.has(x)));

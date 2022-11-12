@@ -1,5 +1,7 @@
 # "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true}
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true,"showMakerCode":false}
+# restart to test with custom_codes_enabled set to true from the very beginning
+restart
 # chatters 
 chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
 # chatty chat log
@@ -7,11 +9,14 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 # @ moderator
 # % subscriber
 
+# check that the custom codes file is initialized with []
+customCodes []
+
 [19:34:55] ~%?liquidnya: !customcode remove test
 [19:34:57] @^helperblock: The custom code test could not be found.
-[19:35:05] ~%?liquidnya: !customcode add test NB0-1MD-SLG
-[19:35:05] @^helperblock: Your custom code test for ID NB0-1MD-SLG has been added.
-[19:35:12] ~%?liquidnya: !add test
+[19:35:05] ~%?liquidnya: !customcode add Test NB0-1MD-SLG
+[19:35:05] @^helperblock: Your custom code Test for ID NB0-1MD-SLG has been added.
+[19:35:12] ~%?liquidnya: !add Test
 [19:35:12] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
 # test if codes were persisted
@@ -19,7 +24,37 @@ restart
 
 [19:35:42] ~%?liquidnya: !add test
 [19:35:42] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+[13:01:34] ~%?liquidnya: !customcodes
+[13:01:34] @^helperblock: The current custom codes are: Test.
+
+customCodes [["Test","NB0-1MD-SLG"]]
+
 [19:36:54] ~%?liquidnya: !customcode remove test
-[19:36:54] @^helperblock: The custom code test has been removed.
+[19:36:54] @^helperblock: The custom code Test for ID NB0-1MD-SLG has been removed.
+
+customCodes []
+
 [19:36:58] ~%?liquidnya: !add test
 [19:36:58] @^helperblock: liquidnya, that is an invalid level code.
+
+# reload codes from disk
+
+save:customCodes.json [["Test","NB0-1MD-SLG"],["OwO","BW2-G2R-CMG"]]
+
+[19:36:58] ~%?liquidnya: !customcode load
+[19:36:58] @^helperblock: Reloaded custom codes from disk.
+
+[19:35:42] ~%?liquidnya: !add test
+[19:35:42] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+[19:35:42] ~%?liquidnya: !add owo
+[19:35:42] @^helperblock: liquidnya, BW2-G2R-CMG has been added to the queue.
+
+# invalid level code
+[23:21:13] ~%?liquidnya: !customcode add invalid-syntax MD0-1MD-SLA
+[23:21:14] @^helperblock: That is an invalid level code.
+
+# this code is invalid because its checksum is invalid
+[23:21:21] ~%?liquidnya: !customcode add invalid-checksum MD0-2MD-SLG
+[23:21:22] @^helperblock: That is an invalid level code.

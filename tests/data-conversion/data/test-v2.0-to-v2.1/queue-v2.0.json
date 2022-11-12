@@ -1,5 +1,5 @@
 {
-    "version": "2.1",
+    "version": "2.0",
     "currentLevel": {
         "code": "QWF-3K9-84G",
         "submitter": "FurretWalkBot",
@@ -20,14 +20,10 @@
     "waiting": {
         "liquidnya": {
             "waitTime": 10,
-            "weightMin": 10,
-            "weightMsec": 0,
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         },
         "helperblock": {
-            "waitTime": 1,
-            "weightMin": 1,
-            "weightMsec": 0,
+            "waitTime": 3,
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         }
     }

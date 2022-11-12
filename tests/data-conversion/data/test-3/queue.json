@@ -1,5 +1,5 @@
 {
-    "version": "2.0",
+    "version": "2.1",
     "currentLevel": {
         "code": "BW2-G2R-CMG",
         "submitter": "liquidnya",
@@ -20,10 +20,14 @@
     "waiting": {
         "furretwalkbot": {
             "waitTime": 1,
+            "weightMin": 1,
+            "weightMsec": 0,
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         },
         "helperblock": {
             "waitTime": 1,
+            "weightMin": 1,
+            "weightMsec": 0,
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         }
     }
