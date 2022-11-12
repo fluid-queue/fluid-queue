@@ -2,8 +2,12 @@
   "name": "fluid-queue",
   "version": "2.0.0",
   "description": "A queue system for Super Mario Maker 2 levels",
+  "homepage": "https://fluid-queue.dev/",
+  "bugs": {
+    "url": "https://github.com/fluid-queue/fluid-queue/issues"
+  },
   "license": "GPL-3.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/fluid-queue/fluid-queue.git"
@@ -17,7 +21,7 @@
   },
   "scripts": {
     "test": "jest --verbose",
-    "start": "node index.js"
+    "start": "node ./src/index.js"
   },
   "devDependencies": {
     "@babel/code-frame": "^7.18.6",
