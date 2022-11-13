@@ -29,7 +29,7 @@ const AsyncFunction = (async () => { }).constructor;
 var mockChatters = EMPTY_CHATTERS;
 
 // mocks
-jest.mock('../chatbot.js');
+jest.mock('../src/chatbot.js');
 jest.mock('node-fetch', () => jest.fn());
 
 jest.mock('set-interval-async/dynamic', () => {
@@ -93,7 +93,7 @@ fetch.mockImplementation(() =>
 );
 
 /**
- * @param {Object} newChatters chatters as returned by the chatters resource, see `../twitch.js`
+ * @param {Object} newChatters chatters as returned by the chatters resource, see `../src/twitch.js`
  */
 const simSetChatters = (newChatters) => {
     // automatically create a correct chatters object
@@ -123,7 +123,7 @@ const createMockVolume = (settings = undefined) => {
 };
 
 /**
- * @typedef { import("../settings.js").settings } settings
+ * @typedef { import("../src/settings.js").settings } settings
  */
 
 /**
@@ -201,18 +201,18 @@ const simRequireIndex = (volume = undefined, mockSettings = undefined, mockTime 
             fs = require('fs');
 
             // import settings
-            settings = require('../settings.js');
+            settings = require('../src/settings.js');
 
             // import libraries
-            chatbot = require('../chatbot.js');
-            twitch = require('../twitch.js').twitch();
-            const queue = require('../queue.js');
+            chatbot = require('../src/chatbot.js');
+            twitch = require('../src/twitch.js').twitch();
+            const queue = require('../src/queue.js');
 
             // spy on the quesoqueue that index will use
             const quesoqueueSpy = jest.spyOn(queue, 'quesoqueue');
 
             // run index.js
-            require('../index.js');
+            require('../src/index.js');
 
             // get hold of the queue
             expect(quesoqueueSpy).toHaveBeenCalledTimes(1);
