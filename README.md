@@ -9,7 +9,9 @@ This project is based on Queso Queue Plus, which was originally developed by Sho
 
 ## How do I use this?
 
-You need to have docker engine and docker-compose installed on the system for this to work.  
+### Docker instructions
+
+You need to have docker engine installed on the system for this to work.  
 
 First, you must clone the project. Either download the source or run the following command:
 
@@ -37,6 +39,42 @@ To close the queue press `CTRL + C` inside the terminal.
 ```
 
 The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` & `data/customCodes.json`.
+
+To update the image pull the repo changes, then build the image locally again
+```bash
+  docker compose up -d --build 
+```
+
+### Run NodeJs locally
+
+First, you must clone the project. Either download the source or run the following command:
+
+```bash
+  git clone https://github.com/ToransuShoujo/quesoqueue_plus
+```
+
+Next, install the dependencies for the project using the following command:
+
+```bash
+  npm install
+```
+
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. 
+```bash
+cp settings.example.json settings.json
+
+# now edit settings.json with your favorite text editor
+```
+
+Finally, run the following command to start the bot:
+
+```bash
+  npm run start
+```
+
+To close the queue press `CTRL + C` inside the terminal.
+
+The command `npm run start` is the only command you will need to the next time you want to start the bot.
 
 ## What does the settings.json contain?
 
