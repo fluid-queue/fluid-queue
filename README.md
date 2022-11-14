@@ -183,7 +183,7 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!modrandom`* will select a random moderator's level from the queue.
 
-`!dismiss`/`!skip`/`!complete`* will remove the current level from the queue without drawing a new one.
+`!dismiss`/`!skip`/`!complete`/`!completed`* will remove the current level from the queue without drawing a new one.
 
 `!select`* will select a specific user's level, provided it is defined after the command.
 
