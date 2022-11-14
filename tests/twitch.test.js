@@ -63,14 +63,14 @@ test('online users', async () => {
     let settings;
     jest.isolateModules(() => {
         // setup settings mock
-        jest.mock('../settings.js', () => { return {}; });
+        jest.mock('../src/settings.js', () => { return {}; });
 
         // import settings and replace them
-        settings = require('../settings.js');
+        settings = require('../src/settings.js');
         replace(settings, defaultTestSettings);
 
         // import twitch.js
-        twitch = require('../twitch.js').twitch();
+        twitch = require('../src/twitch.js').twitch();
     });
 
     expect(settings.channel).toBe('queso_queue_test_channel');

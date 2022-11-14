@@ -1,10 +1,10 @@
-[![Node.js CI](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml/badge.svg)](https://github.com/ToransuShoujo/quesoqueue_plus/actions/workflows/node.js.yml)
+[![Node.js CI](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml/badge.svg)](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml)
 
-# Queso Queue Plus
+#  fluid-queue
 
-A queue system for Mario Maker 2.
+A queue system for Super Mario Maker 2 levels.
 
-
+This project is based on Queso Queue Plus, which was originally developed by Shoujo (<https://github.com/ToransuShoujo/quesoqueue_plus/>) and diceguyd30 (<https://github.com/diceguyd30/queso_to_go_template>).
 
 
 ## How do I use this?
@@ -14,7 +14,7 @@ You need to have docker engine and docker-compose installed on the system for th
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/liquidnya/fluid-queso-queue.git
+https://github.com/fluid-queue/fluid-queue
 ```
 
 
@@ -181,4 +181,4 @@ The aliases are saved in a file in `./settings/aliases.json`. Please use this wi
 
 ## Will you add [insert feature here]?
 
-Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/ToransuShoujo/quesoqueue_plus/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.
+Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/fluid-queue/fluid-queue/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.

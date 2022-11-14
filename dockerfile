@@ -9,5 +9,7 @@ COPY package-lock.json package-lock.json
 # Install the dependencies
 RUN npm install
 COPY . /app
+COPY . .
+
 
 CMD [ "npm", "run", "start"]
