@@ -5,7 +5,6 @@
 /customCodes.json
 /userOnlineTime.txt
 /data/
-aliases.js
 
 # Secrets
 settings.json
@@ -117,4 +116,3 @@ dist
 
 # TernJS port file
 .tern-port
-aliases.js
