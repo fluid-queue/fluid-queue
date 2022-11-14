@@ -16,7 +16,7 @@ You need to have docker engine installed on the system for this to work.
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/liquidnya/fluid-queso-queue.git
+  git clone https://github.com/fluid-queue/fluid-queue.git
 ```
 
 
@@ -50,7 +50,7 @@ To update the image pull the repo changes, then build the image locally again
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/ToransuShoujo/quesoqueue_plus
+  git clone https://github.com/fluid-queue/fluid-queue.git
 ```
 
 Next, install the dependencies for the project using the following command:
