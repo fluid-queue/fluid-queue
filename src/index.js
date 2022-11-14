@@ -323,7 +323,7 @@ async function HandleMessage(message, sender, respond) {
       respond("The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op");
     } else {
       let splitMessage = message.split(' ');
-      if(aliases.addAlias(splitMessage[1].toLowerCase(), splitMessage[2])){
+      if(aliases.addAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2])){
         respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been added.");
       } else {
         if(!aliases.isCommand(splitMessage[1].toLowerCase())){

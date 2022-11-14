@@ -70,7 +70,7 @@ const Aliases = {
         }
     },
     addAlias : (cmd, alias) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             return false;
         }
         if(Object.keys(aliases).includes(alias) || Object.values(aliases).includes(alias)){
