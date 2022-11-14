@@ -86,7 +86,7 @@ const next_level_message = (level) => {
   if (level === undefined) {
     return "The queue is empty.";
   }
-  twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   if (level.code == "R0M-HAK-LVL") {
     return "Now playing a ROMhack submitted by " + level.submitter + ".";
   } else {
@@ -100,7 +100,7 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
-  twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   if (level.code == "R0M-HAK-LVL") {
     return (
       "Now playing a ROMhack submitted by " +
@@ -337,6 +337,8 @@ async function HandleMessage(message, sender, respond) {
       var to_remove = get_remainder(message);
       respond(quesoqueue.modRemove(to_remove));
     } else {
+      // if they're leaving, they're not lurking
+      twitch.notLurkingAnymore(sender.username);
       respond(quesoqueue.remove(sender.displayName));
     }
   } else if (
@@ -497,7 +499,7 @@ async function HandleMessage(message, sender, respond) {
     }
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
-      twitch.notLurkingAnymore(username);
+      twitch.notLurkingAnymore(dip_level.username);
       if (dip_level.code == "R0M-HAK-LVL") {
         respond(
           "Now playing a ROMhack submitted by " + dip_level.submitter + "."
