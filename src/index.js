@@ -325,6 +325,11 @@ async function HandleMessage(message, sender, respond) {
     respond("The queue is now closed!");
   } else if (message.toLowerCase().startsWith("!add")) {
     if (queue_open || sender.isBroadcaster) {
+      // If they just added their level, it's a safe bet they aren't lurking
+      if (twitch.notLurkingAnymore(sender.username)) {
+        // But to avoid confusion, we can welcome them back too
+        respond("Welcome back, " + sender.displayName + "!");
+      }
       let level_code = get_remainder(message);
       respond(
         quesoqueue.add(Level(level_code, sender.displayName, sender.username))
