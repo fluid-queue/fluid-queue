@@ -66,13 +66,14 @@ const Aliases = {
             aliases = JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }));
         } catch (err) {
             console.warn('An error occurred when trying to load %s. %s', ALIASES_FILE.fileName, err.message);
+            throw err;
         }
     },
     addAlias : (cmd, alias) => {
         if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
             return false;
         }
-        if(JSON.stringify(aliases).includes(alias)){
+        if(Object.keys(aliases).includes(alias) || Object.values(aliases).includes(alias)){
             return false;
         }
         if(!alias.startsWith("!")){
@@ -87,7 +88,7 @@ const Aliases = {
         return aliases[cmd].includes("disabled");
     },
     disableCommand: (cmd) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             return false;
         }
         aliases[cmd].push("disabled");
@@ -95,7 +96,7 @@ const Aliases = {
         return true;
     },
     enableCommand: (cmd) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             aliases[cmd].pop();
             Aliases.saveAliases();
             return true;
