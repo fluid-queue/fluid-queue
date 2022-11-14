@@ -126,6 +126,7 @@ const weightednext_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   if (level.code == "R0M-HAK-LVL") {
     return (
       "Now playing a ROMhack submitted by " +
