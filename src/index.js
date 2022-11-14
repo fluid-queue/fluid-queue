@@ -352,6 +352,11 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith("!swap")
   ) {
     let level_code = get_remainder(message);
+    // If they just added their level, it's a safe bet they aren't lurking
+    if (twitch.notLurkingAnymore(sender.username)) {
+      // But to avoid confusion, we can welcome them back too
+      respond("Welcome back, " + sender.displayName + "!");
+    }
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
     let next_level;
