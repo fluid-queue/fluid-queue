@@ -5,6 +5,7 @@
 /customCodes.json
 /userOnlineTime.txt
 /data/
+/settings/
 
 # Secrets
 settings.json
