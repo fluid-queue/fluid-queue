@@ -59,7 +59,7 @@ const chatbot_helper = function(username, password, channel) {
         } else {
           chatter = build_chatter(tags.username,
             tags['display-name'],
-            tags.badges.subscriber != undefined,
+            tags.badges.subscriber != undefined || tags.badges.founder != undefined,
             tags.badges.moderator != undefined,
             tags.badges.broadcaster != undefined);
         }
