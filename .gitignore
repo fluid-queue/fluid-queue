@@ -8,6 +8,7 @@
 /customCodes.json
 /userOnlineTime.txt
 /data/
+aliases.js
 
 # JSHint config file
 .jshintrc
