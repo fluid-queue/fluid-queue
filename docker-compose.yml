@@ -1,11 +1,11 @@
 version: '3.8'
 
 services: 
-  fluid-queso-queue:
-    container_name: queso
+  fluid-queue:
+    container_name: fluidQueue
     build: 
       context: ./.
-    image: fluidqueso:latest
+    image: fluidQueue:latest
     volumes:
       - ./data:/app/data/
     restart: unless-stopped
