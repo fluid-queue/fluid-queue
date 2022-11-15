@@ -86,6 +86,7 @@ const next_level_message = (level) => {
   if (level === undefined) {
     return "The queue is empty.";
   }
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   return (
     "Now playing " + displayLevel(level) + " submitted by " + level.submitter + "."
   );
@@ -95,6 +96,7 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   return (
     "Now playing " +
     displayLevel(level) +
@@ -110,6 +112,7 @@ const weightednext_level_message = (level, percentSuffix = '') => {
   if (level === undefined) {
     return "The queue is empty.";
   }
+  twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   return (
     "Now playing " +
     displayLevel(level) +
@@ -295,6 +298,11 @@ async function HandleMessage(message, sender, respond) {
     respond("The queue is now closed!");
   } else if (message.toLowerCase().startsWith("!add")) {
     if (queue_open || sender.isBroadcaster) {
+      // If they just added their level, it's a safe bet they aren't lurking
+      if (twitch.notLurkingAnymore(sender.username)) {
+        // But to avoid confusion, we can welcome them back too
+        respond("Welcome back, " + sender.displayName + "!");
+      }
       let level_code = get_remainder(message);
       respond(
         quesoqueue.add(Level(level_code, sender.displayName, sender.username))
@@ -307,6 +315,8 @@ async function HandleMessage(message, sender, respond) {
       var to_remove = get_remainder(message);
       respond(quesoqueue.modRemove(to_remove));
     } else {
+      // if they're leaving, they're not lurking
+      twitch.notLurkingAnymore(sender.username);
       respond(quesoqueue.remove(sender.displayName));
     }
   } else if (
@@ -315,6 +325,11 @@ async function HandleMessage(message, sender, respond) {
     message.startsWith("!swap")
   ) {
     let level_code = get_remainder(message);
+    // If they just added their level, it's a safe bet they aren't lurking
+    if (twitch.notLurkingAnymore(sender.username)) {
+      // But to avoid confusion, we can welcome them back too
+      respond("Welcome back, " + sender.displayName + "!");
+    }
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (message == "!level" && sender.isBroadcaster) {
     let next_level;
@@ -467,6 +482,7 @@ async function HandleMessage(message, sender, respond) {
     }
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
+      twitch.notLurkingAnymore(dip_level.username);
       respond(
         "Now playing " +
         displayLevel(dip_level) +
@@ -562,6 +578,7 @@ async function HandleMessage(message, sender, respond) {
     respond(`@${sender.displayName} ${response}`);
   } else if (message == "!clear" && sender.isBroadcaster) {
     quesoqueue.clear();
+    twitch.clearLurkers();
     respond("The queue has been cleared!");
   } else if (
     (message.startsWith("!customcode") || message == "!customcodes") &&

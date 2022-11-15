@@ -218,11 +218,15 @@ const queue = {
       return "You can use !remove <username> to kick out someone else's level.";
     }
 
-    var match = queue.matchUsername(usernameArgument);
-    if (!levels.some(match)) {
+    var level = levels.find(queue.matchUsername(usernameArgument));
+    if (!level) {
+      // If the user isn't in the queue, unlurk them anyway
+      // It's unlikely they'll be on BRB and not in queue, but it's an edge case worth covering
+      twitch.notLurkingAnymore(usernameArgument.replace("@", "").toLowerCase());
       return "No levels from " + usernameArgument + " were found in the queue.";
     }
-    levels = levels.filter(level => !match(level));
+    twitch.notLurkingAnymore(level.username);
+    levels = levels.filter(x => x.submitter != level.submitter);
     queue.save();
     return usernameArgument + "'s level has been removed from the queue.";
   },

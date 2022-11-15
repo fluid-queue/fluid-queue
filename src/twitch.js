@@ -71,6 +71,10 @@ const twitch = {
     return false;
   },
 
+  clearLurkers: () => {
+    lurkers.clear();
+  },
+
   getWaitTime: async (chatter) => {
 
   }
