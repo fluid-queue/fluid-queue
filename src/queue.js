@@ -111,23 +111,48 @@ const customCodes = {
     return customCodes.map.get(customCode.toUpperCase()).customCode;
   },
   listNames: () => {
+    // TODO: maybe only list the first occurence of a custom level instead of all aliases
+    //       or even not list them and add a !customlevels command instead
     return [...customCodes.map.values()].map(e => e.customCode);
   },
   set: (customCodeArg, levelCode) => {
-    // TODO: change customLevels if levelCode starts with CUSTOM_PREFIX
     const customCode = customCodeArg.trim();
     customCodes.map.set(customCode.toUpperCase(), { customCode, levelCode });
+    if (levelCode.startsWith(CUSTOM_PREFIX)) {
+      const uuid = levelCode.substring(CUSTOM_PREFIX.length);
+      if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
+        const description = customLevels[uuid];
+        description.customCodes.push(customCode);
+      }
+    }
   },
   delete: (customCodeArg) => {
-    // TODO: change customLevels if customCodeArg is inside customLevels
+    let result = true;
     const customCode = customCodeArg.trim();
+    const element = customCodes.map.get(customCode.toUpperCase());
+    if (element !== undefined && element.levelCode.startsWith(CUSTOM_PREFIX)) {
+      const uuid = element.levelCode.substring(CUSTOM_PREFIX.length);
+      if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
+        const description = customLevels[uuid];
+        const i = description.customCodes.findIndex(code => code.toUpperCase() == customCode.toUpperCase());
+        if (i > -1) {
+          if (description.customCodes.length == 1) {
+            description.enabled = false;
+            result = false;
+          } else {
+            description.customCodes.splice(i, 1);
+          }
+        }
+      }
+    }
     customCodes.map.delete(customCode.toUpperCase());
+    return result;
   },
   fromCodeList: (codeList) => {
     const entries = codeList.map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
     customCodes.map = new Map(entries);
-    // translate customLevels into custom code map
     Object.entries(customLevels).forEach(([key, value]) => {
+      // translate customLevels into custom code map
       if (value.enabled) {
         value.customCodes.forEach(customCode => {
           customCodes.map.set(customCode.toUpperCase(), { customCode, levelCode: CUSTOM_PREFIX + key });
@@ -679,8 +704,10 @@ const queue = {
   },
 
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
-    const save = (/** @type {string} */ errorMessage) =>
+    const save = (/** @type {string} */ errorMessage) => {
       persistence.saveCustomCodesSync(customCodes.toCodeList(), errorMessage);
+      queue.save();
+    };
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
       const [customName, realName] = rest;
@@ -696,7 +723,7 @@ const queue = {
       }
       customCodes.set(customName, levelCode.code);
       save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ID ${levelCode.code} has been added.`;
+      return `Your custom code ${customName} for ${displayLevel({code: levelCode.code})} has been added.`;
     } else if (command == "remove" && rest.length == 1) {
       const [customName] = rest;
       if (!customCodes.has(customName)) {
@@ -705,14 +732,13 @@ const queue = {
       const deletedName = customCodes.getName(customName);
       const deletedLevelCode = customCodes.getLevelCode(customName);
 
-      // TODO: remove custom code from customLevels
-      //       and also check if at least one custom code is left
-      //       if not, then either delete the customLevel or deactivate the customLevel?
-      //       or prompt the user to delete/deactivate the custom level instead
-
-      customCodes.delete(customName);
+      if (!customCodes.delete(customName)) {
+        save("An error occurred while trying to remove that custom code.");
+        // TODO: tell the user how to enable it again
+        return `The custom code ${deletedName} for ${displayLevel({code: deletedLevelCode})} could not be deleted, and the custom level has been disabled instead.`;
+      }
       save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${deletedName} for ID ${deletedLevelCode} has been removed.`;
+      return `The custom code ${deletedName} for ${displayLevel({code: deletedLevelCode})} has been removed.`;
     } else if ((command == "load" || command == "reload" || command == "restore") && rest.length == 0) {
       queue.loadCustomCodes();
       return "Reloaded custom codes from disk.";
