@@ -38,7 +38,7 @@ To close the queue press `CTRL + C` inside the terminal.
   docker compose stop 
 ```
 
-The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` & `data/customCodes.json`.
+The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are not yet backed up at this time - `customCodes.json` will be moved into data folder in a future update.
 
 To update the image pull the repo changes, then build the image locally again
 ```bash
