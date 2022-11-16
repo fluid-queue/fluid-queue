@@ -73,7 +73,7 @@ const Aliases = {
         if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             return false;
         }
-        if(Object.keys(aliases).includes(alias) || Object.values(aliases).includes(alias)){
+        if(Object.values(aliases).filter(x => x.includes(alias.startsWith("!") ? alias : "!" + alias)).length > 0){
             return false;
         }
         if(!alias.startsWith("!")){
@@ -82,6 +82,20 @@ const Aliases = {
             aliases[cmd].push(alias);
         }
         Aliases.saveAliases();
+        return true;
+    },
+    removeAlias : (cmd, alias) => {
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
+            return false;
+        }
+        if(!Object.values(aliases).filter(x => x.includes(alias)).length > 0){
+            return false;
+        }
+        if(!aliases[cmd].includes(alias)){
+            return false;
+        }
+        const indexOfAlias = aliases[cmd].indexOf(alias);
+        aliases[cmd].splice(indexOfAlias, 1);
         return true;
     },
     isDisabled : (cmd) => {
