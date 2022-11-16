@@ -323,7 +323,7 @@ async function HandleMessage(message, sender, respond) {
       respond("The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op");
     } else {
       let splitMessage = message.split(' ');
-      if(aliases.addAlias(splitMessage[1].toLowerCase(), splitMessage[2])){
+      if(aliases.addAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2])){
         respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been added.");
       } else {
         if(!aliases.isCommand(splitMessage[1].toLowerCase())){
@@ -333,6 +333,24 @@ async function HandleMessage(message, sender, respond) {
           respond("The command " + splitMessage[1] +" is currently disabled.");
         } else {
           respond("The alias " + splitMessage[2] + " has already been assigned.");
+        }
+      }
+    }
+  } else if((message.toLowerCase().startsWith("!removealias")) && sender.isBroadcaster){
+    if(message.split(' ').length !== 3){
+      respond("The syntax for removing an alias is: !removealias command alias, for example: !removealias open op");
+    } else {
+      let splitMessage = message.split(' ');
+      if(aliases.removeAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2].startsWith("!") ? splitMessage[2] : "!" + splitMessage[2])){
+        respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been removed.");
+      } else {
+        if(!aliases.isCommand(splitMessage[1].toLowerCase())){
+          let commands = aliases.getCommands().join(' ');
+          respond("The command entered is invalid. Valid commands are: " + commands);
+        } else if(aliases.isDisabled(splitMessage[1].toLowerCase())){
+          respond("The command " + splitMessage[1] +" is currently disabled.");
+        } else {
+          respond("The alias " + splitMessage[2] + " does not exist for command " + splitMessage[1] + ".");
         }
       }
     }
@@ -365,7 +383,7 @@ async function HandleMessage(message, sender, respond) {
         }
       } else if (splitMessage[0] === "!resetcmd") {
         if(aliases.resetCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully enabled.")
+          respond("The command " + splitMessage[1] + " has been successfully reset.")
         } else {
           if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
             let commands = aliases.getCommands().join(' ');

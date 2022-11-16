@@ -12,7 +12,7 @@ const defaultAliases = {
     close: ["!close"],
     current: ["!current"],
     customcode: ["!customcode", "!customcodes"],
-    dismiss: ["!dismiss", "!skip", "!complete"],
+    dismiss: ["!dismiss", "!skip", "!complete", "!completed"],
     level: ["!level"],
     list: ["!list", "!queue"],
     modnext: ["!modnext"],
@@ -66,13 +66,14 @@ const Aliases = {
             aliases = JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }));
         } catch (err) {
             console.warn('An error occurred when trying to load %s. %s', ALIASES_FILE.fileName, err.message);
+            throw err;
         }
     },
     addAlias : (cmd, alias) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             return false;
         }
-        if(JSON.stringify(aliases).includes(alias)){
+        if(Object.values(aliases).filter(x => x.includes(alias.startsWith("!") ? alias : "!" + alias)).length > 0){
             return false;
         }
         if(!alias.startsWith("!")){
@@ -83,11 +84,25 @@ const Aliases = {
         Aliases.saveAliases();
         return true;
     },
+    removeAlias : (cmd, alias) => {
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
+            return false;
+        }
+        if(!Object.values(aliases).filter(x => x.includes(alias)).length > 0){
+            return false;
+        }
+        if(!aliases[cmd].includes(alias)){
+            return false;
+        }
+        const indexOfAlias = aliases[cmd].indexOf(alias);
+        aliases[cmd].splice(indexOfAlias, 1);
+        return true;
+    },
     isDisabled : (cmd) => {
         return aliases[cmd].includes("disabled");
     },
     disableCommand: (cmd) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             return false;
         }
         aliases[cmd].push("disabled");
@@ -95,7 +110,7 @@ const Aliases = {
         return true;
     },
     enableCommand: (cmd) => {
-        if(Aliases.isDisabled(cmd) || !Aliases.isCommand(cmd)){
+        if(!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)){
             aliases[cmd].pop();
             Aliases.saveAliases();
             return true;

@@ -8,5 +8,6 @@ services:
     image: fluid-queue:latest
     volumes:
       - ./data:/app/data/
+      - ./settings:/app/settings/
     restart: unless-stopped
 
