@@ -96,6 +96,7 @@ const Aliases = {
         }
         const indexOfAlias = aliases[cmd].indexOf(alias);
         aliases[cmd].splice(indexOfAlias, 1);
+        Aliases.saveAliases();
         return true;
     },
     isDisabled : (cmd) => {
@@ -125,7 +126,9 @@ const Aliases = {
     },
     resetCommand : (cmd) => {
         if(Aliases.isCommand(cmd)){
-            aliases[cmd] = defaultAliases[cmd];
+            aliases[cmd] = [];
+            defaultAliases[cmd].forEach(x => Aliases.addAlias(cmd, x));
+            Aliases.saveAliases();
             return true;
         }
         return false;
