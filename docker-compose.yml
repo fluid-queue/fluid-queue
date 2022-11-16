@@ -2,10 +2,10 @@ version: '3.8'
 
 services: 
   fluid-queue:
-    container_name: fluidQueue
+    container_name: fluid-queue
     build: 
       context: ./.
-    image: fluidQueue:latest
+    image: fluid-queue:latest
     volumes:
       - ./data:/app/data/
     restart: unless-stopped
