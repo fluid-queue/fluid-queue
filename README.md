@@ -9,10 +9,48 @@ This project is based on Queso Queue Plus, which was originally developed by Sho
 
 ## How do I use this?
 
+### Docker instructions
+
+You need to have docker engine installed on the system for this to work.  
+
 First, you must clone the project. Either download the source or run the following command:
 
 ```bash
-  git clone https://github.com/fluid-queue/fluid-queue
+  git clone https://github.com/fluid-queue/fluid-queue.git
+```
+
+
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. 
+```bash
+cp settings.example.json settings.json
+
+# now edit settings.json with your favorite text editor
+```
+
+Next, build and run the image (detached):
+
+```bash
+  docker compose up -d 
+```
+
+To close the queue press `CTRL + C` inside the terminal.
+```bash
+  docker compose stop 
+```
+
+The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are not yet backed up at this time - `customCodes.json` will be moved into data folder in a future update.
+
+To update the image pull the repo changes, then build the image locally again
+```bash
+  docker compose up -d --build 
+```
+
+### Run NodeJs locally
+
+First, you must clone the project. Either download the source or run the following command:
+
+```bash
+  git clone https://github.com/fluid-queue/fluid-queue.git
 ```
 
 Next, install the dependencies for the project using the following command:
@@ -91,7 +129,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 
 ## What commands are there?
 
-The following list contains all commands and aliases accessible to you while using the queue. All commands marked with an asterisk are only accessible to the channel owner.
+The following list contains all commands and aliases accessible by default to you while using the queue. All commands marked with an asterisk are only accessible to the channel owner.
 
 It is important to note that all commands that draw a level (with exception to `!dismiss`) will first remove the currently selected level before drawing a new one.
 
@@ -145,7 +183,7 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!modrandom`* will select a random moderator's level from the queue.
 
-`!dismiss`/`!skip`/`!complete`* will remove the current level from the queue without drawing a new one.
+`!dismiss`/`!skip`/`!complete`/`!completed`* will remove the current level from the queue without drawing a new one.
 
 `!select`* will select a specific user's level, provided it is defined after the command.
 
@@ -166,7 +204,17 @@ It is important to note that all commands that draw a level (with exception to `
 
 
 
+### Aliases
+The following list of commands are available to manage aliases:
 
+`!aliases` will display the available aliases management commands and the available commands you can put aliases for.
+- `!addalias command alias` adds the alias `alias` for command `command`
+- `!removealias command alias` removes the alias `alias` for command `command`
+- `!enablecmd command` enables the command `command`
+- `!disablecmd command` disables the command `command` entirely.
+- `!resetcmd command` resets the command `command` to default values.
+
+The aliases are saved in a file in `./settings/aliases.json`. Please use this with caution. It might render the bot inoperable.
 
 
 
