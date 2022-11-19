@@ -164,8 +164,8 @@ const customCodes = {
     // custom codes have priority! (this is important because otherwise custom codes are deleted on the next save)
     customCodes.map = new Map([...customLevelsMap, ...entriesMap]);
   },
-  toCodeList: () => {
-    return [...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => [e.customCode, e.levelCode]);
+  toObject: () => {
+    return Object.fromEntries([...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => [e.customCode, e.levelCode]));
   },
 };
 
@@ -709,7 +709,7 @@ const queue = {
 
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) => {
-      persistence.saveCustomCodesSync({customCodes: customCodes.toCodeList()}, errorMessage);
+      persistence.saveCustomCodesSync({customCodes: customCodes.toObject()}, errorMessage);
       queue.save();
     };
     let [command, ...rest] = codeArguments.split(" ");
