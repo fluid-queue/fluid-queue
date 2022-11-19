@@ -152,7 +152,7 @@ const chatLogTest = (fileName) => {
                 } else if (command.startsWith('customCodes')) {
                     try {
                         const memberIdx = command.indexOf('/');
-                        let jsonData = JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../customCodes.json')));
+                        let jsonData = JSON.parse(test.fs.readFileSync(path.resolve(__dirname, '../../data/custom-codes.json')));
                         if (memberIdx != -1) {
                             const member = command.substring(memberIdx + 1);
                             jsonData = jsonData[member];
