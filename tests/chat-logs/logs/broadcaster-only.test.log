@@ -98,3 +98,21 @@ queue.json/queue []
 [19:43:11] @^helperblock: Starting the clock over! CP Hype!
 [19:43:15] ~%?liquidnya: !clear
 [19:43:16] @^helperblock: The queue has been cleared!
+
+[19:43:20] ~%?liquidnya: !addalias open op
+[19:43:20] @^helperblock: Alias op for command open has been added.
+[19:43:21] ~%?liquidnya: !addalias open op
+[19:43:21] @^helperblock: The alias op has already been assigned.
+[19:43:22] ~%?liquidnya: !removealias open open
+[19:43:22] @^helperblock: Alias open for command open has been removed.
+[19:43:22] ~%?liquidnya: !removealias open open
+[19:43:22] @^helperblock: The alias open does not exist for command open.
+[19:43:25] ~%?liquidnya: !open
+[19:43:27] ~%?liquidnya: !op
+[19:43:27] @^helperblock: The queue is now open!
+[19:43:28] ~%?liquidnya: !close
+[19:43:28] @^helperblock: The queue is now closed!
+[19:43:30] ~%?liquidnya: !resetcmd open
+[19:43:30] @^helperblock: The command open has been successfully reset.
+[19:43:34] ~%?liquidnya: !open
+[19:43:34] @^helperblock: The queue is now open!
