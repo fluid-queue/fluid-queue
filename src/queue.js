@@ -161,15 +161,19 @@ const customCodes = {
   },
   fromObject: (customCodesObject) => {
     const entries = Object.entries(customCodesObject).map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
-    customCodes.map = new Map(entries);
+    const entriesMap = new Map(entries);
+    const customLevelsMap = new Map();
     Object.entries(customLevels).forEach(([key, value]) => {
       // translate customLevels into custom code map
       if (value.enabled) {
         value.customCodes.forEach(customCode => {
-          customCodes.map.set(customCode.toUpperCase(), { customCode, levelCode: CUSTOM_PREFIX + key });
+          customLevelsMap.set(customCode.toUpperCase(), { customCode, levelCode: CUSTOM_PREFIX + key });
         });
       }
     });
+    // merge custom codes with custom levels
+    // custom codes have priority! (this is important because otherwise custom codes are deleted on the next save)
+    customCodes.map = new Map([...customLevelsMap, ...entriesMap]);
   },
   toCodeList: () => {
     return [...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => [e.customCode, e.levelCode]);
