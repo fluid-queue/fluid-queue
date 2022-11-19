@@ -15,7 +15,7 @@ customCodes []
 [19:34:55] ~%?liquidnya: !customcode remove test
 [19:34:57] @^helperblock: The custom code test could not be found.
 [19:35:05] ~%?liquidnya: !customcode add Test NB0-1MD-SLG
-[19:35:05] @^helperblock: Your custom code Test for ID NB0-1MD-SLG has been added.
+[19:35:05] @^helperblock: Your custom code Test for NB0-1MD-SLG has been added.
 [19:35:12] ~%?liquidnya: !add Test
 [19:35:12] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
@@ -31,7 +31,7 @@ restart
 customCodes [["Test","NB0-1MD-SLG"]]
 
 [19:36:54] ~%?liquidnya: !customcode remove test
-[19:36:54] @^helperblock: The custom code Test for ID NB0-1MD-SLG has been removed.
+[19:36:54] @^helperblock: The custom code Test for NB0-1MD-SLG has been removed.
 
 customCodes []
 
