@@ -159,11 +159,8 @@ const customCodes = {
     customCodes.map.delete(customCode.toUpperCase());
     return result;
   },
-  fromCodeList: (codeList) => {
-    const entries = codeList.map(([customCode, levelCode]) => [
-      customCode.toUpperCase(),
-      { customCode, levelCode },
-    ]);
+  fromObject: (customCodesObject) => {
+    const entries = Object.entries(customCodesObject).map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
     customCodes.map = new Map(entries);
     Object.entries(customLevels).forEach(([key, value]) => {
       // translate customLevels into custom code map
@@ -803,7 +800,7 @@ const queue = {
 
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) => {
-      persistence.saveCustomCodesSync(customCodes.toCodeList(), errorMessage);
+      persistence.saveCustomCodesSync({customCodes: customCodes.toCodeList()}, errorMessage);
       queue.save();
     };
     let [command, ...rest] = codeArguments.split(" ");
@@ -885,7 +882,7 @@ const queue = {
   save: (options = {}) => {
     options = { force: false, ...options };
     if (persist || options.force) {
-      return persistence.saveQueueSync(current_level, levels, waiting, customLevels);
+      return persistence.saveQueueSync({currentLevel: current_level, queue: levels, waiting, custom: customLevels});
     } else {
       return false;
     }
@@ -918,26 +915,7 @@ const queue = {
   loadCustomCodes: () => {
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
-      const codeList = persistence.loadCustomCodesSync();
-      // clean up custom codes
-      const romHackIndex = codeList.findIndex(([customCode, levelCode]) => customCode.toUpperCase() == 'ROMHACK' && levelCode == 'R0M-HAK-LVL');
-      let saveCustomCodes = false;
-      if (romHackIndex != -1) {
-        let name = codeList[romHackIndex][0];
-        codeList.splice(romHackIndex, 1);
-        saveCustomCodes = true;
-        console.log(`${name} has been removed as a custom code.`);
-      }
-      const unclearedIndex = codeList.findIndex(([customCode, levelCode]) => customCode.toUpperCase() == 'UNCLEARED' && levelCode == 'UNC-LEA-RED');
-      if (unclearedIndex != -1) {
-        let name = codeList[unclearedIndex][0];
-        codeList.splice(unclearedIndex, 1);
-        saveCustomCodes = true;
-        console.log(`${name} has been removed as a custom code.`);
-      }
-      if (saveCustomCodes) {
-        persistence.saveCustomCodesSync(codeList, "An error occurred when trying to clean up custom codes.");
-      }
+      const customCodesObject = persistence.loadCustomCodesSync().customCodes;
       let saveQueue = false;
       if (!settings.romhacks_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.romHackLevelCode())) {
         saveQueue |= persistence.removeRomHack(customLevels);
@@ -957,7 +935,7 @@ const queue = {
         queue.save();
       }
 
-      customCodes.fromCodeList(codeList);
+      customCodes.fromObject(customCodesObject);
     }
   },
 
