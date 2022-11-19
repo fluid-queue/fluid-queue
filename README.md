@@ -107,7 +107,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 
 `dataIdMakerThreshold` is the highest allowed data ID for maker IDs. This is used to stop maker IDs that do not exist from entering the queue, however it is very difficult to know and/or dynamically change this amount accordingly. As such, the default value is `null`, which ignores the restriction.
 
-`prettySaveFiles` if set to true the files in the `./data/` directory are going to be formatted with spaces and new lines. The default value is `false` to reduce file size.
+`prettySaveFiles` if set to true the files in the `./data/` and `./settings` directory are going to be formatted with spaces and new lines. The default value is `false` to reduce file size.
 
 `subscriberWeightMultiplier` is the number added as a wait time for subscribers. The default value is `1.0`. Setting this to `1.2` for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to `1.0`.
 
