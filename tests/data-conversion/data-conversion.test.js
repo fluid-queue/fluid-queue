@@ -3,7 +3,7 @@
 // imports
 const path = require('path');
 const fs = require('fs');
-const { simRequireIndex, simSetChatters, createMockVolume, fetchMock, START_TIME, EMPTY_CHATTERS } = require('../simulation.js');
+const { simRequireIndex, simSetChatters, createMockVolume, fetchMock, START_TIME, EMPTY_CHATTERS, DEFAULT_TEST_SETTINGS } = require('../simulation.js');
 
 // fake timers
 jest.useFakeTimers();
@@ -56,6 +56,17 @@ const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
     expect(queue_real).toEqual(queue_expect);
 };
 
+const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
+    let queue_real = JSON.parse(mockFs.readFileSync('./data/custom-codes.json'));
+    let queue_expect;
+    if (version === undefined) {
+        queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/custom-codes.json`)));
+    } else {
+        queue_expect = JSON.parse(realFs.readFileSync(path.resolve(__dirname, `data/${testFolder}/custom-codes-v${version}.json`)));
+    }
+    expect(queue_real).toEqual(queue_expect);
+};
+
 test('conversion-test-empty', () => {
     const test = 'test-empty';
     const volume = loadVolume(test);
@@ -66,6 +77,20 @@ test('conversion-test-empty', () => {
     expect(consoleWarnMock).toHaveBeenCalledTimes(0);
     expect(consoleErrorMock).toHaveBeenCalledTimes(0);
     checkResult(mockFs, fs, test);
+});
+
+
+test('custom-codes-empty', () => {
+    const test = 'custom-codes-empty';
+    const volume = loadVolume(test);
+    // empty file system
+    const index = simRequireIndex(volume, { ...DEFAULT_TEST_SETTINGS, custom_codes_enabled: true });
+    const mockFs = index.fs;
+    // should load without errors!
+    expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+    expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+    checkResult(mockFs, fs, test);
+    checkCustomCodes(mockFs, fs, test);
 });
 
 test('conversion-test-1', () => {
@@ -166,7 +191,7 @@ test('conversion-test-corrupt-2', () => {
     const test = 'test-corrupt-2';
     const volume = loadVolume(test);
     let mockFs;
-    
+
     const index = () => {
         try {
             simRequireIndex(volume);
@@ -187,7 +212,7 @@ test('conversion-test-corrupt-3', () => {
     const test = 'test-corrupt-3';
     const volume = loadVolume(test);
     let mockFs;
-    
+
     const index = () => {
         try {
             simRequireIndex(volume);
@@ -208,7 +233,7 @@ test('conversion-test-corrupt-4', () => {
     const test = 'test-corrupt-4';
     const volume = loadVolume(test);
     let mockFs;
-    
+
     const index = () => {
         try {
             simRequireIndex(volume);
@@ -255,8 +280,8 @@ test('conversion-test-v2.1-to-v2.2', () => {
     checkResult(mockFs, fs, test, '2.2');
 });
 
-test('custom-v1a-to-v2.2', () => {
-    const test = 'custom-v1a-to-v2.2';
+test('custom-levels-v1a-to-v2.2', () => {
+    const test = 'custom-levels-v1a-to-v2.2';
     const volume = loadVolume(test);
     const index = simRequireIndex(volume);
     const mockFs = index.fs;
@@ -271,8 +296,8 @@ test('custom-v1a-to-v2.2', () => {
 });
 
 
-test('custom-v1b-to-v2.2', () => {
-    const test = 'custom-v1b-to-v2.2';
+test('custom-levels-v1b-to-v2.2', () => {
+    const test = 'custom-levels-v1b-to-v2.2';
     const volume = loadVolume(test);
     const index = simRequireIndex(volume);
     const mockFs = index.fs;
@@ -286,8 +311,8 @@ test('custom-v1b-to-v2.2', () => {
     expect(mockFs.existsSync('./waitingUsers.txt')).toBe(false);
 });
 
-test('custom-v1c-to-v2.2', () => {
-    const test = 'custom-v1c-to-v2.2';
+test('custom-levels-v1c-to-v2.2', () => {
+    const test = 'custom-levels-v1c-to-v2.2';
     const volume = loadVolume(test);
     const index = simRequireIndex(volume);
     const mockFs = index.fs;
@@ -301,8 +326,8 @@ test('custom-v1c-to-v2.2', () => {
     expect(mockFs.existsSync('./waitingUsers.txt')).toBe(false);
 });
 
-test('custom-v2.0-to-v2.2', () => {
-    const test = 'custom-v2.0-to-v2.2';
+test('custom-levels-v2.0-to-v2.2', () => {
+    const test = 'custom-levels-v2.0-to-v2.2';
     const volume = loadVolumeV2(test);
     const index = simRequireIndex(volume);
     const mockFs = index.fs;
@@ -316,8 +341,8 @@ test('custom-v2.0-to-v2.2', () => {
     checkResult(mockFs, fs, test, '2.2');
 });
 
-test('custom-v2.1-to-v2.2', () => {
-    const test = 'custom-v2.1-to-v2.2';
+test('custom-levels-v2.1-to-v2.2', () => {
+    const test = 'custom-levels-v2.1-to-v2.2';
     const volume = loadVolumeV2(test, '2.1');
     const index = simRequireIndex(volume);
     const mockFs = index.fs;
