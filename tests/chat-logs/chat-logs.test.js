@@ -159,7 +159,7 @@ const chatLogTest = (fileName) => {
                         }
                         expect(jsonData).toEqual(JSON.parse(rest));
                     } catch (error) {
-                        error.message += errorMessage(position());
+                        error.message += errorMessage(position);
                         throw error;
                     }
                 } else if (command.startsWith('save')) {
