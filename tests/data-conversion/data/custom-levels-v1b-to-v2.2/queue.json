@@ -1,14 +1,24 @@
 {
     "version": "2.2",
-    "currentLevel": {
-        "code": "BW2-G2R-CMG",
-        "submitter": "liquidnya",
-        "username": "liquidnya"
+    "currentLevel": null,
+    "custom": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+            "customCodes": [
+                "ROMhack",
+                "R0M-HAK-LVL"
+            ],
+            "display": "a ROMhack",
+            "enabled": false
+        }
     },
-    "custom": {},
     "queue": [
         {
-            "code": "QWF-3K9-84G",
+            "code": "BW2-G2R-CMG",
+            "submitter": "liquidnya",
+            "username": "liquidnya"
+        },
+        {
+            "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
             "submitter": "FurretWalkBot",
             "username": "furretwalkbot"
         },
@@ -19,6 +29,12 @@
         }
     ],
     "waiting": {
+        "liquidnya": {
+            "waitTime": 1,
+            "weightMin": 1,
+            "weightMsec": 0,
+            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+        },
         "furretwalkbot": {
             "waitTime": 1,
             "weightMin": 1,

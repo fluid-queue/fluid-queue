@@ -1,11 +1,20 @@
 {
     "version": "2.2",
     "currentLevel": {
-        "code": "QWF-3K9-84G",
+        "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
         "submitter": "FurretWalkBot",
         "username": "furretwalkbot"
     },
-    "custom": {},
+    "custom": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+            "customCodes": [
+                "ROMhack",
+                "R0M-HAK-LVL"
+            ],
+            "display": "a ROMhack",
+            "enabled": false
+        }
+    },
     "queue": [
         {
             "code": "BW2-G2R-CMG",
@@ -13,7 +22,7 @@
             "username": "liquidnya"
         },
         {
-            "code": "BRL-F70-CLG",
+            "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
             "submitter": "helperblock",
             "username": "helperblock"
         }
@@ -26,8 +35,8 @@
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         },
         "helperblock": {
-            "waitTime": 1,
-            "weightMin": 1,
+            "waitTime": 3,
+            "weightMin": 3,
             "weightMsec": 0,
             "lastOnlineTime": "2022-04-21T00:00:00.000Z"
         }

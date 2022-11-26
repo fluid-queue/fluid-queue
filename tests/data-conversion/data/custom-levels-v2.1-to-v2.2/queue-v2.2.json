@@ -1,14 +1,33 @@
 {
     "version": "2.2",
     "currentLevel": {
-        "code": "QWF-3K9-84G",
+        "code": "custom:fd05af65-5122-54ca-bd43-f6f403dfde38",
         "submitter": "FurretWalkBot",
         "username": "furretwalkbot"
     },
-    "custom": {},
+    "custom": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+            "customCodes": [
+                "ROMhack",
+                "R0M-HAK-LVL"
+            ],
+            "display": "a ROMhack",
+            "enabled": false
+        },
+        "fd05af65-5122-54ca-bd43-f6f403dfde38": {
+            "customCodes": [
+                "Uncleared",
+                "UNC-LEA-RED",
+                "an uncleared level",
+                "uncleared level"
+            ],
+            "display": "an uncleared level",
+            "enabled": false
+        }
+    },
     "queue": [
         {
-            "code": "BW2-G2R-CMG",
+            "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
             "submitter": "liquidnya",
             "username": "liquidnya"
         },
