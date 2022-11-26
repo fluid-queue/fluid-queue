@@ -58,3 +58,7 @@ save:data/custom-codes.json {"customCodes":{"Test":"NB0-1MD-SLG","OwO":"BW2-G2R-
 # this code is invalid because its checksum is invalid
 [23:21:21] ~%?liquidnya: !customcode add invalid-checksum MD0-2MD-SLG
 [23:21:22] @^helperblock: That is an invalid level code.
+
+# list codes
+[23:22:21] ~%?liquidnya: !customcodes
+[23:22:22] @^helperblock: The current custom codes are: Test, OwO.
