@@ -38,7 +38,7 @@ To close the queue press `CTRL + C` inside the terminal.
   docker compose stop 
 ```
 
-The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are not yet backed up at this time - `customCodes.json` will be moved into data folder in a future update.
+The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/custom-codes.json`.
 
 To update the image pull the repo changes, then build the image locally again
 ```bash
@@ -90,11 +90,11 @@ The settings.json file contains several options to make the bot as customizable 
 
 `enable_absolute_position` is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position). The default value is `false`.
 
-`custom_codes_enabled` is the toggle for whether or not custom codes and custom level types are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section. Custom level types are levels without an actual level/maker ID.
+`custom_codes_enabled` is the toggle for whether or not custom codes are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section.
 
-`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle.
+`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. The ROMhack code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle. If ROMhack levels are not enabled, but there are still ROMhack levels in the queue, then they will still show up and are still saved to the json file, however no new ROMhack levels can be added. The following case insensitive aliases are setup by default: `ROMhack`, `R0M-HAK-LVL`.
 
-`uncleared_enabled` is a toggle for whether or not uncleared levels are allowed to be added to the queue. When enabled, users may type `!add Uncleared` to add an uncleared level to the queue. This is a convienent way to put an uncleared level to the queue without a real level code, so the streamer would then need to pick an uncleared level when the level shows up. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the Uncleared code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle. 
+`uncleared_enabled` is a toggle for whether or not uncleared levels are allowed to be added to the queue. When enabled, users may type `!add Uncleared` to add an uncleared level to the queue. This is a convienent way to put an uncleared level to the queue without a real level code, so the streamer would then need to pick an uncleared level for themselves when the level shows up. The Uncleared code is added/removed automatically from the custom level types list in `./data/queue.json` depending on this toggle. If uncleared levels are not enabled, but there are still uncleared levels in the queue, then they will still show up and are still saved to the json file, however no new uncleared levels can be added. The following case insensitive aliases are setup by default: `Uncleared`, `UNC-LEA-RED`, `an uncleared level`, `uncleared level`.
 
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is `100`.
 

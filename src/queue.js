@@ -214,6 +214,11 @@ const displayLevel = (level) => {
   return level.code + makerSuffix(level.code);
 };
 
+// this implementation can be improved
+const partition = (list, predicate) => {
+  return [list.filter(predicate), list.filter(function() { return !predicate.apply(this, arguments);})];
+};
+
 const queue = {
   add: (level) => {
     if (settings.max_size && levels.length >= settings.max_size) {
@@ -242,6 +247,15 @@ const queue = {
     }
   },
 
+  // this is called every time levels are removed from the queue
+  // this can include the current_level
+  onRemove: (removedLevels) => {
+    // unlurk anyone that is removed from the queue
+    removedLevels.forEach(level => twitch.notLurkingAnymore(level.username));
+    // check if romhack levels or uncleared levels are disabled and need to be removed
+    queue.checkCustomLevels(false); // do not save the queue, it will be saved after onRemove returns
+  },
+
   modRemove: (usernameArgument) => {
     if (usernameArgument == '') {
       return "You can use !remove <username> to kick out someone else's level.";
@@ -254,8 +268,9 @@ const queue = {
       twitch.notLurkingAnymore(usernameArgument.replace("@", "").toLowerCase());
       return "No levels from " + usernameArgument + " were found in the queue.";
     }
-    twitch.notLurkingAnymore(level.username);
-    levels = levels.filter(x => x.submitter != level.submitter);
+    let removedLevels;
+    [levels, removedLevels] = partition(levels, x => x.submitter != level.submitter);
+    queue.onRemove(removedLevels);
     queue.save();
     return usernameArgument + "'s level has been removed from the queue.";
   },
@@ -264,7 +279,9 @@ const queue = {
     if (current_level != undefined && current_level.submitter == username) {
       return "Sorry, we're playing that level right now!";
     }
-    levels = levels.filter(x => x.submitter != username);
+    let removedLevels;
+    [levels, removedLevels] = partition(levels, x => x.submitter != username);
+    queue.onRemove(removedLevels);
     queue.save();
     return username + ", your level has been removed from the queue.";
   },
@@ -402,17 +419,23 @@ const queue = {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be dismissed.";
     }
-    let response = 'Dismissed ' + displayLevel(current_level) + ' submitted by ' + current_level.submitter + '.';
+    const response = 'Dismissed ' + displayLevel(current_level) + ' submitted by ' + current_level.submitter + '.';
+    const removedLevels = current_level === undefined ? [] : [current_level];
     current_level = undefined;
+    queue.onRemove(removedLevels);
     queue.save();
     return response;
   },
 
-  next: async () => {
-    var list = await queue.list();
-    var both = list.online.concat(list.offline);
+  next: async (list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list();
+    }
+    const both = list.online.concat(list.offline);
+    const removedLevels = current_level === undefined ? [] : [current_level];
     if (both.length === 0) {
       current_level = undefined;
+      queue.onRemove(removedLevels);
       queue.save();
       return current_level;
     } else {
@@ -421,46 +444,29 @@ const queue = {
     }
     var index = levels.findIndex(x => x.submitter == current_level.submitter);
     levels.splice(index, 1);
+    queue.onRemove(removedLevels);
     queue.save();
     return current_level;
   },
 
   subnext: async () => {
-    var list = await queue.sublist();
-    var both = list.online.concat(list.offline);
-    if (both.length === 0) {
-      current_level = undefined;
-    } else {
-      current_level = both.shift();
-      queue.removeWaiting();
-    }
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    const list = await queue.sublist();
+    return await queue.next(list);
   },
 
   modnext: async () => {
-    var list = await queue.modlist();
-    var both = list.online.concat(list.offline);
-    if (both.length === 0) {
-      current_level = undefined;
-    } else {
-      current_level = both.shift();
-      queue.removeWaiting();
-    }
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    const list = await queue.modlist();
+    return await queue.next(list);
   },
 
   dip: (usernameArgument) => {
-    var index = levels.findIndex(queue.matchUsername(usernameArgument));
+    const index = levels.findIndex(queue.matchUsername(usernameArgument));
     if (index != -1) {
+      const removedLevels = current_level === undefined ? [] : [current_level];
       current_level = levels[index];
       queue.removeWaiting();
       levels.splice(index, 1);
+      queue.onRemove(removedLevels);
       queue.save();
       return current_level;
     }
@@ -477,74 +483,49 @@ const queue = {
     return current_level;
   },
 
-  random: async () => {
-    var list = await queue.list();
-    var eligible_levels = list.online;
+  random: async (list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list();
+    }
+    const removedLevels = current_level === undefined ? [] : [current_level];
+    let eligible_levels = list.online;
     if (eligible_levels.length == 0) {
       eligible_levels = list.offline;
       if (eligible_levels.length == 0) {
         current_level = undefined;
+        queue.onRemove(removedLevels);
         queue.save();
         return current_level;
       }
     }
 
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
+    const random_index = Math.floor(Math.random() * eligible_levels.length);
     current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    const index = levels.findIndex(x => x.submitter == current_level.submitter);
     queue.removeWaiting();
     levels.splice(index, 1);
+    queue.onRemove(removedLevels);
     queue.save();
     return current_level;
   },
 
   subrandom: async () => {
-    var list = await queue.sublist();
-    var eligible_levels = list.online;
-    if (eligible_levels.length == 0) {
-      eligible_levels = list.offline;
-      if (eligible_levels.length == 0) {
-        current_level = undefined;
-        queue.save();
-        return current_level;
-      }
-    }
-
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
-    current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
-    queue.removeWaiting();
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    const list = await queue.sublist();
+    return await queue.random(list);
   },
 
   modrandom: async () => {
-    var list = await queue.modlist();
-    var eligible_levels = list.online;
-    if (eligible_levels.length == 0) {
-      eligible_levels = list.offline;
-      if (eligible_levels.length == 0) {
-        current_level = undefined;
-        queue.save();
-        return current_level;
-      }
-    }
-
-    var random_index = Math.floor(Math.random() * eligible_levels.length);
-    current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
-    queue.removeWaiting();
-    levels.splice(index, 1);
-    queue.save();
-    return current_level;
+    const list = await queue.modlist();
+    return await queue.random(list);
   },
 
   weightedrandom: async (list = undefined) => {
     const weightedList = await queue.weightedList(false, list);
+    const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
       current_level = undefined;
+      queue.onRemove(removedLevels);
       queue.save();
       return current_level;
     }
@@ -574,6 +555,7 @@ const queue = {
     const selectionChance = queue.percent(weightedList.entries[levelIndex].weight(), totalWeight);
 
     queue.removeWaiting();
+    queue.onRemove(removedLevels);
     queue.save();
 
     return { ...current_level, selectionChance };
@@ -628,9 +610,11 @@ const queue = {
 
   weightednext: async (list = undefined) => {
     const weightedList = await queue.weightedList(true, list);
+    const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
       current_level = undefined;
+      queue.onRemove(removedLevels);
       queue.save();
       return current_level;
     }
@@ -644,6 +628,7 @@ const queue = {
     let selectionChance = queue.percent(weightedList.entries[0].weight(), weightedList.totalWeight);
 
     queue.removeWaiting();
+    queue.onRemove(removedLevels);
     queue.save();
 
     return { ...current_level, selectionChance };
@@ -661,42 +646,30 @@ const queue = {
 
   /** @type {() => Promise<onlineOfflineList> } */
   list: async () => {
-    var online = new Array();
-    var offline = new Array();
+    let online = [];
+    let offline = [];
     await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+      [online, offline] = partition(levels, x => online_users.has(x.username));
     });
-    return {
-      online: online,
-      offline: offline
-    };
+    return { online, offline };
   },
 
   sublist: async () => {
-    var online = new Array();
-    var offline = new Array();
+    let online = [];
+    let offline = [];
     await twitch.getOnlineSubscribers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+      [online, offline] = partition(levels, x => online_users.has(x.username));
     });
-    return {
-      online: online,
-      offline: offline
-    };
+    return { online, offline };
   },
 
   modlist: async () => {
-    var online = new Array();
-    var offline = new Array();
+    let online = [];
+    let offline = [];
     await twitch.getOnlineMods(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+      [online, offline] = partition(levels, x => online_users.has(x.username));
     });
-    return {
-      online: online,
-      offline: offline
-    };
+    return { online, offline };
   },
 
   matchUsername: (usernameArgument) => {
@@ -817,30 +790,35 @@ const queue = {
     customLevels = state.custom;
   },
 
+  checkCustomLevels: (saveQueue = true) => {
+    let queueChanged = false;
+    if (!settings.romhacks_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.romHackLevelCode())) {
+      queueChanged |= persistence.removeRomHack(customLevels);
+      console.log(`ROMhack has been removed as a custom level.`);
+    } else {
+      queueChanged |= persistence.addRomHack(customLevels, !!settings.romhacks_enabled);
+      console.log(`ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`);
+    }
+    if (!settings.uncleared_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.unclearedLevelCode())) {
+      queueChanged |= persistence.removeUncleared(customLevels);
+      console.log(`Uncleared has been removed as a custom level.`);
+    } else {
+      queueChanged |= persistence.addUncleared(customLevels, !!settings.uncleared_enabled);
+      console.log(`Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`);
+    }
+    if (saveQueue && queueChanged) {
+      queue.save();
+    }
+  },
+
   loadCustomCodes: () => {
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
       const customCodesObject = persistence.loadCustomCodesSync().customCodes;
-      let saveQueue = false;
-      if (!settings.romhacks_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.romHackLevelCode())) {
-        saveQueue |= persistence.removeRomHack(customLevels);
-        console.log(`ROMhack has been removed as a custom level.`);
-      } else {
-        saveQueue |= persistence.addRomHack(customLevels, !!settings.romhacks_enabled);
-        console.log(`ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`);
-      }
-      if (!settings.uncleared_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.unclearedLevelCode())) {
-        saveQueue |= persistence.removeUncleared(customLevels);
-        console.log(`Uncleared has been removed as a custom level.`);
-      } else {
-        saveQueue |= persistence.addUncleared(customLevels, !!settings.uncleared_enabled);
-        console.log(`Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`);
-      }
-      if (saveQueue) {
-        queue.save();
-      }
-
       customCodes.fromObject(customCodesObject);
+    } else {
+      // only custom levels will function
+      customCodes.fromObject({});
     }
   },
 
@@ -854,6 +832,9 @@ const queue = {
 
     // load queue state
     queue.loadQueueState();
+
+    // check for custom level types
+    queue.checkCustomLevels();
 
     // load custom codes
     queue.loadCustomCodes();
@@ -881,7 +862,9 @@ const queue = {
 
   clear: () => {
     current_level = undefined;
-    levels = new Array();
+    const removedLevels = levels;
+    levels = [];
+    queue.onRemove(removedLevels);
     queue.save();
   }
 };
