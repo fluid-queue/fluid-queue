@@ -258,11 +258,9 @@ const chatLogTest = (fileName) => {
   };
 };
 
-const testFiles = fs
-  .readdirSync(path.resolve(__dirname, "logs"))
-  .filter((file) => file.endsWith(".test.log"));
+const testFiles = fs.readdirSync(path.resolve(__dirname, 'chat')).filter(file => file.endsWith('.test.log'));
 
 for (const file of testFiles) {
-  const fileName = path.relative(".", path.resolve(__dirname, `logs/${file}`));
-  test(fileName, chatLogTest(fileName));
+    const fileName = path.relative('.', path.resolve(__dirname, `chat/${file}`));
+    test(fileName, chatLogTest(fileName));
 }
