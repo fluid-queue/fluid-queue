@@ -1,4 +1,4 @@
-const tmi = require('tmi.js');
+const tmi = require("tmi.js");
 
 const build_chatter = function(username, displayName, isSubscriber, isMod, isBroadcaster) {
   return {
@@ -7,8 +7,8 @@ const build_chatter = function(username, displayName, isSubscriber, isMod, isBro
     isSubscriber: isSubscriber,
     isMod: isMod,
     isBroadcaster: isBroadcaster
-  }
-}
+  };
+};
 
 const chatbot_helper = function(username, password, channel) {
   var tmi_settings = {
@@ -52,13 +52,13 @@ const chatbot_helper = function(username, password, channel) {
         var chatter;
         if (tags.badges == null) {
           chatter = build_chatter(tags.username,
-            tags['display-name'],
+            tags["display-name"],
             false,
             false,
             false);
         } else {
           chatter = build_chatter(tags.username,
-            tags['display-name'],
+            tags["display-name"],
             tags.badges.subscriber != undefined || tags.badges.founder != undefined,
             tags.badges.moderator != undefined,
             tags.badges.broadcaster != undefined);
@@ -66,12 +66,12 @@ const chatbot_helper = function(username, password, channel) {
         handle_func(command, chatter, respond);
       }
       // Register our event handlers (defined below)
-      this.client.on('connected', onConnectedHandler);
-      this.client.on('message', onMessageHandler);
+      this.client.on("connected", onConnectedHandler);
+      this.client.on("message", onMessageHandler);
     },
 
     say: function(message) {
-      this.client.say('#' + channel, message);
+      this.client.say("#" + channel, message);
     }
   };
 };

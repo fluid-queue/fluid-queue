@@ -7,7 +7,7 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
 /**
  * @readonly
  */
- const list_options = ["position", "weight", "both", "none"];
+const list_options = ["position", "weight", "both", "none"];
 /**
  *
  * @typedef settings
@@ -61,12 +61,12 @@ const settings_validations = {
 for (const key in settings) {
   if (Object.hasOwnProperty.call(settings, key)) {
     try {
-        if (!settings_validations[key](settings[key])) {
-        throw new Error(`problem with ${key}`)
+      if (!settings_validations[key](settings[key])) {
+        throw new Error(`problem with ${key}`);
       }
     } catch(e) {
       if (e instanceof TypeError) {
-        throw new TypeError(`${key} is not a valid option!`)
+        throw new TypeError(`${key} is not a valid option!`);
       }
       throw e;
     }

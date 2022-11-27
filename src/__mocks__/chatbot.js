@@ -1,4 +1,5 @@
 
+/*eslint no-unused-vars: ["error", { "args": "none" }]*/
 const chatbot_helper = jest.fn(
   (username, password, channel) => {
     return {

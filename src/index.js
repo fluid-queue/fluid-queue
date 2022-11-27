@@ -19,12 +19,13 @@ aliases.loadAliases();
 var queue_open = settings.start_open;
 var selection_iter = 0;
 let level_timer;
-if (settings.level_timeout)
+if (settings.level_timeout) {
   level_timer = timer.timer(() => {
     chatbot_helper.say(
       `@${settings.channel} the timer has expired for this level!`
     );
   }, settings.level_timeout * 1000 * 60);
+}
 
 const get_remainder = (x) => {
   var index = x.indexOf(" ");
@@ -48,10 +49,10 @@ const level_list_message = (sender, current, levels) => {
     return "There are no levels in the queue.";
   }
   var result =
-    levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
+  levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
   result +=
-    current !== undefined ? current.submitter + " (current)" : "(no current level)";
-
+  current !== undefined ? current.submitter + " (current)" : "(no current level)";
+  
   result += levels.online
     .slice(0, 5)
     .reduce((acc, x) => acc + ", " + x.submitter, "");
@@ -75,7 +76,7 @@ const level_weighted_list_message = (sender, current, weightedList) => {
   //console.log(weightedList);
   var result = weightedList.entries.length + (current !== undefined ? 1 : 0) + " online: ";
   result += current !== undefined ? current.submitter + " (current)" : "(no current level)";
-
+  
   result += weightedList.entries
     .slice(0, 5)
     .reduce((acc, x) => acc + ", " + x.level.submitter + " (" + quesoqueue.percent(x.weight(), weightedList.totalWeight) + "%)", "");
@@ -99,7 +100,7 @@ const next_level_message = (level) => {
   }
 };
 
-const weightedrandom_level_message = (level, percentSuffix = '') => {
+const weightedrandom_level_message = (level, percentSuffix = "") => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -125,7 +126,7 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
   }
 };
 
-const weightednext_level_message = (level, percentSuffix = '') => {
+const weightednext_level_message = (level, percentSuffix = "") => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -228,13 +229,13 @@ const position_message = async (position, weightedPosition, sender, username) =>
     if (weightedPosition > 0) {
       return (
         sender +
-        ", you are currently in the online " +
-        get_ordinal(position) +
-        " position, the offline " +
-        get_ordinal(absPosition) +
-        " position, and the weighted " + 
-        get_ordinal(weightedPosition) +
-        " position."
+      ", you are currently in the online " +
+      get_ordinal(position) +
+      " position, the offline " +
+      get_ordinal(absPosition) +
+      " position, and the weighted " + 
+      get_ordinal(weightedPosition) +
+      " position."
       );
     } else {
       return (
@@ -250,18 +251,18 @@ const position_message = async (position, weightedPosition, sender, username) =>
     if (weightedPosition > 0) {
       return (
         sender +
-        ", you are currently in the " +
-        get_ordinal(position) +
-        " position and the weighted " +
-        get_ordinal(weightedPosition) +
-        " position."
+          ", you are currently in the " +
+          get_ordinal(position) +
+          " position and the weighted " +
+          get_ordinal(weightedPosition) +
+          " position."
       );
     } else {
       return (
         sender +
-        ", you are currently in the " +
-        get_ordinal(position) +
-        " position."
+          ", you are currently in the " +
+          get_ordinal(position) +
+          " position."
       );
     }
   }
@@ -294,22 +295,22 @@ const submitted_message = async (level, sender) => {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
-  } else if (level === -0) {
+  } else if (level === 0) {
     return "Your level is being played right now!";
   }
   return sender + ", you have submitted " + displayLevel(level) + " to the queue.";
 };
-
+  
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
 // of the person that sent the message.
-
+  
 async function HandleMessage(message, sender, respond) {
   if (sender.username === undefined || message === undefined) {
     console.log("undefined data");
   }
   twitch.noticeChatter(sender);
-
+    
   let args = message.split(" ");
   let cmd = args.shift();
   cmd = cmd.toLowerCase();
@@ -320,17 +321,17 @@ async function HandleMessage(message, sender, respond) {
   } else {
     message = cmd + " " + args;
   }
-
+    
   if((message.toLowerCase().startsWith("!addalias")) && sender.isBroadcaster){
-    if(message.split(' ').length !== 3){
+    if(message.split(" ").length !== 3){
       respond("The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op");
     } else {
-      let splitMessage = message.split(' ');
+      let splitMessage = message.split(" ");
       if(aliases.addAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2])){
         respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been added.");
       } else {
         if(!aliases.isCommand(splitMessage[1].toLowerCase())){
-          let commands = aliases.getCommands().join(' ');
+          let commands = aliases.getCommands().join(" ");
           respond("The command entered is invalid. Valid commands are: " + commands);
         } else if(aliases.isDisabled(splitMessage[1].toLowerCase())){
           respond("The command " + splitMessage[1] +" is currently disabled.");
@@ -340,15 +341,15 @@ async function HandleMessage(message, sender, respond) {
       }
     }
   } else if((message.toLowerCase().startsWith("!removealias")) && sender.isBroadcaster){
-    if(message.split(' ').length !== 3){
+    if(message.split(" ").length !== 3){
       respond("The syntax for removing an alias is: !removealias command alias, for example: !removealias open op");
     } else {
-      let splitMessage = message.split(' ');
+      let splitMessage = message.split(" ");
       if(aliases.removeAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2].startsWith("!") ? splitMessage[2] : "!" + splitMessage[2])){
         respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been removed.");
       } else {
         if(!aliases.isCommand(splitMessage[1].toLowerCase())){
-          let commands = aliases.getCommands().join(' ');
+          let commands = aliases.getCommands().join(" ");
           respond("The command entered is invalid. Valid commands are: " + commands);
         } else if(aliases.isDisabled(splitMessage[1].toLowerCase())){
           respond("The command " + splitMessage[1] +" is currently disabled.");
@@ -358,16 +359,16 @@ async function HandleMessage(message, sender, respond) {
       }
     }
   } else if ((message.toLowerCase().startsWith("!enablecmd") || message.toLowerCase().startsWith("!disablecmd") || message.toLowerCase().startsWith("!resetcmd")) && sender.isBroadcaster) {
-    if(message.split(' ').length !== 2){
-      respond("The syntax for enabling, disabling and resetting commands is: !command botcommand, for example: !enablecmd open")
+    if(message.split(" ").length !== 2){
+      respond("The syntax for enabling, disabling and resetting commands is: !command botcommand, for example: !enablecmd open");
     } else {
-      let splitMessage = message.split(' ');
+      let splitMessage = message.split(" ");
       if(splitMessage[0].toLowerCase() === "!enablecmd"){
         if(aliases.enableCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully enabled.")
+          respond("The command " + splitMessage[1] + " has been successfully enabled.");
         } else {
           if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
+            let commands = aliases.getCommands().join(" ");
             respond("The command entered is invalid. Valid commands are: " + commands);
           } else {
             respond("The command " + splitMessage[1] + " is already enabled.");
@@ -375,10 +376,10 @@ async function HandleMessage(message, sender, respond) {
         }
       } else if (splitMessage[0].toLowerCase() === "!disablecmd") {
         if(aliases.disableCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully disabled.")
+          respond("The command " + splitMessage[1] + " has been successfully disabled.");
         } else {
           if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
+            let commands = aliases.getCommands().join(" ");
             respond("The command entered is invalid. Valid commands are: " + commands);
           } else {
             respond("The command " + splitMessage[1] + " is already disabled.");
@@ -386,18 +387,18 @@ async function HandleMessage(message, sender, respond) {
         }
       } else if (splitMessage[0] === "!resetcmd") {
         if(aliases.resetCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully reset.")
+          respond("The command " + splitMessage[1] + " has been successfully reset.");
         } else {
           if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
+            let commands = aliases.getCommands().join(" ");
             respond("The command entered is invalid. Valid commands are: " + commands);
           }
         }
       }
     }
   } else if (message.toLowerCase().startsWith("!aliases") && sender.isBroadcaster){
-    respond("Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command")
-    let commands = aliases.getCommands().join(' ');
+    respond("Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command");
+    let commands = aliases.getCommands().join(" ");
     respond("Available commands are: " + commands);
   } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
@@ -443,39 +444,39 @@ async function HandleMessage(message, sender, respond) {
       selection_iter = 0;
     }
     switch (selection_mode) {
-      case "next":
-        next_level = await quesoqueue.next();
-        break;
-      case "subnext":
-        next_level = await quesoqueue.subnext();
-        break;
-      case "modnext":
-        next_level = await quesoqueue.modnext();
-        break;
-      case "random":
-        next_level = await quesoqueue.random();
-        break;
-      case "subrandom":
-        next_level = await quesoqueue.subrandom();
-        break;
-      case "modrandom":
-        next_level = await quesoqueue.modrandom();
-        break;
-      case "weightedrandom":
-        next_level = await quesoqueue.weightedrandom();
-        break;
-      case "weightednext":
-        next_level = await quesoqueue.weightednext();
-        break;
-      case "weightedsubrandom":
-        next_level = await quesoqueue.weightedsubrandom();
-        break;
-      case "weightedsubnext":
-        next_level = await quesoqueue.weightedsubnext();
-        break;
-      default:
-        selection_mode = "default";
-        next_level = await quesoqueue.next();
+    case "next":
+      next_level = await quesoqueue.next();
+      break;
+    case "subnext":
+      next_level = await quesoqueue.subnext();
+      break;
+    case "modnext":
+      next_level = await quesoqueue.modnext();
+      break;
+    case "random":
+      next_level = await quesoqueue.random();
+      break;
+    case "subrandom":
+      next_level = await quesoqueue.subrandom();
+      break;
+    case "modrandom":
+      next_level = await quesoqueue.modrandom();
+      break;
+    case "weightedrandom":
+      next_level = await quesoqueue.weightedrandom();
+      break;
+    case "weightednext":
+      next_level = await quesoqueue.weightednext();
+      break;
+    case "weightedsubrandom":
+      next_level = await quesoqueue.weightedsubrandom();
+      break;
+    case "weightedsubnext":
+      next_level = await quesoqueue.weightedsubnext();
+      break;
+    default:
+      selection_mode = "default";
+      next_level = await quesoqueue.next();
     }
     if (settings.level_timeout) {
       level_timer.restart();
@@ -486,9 +487,9 @@ async function HandleMessage(message, sender, respond) {
     } else if (selection_mode == "weightednext") {
       respond("(" + selection_mode + ") " + weightednext_level_message(next_level));
     } else if (selection_mode == "weightedsubrandom") {
-      respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level, ' (subscriber)'));
+      respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level, " (subscriber)"));
     } else if (selection_mode == "weightedsubnext") {
-      respond("(" + selection_mode + ") " + weightednext_level_message(next_level, ' (subscriber)'));
+      respond("(" + selection_mode + ") " + weightednext_level_message(next_level, " (subscriber)"));
     } else {
       respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
@@ -540,14 +541,14 @@ async function HandleMessage(message, sender, respond) {
       level_timer.pause();
     }
     let next_level = await quesoqueue.weightedsubnext();
-    respond(weightednext_level_message(next_level, ' (subscriber)'));
+    respond(weightednext_level_message(next_level, " (subscriber)"));
   } else if (aliases.isAlias("weightedsubrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
     }
     let next_level = await quesoqueue.weightedsubrandom();
-    respond(weightedrandom_level_message(next_level, ' (subscriber)'));
+    respond(weightedrandom_level_message(next_level, " (subscriber)"));
   } else if (aliases.isAlias("subrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();
@@ -570,7 +571,7 @@ async function HandleMessage(message, sender, respond) {
     respond(await quesoqueue.punt());
   } else if (
     aliases.isAlias("dismiss", message) &&
-    sender.isBroadcaster
+        sender.isBroadcaster
   ) {
     if (settings.level_timeout) {
       level_timer.restart();
@@ -593,10 +594,10 @@ async function HandleMessage(message, sender, respond) {
       } else {
         respond(
           "Now playing " +
-          displayLevel(dip_level) +
-            " submitted by " +
-            dip_level.submitter +
-            "."
+                  displayLevel(dip_level) +
+                  " submitted by " +
+                  dip_level.submitter +
+                  "."
         );
       }
     } else {
@@ -652,7 +653,7 @@ async function HandleMessage(message, sender, respond) {
       )
     );
   } else if (
-      aliases.isAlias("submitted", message)
+    aliases.isAlias("submitted", message)
   ) {
     respond(
       await submitted_message(
@@ -684,7 +685,7 @@ async function HandleMessage(message, sender, respond) {
     respond("The queue has been cleared!");
   } else if (
     (aliases.isAlias("customcode", message)) &&
-    settings.custom_codes_enabled
+                            settings.custom_codes_enabled
   ) {
     if (sender.isBroadcaster) {
       var codeArguments = get_remainder(message);
@@ -700,8 +701,8 @@ async function HandleMessage(message, sender, respond) {
     twitch.setToLurk(sender.username);
     respond(
       "See you later, " +
-        sender.displayName +
-        "! Your level will not be played until you use the !back command."
+                                sender.displayName +
+                                "! Your level will not be played until you use the !back command."
     );
   } else if (aliases.isAlias("back", message)) {
     if (twitch.notLurkingAnymore(sender.username)) {
@@ -716,12 +717,12 @@ async function HandleMessage(message, sender, respond) {
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond(
         "Next level order: " +
-        order.reduce((acc, x) => acc + ", " + x)
+                                    order.reduce((acc, x) => acc + ", " + x)
       );
     }
   }
 }
-
+                              
 // Set up the chatbot helper and connect to the Twitch channel.
 const chatbot_helper = chatbot.helper(
   settings.username,
@@ -730,3 +731,4 @@ const chatbot_helper = chatbot.helper(
 );
 chatbot_helper.setup(HandleMessage);
 chatbot_helper.connect();
+                                

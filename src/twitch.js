@@ -14,11 +14,11 @@ const twitch = {
       await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
       lastOnlineUsers = online_users;
     } catch (error) {
-      if (typeof lastOnlineUsers !== 'undefined') {
+      if (typeof lastOnlineUsers !== "undefined") {
         online_users = lastOnlineUsers;
-        console.log('Error with getting online users. Using old list.');
+        console.log("Error with getting online users. Using old list.");
       } else {
-        console.log('Error with getting online users. Using recent chatters due to there being no available old list.');
+        console.log("Error with getting online users. Using recent chatters due to there being no available old list.");
       }
     }
     var current_time = Date.now();
@@ -74,13 +74,7 @@ const twitch = {
   clearLurkers: () => {
     lurkers.clear();
   },
-
-  getWaitTime: async (chatter) => {
-
-  }
 };
-
-
 
 module.exports = {
   twitch: () => { return twitch; }
