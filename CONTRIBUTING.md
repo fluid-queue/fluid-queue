@@ -7,7 +7,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 > And if you like the project, but just don't have time to contribute, that's fine. There are other easy ways to support the project and show your appreciation, which we would also be very happy about:
 > - Star the project
-> - Tweet about it
+> - Talk about it on social media
 > - Refer this project in your project's readme
 > - Mention the project at local meetups and tell your friends/colleagues
 
@@ -15,6 +15,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 ## Table of Contents
 
 - [I Have a Question](#i-have-a-question)
+  - [Discord Server](#discord-server)
 - [I Want To Contribute](#i-want-to-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
