@@ -10,6 +10,21 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 19.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run eslint with Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm install --only=dev
+      - run: ./node_modules/.bin/eslint src/
+      
   build:
 
     runs-on: ubuntu-latest
