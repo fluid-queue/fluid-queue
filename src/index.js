@@ -848,7 +848,7 @@ async function HandleMessage(message, sender, respond) {
     settings.custom_codes_enabled
   ) {
     if (sender.isBroadcaster) {
-      var codeArguments = get_remainder(message);
+      const codeArguments = get_remainder(message);
       if (codeArguments == "") {
         respond(quesoqueue.customCodes());
       } else {
@@ -856,6 +856,17 @@ async function HandleMessage(message, sender, respond) {
       }
     } else {
       respond(quesoqueue.customCodes());
+    }
+  } else if (aliases.isAlias("customlevel", message)) {
+    if (sender.isBroadcaster) {
+      const codeArguments = get_remainder(message);
+      if (codeArguments == "") {
+        respond(quesoqueue.customLevels());
+      } else {
+        // TODO!
+      }
+    } else {
+      respond(quesoqueue.customLevels());
     }
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender.username);

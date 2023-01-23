@@ -9,12 +9,12 @@ const path = require('path');
 
 const DATA_DIRECTORY = 'data';
 const QUEUE_V2 = {
-    fileName: path.resolve(DATA_DIRECTORY, 'queue.json'),
+    fileName: path.join(DATA_DIRECTORY, 'queue.json'),
     version: '2.2', // increase major version if data format changes in a way that is not understood by a previous version of the queue
     compatibility: /^2(\.|$)/ // the version that is being accepted
 };
 const CUSTOM_CODES_V2 = {
-    fileName: path.resolve(DATA_DIRECTORY, 'custom-codes.json'),
+    fileName: path.join(DATA_DIRECTORY, 'custom-codes.json'),
     version: '2.0', // increase major version if data format changes in a way that is not understood by a previous version of the queue
     compatibility: /^2(\.|$)/ // the version that is being accepted
 };
