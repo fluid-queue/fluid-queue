@@ -93,6 +93,34 @@ test('custom-codes-empty', () => {
     checkCustomCodes(mockFs, fs, test);
 });
 
+test('custom-codes-v1a-to-v2.0', () => {
+    const test = 'custom-codes-v1a-to-v2.0';
+    const volume = loadVolume(test);
+    copy(volume, fs, './customCodes.json', path.resolve(__dirname, `data/${test}/customCodes.json`));
+    // customCodes.json present
+    const index = simRequireIndex(volume, { ...DEFAULT_TEST_SETTINGS, custom_codes_enabled: true });
+    const mockFs = index.fs;
+    // should load without errors!
+    expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+    expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+    checkResult(mockFs, fs, test);
+    checkCustomCodes(mockFs, fs, test);
+});
+
+test('custom-codes-v1b-to-v2.0', () => {
+    const test = 'custom-codes-v1b-to-v2.0';
+    const volume = loadVolume(test);
+    copy(volume, fs, './customCodes.json', path.resolve(__dirname, `data/${test}/customCodes.json`));
+    // customCodes.json present
+    const index = simRequireIndex(volume, { ...DEFAULT_TEST_SETTINGS, custom_codes_enabled: true });
+    const mockFs = index.fs;
+    // should load without errors!
+    expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+    expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+    checkResult(mockFs, fs, test);
+    checkCustomCodes(mockFs, fs, test);
+});
+
 test('conversion-test-1', () => {
     const test = 'test-1';
     const volume = loadVolume(test);
