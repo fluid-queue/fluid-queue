@@ -111,9 +111,7 @@ const customCodes = {
     return customCodes.map.get(customCode.toUpperCase()).customCode;
   },
   listNames: () => {
-    // TODO: maybe only list the first occurence of a custom level instead of all aliases
-    //       or even not list them and add a !customlevels command instead
-    return [...customCodes.map.values()].map(e => e.customCode);
+    return [...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => e.customCode);
   },
   set: (customCodeArg, levelCode) => {
     const customCode = customCodeArg.trim();
@@ -757,6 +755,27 @@ const queue = {
     } else {
       const response = list.join(", ");
       return "The current custom codes are: " + response + ".";
+    }
+  },
+
+  customLevels: () => {
+    const list = Object.entries(customLevels).flatMap(([key, value]) => {
+      // translate customLevels into custom code map
+      if (value.enabled) {
+        return [ value.display + " [" + value.customCodes.join(", ") + "]" ];
+      } else {
+        return [];
+      }
+    });
+    if (list.length == 0) {
+      return "There are no custom levels configured.";
+    } else if (list.length == 1) {
+      return "The current custom level is " + list[0] + ".";
+    } else if (list.length == 2) {
+      return "The current custom levels are " + list[0] + " and " + list[1] + ".";
+    } else {
+      list[list.length-1] = "and " + list[list.length-1];
+      return "The current custom levels are " + list.join(", ") + ".";
     }
   },
 

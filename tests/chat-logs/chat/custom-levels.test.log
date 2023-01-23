@@ -87,3 +87,9 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60
 customCodes/customCodes {}
 # it has been added to the end
 queue.json/custom {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["a white flag level","white flag","whiteflag","white flag level","🏳️"],"display": "a white flag level","enabled": true}}
+
+[12:19:29] ~%?liquidnya: !customcodes
+[12:19:29] @^helperblock: There are no custom codes set.
+
+[12:19:29] ~%?liquidnya: !customlevels
+[12:19:29] @^helperblock: The current custom level is a white flag level [a white flag level, white flag, whiteflag, white flag level, 🏳️].

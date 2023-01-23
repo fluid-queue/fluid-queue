@@ -12,6 +12,7 @@ const defaultAliases = {
     close: ["!close"],
     current: ["!current"],
     customcode: ["!customcode", "!customcodes"],
+    customlevel: ["!customlevel", "!customlevels"],
     dismiss: ["!dismiss", "!skip", "!complete", "!completed"],
     level: ["!level"],
     list: ["!list", "!queue"],
@@ -63,7 +64,9 @@ const Aliases = {
             Aliases.loadAliases(true);
         }
         try {
-            aliases = JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }));
+            const data = JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }));
+            // override defaults
+            aliases = { ...defaultAliases, ...data };
         } catch (err) {
             console.warn('An error occurred when trying to load %s. %s', ALIASES_FILE.fileName, err.message);
             throw err;
