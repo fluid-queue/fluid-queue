@@ -159,7 +159,9 @@ const customCodes = {
     customCodes.map.delete(customCode.toUpperCase());
     return result;
   },
+  reload: () => { /* does nothing at the start, but will be overriden by customCodes.fromObject */ },
   fromObject: (customCodesObject) => {
+    customCodes.reload = () => { customCodes.fromObject(customCodesObject); };
     const entries = Object.entries(customCodesObject).map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
     const entriesMap = new Map(entries);
     const customLevelsMap = new Map();
@@ -829,11 +831,8 @@ const queue = {
       } else {
         return "Error while persisting queue state, see logs.";
       }
-    } else if (
-      subCommand == "load" ||
-      subCommand == "reload" ||
-      subCommand == "restore"
-    ) {
+    } else if (subCommand == "load" || subCommand == "reload" || subCommand == "restore") {
+      // load queue state
       queue.loadQueueState();
       return "Reloaded queue state from disk.";
     } else {
@@ -882,6 +881,9 @@ const queue = {
     // split waiting map into lists
     waiting = state.waiting;
     customLevels = state.custom;
+
+    // check for custom level types
+    queue.checkCustomLevels();
   },
 
   checkCustomLevels: (saveQueue = true) => {
@@ -903,6 +905,7 @@ const queue = {
     if (saveQueue && queueChanged) {
       queue.save();
     }
+    customCodes.reload();
   },
 
   loadCustomCodes: () => {
@@ -926,9 +929,6 @@ const queue = {
 
     // load queue state
     queue.loadQueueState();
-
-    // check for custom level types
-    queue.checkCustomLevels();
 
     // load custom codes
     queue.loadCustomCodes();
