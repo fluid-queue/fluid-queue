@@ -1,6 +1,7 @@
 const fs = require('fs');
 const writeFileAtomic = require('write-file-atomic');
 const writeFileAtomicSync = writeFileAtomic.sync;
+const settings = require('./settings.js');
 
 const ALIASES_FILE = {directory: './settings', fileName: './settings/aliases.json'}
 
@@ -49,11 +50,11 @@ const Aliases = {
         if(!fs.existsSync(ALIASES_FILE.directory)){
             fs.mkdirSync(ALIASES_FILE.directory);
         }
-        writeFileAtomicSync(ALIASES_FILE.fileName, JSON.stringify(aliases));
+        writeFileAtomicSync(ALIASES_FILE.fileName, JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0));
     },
     loadAliases : (create = false) => {
         if(create){
-            const defaults = JSON.stringify(defaultAliases, null, 2);
+            const defaults = JSON.stringify(defaultAliases, null, settings.prettySaveFiles ? 2 : 0);
             if(!fs.existsSync(ALIASES_FILE.directory)){
                 fs.mkdirSync(ALIASES_FILE.directory, {recursive: true});
             }
