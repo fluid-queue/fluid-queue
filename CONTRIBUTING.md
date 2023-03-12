@@ -128,16 +128,16 @@ $ cd fluid-queue
 $ git checkout -b your-first-contribution
 ```
 
-Then you'll want to install the dependencies with `npm install`. Make sure this installed eslint by running `./node_modules/.bin/eslint src`; this should return successfully with no output. Now you can open the code in your editor and make your changes!
+Then you'll want to install the dependencies with `npm install`. Make sure this installed eslint by running `./node_modules/.bin/eslint src`; this should return successfully with no output. You should also check to make sure prettier is installed with `npx prettier --check .` as prettier is used for enforcing formatting. Now you can open the code in your editor and make your changes!
 
 #### Making Your Changes
 As you add new functions, please consider also adding tests for those functions. If you're not sure how to work with the test framework, that's alright! But we do ask that if you can't add tests, you at least document any new functions without test coverage, so we can add tests in ourselves.
 
-Additionally, you probably want to have a text editor or IDE with an eslint plugin, as this will save you some work later; if you can address linter and formatter errors while writing your code, rather than after all your code is written, it's a lot easier to keep eslint happy.
+Additionally, you probably want to have a text editor or IDE with an eslint plugin, as this will save you some work later; if you can address linter errors while writing your code, rather than after all your code is written, it's a lot easier to keep eslint happy.
 
 #### Opening a Pull Request
 
-Once your changes have been made, please run eslint again to identify any linter or formatting errors, and address any errors it gives you. The output from eslint should be blank before you open a pull request. Similarly, please run `npm test` to run the built-in tests and confirm none are failing. We cannot merge your code until it passes both the eslint checks and the tests.
+Once your changes have been made, please run eslint again to identify any linter or formatting errors, and address any errors it gives you. The output from eslint should be blank before you open a pull request. Similarly, please run `npm test` to run the built-in tests and confirm none are failing. We cannot merge your code until it passes both the eslint checks and the tests. Finally, run `npx prettier --write .` to run prettier on your code and ensure it's consistent with our format, and commit any changes it makes.
 
 Once eslint and the tests are successful, commit your code to your fork, and create a pull request against the `main` branch (you may need to [compare branches](https://github.com/fluid-queue/fluid-queue/compare) to open a pull request). Fill out the information requested in the template, open a pull request, and we'll review your contributions and provide feedback.
 
