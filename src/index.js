@@ -50,7 +50,9 @@ const level_list_message = (sender, current, levels) => {
   var result =
     levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
   result +=
-    current !== undefined ? current.submitter + " (current)" : "(no current level)";
+    current !== undefined
+      ? current.submitter + " (current)"
+      : "(no current level)";
 
   result += levels.online
     .slice(0, 5)
@@ -73,14 +75,27 @@ const level_weighted_list_message = (sender, current, weightedList) => {
     return "There are no levels in the queue.";
   }
   //console.log(weightedList);
-  var result = weightedList.entries.length + (current !== undefined ? 1 : 0) + " online: ";
-  result += current !== undefined ? current.submitter + " (current)" : "(no current level)";
+  var result =
+    weightedList.entries.length + (current !== undefined ? 1 : 0) + " online: ";
+  result +=
+    current !== undefined
+      ? current.submitter + " (current)"
+      : "(no current level)";
 
   result += weightedList.entries
     .slice(0, 5)
-    .reduce((acc, x) => acc + ", " + x.level.submitter + " (" + quesoqueue.percent(x.weight(), weightedList.totalWeight) + "%)", "");
+    .reduce(
+      (acc, x) =>
+        acc +
+        ", " +
+        x.level.submitter +
+        " (" +
+        quesoqueue.percent(x.weight(), weightedList.totalWeight) +
+        "%)",
+      ""
+    );
   result += "...";
-  result += (weightedList.entries.length > 5 ? "etc." : "");
+  result += weightedList.entries.length > 5 ? "etc." : "";
   result += " (" + weightedList.offlineLength + " offline)";
   return result;
 };
@@ -94,12 +109,16 @@ const next_level_message = (level) => {
     return "Now playing a ROMhack submitted by " + level.submitter + ".";
   } else {
     return (
-      "Now playing " + displayLevel(level) + " submitted by " + level.submitter + "."
+      "Now playing " +
+      displayLevel(level) +
+      " submitted by " +
+      level.submitter +
+      "."
     );
   }
 };
 
-const weightedrandom_level_message = (level, percentSuffix = '') => {
+const weightedrandom_level_message = (level, percentSuffix = "") => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -110,7 +129,9 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
       level.submitter +
       " with a " +
       level.selectionChance +
-      "%" + percentSuffix + " chance of selection."
+      "%" +
+      percentSuffix +
+      " chance of selection."
     );
   } else {
     return (
@@ -120,12 +141,14 @@ const weightedrandom_level_message = (level, percentSuffix = '') => {
       level.submitter +
       " with a " +
       level.selectionChance +
-      "%" + percentSuffix + " chance of selection."
+      "%" +
+      percentSuffix +
+      " chance of selection."
     );
   }
 };
 
-const weightednext_level_message = (level, percentSuffix = '') => {
+const weightednext_level_message = (level, percentSuffix = "") => {
   if (level === undefined) {
     return "The queue is empty.";
   }
@@ -136,7 +159,9 @@ const weightednext_level_message = (level, percentSuffix = '') => {
       level.submitter +
       " with the highest wait time of " +
       level.selectionChance +
-      "%" + percentSuffix + "."
+      "%" +
+      percentSuffix +
+      "."
     );
   } else {
     return (
@@ -146,7 +171,9 @@ const weightednext_level_message = (level, percentSuffix = '') => {
       level.submitter +
       " with the highest wait time of " +
       level.selectionChance +
-      "%" + percentSuffix + "."
+      "%" +
+      percentSuffix +
+      "."
     );
   }
 };
@@ -177,22 +204,48 @@ const get_ordinal = (num) => {
 };
 
 const hasPosition = () => {
-  return settings.position == "both" || settings.position == "position" || (settings.position == null && (settings.level_selection.includes("next") || !settings.level_selection.includes("weightednext")));
+  return (
+    settings.position == "both" ||
+    settings.position == "position" ||
+    (settings.position == null &&
+      (settings.level_selection.includes("next") ||
+        !settings.level_selection.includes("weightednext")))
+  );
 };
 
 const hasWeightedPosition = () => {
-  return settings.position == "both" || settings.position == "weight" || (settings.position == null && settings.level_selection.includes("weightednext"));
+  return (
+    settings.position == "both" ||
+    settings.position == "weight" ||
+    (settings.position == null &&
+      settings.level_selection.includes("weightednext"))
+  );
 };
 
 const hasPositionList = () => {
-  return settings.list == "both" || settings.list == "position" || (settings.list == null && (settings.level_selection.includes("next") || !settings.level_selection.includes("weightednext")));
+  return (
+    settings.list == "both" ||
+    settings.list == "position" ||
+    (settings.list == null &&
+      (settings.level_selection.includes("next") ||
+        !settings.level_selection.includes("weightednext")))
+  );
 };
 
 const hasWeightList = () => {
-  return settings.list == "both" || settings.list == "weight" || (settings.list == null && settings.level_selection.includes("weightednext"));
+  return (
+    settings.list == "both" ||
+    settings.list == "weight" ||
+    (settings.list == null && settings.level_selection.includes("weightednext"))
+  );
 };
 
-const position_message = async (position, weightedPosition, sender, username) => {
+const position_message = async (
+  position,
+  weightedPosition,
+  sender,
+  username
+) => {
   if (position == -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
@@ -297,7 +350,9 @@ const submitted_message = async (level, sender) => {
   } else if (level === 0) {
     return "Your level is being played right now!";
   }
-  return sender + ", you have submitted " + displayLevel(level) + " to the queue.";
+  return (
+    sender + ", you have submitted " + displayLevel(level) + " to the queue."
+  );
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -321,83 +376,195 @@ async function HandleMessage(message, sender, respond) {
     message = cmd + " " + args;
   }
 
-  if((message.toLowerCase().startsWith("!addalias")) && sender.isBroadcaster){
-    if(message.split(' ').length !== 3){
-      respond("The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op");
+  if (message.toLowerCase().startsWith("!addalias") && sender.isBroadcaster) {
+    if (message.split(" ").length !== 3) {
+      respond(
+        "The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op"
+      );
     } else {
-      let splitMessage = message.split(' ');
-      if(aliases.addAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2])){
-        respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been added.");
+      let splitMessage = message.split(" ");
+      if (
+        aliases.addAlias(
+          splitMessage[1].startsWith("!")
+            ? splitMessage[1].toLowerCase().substring(1)
+            : splitMessage[1].toLowerCase(),
+          splitMessage[2]
+        )
+      ) {
+        respond(
+          "Alias " +
+            splitMessage[2] +
+            " for command " +
+            splitMessage[1] +
+            " has been added."
+        );
       } else {
-        if(!aliases.isCommand(splitMessage[1].toLowerCase())){
-          let commands = aliases.getCommands().join(' ');
-          respond("The command entered is invalid. Valid commands are: " + commands);
-        } else if(aliases.isDisabled(splitMessage[1].toLowerCase())){
-          respond("The command " + splitMessage[1] +" is currently disabled.");
+        if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
+          let commands = aliases.getCommands().join(" ");
+          respond(
+            "The command entered is invalid. Valid commands are: " + commands
+          );
+        } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
+          respond("The command " + splitMessage[1] + " is currently disabled.");
         } else {
-          respond("The alias " + splitMessage[2] + " has already been assigned.");
+          respond(
+            "The alias " + splitMessage[2] + " has already been assigned."
+          );
         }
       }
     }
-  } else if((message.toLowerCase().startsWith("!removealias")) && sender.isBroadcaster){
-    if(message.split(' ').length !== 3){
-      respond("The syntax for removing an alias is: !removealias command alias, for example: !removealias open op");
+  } else if (
+    message.toLowerCase().startsWith("!removealias") &&
+    sender.isBroadcaster
+  ) {
+    if (message.split(" ").length !== 3) {
+      respond(
+        "The syntax for removing an alias is: !removealias command alias, for example: !removealias open op"
+      );
     } else {
-      let splitMessage = message.split(' ');
-      if(aliases.removeAlias(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase(), splitMessage[2].startsWith("!") ? splitMessage[2] : "!" + splitMessage[2])){
-        respond("Alias " + splitMessage[2] + " for command " + splitMessage[1] + " has been removed.");
+      let splitMessage = message.split(" ");
+      if (
+        aliases.removeAlias(
+          splitMessage[1].startsWith("!")
+            ? splitMessage[1].toLowerCase().substring(1)
+            : splitMessage[1].toLowerCase(),
+          splitMessage[2].startsWith("!")
+            ? splitMessage[2]
+            : "!" + splitMessage[2]
+        )
+      ) {
+        respond(
+          "Alias " +
+            splitMessage[2] +
+            " for command " +
+            splitMessage[1] +
+            " has been removed."
+        );
       } else {
-        if(!aliases.isCommand(splitMessage[1].toLowerCase())){
-          let commands = aliases.getCommands().join(' ');
-          respond("The command entered is invalid. Valid commands are: " + commands);
-        } else if(aliases.isDisabled(splitMessage[1].toLowerCase())){
-          respond("The command " + splitMessage[1] +" is currently disabled.");
+        if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
+          let commands = aliases.getCommands().join(" ");
+          respond(
+            "The command entered is invalid. Valid commands are: " + commands
+          );
+        } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
+          respond("The command " + splitMessage[1] + " is currently disabled.");
         } else {
-          respond("The alias " + splitMessage[2] + " does not exist for command " + splitMessage[1] + ".");
+          respond(
+            "The alias " +
+              splitMessage[2] +
+              " does not exist for command " +
+              splitMessage[1] +
+              "."
+          );
         }
       }
     }
-  } else if ((message.toLowerCase().startsWith("!enablecmd") || message.toLowerCase().startsWith("!disablecmd") || message.toLowerCase().startsWith("!resetcmd")) && sender.isBroadcaster) {
-    if(message.split(' ').length !== 2){
-      respond("The syntax for enabling, disabling and resetting commands is: !command botcommand, for example: !enablecmd open")
+  } else if (
+    (message.toLowerCase().startsWith("!enablecmd") ||
+      message.toLowerCase().startsWith("!disablecmd") ||
+      message.toLowerCase().startsWith("!resetcmd")) &&
+    sender.isBroadcaster
+  ) {
+    if (message.split(" ").length !== 2) {
+      respond(
+        "The syntax for enabling, disabling and resetting commands is: !command botcommand, for example: !enablecmd open"
+      );
     } else {
-      let splitMessage = message.split(' ');
-      if(splitMessage[0].toLowerCase() === "!enablecmd"){
-        if(aliases.enableCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully enabled.")
+      let splitMessage = message.split(" ");
+      if (splitMessage[0].toLowerCase() === "!enablecmd") {
+        if (
+          aliases.enableCommand(
+            splitMessage[1].startsWith("!")
+              ? splitMessage[1].toLowerCase().substring(1)
+              : splitMessage[1].toLowerCase()
+          )
+        ) {
+          // if the command starts with "!" - remove the "!".
+          respond(
+            "The command " + splitMessage[1] + " has been successfully enabled."
+          );
         } else {
-          if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
-            respond("The command entered is invalid. Valid commands are: " + commands);
+          if (
+            !aliases.isCommand(
+              splitMessage[1].startsWith("!")
+                ? splitMessage[1].toLowerCase().substring(1)
+                : splitMessage[1].toLowerCase()
+            )
+          ) {
+            let commands = aliases.getCommands().join(" ");
+            respond(
+              "The command entered is invalid. Valid commands are: " + commands
+            );
           } else {
             respond("The command " + splitMessage[1] + " is already enabled.");
           }
         }
       } else if (splitMessage[0].toLowerCase() === "!disablecmd") {
-        if(aliases.disableCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully disabled.")
+        if (
+          aliases.disableCommand(
+            splitMessage[1].startsWith("!")
+              ? splitMessage[1].toLowerCase().substring(1)
+              : splitMessage[1].toLowerCase()
+          )
+        ) {
+          // if the command starts with "!" - remove the "!".
+          respond(
+            "The command " +
+              splitMessage[1] +
+              " has been successfully disabled."
+          );
         } else {
-          if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
-            respond("The command entered is invalid. Valid commands are: " + commands);
+          if (
+            !aliases.isCommand(
+              splitMessage[1].startsWith("!")
+                ? splitMessage[1].toLowerCase().substring(1)
+                : splitMessage[1].toLowerCase()
+            )
+          ) {
+            let commands = aliases.getCommands().join(" ");
+            respond(
+              "The command entered is invalid. Valid commands are: " + commands
+            );
           } else {
             respond("The command " + splitMessage[1] + " is already disabled.");
           }
         }
       } else if (splitMessage[0] === "!resetcmd") {
-        if(aliases.resetCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())){ // if the command starts with "!" - remove the "!".
-          respond("The command " + splitMessage[1] + " has been successfully reset.")
+        if (
+          aliases.resetCommand(
+            splitMessage[1].startsWith("!")
+              ? splitMessage[1].toLowerCase().substring(1)
+              : splitMessage[1].toLowerCase()
+          )
+        ) {
+          // if the command starts with "!" - remove the "!".
+          respond(
+            "The command " + splitMessage[1] + " has been successfully reset."
+          );
         } else {
-          if(!aliases.isCommand(splitMessage[1].startsWith("!") ? splitMessage[1].toLowerCase().substring(1) : splitMessage[1].toLowerCase())) {
-            let commands = aliases.getCommands().join(' ');
-            respond("The command entered is invalid. Valid commands are: " + commands);
+          if (
+            !aliases.isCommand(
+              splitMessage[1].startsWith("!")
+                ? splitMessage[1].toLowerCase().substring(1)
+                : splitMessage[1].toLowerCase()
+            )
+          ) {
+            let commands = aliases.getCommands().join(" ");
+            respond(
+              "The command entered is invalid. Valid commands are: " + commands
+            );
           }
         }
       }
     }
-  } else if (message.toLowerCase().startsWith("!aliases") && sender.isBroadcaster){
-    respond("Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command")
-    let commands = aliases.getCommands().join(' ');
+  } else if (
+    message.toLowerCase().startsWith("!aliases") &&
+    sender.isBroadcaster
+  ) {
+    respond(
+      "Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command"
+    );
+    let commands = aliases.getCommands().join(" ");
     respond("Available commands are: " + commands);
   } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
@@ -438,7 +605,10 @@ async function HandleMessage(message, sender, respond) {
     respond(quesoqueue.replace(sender.displayName, level_code));
   } else if (aliases.isAlias("level", message) && sender.isBroadcaster) {
     let next_level;
-    let selection_mode = settings.level_selection[(selection_iter++) % settings.level_selection.length];
+    let selection_mode =
+      settings.level_selection[
+        selection_iter++ % settings.level_selection.length
+      ];
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
     }
@@ -482,13 +652,27 @@ async function HandleMessage(message, sender, respond) {
       level_timer.pause();
     }
     if (selection_mode == "weightedrandom") {
-      respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level));
+      respond(
+        "(" + selection_mode + ") " + weightedrandom_level_message(next_level)
+      );
     } else if (selection_mode == "weightednext") {
-      respond("(" + selection_mode + ") " + weightednext_level_message(next_level));
+      respond(
+        "(" + selection_mode + ") " + weightednext_level_message(next_level)
+      );
     } else if (selection_mode == "weightedsubrandom") {
-      respond("(" + selection_mode + ") " + weightedrandom_level_message(next_level, ' (subscriber)'));
+      respond(
+        "(" +
+          selection_mode +
+          ") " +
+          weightedrandom_level_message(next_level, " (subscriber)")
+      );
     } else if (selection_mode == "weightedsubnext") {
-      respond("(" + selection_mode + ") " + weightednext_level_message(next_level, ' (subscriber)'));
+      respond(
+        "(" +
+          selection_mode +
+          ") " +
+          weightednext_level_message(next_level, " (subscriber)")
+      );
     } else {
       respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
@@ -527,27 +711,36 @@ async function HandleMessage(message, sender, respond) {
     }
     let next_level = await quesoqueue.weightednext();
     respond(weightednext_level_message(next_level));
-  } else if (aliases.isAlias("weightedrandom", message) && sender.isBroadcaster) {
+  } else if (
+    aliases.isAlias("weightedrandom", message) &&
+    sender.isBroadcaster
+  ) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
     }
     let next_level = await quesoqueue.weightedrandom();
     respond(weightedrandom_level_message(next_level));
-  } else if (aliases.isAlias("weightedsubnext", message) && sender.isBroadcaster) {
+  } else if (
+    aliases.isAlias("weightedsubnext", message) &&
+    sender.isBroadcaster
+  ) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
     }
     let next_level = await quesoqueue.weightedsubnext();
-    respond(weightednext_level_message(next_level, ' (subscriber)'));
-  } else if (aliases.isAlias("weightedsubrandom", message) && sender.isBroadcaster) {
+    respond(weightednext_level_message(next_level, " (subscriber)"));
+  } else if (
+    aliases.isAlias("weightedsubrandom", message) &&
+    sender.isBroadcaster
+  ) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
     }
     let next_level = await quesoqueue.weightedsubrandom();
-    respond(weightedrandom_level_message(next_level, ' (subscriber)'));
+    respond(weightedrandom_level_message(next_level, " (subscriber)"));
   } else if (aliases.isAlias("subrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();
@@ -568,10 +761,7 @@ async function HandleMessage(message, sender, respond) {
       level_timer.pause();
     }
     respond(await quesoqueue.punt());
-  } else if (
-    aliases.isAlias("dismiss", message) &&
-    sender.isBroadcaster
-  ) {
+  } else if (aliases.isAlias("dismiss", message) && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
@@ -593,7 +783,7 @@ async function HandleMessage(message, sender, respond) {
       } else {
         respond(
           "Now playing " +
-          displayLevel(dip_level) +
+            displayLevel(dip_level) +
             " submitted by " +
             dip_level.submitter +
             "."
@@ -629,7 +819,9 @@ async function HandleMessage(message, sender, respond) {
       }
       if (list_weight) {
         const weightedList = await quesoqueue.weightedList(true, list);
-        respond(level_weighted_list_message(sender.displayName, current, weightedList));
+        respond(
+          level_weighted_list_message(sender.displayName, current, weightedList)
+        );
       }
     }
   } else if (aliases.isAlias("position", message)) {
@@ -637,13 +829,14 @@ async function HandleMessage(message, sender, respond) {
     respond(
       await position_message(
         hasPosition() ? await quesoqueue.position(sender.username, list) : -3,
-        hasWeightedPosition() ? await quesoqueue.weightedPosition(sender.username, list) : -3,
+        hasWeightedPosition()
+          ? await quesoqueue.weightedPosition(sender.username, list)
+          : -3,
         sender.displayName,
         sender.username
       )
     );
-  } else if (aliases.isAlias("weightedchance", message)
-  ) {
+  } else if (aliases.isAlias("weightedchance", message)) {
     respond(
       await weightedchance_message(
         await quesoqueue.weightedchance(sender.displayName, sender.username),
@@ -651,25 +844,39 @@ async function HandleMessage(message, sender, respond) {
         sender.displayName
       )
     );
-  } else if (
-      aliases.isAlias("submitted", message)
-  ) {
+  } else if (aliases.isAlias("submitted", message)) {
     respond(
       await submitted_message(
         await quesoqueue.submittedlevel(sender.username),
         sender.displayName
       )
     );
-  } else if (settings.level_timeout && aliases.isAlias("start", message) && sender.isBroadcaster) {
+  } else if (
+    settings.level_timeout &&
+    aliases.isAlias("start", message) &&
+    sender.isBroadcaster
+  ) {
     level_timer.resume();
     respond("Timer started! Get going!");
-  } else if (settings.level_timeout && aliases.isAlias("resume", message) && sender.isBroadcaster) {
+  } else if (
+    settings.level_timeout &&
+    aliases.isAlias("resume", message) &&
+    sender.isBroadcaster
+  ) {
     level_timer.resume();
     respond("Timer unpaused! Get going!");
-  } else if (settings.level_timeout && aliases.isAlias("pause", message) && sender.isBroadcaster) {
+  } else if (
+    settings.level_timeout &&
+    aliases.isAlias("pause", message) &&
+    sender.isBroadcaster
+  ) {
     level_timer.pause();
     respond("Timer paused");
-  } else if (settings.level_timeout && aliases.isAlias("restart", message) && sender.isBroadcaster) {
+  } else if (
+    settings.level_timeout &&
+    aliases.isAlias("restart", message) &&
+    sender.isBroadcaster
+  ) {
     level_timer.restart();
     respond("Starting the clock over! CP Hype!");
   } else if (aliases.isAlias("persistence", message) && sender.isBroadcaster) {
@@ -683,7 +890,7 @@ async function HandleMessage(message, sender, respond) {
     twitch.clearLurkers();
     respond("The queue has been cleared!");
   } else if (
-    (aliases.isAlias("customcode", message)) &&
+    aliases.isAlias("customcode", message) &&
     settings.custom_codes_enabled
   ) {
     if (sender.isBroadcaster) {
@@ -714,10 +921,7 @@ async function HandleMessage(message, sender, respond) {
       const nextIndex = selection_iter % settings.level_selection.length;
       let order = [...settings.level_selection]; // copy array
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
-      respond(
-        "Next level order: " +
-        order.reduce((acc, x) => acc + ", " + x)
-      );
+      respond("Next level order: " + order.reduce((acc, x) => acc + ", " + x));
     }
   }
 }

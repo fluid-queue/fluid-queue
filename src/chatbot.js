@@ -1,40 +1,44 @@
-const tmi = require('tmi.js');
+const tmi = require("tmi.js");
 
-const build_chatter = function(username, displayName, isSubscriber, isMod, isBroadcaster) {
+const build_chatter = function (
+  username,
+  displayName,
+  isSubscriber,
+  isMod,
+  isBroadcaster
+) {
   return {
     username: username,
     displayName: displayName,
     isSubscriber: isSubscriber,
     isMod: isMod,
-    isBroadcaster: isBroadcaster
-  }
-}
+    isBroadcaster: isBroadcaster,
+  };
+};
 
-const chatbot_helper = function(username, password, channel) {
+const chatbot_helper = function (username, password, channel) {
   var tmi_settings = {
     identity: {
       username: username,
-      password: password
+      password: password,
     },
     connection: {
       reconnect: true,
       maxReconnectAttempts: 50,
       secure: true,
-      timeout: 20000
+      timeout: 20000,
     },
-    channels: [
-      channel
-    ]
+    channels: [channel],
   };
   return {
     client: new tmi.client(tmi_settings),
 
-    connect: function() {
+    connect: function () {
       // Connect to Twitch:
       this.client.connect();
     },
 
-    setup: function(handle_func) {
+    setup: function (handle_func) {
       var client = this.client;
       // Called every time the bot connects to Twitch chat
       function onConnectedHandler(addr, port) {
@@ -43,7 +47,9 @@ const chatbot_helper = function(username, password, channel) {
 
       // Called every time a message comes in
       function onMessageHandler(channel, tags, message, self) {
-        if (self) { return; } // Ignore messages from the bot
+        if (self) {
+          return;
+        } // Ignore messages from the bot
         // Remove whitespace from chat message
         const command = message.trim();
         const respond = (response_text) => {
@@ -51,33 +57,38 @@ const chatbot_helper = function(username, password, channel) {
         };
         var chatter;
         if (tags.badges == null) {
-          chatter = build_chatter(tags.username,
-            tags['display-name'],
+          chatter = build_chatter(
+            tags.username,
+            tags["display-name"],
             false,
             false,
-            false);
+            false
+          );
         } else {
-          chatter = build_chatter(tags.username,
-            tags['display-name'],
-            tags.badges.subscriber != undefined || tags.badges.founder != undefined,
+          chatter = build_chatter(
+            tags.username,
+            tags["display-name"],
+            tags.badges.subscriber != undefined ||
+              tags.badges.founder != undefined,
             tags.badges.moderator != undefined,
-            tags.badges.broadcaster != undefined);
+            tags.badges.broadcaster != undefined
+          );
         }
         handle_func(command, chatter, respond);
       }
       // Register our event handlers (defined below)
-      this.client.on('connected', onConnectedHandler);
-      this.client.on('message', onMessageHandler);
+      this.client.on("connected", onConnectedHandler);
+      this.client.on("message", onMessageHandler);
     },
 
-    say: function(message) {
-      this.client.say('#' + channel, message);
-    }
+    say: function (message) {
+      this.client.say("#" + channel, message);
+    },
   };
 };
 
 module.exports = {
-  helper: function(username, password, channel) {
+  helper: function (username, password, channel) {
     return chatbot_helper(username, password, channel);
   },
 };

@@ -3,11 +3,22 @@ const fs = require("fs");
 /**
  * @readonly
  */
-const order_options = ["next", "subnext", "modnext", "random", "weightedrandom", "weightednext", "subrandom", "modrandom", "weightedsubrandom", "weightedsubnext"];
+const order_options = [
+  "next",
+  "subnext",
+  "modnext",
+  "random",
+  "weightedrandom",
+  "weightednext",
+  "subrandom",
+  "modrandom",
+  "weightedsubrandom",
+  "weightedsubnext",
+];
 /**
  * @readonly
  */
- const list_options = ["position", "weight", "both", "none"];
+const list_options = ["position", "weight", "both", "none"];
 /**
  *
  * @typedef settings
@@ -28,8 +39,8 @@ const order_options = ["next", "subnext", "modnext", "random", "weightedrandom",
  * @property {number} [subscriberWeightMultiplier] - the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute
  * @property {typeof list_options[number]} [position] - which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  * @property {typeof list_options[number]} [list] - how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
- * @property {boolean} [showMakerCode] - if maker codes should be marked as such 
-*/
+ * @property {boolean} [showMakerCode] - if maker codes should be marked as such
+ */
 
 /** @type {settings} */
 const settings = JSON.parse(
@@ -40,33 +51,40 @@ const settings = JSON.parse(
 const settings_validations = {
   username: (name) => typeof name === "string",
   password: (pass) => typeof pass === "string" && pass.startsWith("oauth"),
-  channel: (channel) => typeof channel === "string" && /^[a-z0-9_]{2,}$/.test(channel), // channel needs to be a valid twitch username (this is used in the chatters URL in twitch.js)
+  channel: (channel) =>
+    typeof channel === "string" && /^[a-z0-9_]{2,}$/.test(channel), // channel needs to be a valid twitch username (this is used in the chatters URL in twitch.js)
   start_open: (open) => typeof open === "boolean",
-  enable_absolute_position: (absolute_position) => typeof absolute_position === "boolean",
-  custom_codes_enabled: cc => typeof cc === "boolean",
-  romhacks_enabled: hacks => typeof hacks === "boolean", // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
-  max_size: max => typeof max === "number",
-  level_timeout: timeout => timeout == null || typeof timeout === "number",
-  level_selection: (selections) => [...selections].every(next => order_options.includes(next)),
-  message_cooldown: cool => typeof cool === "number",
-  dataIdCourseThreshold: threshold => threshold == null || typeof threshold === "number",
-  dataIdMakerThreshold: threshold => threshold == null || typeof threshold === "number",
+  enable_absolute_position: (absolute_position) =>
+    typeof absolute_position === "boolean",
+  custom_codes_enabled: (cc) => typeof cc === "boolean",
+  romhacks_enabled: (hacks) => typeof hacks === "boolean", // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
+  max_size: (max) => typeof max === "number",
+  level_timeout: (timeout) => timeout == null || typeof timeout === "number",
+  level_selection: (selections) =>
+    [...selections].every((next) => order_options.includes(next)),
+  message_cooldown: (cool) => typeof cool === "number",
+  dataIdCourseThreshold: (threshold) =>
+    threshold == null || typeof threshold === "number",
+  dataIdMakerThreshold: (threshold) =>
+    threshold == null || typeof threshold === "number",
   prettySaveFiles: (pretty) => pretty == null || typeof pretty === "boolean",
-  subscriberWeightMultiplier: (multiplier) => multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
-  position: position => position == null || list_options.includes(position),
-  list: list => list == null || list_options.includes(list),
-  showMakerCode: makerCode => makerCode == null || typeof makerCode === "boolean",
+  subscriberWeightMultiplier: (multiplier) =>
+    multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
+  position: (position) => position == null || list_options.includes(position),
+  list: (list) => list == null || list_options.includes(list),
+  showMakerCode: (makerCode) =>
+    makerCode == null || typeof makerCode === "boolean",
 };
 
 for (const key in settings) {
   if (Object.hasOwnProperty.call(settings, key)) {
     try {
-        if (!settings_validations[key](settings[key])) {
-        throw new Error(`problem with ${key}`)
+      if (!settings_validations[key](settings[key])) {
+        throw new Error(`problem with ${key}`);
       }
-    } catch(e) {
+    } catch (e) {
       if (e instanceof TypeError) {
-        throw new TypeError(`${key} is not a valid option!`)
+        throw new TypeError(`${key} is not a valid option!`);
       }
       throw e;
     }
