@@ -7,10 +7,6 @@ const timeOrNow = (time = undefined) => {
     }
 };
 
-const hasOwn = (object, property) => {
-    return Object.prototype.hasOwnProperty.call(object, property);
-};
-
 // Waiting prototype
 const Waiting = {
     create: (now = undefined) => {
