@@ -17,9 +17,7 @@
         "fd05af65-5122-54ca-bd43-f6f403dfde38": {
             "customCodes": [
                 "Uncleared",
-                "UNC-LEA-RED",
-                "an uncleared level",
-                "uncleared level"
+                "UNC-LEA-RED"
             ],
             "display": "an uncleared level",
             "enabled": false

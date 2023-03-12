@@ -240,7 +240,7 @@ const addUncleared = (custom, enabled = true) => {
         custom[unclearedUuid].enabled = enabled;
         return result;
     } else {
-        custom[unclearedUuid] = {customCodes: ['Uncleared', 'UNC-LEA-RED', 'an uncleared level', 'uncleared level'], display: 'an uncleared level', enabled };
+        custom[unclearedUuid] = {customCodes: ['Uncleared', 'UNC-LEA-RED'], display: 'an uncleared level', enabled };
         return true;
     }
 };
