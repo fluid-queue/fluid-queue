@@ -8,22 +8,35 @@ var lastOnlineUsers;
 
 const twitch = {
   getOnlineUsers: async (channel) => {
-    const channel_url = "https://tmi.twitch.tv/group/user/" + channel + "/chatters";
+    const channel_url =
+      "https://tmi.twitch.tv/group/user/" + channel + "/chatters";
     var online_users = new Set();
     try {
-      await fetch(channel_url).then(res => res.json()).then(x => Object.keys(x.chatters).forEach(y => x.chatters[y].forEach(z => online_users.add(z))));
+      await fetch(channel_url)
+        .then((res) => res.json())
+        .then((x) =>
+          Object.keys(x.chatters).forEach((y) =>
+            x.chatters[y].forEach((z) => online_users.add(z))
+          )
+        );
       lastOnlineUsers = online_users;
     } catch (error) {
-      if (typeof lastOnlineUsers !== 'undefined') {
+      if (typeof lastOnlineUsers !== "undefined") {
         online_users = lastOnlineUsers;
-        console.log('Error with getting online users. Using old list.');
+        console.log("Error with getting online users. Using old list.");
       } else {
-        console.log('Error with getting online users. Using recent chatters due to there being no available old list.');
+        console.log(
+          "Error with getting online users. Using recent chatters due to there being no available old list."
+        );
       }
     }
     var current_time = Date.now();
-    Object.keys(recent_chatters).filter(x => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)).forEach(x => online_users.add(x));
-    return new Set([...online_users].filter(x => !lurkers.has(x)));
+    Object.keys(recent_chatters)
+      .filter(
+        (x) => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)
+      )
+      .forEach((x) => online_users.add(x));
+    return new Set([...online_users].filter((x) => !lurkers.has(x)));
   },
 
   isSubscriber: (username) => {
@@ -32,12 +45,12 @@ const twitch = {
 
   getOnlineSubscribers: async (channel) => {
     var online_users = await twitch.getOnlineUsers(channel);
-    return new Set([...online_users].filter(x => subscribers.has(x)));
+    return new Set([...online_users].filter((x) => subscribers.has(x)));
   },
 
   getOnlineMods: async (channel) => {
     var online_users = await twitch.getOnlineUsers(channel);
-    return new Set([...online_users].filter(x => mods.has(x)));
+    return new Set([...online_users].filter((x) => mods.has(x)));
   },
 
   noticeChatter: (chatter) => {
@@ -74,11 +87,10 @@ const twitch = {
   clearLurkers: () => {
     lurkers.clear();
   },
-
 };
 
-
-
 module.exports = {
-  twitch: () => { return twitch; }
+  twitch: () => {
+    return twitch;
+  },
 };

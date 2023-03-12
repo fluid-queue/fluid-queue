@@ -1,17 +1,16 @@
 [![Node.js CI](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml/badge.svg)](https://github.com/fluid-queue/fluid-queue/actions/workflows/node.js.yml)
 
-#  fluid-queue
+# fluid-queue
 
 A queue system for Super Mario Maker 2 levels.
 
 This project is based on Queso Queue Plus, which was originally developed by Shoujo (<https://github.com/ToransuShoujo/quesoqueue_plus/>) and diceguyd30 (<https://github.com/diceguyd30/queso_to_go_template>).
 
-
 ## How do I use this?
 
 ### Docker instructions
 
-You need to have docker engine installed on the system for this to work.  
+You need to have docker engine installed on the system for this to work.
 
 First, you must clone the project. Either download the source or run the following command:
 
@@ -19,8 +18,8 @@ First, you must clone the project. Either download the source or run the followi
   git clone https://github.com/fluid-queue/fluid-queue.git
 ```
 
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
 
-After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. 
 ```bash
 cp settings.example.json settings.json
 
@@ -30,19 +29,21 @@ cp settings.example.json settings.json
 Next, build and run the image (detached):
 
 ```bash
-  docker compose up -d 
+  docker compose up -d
 ```
 
 To close the queue press `CTRL + C` inside the terminal.
+
 ```bash
-  docker compose stop 
+  docker compose stop
 ```
 
 The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are not yet backed up at this time - `customCodes.json` will be moved into data folder in a future update.
 
 To update the image pull the repo changes, then build the image locally again
+
 ```bash
-  docker compose up -d --build 
+  docker compose up -d --build
 ```
 
 ### Run NodeJs locally
@@ -59,7 +60,8 @@ Next, install the dependencies for the project using the following command:
   npm install
 ```
 
-After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. 
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
+
 ```bash
 cp settings.example.json settings.json
 
@@ -101,7 +103,7 @@ The settings.json file contains several options to make the bot as customizable 
 `level_selection` is an array that defines the order that levels will be selected in upon using `!level`. Once the order is completed, it will loop.
 Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedrandom"`, `"weightednext"`, `"subrandom"`, `"modrandom"`, `"weightedsubrandom"`, and `"weightedsubnext"`
 
-`message_cooldown` is the amount of time in seconds that a user must wait before !list will display the levels in the queue after a previous use. 
+`message_cooldown` is the amount of time in seconds that a user must wait before !list will display the levels in the queue after a previous use.
 
 `dataIdCourseThreshold` is the highest allowed data ID for course IDs. This is used to stop levels that do not exist from entering the queue, however it is very difficult to know and/or dynamically change this amount accordingly. As such, the default value is `null`, which ignores the restriction.
 
@@ -112,6 +114,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 `subscriberWeightMultiplier` is the number added as a wait time for subscribers. The default value is `1.0`. Setting this to `1.2` for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to `1.0`.
 
 `list` is the order of the `!list`/`!queue` command. The following values are possible:
+
 - `"position"` - the list will be sorted by time added. (`!next`)
 - `"weight"` - the list will be sorted by weighted chance (watch time, `!weightednext`).
 - `"both"` - the list will be sent twice, once sorted by time added and once sorted by weighted chance (watch time).
@@ -119,6 +122,7 @@ Possible values are: `"next"`, `"subnext"`, `"modnext"`, `"random"`, `"weightedr
 - `null` - the setting is automatically determined by what is configured in `level_selection`.
 
 `position` is which position the `!position` command shows. The following values are possible:
+
 - `"position"` - the position of `!next`.
 - `"weight"` - the position of `!weightednext`.
 - `"both"` - both the position of `!next` and `!weightednext`.
@@ -133,11 +137,11 @@ The following list contains all commands and aliases accessible by default to yo
 
 It is important to note that all commands that draw a level (with exception to `!dismiss`) will first remove the currently selected level before drawing a new one.
 
-`!open`* opens the queue and allows levels to be added.
+`!open`\* opens the queue and allows levels to be added.
 
-`!close`* closes the queue and prevents levels from being added.
+`!close`\* closes the queue and prevents levels from being added.
 
-`!clear`* will remove all levels from the queue, including the current level.
+`!clear`\* will remove all levels from the queue, including the current level.
 
 `!add` adds a level or maker ID to the queue, provided a level code or maker ID follows the command.
 
@@ -161,53 +165,54 @@ It is important to note that all commands that draw a level (with exception to `
 
 `!weightedchance`/`!odds`/`!chance`/`!chances` will output the user's chances of getting selected in weighted random.
 
-`!level`* will select a level from the queue with respect to the order defined in the settings.js file.
+`!level`\* will select a level from the queue with respect to the order defined in the settings.js file.
 
-`!next`* will select the next level from the queue.
+`!next`\* will select the next level from the queue.
 
-`!random`* will select a random level from the queue.
+`!random`\* will select a random level from the queue.
 
-`!weightedrandom`* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
+`!weightedrandom`\* will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
 
-`!weightednext`* will select the level from the queue with the most amount of time spent online and waiting in the queue. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
+`!weightednext`\* will select the level from the queue with the most amount of time spent online and waiting in the queue. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
 
-`!subnext`* will select the next subscriber's level from the queue.
+`!subnext`\* will select the next subscriber's level from the queue.
 
-`!subrandom`* will select a random subscriber's level from the queue.
+`!subrandom`\* will select a random subscriber's level from the queue.
 
-`!weightedsubrandom`* will select a random level from the subscribers using the amount of time spent online and waiting in the queue as weight.
+`!weightedsubrandom`\* will select a random level from the subscribers using the amount of time spent online and waiting in the queue as weight.
 
-`!weightedsubnext`* will select the level from the queue with the most amount of time spent online and waiting in the queue and being subscribed. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
+`!weightedsubnext`\* will select the level from the queue with the most amount of time spent online and waiting in the queue and being subscribed. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
 
-`!modnext`* will select the next moderator's level from the queue.
+`!modnext`\* will select the next moderator's level from the queue.
 
-`!modrandom`* will select a random moderator's level from the queue.
+`!modrandom`\* will select a random moderator's level from the queue.
 
-`!dismiss`/`!skip`/`!complete`/`!completed`* will remove the current level from the queue without drawing a new one.
+`!dismiss`/`!skip`/`!complete`/`!completed`\* will remove the current level from the queue without drawing a new one.
 
-`!select`* will select a specific user's level, provided it is defined after the command.
+`!select`\* will select a specific user's level, provided it is defined after the command.
 
-`!punt`* will move the currently selected level to the back of the queue.
+`!punt`\* will move the currently selected level to the back of the queue.
 
-`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove/load} {customCode} {ID}` where `add`/`remove`/`load` is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the *queue* are not case sensitive, they are case sensitive with this command.
+`!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove/load} {customCode} {ID}` where `add`/`remove`/`load` is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the _queue_ are not case sensitive, they are case sensitive with this command.
 `!customcode load` will reload the custom codes from the `./customCodes.json` file, so you can manually edit that file and then reload the codes without having to restart the queue.
 
-`!persistence` * will give control over how and if the queue data is loaded/saved:
-  - `!persistence save` will manually save the queue state (current level, queue, wait time) to `./data/queue.json`.
-  - `!persistence on` will set the queue to automatically save its state whenever changes occur. (this is the default behaviour)
-  - `!persistence off` will deactivate any changes to be saved.
-  - `!persistence load` will manually load the queue state (current level, queue, wait time) from `./data/queue.json`. Please use this with caution since reloading the state can result in lost data and it is recommended to:
-    - use `!persistence off` to prevent the queue from overriding changes you are going to make
-    - make changes to `./data/queue.json`
-    - use `!persistence load` to load these changes
-    - use `!persistence on` to reactivate automatic saves
+`!persistence` \* will give control over how and if the queue data is loaded/saved:
 
-
+- `!persistence save` will manually save the queue state (current level, queue, wait time) to `./data/queue.json`.
+- `!persistence on` will set the queue to automatically save its state whenever changes occur. (this is the default behaviour)
+- `!persistence off` will deactivate any changes to be saved.
+- `!persistence load` will manually load the queue state (current level, queue, wait time) from `./data/queue.json`. Please use this with caution since reloading the state can result in lost data and it is recommended to:
+  - use `!persistence off` to prevent the queue from overriding changes you are going to make
+  - make changes to `./data/queue.json`
+  - use `!persistence load` to load these changes
+  - use `!persistence on` to reactivate automatic saves
 
 ### Aliases
+
 The following list of commands are available to manage aliases:
 
 `!aliases` will display the available aliases management commands and the available commands you can put aliases for.
+
 - `!addalias command alias` adds the alias `alias` for command `command`
 - `!removealias command alias` removes the alias `alias` for command `command`
 - `!enablecmd command` enables the command `command`
@@ -215,8 +220,6 @@ The following list of commands are available to manage aliases:
 - `!resetcmd command` resets the command `command` to default values.
 
 The aliases are saved in a file in `./settings/aliases.json`. Please use this with caution. It might render the bot inoperable.
-
-
 
 ## Will you add [insert feature here]?
 

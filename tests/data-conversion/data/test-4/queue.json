@@ -1,34 +1,34 @@
 {
-    "version": "2.1",
-    "currentLevel": {
-        "code": "QWF-3K9-84G",
-        "submitter": "FurretWalkBot",
-        "username": "furretwalkbot"
+  "version": "2.1",
+  "currentLevel": {
+    "code": "QWF-3K9-84G",
+    "submitter": "FurretWalkBot",
+    "username": "furretwalkbot"
+  },
+  "queue": [
+    {
+      "code": "BW2-G2R-CMG",
+      "submitter": "liquidnya",
+      "username": "liquidnya"
     },
-    "queue": [
-        {
-            "code": "BW2-G2R-CMG",
-            "submitter": "liquidnya",
-            "username": "liquidnya"
-        },
-        {
-            "code": "BRL-F70-CLG",
-            "submitter": "helperblock",
-            "username": "helperblock"
-        }
-    ],
-    "waiting": {
-        "liquidnya": {
-            "waitTime": 10,
-            "weightMin": 10,
-            "weightMsec": 0,
-            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-        },
-        "helperblock": {
-            "waitTime": 1,
-            "weightMin": 1,
-            "weightMsec": 0,
-            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-        }
+    {
+      "code": "BRL-F70-CLG",
+      "submitter": "helperblock",
+      "username": "helperblock"
     }
+  ],
+  "waiting": {
+    "liquidnya": {
+      "waitTime": 10,
+      "weightMin": 10,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    },
+    "helperblock": {
+      "waitTime": 1,
+      "weightMin": 1,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    }
+  }
 }

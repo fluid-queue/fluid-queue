@@ -1,11 +1,11 @@
-const settings = require('./settings.js');
-const twitch = require('./twitch.js').twitch();
-const { setIntervalAsync } = require('set-interval-async/dynamic');
-const persistence = require('./persistence.js');
-const { Waiting } = require('./waiting.js');
-const standardBase30 = '0123456789abcdefghijklmnopqrst'
-const nintendoBase30 = '0123456789BCDFGHJKLMNPQRSTVWXY'
-const arbitraryXorValue = 377544828
+const settings = require("./settings.js");
+const twitch = require("./twitch.js").twitch();
+const { setIntervalAsync } = require("set-interval-async/dynamic");
+const persistence = require("./persistence.js");
+const { Waiting } = require("./waiting.js");
+const standardBase30 = "0123456789abcdefghijklmnopqrst";
+const nintendoBase30 = "0123456789BCDFGHJKLMNPQRSTVWXY";
+const arbitraryXorValue = 377544828;
 
 /**
  * @typedef waiting
@@ -33,10 +33,12 @@ var waiting = {};
 /** @type {boolean} */
 var persist = true; // if false the queue will not save automatically
 
-const delim = '[-. ]?';
-const code = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}';
-const codeStrict = '[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]';
-const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStrict})`);
+const delim = "[-. ]?";
+const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
+const codeStrict = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]";
+const levelCodeRegex = new RegExp(
+  `(${code})${delim}(${code})${delim}(${codeStrict})`
+);
 
 /**
  * @typedef weightedListEntry
@@ -58,38 +60,48 @@ const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStri
  * @param {number | undefined} dataIdCourseThreshold
  * @param {number | undefined} dataIdMakerThreshold
  */
-function courseIdValidity(courseIdString, dataIdCourseThreshold, dataIdMakerThreshold)
-{
+function courseIdValidity(
+  courseIdString,
+  dataIdCourseThreshold,
+  dataIdMakerThreshold
+) {
   //console.log(courseIdString);
-  let reversedString = courseIdString.split("").reverse()
-  reversedString = reversedString.map(c => standardBase30[nintendoBase30.indexOf(c)]).join('')
-  let courseBits = parseInt(reversedString, 30)
+  let reversedString = courseIdString.split("").reverse();
+  reversedString = reversedString
+    .map((c) => standardBase30[nintendoBase30.indexOf(c)])
+    .join("");
+  let courseBits = parseInt(reversedString, 30);
 
-  let courseBitsString = courseBits.toString(2)
-  if (courseBitsString.length !== 44)
-  {
-    return {valid: false, makerCode: false};
+  let courseBitsString = courseBits.toString(2);
+  if (courseBitsString.length !== 44) {
+    return { valid: false, makerCode: false };
   }
-  let dataId = parseInt(courseBitsString.substring(32, 44).concat((courseBitsString.substring(10, 30))),2) ^ arbitraryXorValue
-  let fieldA = parseInt(courseBitsString.substring(0, 4),2)
-  let fieldB = parseInt(courseBitsString.substring(4, 10),2)
-  let fieldD = parseInt(courseBitsString.substring(30, 31,2))
-  let fieldE = parseInt(courseBitsString.substring(31, 32,2))
+  let dataId =
+    parseInt(
+      courseBitsString
+        .substring(32, 44)
+        .concat(courseBitsString.substring(10, 30)),
+      2
+    ) ^ arbitraryXorValue;
+  let fieldA = parseInt(courseBitsString.substring(0, 4), 2);
+  let fieldB = parseInt(courseBitsString.substring(4, 10), 2);
+  let fieldD = parseInt(courseBitsString.substring(30, 31, 2));
+  let fieldE = parseInt(courseBitsString.substring(31, 32, 2));
 
-  if (fieldA !== 8 || fieldB !== (dataId - 31) % 64 || (fieldD == 0 && dataId < 3000004) || fieldE != 1)
-  {
-    return {valid: false, makerCode: fieldD == 1};
-  }
-  else if (typeof dataIdMakerThreshold === 'number' && fieldD == 1)
-  {
-    return {valid: dataId <= dataIdMakerThreshold, makerCode: true};
-  }
-  else if (typeof dataIdCourseThreshold === 'number' && fieldD == 0)
-  {
-    return {valid: dataId <= dataIdCourseThreshold, makerCode: false};
+  if (
+    fieldA !== 8 ||
+    fieldB !== (dataId - 31) % 64 ||
+    (fieldD == 0 && dataId < 3000004) ||
+    fieldE != 1
+  ) {
+    return { valid: false, makerCode: fieldD == 1 };
+  } else if (typeof dataIdMakerThreshold === "number" && fieldD == 1) {
+    return { valid: dataId <= dataIdMakerThreshold, makerCode: true };
+  } else if (typeof dataIdCourseThreshold === "number" && fieldD == 0) {
+    return { valid: dataId <= dataIdCourseThreshold, makerCode: false };
   }
 
-  return {valid: true, makerCode: fieldD == 1};
+  return { valid: true, makerCode: fieldD == 1 };
 }
 
 const customCodes = {
@@ -107,7 +119,7 @@ const customCodes = {
     return customCodes.map.get(customCode.toUpperCase()).customCode;
   },
   listNames: () => {
-    return [...customCodes.map.values()].map(e => e.customCode);
+    return [...customCodes.map.values()].map((e) => e.customCode);
   },
   set: (customCodeArg, levelCode) => {
     const customCode = customCodeArg.trim();
@@ -118,11 +130,17 @@ const customCodes = {
     customCodes.map.delete(customCode.toUpperCase());
   },
   fromCodeList: (codeList) => {
-    const entries = codeList.map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
+    const entries = codeList.map(([customCode, levelCode]) => [
+      customCode.toUpperCase(),
+      { customCode, levelCode },
+    ]);
     customCodes.map = new Map(entries);
   },
   toCodeList: () => {
-    return [...customCodes.map.values()].map(e => [e.customCode, e.levelCode]);
+    return [...customCodes.map.values()].map((e) => [
+      e.customCode,
+      e.levelCode,
+    ]);
   },
 };
 
@@ -133,17 +151,35 @@ const customCodes = {
 // - a `valid` field which will be true iff a level/maker code has the correct syntax and is one that can be generated by the game
 // - and a `validSyntax` field which will be true iff a level/maker code has the correct syntax
 const extractValidCode = (levelCode) => {
-  if ((levelCode == 'R0M-HAK-LVL') && (settings.romhacks_enabled)) {
-    return { code: `R0M-HAK-LVL`, valid: true, validSyntax: true, makerCode: false };
+  if (levelCode == "R0M-HAK-LVL" && settings.romhacks_enabled) {
+    return {
+      code: `R0M-HAK-LVL`,
+      valid: true,
+      validSyntax: true,
+      makerCode: false,
+    };
   }
 
   let match = levelCode.match(levelCodeRegex);
   if (match) {
     let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
-    let validity = courseIdValidity(courseIdString, settings.dataIdCourseThreshold, settings.dataIdMakerThreshold);
-    return { ...validity, code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(), validSyntax: true };
+    let validity = courseIdValidity(
+      courseIdString,
+      settings.dataIdCourseThreshold,
+      settings.dataIdMakerThreshold
+    );
+    return {
+      ...validity,
+      code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(),
+      validSyntax: true,
+    };
   }
-  return { code: levelCode, valid: false, validSyntax: false, makerCode: false };
+  return {
+    code: levelCode,
+    valid: false,
+    validSyntax: false,
+    makerCode: false,
+  };
 };
 
 const replaceCustomCode = (levelCode) => {
@@ -178,11 +214,15 @@ const queue = {
     if (!code.valid) {
       return level.submitter + ", that is an invalid level code.";
     }
-    if (current_level != undefined && current_level.submitter == level.submitter && level.submitter != settings.channel) {
+    if (
+      current_level != undefined &&
+      current_level.submitter == level.submitter &&
+      level.submitter != settings.channel
+    ) {
       return "Please wait for your level to be completed before you submit again.";
     }
 
-    var result = levels.find(x => x.submitter == level.submitter);
+    var result = levels.find((x) => x.submitter == level.submitter);
     if (result == undefined || level.submitter == settings.channel) {
       levels.push(level);
       // add wait time of 1 and add last online time of now
@@ -190,18 +230,27 @@ const queue = {
         waiting[level.username] = Waiting.create();
       }
       queue.save();
-      if (level.code == 'R0M-HAK-LVL') {
+      if (level.code == "R0M-HAK-LVL") {
         return level.submitter + ", your ROMhack has been added to the queue.";
       } else {
-        return level.submitter + ", " + displayLevel(level) + " has been added to the queue.";
+        return (
+          level.submitter +
+          ", " +
+          displayLevel(level) +
+          " has been added to the queue."
+        );
       }
     } else {
-      return "Sorry, " + level.submitter + ", you may only submit one level at a time.";
+      return (
+        "Sorry, " +
+        level.submitter +
+        ", you may only submit one level at a time."
+      );
     }
   },
 
   modRemove: (usernameArgument) => {
-    if (usernameArgument == '') {
+    if (usernameArgument == "") {
       return "You can use !remove <username> to kick out someone else's level.";
     }
 
@@ -213,7 +262,7 @@ const queue = {
       return "No levels from " + usernameArgument + " were found in the queue.";
     }
     twitch.notLurkingAnymore(level.username);
-    levels = levels.filter(x => x.submitter != level.submitter);
+    levels = levels.filter((x) => x.submitter != level.submitter);
     queue.save();
     return usernameArgument + "'s level has been removed from the queue.";
   },
@@ -222,7 +271,7 @@ const queue = {
     if (current_level != undefined && current_level.submitter == username) {
       return "Sorry, we're playing that level right now!";
     }
-    levels = levels.filter(x => x.submitter != username);
+    levels = levels.filter((x) => x.submitter != username);
     queue.save();
     return username + ", your level has been removed from the queue.";
   },
@@ -231,27 +280,48 @@ const queue = {
     let code = extractValidCode(replaceCustomCode(new_level_code));
     new_level_code = code.code;
     if (!code.valid) {
-      return username + ", that level code is invalid."
+      return username + ", that level code is invalid.";
     }
-    const findLevel = levels.find(x => x.submitter == username);
+    const findLevel = levels.find((x) => x.submitter == username);
     if (findLevel != undefined) {
       findLevel.code = new_level_code;
       queue.save();
-      if (new_level_code == 'R0M-HAK-LVL') {
-        return username + ", your level in the queue has been replaced with your ROMhack."
+      if (new_level_code == "R0M-HAK-LVL") {
+        return (
+          username +
+          ", your level in the queue has been replaced with your ROMhack."
+        );
       } else {
-        return username + ", your level in the queue has been replaced with " + displayLevel(findLevel) + ".";
+        return (
+          username +
+          ", your level in the queue has been replaced with " +
+          displayLevel(findLevel) +
+          "."
+        );
       }
-    } else if (current_level != undefined && current_level.submitter == username) {
+    } else if (
+      current_level != undefined &&
+      current_level.submitter == username
+    ) {
       current_level.code = new_level_code;
       queue.save();
-      if (new_level_code == 'R0M-HAK-LVL') {
-        return username + ", your level in the queue has been replaced with your ROMhack."
+      if (new_level_code == "R0M-HAK-LVL") {
+        return (
+          username +
+          ", your level in the queue has been replaced with your ROMhack."
+        );
       } else {
-        return username + ", your level in the queue has been replaced with " + displayLevel(current_level) + ".";
+        return (
+          username +
+          ", your level in the queue has been replaced with " +
+          displayLevel(current_level) +
+          "."
+        );
       }
     } else {
-      return username + ", you were not found in the queue. Use !add to add a level.";
+      return (
+        username + ", you were not found in the queue. Use !add to add a level."
+      );
     }
   },
 
@@ -268,9 +338,9 @@ const queue = {
       list = await queue.list();
     }
     var both = list.online.concat(list.offline);
-    var index = both.findIndex(x => x.username == username);
+    var index = both.findIndex((x) => x.username == username);
     if (index != -1) {
-      return (index + 1) + ((current_level != undefined) ? 1 : 0);
+      return index + 1 + (current_level != undefined ? 1 : 0);
     }
     return -1;
   },
@@ -283,9 +353,9 @@ const queue = {
     if (levels.length == 0) {
       return -1;
     }
-    var index = levels.findIndex(x => x.username == username);
+    var index = levels.findIndex((x) => x.username == username);
     if (index != -1) {
-      return (index + 1) + ((current_level != undefined) ? 1 : 0);
+      return index + 1 + (current_level != undefined ? 1 : 0);
     }
     return -1;
   },
@@ -302,9 +372,11 @@ const queue = {
       return -2;
     }
     const weightedList = await queue.weightedList(true, list);
-    const index = weightedList.entries.findIndex(x => x.level.username == username);
+    const index = weightedList.entries.findIndex(
+      (x) => x.level.username == username
+    );
     if (index != -1) {
-      return (index + 1) + ((current_level != undefined) ? 1 : 0);
+      return index + 1 + (current_level != undefined ? 1 : 0);
     }
     return -1;
   },
@@ -316,7 +388,7 @@ const queue = {
 
     var list = await queue.list();
     var both = list.online.concat(list.offline);
-    var index = both.findIndex(x => x.username == username);
+    var index = both.findIndex((x) => x.username == username);
     if (index != -1) {
       return both[index];
     }
@@ -340,14 +412,26 @@ const queue = {
       return -1;
     }
 
-    const index = weightedList.entries.findIndex(entry => entry.level.username == username);
+    const index = weightedList.entries.findIndex(
+      (entry) => entry.level.username == username
+    );
 
     if (index != -1) {
-      console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
-      console.log("Elegible users time: " + weightedList.entries.map(entry => entry.weight()));
+      console.log(
+        "Elegible users: " +
+          weightedList.entries
+            .map((entry) => entry.level.username)
+            .reduce((a, b) => a + ", " + b)
+      );
+      console.log(
+        "Elegible users time: " +
+          weightedList.entries.map((entry) => entry.weight())
+      );
       const weight = weightedList.entries[index].weight();
       const totalWeight = weightedList.totalWeight;
-      console.log(`${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`);
+      console.log(
+        `${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`
+      );
       return queue.percent(weight, totalWeight);
     }
     return -1;
@@ -361,14 +445,19 @@ const queue = {
     current_level = undefined;
     queue.add(top);
     queue.save();
-    return 'Ok, adding the current level back into the queue.';
+    return "Ok, adding the current level back into the queue.";
   },
 
   dismiss: async () => {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be dismissed.";
     }
-    let response = 'Dismissed ' + displayLevel(current_level) + ' submitted by ' + current_level.submitter + '.';
+    let response =
+      "Dismissed " +
+      displayLevel(current_level) +
+      " submitted by " +
+      current_level.submitter +
+      ".";
     current_level = undefined;
     queue.save();
     return response;
@@ -385,7 +474,7 @@ const queue = {
       current_level = both.shift();
       queue.removeWaiting();
     }
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     levels.splice(index, 1);
     queue.save();
     return current_level;
@@ -400,7 +489,7 @@ const queue = {
       current_level = both.shift();
       queue.removeWaiting();
     }
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     levels.splice(index, 1);
     queue.save();
     return current_level;
@@ -415,7 +504,7 @@ const queue = {
       current_level = both.shift();
       queue.removeWaiting();
     }
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     levels.splice(index, 1);
     queue.save();
     return current_level;
@@ -457,7 +546,7 @@ const queue = {
 
     var random_index = Math.floor(Math.random() * eligible_levels.length);
     current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     queue.removeWaiting();
     levels.splice(index, 1);
     queue.save();
@@ -478,7 +567,7 @@ const queue = {
 
     var random_index = Math.floor(Math.random() * eligible_levels.length);
     current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     queue.removeWaiting();
     levels.splice(index, 1);
     queue.save();
@@ -499,7 +588,7 @@ const queue = {
 
     var random_index = Math.floor(Math.random() * eligible_levels.length);
     current_level = eligible_levels[random_index];
-    var index = levels.findIndex(x => x.submitter == current_level.submitter);
+    var index = levels.findIndex((x) => x.submitter == current_level.submitter);
     queue.removeWaiting();
     levels.splice(index, 1);
     queue.save();
@@ -520,24 +609,41 @@ const queue = {
     let levelIndex = 0;
     let gettingThereSomeday = weightedList.entries[0].weight();
 
-    console.log('Elegible users: ' + weightedList.entries.map(entry => entry.level.username).reduce((a, b) => a + ", " + b));
-    console.log("Elegible users time: " + weightedList.entries.map(entry => entry.weight()));
+    console.log(
+      "Elegible users: " +
+        weightedList.entries
+          .map((entry) => entry.level.username)
+          .reduce((a, b) => a + ", " + b)
+    );
+    console.log(
+      "Elegible users time: " +
+        weightedList.entries.map((entry) => entry.weight())
+    );
 
     console.log("Random number: " + randomNumber);
     console.log("Current cumulative time: " + gettingThereSomeday);
     while (gettingThereSomeday < randomNumber) {
       levelIndex++;
-      gettingThereSomeday = gettingThereSomeday + weightedList.entries[levelIndex].weight();
+      gettingThereSomeday =
+        gettingThereSomeday + weightedList.entries[levelIndex].weight();
       console.log("Current cumulative time: " + gettingThereSomeday);
     }
 
-    console.log("Chosen index was " + levelIndex + " after a cumulative time of " + gettingThereSomeday);
+    console.log(
+      "Chosen index was " +
+        levelIndex +
+        " after a cumulative time of " +
+        gettingThereSomeday
+    );
     current_level = weightedList.entries[levelIndex].level;
 
-    const index = levels.findIndex(x => x.username == current_level.username);
+    const index = levels.findIndex((x) => x.username == current_level.username);
     levels.splice(index, 1);
 
-    const selectionChance = queue.percent(weightedList.entries[levelIndex].weight(), totalWeight);
+    const selectionChance = queue.percent(
+      weightedList.entries[levelIndex].weight(),
+      totalWeight
+    );
 
     queue.removeWaiting();
     queue.save();
@@ -552,35 +658,54 @@ const queue = {
     }
     const online_users = list.online;
     if (online_users.length == 0 || Object.keys(waiting).length == 0) {
-      return { totalWeight: 0, entries: [], offlineLength: list.offline.length + online_users.length };
+      return {
+        totalWeight: 0,
+        entries: [],
+        offlineLength: list.offline.length + online_users.length,
+      };
     }
 
     let entries = online_users
-      .filter(level => Object.prototype.hasOwnProperty.call(waiting, level.username))
-      .map((level, position) => { return { weight: () => waiting[level.username].weight(), position: position, level: level }; });
+      .filter((level) =>
+        Object.prototype.hasOwnProperty.call(waiting, level.username)
+      )
+      .map((level, position) => {
+        return {
+          weight: () => waiting[level.username].weight(),
+          position: position,
+          level: level,
+        };
+      });
 
     if (sorted === undefined || sorted) {
-      entries = entries.sort((a, b) => b.weight() - a.weight() || a.position - b.position);
+      entries = entries.sort(
+        (a, b) => b.weight() - a.weight() || a.position - b.position
+      );
     }
 
     const totalWeight = entries.reduce((sum, entry) => sum + entry.weight(), 0);
 
-    return { totalWeight: totalWeight, entries: entries, offlineLength: list.offline.length + (online_users.length - entries.length) };
+    return {
+      totalWeight: totalWeight,
+      entries: entries,
+      offlineLength:
+        list.offline.length + (online_users.length - entries.length),
+    };
   },
 
   percent: (weight, totalWeight) => {
-    let percent = weight / totalWeight * 100.0;
+    let percent = (weight / totalWeight) * 100.0;
     if (percent > 100.0) {
       percent = 100.0;
     } else if (isNaN(percent) || percent < 0.0) {
       percent = 0.0;
     }
-    const percentString = (percent).toFixed(1);
-    if (percentString === '100.0' && weight != totalWeight) {
-      return '>99.9';
+    const percentString = percent.toFixed(1);
+    if (percentString === "100.0" && weight != totalWeight) {
+      return ">99.9";
     }
-    if (percentString === '0.0' && weight != 0) {
-      return '<0.1';
+    if (percentString === "0.0" && weight != 0) {
+      return "<0.1";
     }
     return percentString;
   },
@@ -604,10 +729,13 @@ const queue = {
     current_level = weightedList.entries[0].level;
 
     // index of the level can be different than 0
-    const index = levels.findIndex(x => x.username == current_level.username);
+    const index = levels.findIndex((x) => x.username == current_level.username);
     levels.splice(index, 1);
 
-    let selectionChance = queue.percent(weightedList.entries[0].weight(), weightedList.totalWeight);
+    let selectionChance = queue.percent(
+      weightedList.entries[0].weight(),
+      weightedList.totalWeight
+    );
 
     queue.removeWaiting();
     queue.save();
@@ -629,47 +757,50 @@ const queue = {
   list: async () => {
     var online = new Array();
     var offline = new Array();
-    await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+    await twitch.getOnlineUsers(settings.channel).then((online_users) => {
+      online = levels.filter((x) => online_users.has(x.username));
+      offline = levels.filter((x) => !online_users.has(x.username));
     });
     return {
       online: online,
-      offline: offline
+      offline: offline,
     };
   },
 
   sublist: async () => {
     var online = new Array();
     var offline = new Array();
-    await twitch.getOnlineSubscribers(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+    await twitch.getOnlineSubscribers(settings.channel).then((online_users) => {
+      online = levels.filter((x) => online_users.has(x.username));
+      offline = levels.filter((x) => !online_users.has(x.username));
     });
     return {
       online: online,
-      offline: offline
+      offline: offline,
     };
   },
 
   modlist: async () => {
     var online = new Array();
     var offline = new Array();
-    await twitch.getOnlineMods(settings.channel).then(online_users => {
-      online = levels.filter(x => online_users.has(x.username));
-      offline = levels.filter(x => !online_users.has(x.username));
+    await twitch.getOnlineMods(settings.channel).then((online_users) => {
+      online = levels.filter((x) => online_users.has(x.username));
+      offline = levels.filter((x) => !online_users.has(x.username));
     });
     return {
       online: online,
-      offline: offline
+      offline: offline,
     };
   },
 
   matchUsername: (usernameArgument) => {
-    usernameArgument = usernameArgument.trim().replace(/^@/, '');
-    return level => {
+    usernameArgument = usernameArgument.trim().replace(/^@/, "");
+    return (level) => {
       // display name (submitter) or user name (username) matches
-      return level.submitter == usernameArgument || level.username == usernameArgument;
+      return (
+        level.submitter == usernameArgument ||
+        level.username == usernameArgument
+      );
     };
   },
 
@@ -701,7 +832,10 @@ const queue = {
       customCodes.delete(customName);
       save("An error occurred while trying to remove that custom code.");
       return `The custom code ${deletedName} for ID ${deletedLevelCode} has been removed.`;
-    } else if ((command == "load" || command == "reload" || command == "restore") && rest.length == 0) {
+    } else if (
+      (command == "load" || command == "reload" || command == "restore") &&
+      rest.length == 0
+    ) {
       queue.loadCustomCodes();
       return "Reloaded custom codes from disk.";
     } else {
@@ -724,7 +858,11 @@ const queue = {
       } else {
         return "Error while persisting queue state, see logs.";
       }
-    } else if (subCommand == "load" || subCommand == "reload" || subCommand == "restore") {
+    } else if (
+      subCommand == "load" ||
+      subCommand == "reload" ||
+      subCommand == "restore"
+    ) {
       queue.loadQueueState();
       return "Reloaded queue state from disk.";
     } else {
@@ -779,14 +917,16 @@ const queue = {
     if (settings.custom_codes_enabled) {
       customCodes.fromCodeList(persistence.loadCustomCodesSync());
       if (settings.romhacks_enabled) {
-        customCodes.has("ROMhack") ||
-        customCodes.set("ROMhack", "R0M-HAK-LVL");
+        customCodes.has("ROMhack") || customCodes.set("ROMhack", "R0M-HAK-LVL");
         console.log("ROMhacks are enabled and allowed to be submitted.");
       } else {
         customCodes.has("ROMhack") && customCodes.delete("ROMhack");
         console.log("ROMhacks are now disabled and will not be accepted.");
-        }
-        persistence.saveCustomCodesSync(customCodes.toCodeList(), "An error occurred when trying to set custom codes.");
+      }
+      persistence.saveCustomCodesSync(
+        customCodes.toCodeList(),
+        "An error occurred when trying to set custom codes."
+      );
     }
   },
 
@@ -812,14 +952,16 @@ const queue = {
 
   waitingTimerTick: async () => {
     var list = await queue.list();
-    const now = (new Date()).toISOString();
-    list.online.map(v => v.username).forEach(username => {
-      if (Object.prototype.hasOwnProperty.call(waiting, username)) {
-        waiting[username].addOneMinute(queue.multiplier(username), now);
-      } else {
-        waiting[username] = Waiting.create(now);
-      }
-    });
+    const now = new Date().toISOString();
+    list.online
+      .map((v) => v.username)
+      .forEach((username) => {
+        if (Object.prototype.hasOwnProperty.call(waiting, username)) {
+          waiting[username].addOneMinute(queue.multiplier(username), now);
+        } else {
+          waiting[username] = Waiting.create(now);
+        }
+      });
     queue.save();
     // TODO: use this instead?
     // await queue.saveAsync();
@@ -829,11 +971,13 @@ const queue = {
     current_level = undefined;
     levels = new Array();
     queue.save();
-  }
+  },
 };
 
 module.exports = {
-  quesoqueue: () => { return queue; },
+  quesoqueue: () => {
+    return queue;
+  },
   extractValidCode,
   displayLevel,
 };

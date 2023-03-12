@@ -4,10 +4,9 @@ env:
   commonjs: true
   es2021: true
   jest/globals: true
-extends: 
+extends:
   - eslint:recommended
   - prettier
 overrides: []
 parserOptions:
   ecmaVersion: latest
-

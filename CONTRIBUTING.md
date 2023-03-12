@@ -1,4 +1,5 @@
 <!-- omit in toc -->
+
 # Contributing to fluid-queue
 
 First off, thanks for taking the time to contribute! ❤️
@@ -6,12 +7,14 @@ First off, thanks for taking the time to contribute! ❤️
 All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions. 🎉
 
 > And if you like the project, but just don't have time to contribute, that's fine. There are other easy ways to support the project and show your appreciation, which we would also be very happy about:
+>
 > - Star the project
 > - Talk about it on social media
 > - Refer this project in your project's readme
 > - Mention the project at local meetups and tell your friends/colleagues
 
 <!-- omit in toc -->
+
 ## Table of Contents
 
 - [I Have a Question](#i-have-a-question)
@@ -28,8 +31,6 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [Styleguides](#styleguides)
   - [Commit Messages](#commit-messages)
 - [Join The Project Team](#join-the-project-team)
-
-
 
 ## I Have a Question
 
@@ -52,11 +53,13 @@ We have a Discord server where we can offer support for the bot. If you request 
 ## I Want To Contribute
 
 > ### Legal Notice <!-- omit in toc -->
+>
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 
 ### Reporting Bugs
 
 <!-- omit in toc -->
+
 #### Before Submitting a Bug Report
 
 A good bug report shouldn't leave others needing to chase you up for more information. Therefore, we ask you to investigate carefully, collect information and describe the issue in detail in your report. Please complete the following steps in advance to help us fix any potential bug as fast as possible.
@@ -73,6 +76,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
   - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
 
 <!-- omit in toc -->
+
 #### How Do I Submit a Good Bug Report?
 
 > You must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Github supports [privately reporting security vulnerabilities](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability); please use that process for any sensitive issues.
@@ -81,7 +85,7 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 
 - Open an [Issue](https://github.com/fluid-queue/fluid-queue/issues/new) and choose the Bug Report template.
 - Explain the behavior you would expect and the actual behavior.
-- Please provide as much context as possible and describe the *reproduction steps* that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
+- Please provide as much context as possible and describe the _reproduction steps_ that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
 - Provide the information you collected in the previous section.
 
 Once it's filed:
@@ -90,12 +94,12 @@ Once it's filed:
 - A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `needs-repro`. Bugs with the `needs-repro` tag will not be addressed until they are reproduced.
 - If the team is able to reproduce the issue, it will be marked `bug`, as well as possibly other tags (such as `critical`), and the issue will be left to be [implemented by someone](#your-first-code-contribution).
 
-
 ### Suggesting Enhancements
 
 This section guides you through submitting an enhancement suggestion for fluid-queue, **including completely new features and minor improvements to existing functionality**. Following these guidelines will help maintainers and the community to understand your suggestion and find related suggestions.
 
 <!-- omit in toc -->
+
 #### Before Submitting an Enhancement
 
 - Make sure that you are using the latest version.
@@ -104,6 +108,7 @@ This section guides you through submitting an enhancement suggestion for fluid-q
 - Find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the project's developers of the merits of this feature. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on/plugin library.
 
 <!-- omit in toc -->
+
 #### How Do I Submit a Good Enhancement Suggestion?
 
 Enhancement suggestions are tracked as [GitHub issues](https://github.com/fluid-queue/fluid-queue/issues).
@@ -117,7 +122,9 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/fluid-
 In addition the the Bug Report template mentioned earlier, we also have a Feature Request template you can use to help format your suggestions.
 
 ### Your First Code Contribution
+
 #### Environment Setup
+
 You will need to have [Node.js] installed on your machine in order to run the bot locally, so make sure that's installed. You'll also want an editor; while you can use any text editor, we would recommend one like VS Code (with the eslint extension) for syntax highlighting and built-in linting.
 
 Once you have Node and your editor set up, fork the repository, clone it, and create a branch to work in:
@@ -131,6 +138,7 @@ $ git checkout -b your-first-contribution
 Then you'll want to install the dependencies with `npm install`. Make sure this installed eslint by running `./node_modules/.bin/eslint src`; this should return successfully with no output. You should also check to make sure prettier is installed with `npx prettier --check .` as prettier is used for enforcing formatting. Now you can open the code in your editor and make your changes!
 
 #### Making Your Changes
+
 As you add new functions, please consider also adding tests for those functions. If you're not sure how to work with the test framework, that's alright! But we do ask that if you can't add tests, you at least document any new functions without test coverage, so we can add tests in ourselves.
 
 Additionally, you probably want to have a text editor or IDE with an eslint plugin, as this will save you some work later; if you can address linter errors while writing your code, rather than after all your code is written, it's a lot easier to keep eslint happy.
@@ -154,25 +162,31 @@ We might request changes before approving the pull request. This is a pretty sta
 Once any requested changes are made, the tests pass, and a project member signs off, we'll merge your code and congratulate you on your first pull request.
 
 ### Improving The Documentation
+
 The documentation is stored in a [separate repository](https://github.com/fluid-queue/fluid-queue.github.io), where we have a Jekyll site hosted through GitHub Pages. Contributions are welcome to this repository as pull requests!
 
 One thing to keep in mind for the documentation site is the order of the pages, which is determined by the date put on each page. If you have a new page to add, please make sure you're dating it such that it appears in an appropriate order.
 
 ## Styleguides
+
 Code style is enforced through eslint; when writing code, please ensure you have no errors from eslint.
 
 ### Commit Messages
+
 Commit messages should have a brief heading summarizing the changes in the commit. The main body of the commit message should be a detailed (few sentence) summary of the changes. If your changes are too broad to summarize in a few sentences, consider splitting the changes up into multiple commits.
 
 Large pull requests will be squashed and merged, and should have a more detailed commit message to cover all the changes.
 
-In either case, remember that the commit itself shows the line-by-line changes, so while we request your commit messages be accurate and complete, they don't need to be *verbose*.
+In either case, remember that the commit itself shows the line-by-line changes, so while we request your commit messages be accurate and complete, they don't need to be _verbose_.
 
 ## Join The Project Team
+
 We're a small project with a small team, but if you're an active contributor we may invite you to join the team. We look for people who are participating in development and the community, and show an understanding of our development process and how people use the bot.
 
 To help you get to that point, once you've contributed a couple times, we can give you the contributor role on Discord. This comes with less power, but also less responsibility: it gives you the opportunity to participate in development discussions on Discord and be assigned issues and pull requests, and lets us get to know you better before adding you to the project.
 
 <!-- omit in toc -->
+
 ## Attribution
+
 This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!

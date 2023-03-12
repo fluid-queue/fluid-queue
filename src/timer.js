@@ -1,19 +1,21 @@
 function Timer(callback, delay) {
   let timerId;
-  var start, remaining = delay, original_delay = delay;
+  var start,
+    remaining = delay,
+    original_delay = delay;
 
-  this.pause = function() {
+  this.pause = function () {
     clearTimeout(timerId);
     remaining -= new Date() - start;
   };
 
-  this.resume = function() {
+  this.resume = function () {
     start = new Date();
     clearTimeout(timerId);
     timerId = setTimeout(callback, remaining);
   };
 
-  this.restart = function() {
+  this.restart = function () {
     start = new Date();
     remaining = original_delay;
     clearTimeout(timerId);
@@ -24,5 +26,5 @@ function Timer(callback, delay) {
 }
 
 module.exports = {
-  timer: (callback, delay) => Timer(callback, delay)
+  timer: (callback, delay) => Timer(callback, delay),
 };
