@@ -232,7 +232,7 @@ const position_message = async (position, weightedPosition, sender, username) =>
         get_ordinal(position) +
         " position, the offline " +
         get_ordinal(absPosition) +
-        " position, and the weighted " + 
+        " position, and the weighted " +
         get_ordinal(weightedPosition) +
         " position."
       );
@@ -294,7 +294,7 @@ const submitted_message = async (level, sender) => {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
     );
-  } else if (level === -0) {
+  } else if (level === 0) {
     return "Your level is being played right now!";
   }
   return sender + ", you have submitted " + displayLevel(level) + " to the queue.";

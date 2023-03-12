@@ -3,7 +3,6 @@ const twitch = require('./twitch.js').twitch();
 const { setIntervalAsync } = require('set-interval-async/dynamic');
 const persistence = require('./persistence.js');
 const { Waiting } = require('./waiting.js');
-const { username } = require('./settings.js');
 const standardBase30 = '0123456789abcdefghijklmnopqrst'
 const nintendoBase30 = '0123456789BCDFGHJKLMNPQRSTVWXY'
 const arbitraryXorValue = 377544828
@@ -12,12 +11,12 @@ const arbitraryXorValue = 377544828
  * @typedef waiting
  * @property {() => number} weight
  * @property {(multiplier: number, now?: string)} addOneMinute
- * 
+ *
  * @typedef level
  * @property {string} code
  * @property {string} submitter
  * @property {string} username
- * 
+ *
  * @typedef onlineOfflineList
  * @property {level[]} online
  * @property {level[]} offline
@@ -44,11 +43,11 @@ const levelCodeRegex = new RegExp(`(${code})${delim}(${code})${delim}(${codeStri
  * @property {level} level
  * @property {() => number} weight
  * @property {number} position
- * 
+ *
  * @typedef weightedList
- * @property {number} totalWeight - 
- * @property {weightedListEntry[]} entries - 
- * @property {number} offlineLength - 
+ * @property {number} totalWeight -
+ * @property {weightedListEntry[]} entries -
+ * @property {number} offlineLength -
  */
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
@@ -563,9 +562,9 @@ const queue = {
     if (sorted === undefined || sorted) {
       entries = entries.sort((a, b) => b.weight() - a.weight() || a.position - b.position);
     }
-    
+
     const totalWeight = entries.reduce((sum, entry) => sum + entry.weight(), 0);
-  
+
     return { totalWeight: totalWeight, entries: entries, offlineLength: list.offline.length + (online_users.length - entries.length) };
   },
 
@@ -601,7 +600,7 @@ const queue = {
       queue.save();
       return current_level;
     }
-    
+
     current_level = weightedList.entries[0].level;
 
     // index of the level can be different than 0
@@ -807,7 +806,7 @@ const queue = {
 
     // Start the waiting time timer
     setIntervalAsync(queue.waitingTimerTick, 60000);
-    
+
     loaded = true;
   },
 

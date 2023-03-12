@@ -75,9 +75,6 @@ const twitch = {
     lurkers.clear();
   },
 
-  getWaitTime: async (chatter) => {
-
-  }
 };
 
 
