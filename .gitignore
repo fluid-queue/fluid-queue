@@ -120,4 +120,5 @@ dist
 
 # allow test files
 # like *.test.log even if *.log is ignored
-!*.test.*
+# replay test log files (/tests/chat-logs/chat/*.test.log)
+!*.test.log
