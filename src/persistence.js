@@ -122,7 +122,6 @@ const loadFileDefault = (fileName, newContent, errorMessage = undefined) => {
 };
 
 const loadQueueV1 = () => {
-  const cache_filename = QUEUE_V1.queso;
   const now = new Date().toISOString();
   let levels = [];
   let currentLevel;
@@ -544,7 +543,7 @@ const loadCustomCodesV1 = () => {
   );
   // remove custom levels from custom codes
   codeListEntries = codeListEntries.filter(
-    ([_customCode, levelCode]) => !LEGACY_CUSTOM_CODES.includes(levelCode)
+    ([, levelCode]) => !LEGACY_CUSTOM_CODES.includes(levelCode)
   );
   const result = { customCodes: Object.fromEntries(codeListEntries) };
   return result;

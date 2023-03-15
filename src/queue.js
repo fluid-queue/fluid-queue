@@ -837,7 +837,7 @@ const queue = {
   },
 
   customLevels: () => {
-    const list = Object.entries(customLevels).flatMap(([key, value]) => {
+    const list = Object.entries(customLevels).flatMap(([, value]) => {
       // translate customLevels into custom code map
       if (value.enabled) {
         return [value.display + " [" + value.customCodes.join(", ") + "]"];

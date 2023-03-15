@@ -1,8 +1,6 @@
 "use strict";
 
 // imports
-const path = require("path");
-const fs = require("fs");
 const {
   simAdvanceTime,
   simRequireIndex,

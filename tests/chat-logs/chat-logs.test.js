@@ -48,7 +48,7 @@ const parseMessage = (line) => {
   let isMod = false;
   let isSubscriber = false;
   let username;
-  while (true) {
+  for (;;) {
     if (user.startsWith("~")) {
       isBroadcaster = true;
     } else if (user.startsWith("@")) {
