@@ -24,7 +24,10 @@ const list_options = ["position", "weight", "both", "none"];
  * @readonly
  * TODO: get list of resolvers from `resolvers.js` without having a circular dependency
  */
-const resolver_options = fs.readdirSync(path.resolve(__dirname, 'resolvers')).filter(file => file.endsWith('.js')).map(file => file.slice(0, -3));
+const resolver_options = fs
+  .readdirSync(path.resolve(__dirname, "resolvers"))
+  .filter((file) => file.endsWith(".js"))
+  .map((file) => file.slice(0, -3));
 /**
  *
  * @typedef settings
@@ -75,12 +78,15 @@ const settings_validations = {
   dataIdMakerThreshold: (threshold) =>
     threshold == null || typeof threshold === "number",
   prettySaveFiles: (pretty) => pretty == null || typeof pretty === "boolean",
-  subscriberWeightMultiplier: (multiplier) => multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
-  position: position => position == null || list_options.includes(position),
-  list: list => list == null || list_options.includes(list),
-  showMakerCode: makerCode => makerCode == null || typeof makerCode === "boolean",
-  smm1_codes_enabled: smm1 => typeof smm1 === "boolean",
-  resolvers: list => list == null || (Array.isArray(list) && resolver_options.includes(list)),
+  subscriberWeightMultiplier: (multiplier) =>
+    multiplier == null || (typeof multiplier === "number" && multiplier >= 1.0),
+  position: (position) => position == null || list_options.includes(position),
+  list: (list) => list == null || list_options.includes(list),
+  showMakerCode: (makerCode) =>
+    makerCode == null || typeof makerCode === "boolean",
+  smm1_codes_enabled: (smm1) => typeof smm1 === "boolean",
+  resolvers: (list) =>
+    list == null || (Array.isArray(list) && resolver_options.includes(list)),
 };
 
 for (const key in settings) {

@@ -1,7 +1,6 @@
-
 module.exports = {
-    display(code) {
-        // TODO
-        return code;
-    }
+  display(code) {
+    // TODO
+    return code;
+  },
 };

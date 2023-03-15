@@ -214,6 +214,7 @@ It is important to note that all commands that draw a level (with exception to `
   - use `!persistence on` to reactivate automatic saves
 
 ### Custom Level Types
+
 Custom level types are levels that have no level code associated.
 
 For example one might play uncleared levels from time to time and while doing viewer levels a viewer might want to submit an uncleared level (`!add uncleared`), but does not want to add a specific uncleared level to the queue. When the level gets picked, there will be no code and the streamer only sees that an uncleared level was picked and then the streamer may pick an uncleared level on their own.
@@ -225,7 +226,7 @@ Some more examples would be to be able to submit a maker team level (like team s
 There are some build-in custom level types:
 
 - **Uncleared levels**
-  
+
   To enable uncleared levels make sure to set `uncleared_enabled` to `true` in `settings.json`.
   To add uncleared levels use:
   `!add Uncleared`, or any of the alternatives: `!add UNC-LEA-RED`, `!add an uncleared level`, `!add uncleared level`
@@ -244,6 +245,7 @@ where `customCode` will be a custom code how you will add this custom level with
 
 For example the level name of an uncleared level is `an uncleared level`.
 The level name will appear in sentences like these:
+
 - `Currently playing {levelName...} submitted by {user}.`
 - `{user}, you have submitted {levelName...} to the queue.`
 - `{user}, {levelName...} has been added to the queue.`

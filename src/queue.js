@@ -1,13 +1,13 @@
-const settings = require('./settings.js');
-const twitch = require('./twitch.js').twitch();
-const { setIntervalAsync } = require('set-interval-async/dynamic');
-const persistence = require('./persistence.js');
-const { Waiting } = require('./waiting.js');
+const settings = require("./settings.js");
+const twitch = require("./twitch.js").twitch();
+const { setIntervalAsync } = require("set-interval-async/dynamic");
+const persistence = require("./persistence.js");
+const { Waiting } = require("./waiting.js");
 
 // TODO: remove smm2 from here
-const smm2 = require('./types/smm2.js');
+const smm2 = require("./types/smm2.js");
 
-const CUSTOM_PREFIX = 'custom:';
+const CUSTOM_PREFIX = "custom:";
 
 /**
  * @typedef waiting
@@ -64,7 +64,9 @@ const customCodes = {
     return customCodes.map.get(customCode.toUpperCase()).customCode;
   },
   listNames: () => {
-    return [...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => e.customCode);
+    return [...customCodes.map.values()]
+      .filter((e) => !e.levelCode.startsWith(CUSTOM_PREFIX))
+      .map((e) => e.customCode);
   },
   set: (customCodeArg, levelCode) => {
     const customCode = customCodeArg.trim();
@@ -85,7 +87,9 @@ const customCodes = {
       const uuid = element.levelCode.substring(CUSTOM_PREFIX.length);
       if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
         const description = customLevels[uuid];
-        const i = description.customCodes.findIndex(code => code.toUpperCase() == customCode.toUpperCase());
+        const i = description.customCodes.findIndex(
+          (code) => code.toUpperCase() == customCode.toUpperCase()
+        );
         if (i > -1) {
           if (description.customCodes.length == 1) {
             description.enabled = false;
@@ -99,17 +103,29 @@ const customCodes = {
     customCodes.map.delete(customCode.toUpperCase());
     return result;
   },
-  reload: () => { /* does nothing at the start, but will be overriden by customCodes.fromObject */ },
+  reload: () => {
+    /* does nothing at the start, but will be overriden by customCodes.fromObject */
+  },
   fromObject: (customCodesObject) => {
-    customCodes.reload = () => { customCodes.fromObject(customCodesObject); };
-    const entries = Object.entries(customCodesObject).map(([customCode, levelCode]) => [customCode.toUpperCase(), { customCode, levelCode }]);
+    customCodes.reload = () => {
+      customCodes.fromObject(customCodesObject);
+    };
+    const entries = Object.entries(customCodesObject).map(
+      ([customCode, levelCode]) => [
+        customCode.toUpperCase(),
+        { customCode, levelCode },
+      ]
+    );
     const entriesMap = new Map(entries);
     const customLevelsMap = new Map();
     Object.entries(customLevels).forEach(([key, value]) => {
       // translate customLevels into custom code map
       if (value.enabled) {
-        value.customCodes.forEach(customCode => {
-          customLevelsMap.set(customCode.toUpperCase(), { customCode, levelCode: CUSTOM_PREFIX + key });
+        value.customCodes.forEach((customCode) => {
+          customLevelsMap.set(customCode.toUpperCase(), {
+            customCode,
+            levelCode: CUSTOM_PREFIX + key,
+          });
         });
       }
     });
@@ -118,7 +134,11 @@ const customCodes = {
     customCodes.map = new Map([...customLevelsMap, ...entriesMap]);
   },
   toObject: () => {
-    return Object.fromEntries([...customCodes.map.values()].filter(e => !e.levelCode.startsWith(CUSTOM_PREFIX)).map(e => [e.customCode, e.levelCode]));
+    return Object.fromEntries(
+      [...customCodes.map.values()]
+        .filter((e) => !e.levelCode.startsWith(CUSTOM_PREFIX))
+        .map((e) => [e.customCode, e.levelCode])
+    );
   },
 };
 
@@ -129,7 +149,12 @@ const extractValidCode = (levelCode) => {
 const customCodeOrValidLevelCode = (levelCode) => {
   if (settings.custom_codes_enabled) {
     if (customCodes.has(levelCode)) {
-      return { code: customCodes.getLevelCode(levelCode), valid: true, validSyntax: true, makerCode: false };
+      return {
+        code: customCodes.getLevelCode(levelCode),
+        valid: true,
+        validSyntax: true,
+        makerCode: false,
+      };
     }
   }
   return extractValidCode(levelCode);
@@ -148,7 +173,12 @@ const displayLevel = (level) => {
 
 // this implementation can be improved
 const partition = (list, predicate) => {
-  return [list.filter(predicate), list.filter(function() { return !predicate.apply(this, arguments);})];
+  return [
+    list.filter(predicate),
+    list.filter(function () {
+      return !predicate.apply(this, arguments);
+    }),
+  ];
 };
 
 const queue = {
@@ -177,7 +207,12 @@ const queue = {
         waiting[level.username] = Waiting.create();
       }
       queue.save();
-      return level.submitter + ", " + displayLevel(level) + " has been added to the queue.";
+      return (
+        level.submitter +
+        ", " +
+        displayLevel(level) +
+        " has been added to the queue."
+      );
     } else {
       return (
         "Sorry, " +
@@ -191,7 +226,7 @@ const queue = {
   // this can include the current_level
   onRemove: (removedLevels) => {
     // unlurk anyone that is removed from the queue
-    removedLevels.forEach(level => twitch.notLurkingAnymore(level.username));
+    removedLevels.forEach((level) => twitch.notLurkingAnymore(level.username));
     // check if romhack levels or uncleared levels are disabled and need to be removed
     queue.checkCustomLevels(false); // do not save the queue, it will be saved after onRemove returns
   },
@@ -209,7 +244,10 @@ const queue = {
       return "No levels from " + usernameArgument + " were found in the queue.";
     }
     let removedLevels;
-    [levels, removedLevels] = partition(levels, x => x.submitter != level.submitter);
+    [levels, removedLevels] = partition(
+      levels,
+      (x) => x.submitter != level.submitter
+    );
     queue.onRemove(removedLevels);
     queue.save();
     return usernameArgument + "'s level has been removed from the queue.";
@@ -220,7 +258,7 @@ const queue = {
       return "Sorry, we're playing that level right now!";
     }
     let removedLevels;
-    [levels, removedLevels] = partition(levels, x => x.submitter != username);
+    [levels, removedLevels] = partition(levels, (x) => x.submitter != username);
     queue.onRemove(removedLevels);
     queue.save();
     return username + ", your level has been removed from the queue.";
@@ -236,11 +274,24 @@ const queue = {
     if (findLevel != undefined) {
       findLevel.code = new_level_code;
       queue.save();
-      return username + ", your level in the queue has been replaced with " + displayLevel(findLevel) + ".";
-    } else if (current_level != undefined && current_level.submitter == username) {
+      return (
+        username +
+        ", your level in the queue has been replaced with " +
+        displayLevel(findLevel) +
+        "."
+      );
+    } else if (
+      current_level != undefined &&
+      current_level.submitter == username
+    ) {
       current_level.code = new_level_code;
       queue.save();
-      return username + ", your level in the queue has been replaced with " + displayLevel(current_level) + ".";
+      return (
+        username +
+        ", your level in the queue has been replaced with " +
+        displayLevel(current_level) +
+        "."
+      );
     } else {
       return (
         username + ", you were not found in the queue. Use !add to add a level."
@@ -375,7 +426,12 @@ const queue = {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be dismissed.";
     }
-    const response = 'Dismissed ' + displayLevel(current_level) + ' submitted by ' + current_level.submitter + '.';
+    const response =
+      "Dismissed " +
+      displayLevel(current_level) +
+      " submitted by " +
+      current_level.submitter +
+      ".";
     const removedLevels = current_level === undefined ? [] : [current_level];
     current_level = undefined;
     queue.onRemove(removedLevels);
@@ -457,7 +513,9 @@ const queue = {
 
     const random_index = Math.floor(Math.random() * eligible_levels.length);
     current_level = eligible_levels[random_index];
-    const index = levels.findIndex(x => x.submitter == current_level.submitter);
+    const index = levels.findIndex(
+      (x) => x.submitter == current_level.submitter
+    );
     queue.removeWaiting();
     levels.splice(index, 1);
     queue.onRemove(removedLevels);
@@ -643,8 +701,10 @@ const queue = {
   list: async () => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineUsers(settings.channel).then(online_users => {
-      [online, offline] = partition(levels, x => online_users.has(x.username));
+    await twitch.getOnlineUsers(settings.channel).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
     });
     return { online, offline };
   },
@@ -652,8 +712,10 @@ const queue = {
   sublist: async () => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineSubscribers(settings.channel).then(online_users => {
-      [online, offline] = partition(levels, x => online_users.has(x.username));
+    await twitch.getOnlineSubscribers(settings.channel).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
     });
     return { online, offline };
   },
@@ -661,8 +723,10 @@ const queue = {
   modlist: async () => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineMods(settings.channel).then(online_users => {
-      [online, offline] = partition(levels, x => online_users.has(x.username));
+    await twitch.getOnlineMods(settings.channel).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
     });
     return { online, offline };
   },
@@ -680,7 +744,10 @@ const queue = {
 
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) => {
-      persistence.saveCustomCodesSync({customCodes: customCodes.toObject()}, errorMessage);
+      persistence.saveCustomCodesSync(
+        { customCodes: customCodes.toObject() },
+        errorMessage
+      );
       queue.save();
     };
     let [command, ...rest] = codeArguments.split(" ");
@@ -698,7 +765,9 @@ const queue = {
       }
       customCodes.set(customName, levelCode.code);
       save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ${displayLevel({code: levelCode.code})} has been added.`;
+      return `Your custom code ${customName} for ${displayLevel({
+        code: levelCode.code,
+      })} has been added.`;
     } else if (command == "remove" && rest.length == 1) {
       const [customName] = rest;
       if (!customCodes.has(customName)) {
@@ -710,11 +779,18 @@ const queue = {
       if (!customCodes.delete(customName)) {
         save("An error occurred while trying to remove that custom code.");
         // TODO: tell the user how to enable it again
-        return `The custom code ${deletedName} for ${displayLevel({code: deletedLevelCode})} could not be deleted, and the custom level has been disabled instead.`;
+        return `The custom code ${deletedName} for ${displayLevel({
+          code: deletedLevelCode,
+        })} could not be deleted, and the custom level has been disabled instead.`;
       }
       save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${deletedName} for ${displayLevel({code: deletedLevelCode})} has been removed.`;
-    } else if ((command == "load" || command == "reload" || command == "restore") && rest.length == 0) {
+      return `The custom code ${deletedName} for ${displayLevel({
+        code: deletedLevelCode,
+      })} has been removed.`;
+    } else if (
+      (command == "load" || command == "reload" || command == "restore") &&
+      rest.length == 0
+    ) {
       queue.loadCustomCodes();
       return "Reloaded custom codes from disk.";
     } else {
@@ -737,7 +813,11 @@ const queue = {
       } else {
         return "Error while persisting queue state, see logs.";
       }
-    } else if (subCommand == "load" || subCommand == "reload" || subCommand == "restore") {
+    } else if (
+      subCommand == "load" ||
+      subCommand == "reload" ||
+      subCommand == "restore"
+    ) {
       // load queue state
       queue.loadQueueState();
       return "Reloaded queue state from disk.";
@@ -760,7 +840,7 @@ const queue = {
     const list = Object.entries(customLevels).flatMap(([key, value]) => {
       // translate customLevels into custom code map
       if (value.enabled) {
-        return [ value.display + " [" + value.customCodes.join(", ") + "]" ];
+        return [value.display + " [" + value.customCodes.join(", ") + "]"];
       } else {
         return [];
       }
@@ -770,9 +850,11 @@ const queue = {
     } else if (list.length == 1) {
       return "The current custom level is " + list[0] + ".";
     } else if (list.length == 2) {
-      return "The current custom levels are " + list[0] + " and " + list[1] + ".";
+      return (
+        "The current custom levels are " + list[0] + " and " + list[1] + "."
+      );
     } else {
-      list[list.length-1] = "and " + list[list.length-1];
+      list[list.length - 1] = "and " + list[list.length - 1];
       return "The current custom levels are " + list.join(", ") + ".";
     }
   },
@@ -780,7 +862,12 @@ const queue = {
   save: (options = {}) => {
     options = { force: false, ...options };
     if (persist || options.force) {
-      return persistence.saveQueueSync({currentLevel: current_level, queue: levels, waiting, custom: customLevels});
+      return persistence.saveQueueSync({
+        currentLevel: current_level,
+        queue: levels,
+        waiting,
+        custom: customLevels,
+      });
     } else {
       return false;
     }
@@ -815,19 +902,39 @@ const queue = {
 
   checkCustomLevels: (saveQueue = true) => {
     let queueChanged = false;
-    if (!settings.romhacks_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.romHackLevelCode())) {
+    if (
+      !settings.romhacks_enabled &&
+      levels
+        .concat(current_level === undefined ? [] : [current_level])
+        .every((level) => level.code != persistence.romHackLevelCode())
+    ) {
       queueChanged |= persistence.removeRomHack(customLevels);
       console.log(`ROMhack has been removed as a custom level.`);
     } else {
-      queueChanged |= persistence.addRomHack(customLevels, !!settings.romhacks_enabled);
-      console.log(`ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`);
+      queueChanged |= persistence.addRomHack(
+        customLevels,
+        !!settings.romhacks_enabled
+      );
+      console.log(
+        `ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`
+      );
     }
-    if (!settings.uncleared_enabled && levels.concat(current_level === undefined ? [] : [current_level]).every(level => level.code != persistence.unclearedLevelCode())) {
+    if (
+      !settings.uncleared_enabled &&
+      levels
+        .concat(current_level === undefined ? [] : [current_level])
+        .every((level) => level.code != persistence.unclearedLevelCode())
+    ) {
       queueChanged |= persistence.removeUncleared(customLevels);
       console.log(`Uncleared has been removed as a custom level.`);
     } else {
-      queueChanged |= persistence.addUncleared(customLevels, !!settings.uncleared_enabled);
-      console.log(`Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`);
+      queueChanged |= persistence.addUncleared(
+        customLevels,
+        !!settings.uncleared_enabled
+      );
+      console.log(
+        `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
+      );
     }
     if (saveQueue && queueChanged) {
       queue.save();

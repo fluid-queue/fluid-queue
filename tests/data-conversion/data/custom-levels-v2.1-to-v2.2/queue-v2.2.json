@@ -1,52 +1,46 @@
 {
-    "version": "2.2",
-    "currentLevel": {
-        "code": "custom:fd05af65-5122-54ca-bd43-f6f403dfde38",
-        "submitter": "FurretWalkBot",
-        "username": "furretwalkbot"
+  "version": "2.2",
+  "currentLevel": {
+    "code": "custom:fd05af65-5122-54ca-bd43-f6f403dfde38",
+    "submitter": "FurretWalkBot",
+    "username": "furretwalkbot"
+  },
+  "custom": {
+    "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+      "customCodes": ["ROMhack", "R0M-HAK-LVL"],
+      "display": "a ROMhack",
+      "enabled": false
     },
-    "custom": {
-        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
-            "customCodes": [
-                "ROMhack",
-                "R0M-HAK-LVL"
-            ],
-            "display": "a ROMhack",
-            "enabled": false
-        },
-        "fd05af65-5122-54ca-bd43-f6f403dfde38": {
-            "customCodes": [
-                "Uncleared",
-                "UNC-LEA-RED"
-            ],
-            "display": "an uncleared level",
-            "enabled": false
-        }
-    },
-    "queue": [
-        {
-            "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
-            "submitter": "liquidnya",
-            "username": "liquidnya"
-        },
-        {
-            "code": "BRL-F70-CLG",
-            "submitter": "helperblock",
-            "username": "helperblock"
-        }
-    ],
-    "waiting": {
-        "liquidnya": {
-            "waitTime": 10,
-            "weightMin": 10,
-            "weightMsec": 0,
-            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-        },
-        "helperblock": {
-            "waitTime": 3,
-            "weightMin": 3,
-            "weightMsec": 0,
-            "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-        }
+    "fd05af65-5122-54ca-bd43-f6f403dfde38": {
+      "customCodes": ["Uncleared", "UNC-LEA-RED"],
+      "display": "an uncleared level",
+      "enabled": false
     }
+  },
+  "queue": [
+    {
+      "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "submitter": "liquidnya",
+      "username": "liquidnya"
+    },
+    {
+      "code": "BRL-F70-CLG",
+      "submitter": "helperblock",
+      "username": "helperblock"
+    }
+  ],
+  "waiting": {
+    "liquidnya": {
+      "waitTime": 10,
+      "weightMin": 10,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    },
+    "helperblock": {
+      "waitTime": 3,
+      "weightMin": 3,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    }
+  }
 }

@@ -1,23 +1,23 @@
 {
-    "version": "2.2",
-    "currentLevel": {
-        "code": "QWF-3K9-84G",
-        "submitter": "FurretWalkBot",
-        "username": "furretwalkbot"
+  "version": "2.2",
+  "currentLevel": {
+    "code": "QWF-3K9-84G",
+    "submitter": "FurretWalkBot",
+    "username": "furretwalkbot"
+  },
+  "custom": {},
+  "queue": [
+    {
+      "code": "BW2-G2R-CMG",
+      "submitter": "liquidnya",
+      "username": "liquidnya"
     },
-    "custom": {},
-    "queue": [
-        {
-            "code": "BW2-G2R-CMG",
-            "submitter": "liquidnya",
-            "username": "liquidnya"
-        },
-        {
-            "code": "BRL-F70-CLG",
-            "submitter": "helperblock",
-            "username": "helperblock"
-        }
-    ],
+    {
+      "code": "BRL-F70-CLG",
+      "submitter": "helperblock",
+      "username": "helperblock"
+    }
+  ],
   "waiting": {
     "liquidnya": {
       "waitTime": 10,

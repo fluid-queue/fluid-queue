@@ -1,7 +1,6 @@
-
 module.exports = {
-    resolveArguments(string) {
-        // TODO
-        return null;
-    }
+  resolveArguments(string) {
+    // TODO
+    return null;
+  },
 };

@@ -106,7 +106,11 @@ const next_level_message = (level) => {
   }
   twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
   return (
-    "Now playing " + displayLevel(level) + " submitted by " + level.submitter + "."
+    "Now playing " +
+    displayLevel(level) +
+    " submitted by " +
+    level.submitter +
+    "."
   );
 };
 
@@ -122,7 +126,9 @@ const weightedrandom_level_message = (level, percentSuffix = "") => {
     level.submitter +
     " with a " +
     level.selectionChance +
-    "%" + percentSuffix + " chance of selection."
+    "%" +
+    percentSuffix +
+    " chance of selection."
   );
 };
 
@@ -138,7 +144,9 @@ const weightednext_level_message = (level, percentSuffix = "") => {
     level.submitter +
     " with the highest wait time of " +
     level.selectionChance +
-    "%" + percentSuffix + "."
+    "%" +
+    percentSuffix +
+    "."
   );
 };
 
@@ -738,7 +746,7 @@ async function HandleMessage(message, sender, respond) {
       twitch.notLurkingAnymore(dip_level.username);
       respond(
         "Now playing " +
-        displayLevel(dip_level) +
+          displayLevel(dip_level) +
           " submitted by " +
           dip_level.submitter +
           "."
