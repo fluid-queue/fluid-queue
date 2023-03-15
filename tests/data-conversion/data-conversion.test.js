@@ -143,6 +143,8 @@ test("custom-codes-empty", () => {
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
   checkCustomCodes(mockFs, fs, test);
+  // no old files have been created
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
 test("custom-codes-v1a-to-v2.0", () => {
@@ -165,6 +167,8 @@ test("custom-codes-v1a-to-v2.0", () => {
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
   checkCustomCodes(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
 test("custom-codes-v1b-to-v2.0", () => {
@@ -187,6 +191,8 @@ test("custom-codes-v1b-to-v2.0", () => {
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
   checkCustomCodes(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
 test("conversion-test-1", () => {
