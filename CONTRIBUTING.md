@@ -17,20 +17,28 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Table of Contents
 
-- [I Have a Question](#i-have-a-question)
-  - [Discord Server](#discord-server)
-- [I Want To Contribute](#i-want-to-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Your First Code Contribution](#your-first-code-contribution)
-    - [Environment Setup](#environment-setup)
-    - [Making Your Changes](#making-your-changes)
-    - [Opening a Pull Request](#opening-a-pull-request)
-    - [Pull Request Reviews](#pull-request-reviews)
-  - [Improving The Documentation](#improving-the-documentation)
-- [Styleguides](#styleguides)
-  - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
+- [Contributing to fluid-queue](#contributing-to-fluid-queue)
+  - [Table of Contents](#table-of-contents)
+  - [I Have a Question](#i-have-a-question)
+    - [Discord Server](#discord-server)
+  - [I Want To Contribute](#i-want-to-contribute)
+    - [Reporting Bugs](#reporting-bugs)
+      - [Before Submitting a Bug Report](#before-submitting-a-bug-report)
+      - [How Do I Submit a Good Bug Report?](#how-do-i-submit-a-good-bug-report)
+    - [Suggesting Enhancements](#suggesting-enhancements)
+      - [Before Submitting an Enhancement](#before-submitting-an-enhancement)
+      - [How Do I Submit a Good Enhancement Suggestion?](#how-do-i-submit-a-good-enhancement-suggestion)
+    - [Your First Code Contribution](#your-first-code-contribution)
+      - [Environment Setup](#environment-setup)
+      - [Making Your Changes](#making-your-changes)
+      - [Opening a Pull Request](#opening-a-pull-request)
+      - [Pull Request Reviews](#pull-request-reviews)
+    - [Improving The Documentation](#improving-the-documentation)
+  - [Styleguides](#styleguides)
+    - [Commit Messages](#commit-messages)
+    - [Branch Naming](#branch-naming)
+  - [Join The Project Team](#join-the-project-team)
+  - [Attribution](#attribution)
 
 ## I Have a Question
 
@@ -125,7 +133,7 @@ In addition the the Bug Report template mentioned earlier, we also have a Featur
 
 #### Environment Setup
 
-You will need to have [Node.js] installed on your machine in order to run the bot locally, so make sure that's installed. You'll also want an editor; while you can use any text editor, we would recommend one like VS Code (with the eslint extension) for syntax highlighting and built-in linting.
+You will need to have [Node.js](https://nodejs.org) installed on your machine in order to run the bot locally, so make sure that's installed. You'll also want an editor; while you can use any text editor, we would recommend one like VS Code (with the eslint extension) for syntax highlighting and built-in linting.
 
 Once you have Node and your editor set up, fork the repository, clone it, and create a branch to work in:
 
@@ -134,6 +142,8 @@ $ git clone git@github.com:your-username/fluid-queue.git
 $ cd fluid-queue
 $ git checkout -b your-first-contribution
 ```
+
+While we recommend keeping in mind our [guidelines for branch naming](#branch-naming),
 
 Then you'll want to install the dependencies with `npm install`. Make sure this installed eslint by running `./node_modules/.bin/eslint src`; this should return successfully with no output. You should also check to make sure prettier is installed with `npx prettier --check .` as prettier is used for enforcing formatting. Now you can open the code in your editor and make your changes!
 
@@ -169,7 +179,7 @@ One thing to keep in mind for the documentation site is the order of the pages, 
 
 ## Styleguides
 
-Code style is enforced through eslint; when writing code, please ensure you have no errors from eslint.
+Code style is enforced through eslint and prettier; when writing code, please ensure you run prettier prior to your commit and have no eslint errors.
 
 ### Commit Messages
 
@@ -178,6 +188,22 @@ Commit messages should have a brief heading summarizing the changes in the commi
 Large pull requests will be squashed and merged, and should have a more detailed commit message to cover all the changes.
 
 In either case, remember that the commit itself shows the line-by-line changes, so while we request your commit messages be accurate and complete, they don't need to be _verbose_.
+
+### Branch Naming
+
+Branch names within the repository should consist of two parts: `tag/branch-name`. The tag should be a brief description of the type of work being done, and the name should be a concise description of the work being done. Tags should be a single word; names may be multiple words, separated by spaces. Starting the branch name with a tag helps to more quickly understand the purpose of a branch.
+
+We would recommend using the following tags if possible, to maintain consistency within the repository:
+
+- `feature`: implementation of new features
+- `bugfix`: fixing a bug or regression in an existing feature
+- `docs`: working on the included documentation
+- `refactor`: refactoring part of the codebase without intruducing a new feature or fixing any bugs
+- `dev`: working on the repository's workflows, linter configuration, etc
+
+This is not an exhaustive list of tags that can be used, however it should cover most cases.
+
+This convention is not required for external contributors, as external branches belong to their own repositories, however we expect to follow this convention internally.
 
 ## Join The Project Team
 
