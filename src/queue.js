@@ -3,11 +3,7 @@ const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
 const persistence = require("./persistence.js");
 const { Waiting } = require("./waiting.js");
-
-// TODO: remove smm2 from here
-const smm2 = require("./types/smm2.js");
-
-const CUSTOM_PREFIX = "custom:";
+const extensions = require("./extensions.js");
 
 /**
  * @typedef waiting
@@ -35,7 +31,7 @@ var waiting = {};
 /** @type {boolean} */
 var persist = true; // if false the queue will not save automatically
 /** @type {Object.<string, object>} */
-var customLevels = {};
+var customLevels;
 
 /**
  * @typedef weightedListEntry
@@ -55,9 +51,9 @@ const customCodes = {
     const customCode = customCodeArg.trim();
     return customCodes.map.has(customCode.toUpperCase());
   },
-  getLevelCode: (customCodeArg) => {
+  getEntry: (customCodeArg) => {
     const customCode = customCodeArg.trim();
-    return customCodes.map.get(customCode.toUpperCase()).levelCode;
+    return customCodes.map.get(customCode.toUpperCase()).entry;
   },
   getName: (customCodeArg) => {
     const customCode = customCodeArg.trim();
@@ -65,14 +61,14 @@ const customCodes = {
   },
   listNames: () => {
     return [...customCodes.map.values()]
-      .filter((e) => !e.levelCode.startsWith(CUSTOM_PREFIX))
+      .filter((e) => e.entry.type != "customlevel")
       .map((e) => e.customCode);
   },
-  set: (customCodeArg, levelCode) => {
+  set: (customCodeArg, entry) => {
     const customCode = customCodeArg.trim();
-    customCodes.map.set(customCode.toUpperCase(), { customCode, levelCode });
-    if (levelCode.startsWith(CUSTOM_PREFIX)) {
-      const uuid = levelCode.substring(CUSTOM_PREFIX.length);
+    customCodes.map.set(customCode.toUpperCase(), { customCode, entry });
+    if (entry.type == "customlevel") {
+      const uuid = entry.code;
       if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
         const description = customLevels[uuid];
         description.customCodes.push(customCode);
@@ -83,8 +79,8 @@ const customCodes = {
     let result = true;
     const customCode = customCodeArg.trim();
     const element = customCodes.map.get(customCode.toUpperCase());
-    if (element !== undefined && element.levelCode.startsWith(CUSTOM_PREFIX)) {
-      const uuid = element.levelCode.substring(CUSTOM_PREFIX.length);
+    if (element !== undefined && element.entry.type == "customlevel") {
+      const uuid = element.entry.code;
       if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
         const description = customLevels[uuid];
         const i = description.customCodes.findIndex(
@@ -111,10 +107,7 @@ const customCodes = {
       customCodes.fromObject(customCodesObject);
     };
     const entries = Object.entries(customCodesObject).map(
-      ([customCode, levelCode]) => [
-        customCode.toUpperCase(),
-        { customCode, levelCode },
-      ]
+      ([customCode, entry]) => [customCode.toUpperCase(), { customCode, entry }]
     );
     const entriesMap = new Map(entries);
     const customLevelsMap = new Map();
@@ -124,7 +117,7 @@ const customCodes = {
         value.customCodes.forEach((customCode) => {
           customLevelsMap.set(customCode.toUpperCase(), {
             customCode,
-            levelCode: CUSTOM_PREFIX + key,
+            entry: { code: key, type: "customlevel" },
           });
         });
       }
@@ -136,39 +129,14 @@ const customCodes = {
   toObject: () => {
     return Object.fromEntries(
       [...customCodes.map.values()]
-        .filter((e) => !e.levelCode.startsWith(CUSTOM_PREFIX))
-        .map((e) => [e.customCode, e.levelCode])
+        .filter((e) => e.entry.type != "customlevel")
+        .map((e) => [e.customCode, e.entry])
     );
   },
 };
 
-const extractValidCode = (levelCode) => {
-  return smm2.extractValidCode(levelCode);
-};
-
-const customCodeOrValidLevelCode = (levelCode) => {
-  if (settings.custom_codes_enabled) {
-    if (customCodes.has(levelCode)) {
-      return {
-        code: customCodes.getLevelCode(levelCode),
-        valid: true,
-        validSyntax: true,
-        makerCode: false,
-      };
-    }
-  }
-  return extractValidCode(levelCode);
-};
-
 const displayLevel = (level) => {
-  if (level.code.startsWith(CUSTOM_PREFIX)) {
-    const uuid = level.code.substring(CUSTOM_PREFIX.length);
-    if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
-      const description = customLevels[uuid];
-      return description.display;
-    }
-  }
-  return smm2.display(level.code);
+  return extensions.display(level);
 };
 
 // this implementation can be improved
@@ -186,11 +154,11 @@ const queue = {
     if (settings.max_size && levels.length >= settings.max_size) {
       return "Sorry, the level queue is full!";
     }
-    let code = customCodeOrValidLevelCode(level.code);
-    level.code = code.code;
-    if (!code.valid) {
+    const resolved = extensions.resolve(level.code);
+    if (resolved.entry == null) {
       return level.submitter + ", that is an invalid level code.";
     }
+    level = { ...level, ...resolved.entry };
     if (
       current_level != undefined &&
       current_level.submitter == level.submitter &&
@@ -265,14 +233,16 @@ const queue = {
   },
 
   replace: (username, new_level_code) => {
-    let code = customCodeOrValidLevelCode(new_level_code);
-    new_level_code = code.code;
-    if (!code.valid) {
+    const resolved = extensions.resolve(new_level_code);
+    if (resolved.entry == null) {
       return username + ", that level code is invalid.";
     }
+    const entry = { code: new_level_code, ...resolved.entry };
     const findLevel = levels.find((x) => x.submitter == username);
     if (findLevel != undefined) {
-      findLevel.code = new_level_code;
+      Object.entries(entry).forEach(([name, value]) => {
+        findLevel[name] = value;
+      });
       queue.save();
       return (
         username +
@@ -284,7 +254,7 @@ const queue = {
       current_level != undefined &&
       current_level.submitter == username
     ) {
-      current_level.code = new_level_code;
+      current_level = { ...current_level, ...entry };
       queue.save();
       return (
         username +
@@ -753,9 +723,8 @@ const queue = {
     let [command, ...rest] = codeArguments.split(" ");
     if (command == "add" && rest.length == 2) {
       const [customName, realName] = rest;
-      const levelCode = customCodeOrValidLevelCode(realName);
-
-      if (!levelCode.valid) {
+      const resolved = extensions.resolve(realName);
+      if (resolved.entry == null) {
         return "That is an invalid level code.";
       }
 
@@ -763,30 +732,30 @@ const queue = {
         const existingName = customCodes.getName(customName);
         return `The custom code ${existingName} already exists`;
       }
-      customCodes.set(customName, levelCode.code);
+      customCodes.set(customName, resolved.entry);
       save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ${displayLevel({
-        code: levelCode.code,
-      })} has been added.`;
+      return `Your custom code ${customName} for ${displayLevel(
+        resolved.entry
+      )} has been added.`;
     } else if (command == "remove" && rest.length == 1) {
       const [customName] = rest;
       if (!customCodes.has(customName)) {
         return `The custom code ${customName} could not be found.`;
       }
       const deletedName = customCodes.getName(customName);
-      const deletedLevelCode = customCodes.getLevelCode(customName);
+      const deletedEntry = customCodes.getEntry(customName);
 
       if (!customCodes.delete(customName)) {
         save("An error occurred while trying to remove that custom code.");
         // TODO: tell the user how to enable it again
-        return `The custom code ${deletedName} for ${displayLevel({
-          code: deletedLevelCode,
-        })} could not be deleted, and the custom level has been disabled instead.`;
+        return `The custom code ${deletedName} for ${displayLevel(
+          deletedEntry
+        )} could not be deleted, and the custom level has been disabled instead.`;
       }
       save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${deletedName} for ${displayLevel({
-        code: deletedLevelCode,
-      })} has been removed.`;
+      return `The custom code ${deletedName} for ${displayLevel(
+        deletedEntry
+      )} has been removed.`;
     } else if (
       (command == "load" || command == "reload" || command == "restore") &&
       rest.length == 0
@@ -894,7 +863,8 @@ const queue = {
     levels = state.queue;
     // split waiting map into lists
     waiting = state.waiting;
-    customLevels = state.custom;
+
+    extensions.overrideQueueBinding("customlevel", state.custom);
 
     // check for custom level types
     queue.checkCustomLevels();
@@ -906,7 +876,7 @@ const queue = {
       !settings.romhacks_enabled &&
       levels
         .concat(current_level === undefined ? [] : [current_level])
-        .every((level) => level.code != persistence.romHackLevelCode())
+        .every((level) => level.code != persistence.romHackLevel().code) // FIXME also need to check type here
     ) {
       queueChanged |= persistence.removeRomHack(customLevels);
       console.log(`ROMhack has been removed as a custom level.`);
@@ -923,7 +893,7 @@ const queue = {
       !settings.uncleared_enabled &&
       levels
         .concat(current_level === undefined ? [] : [current_level])
-        .every((level) => level.code != persistence.unclearedLevelCode())
+        .every((level) => level.code != persistence.unclearedLevel().code) // FIXME also need to check type here
     ) {
       queueChanged |= persistence.removeUncleared(customLevels);
       console.log(`Uncleared has been removed as a custom level.`);
@@ -960,6 +930,10 @@ const queue = {
       // do not setup the timer again or reload custom codes
       return;
     }
+
+    // load extensions
+    extensions.load({ customCodes });
+    customLevels = extensions.getQueueBinding("customlevel");
 
     // load queue state
     queue.loadQueueState();
@@ -1003,6 +977,5 @@ module.exports = {
   quesoqueue: () => {
     return queue;
   },
-  extractValidCode,
   displayLevel,
 };

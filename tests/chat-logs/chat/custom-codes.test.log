@@ -28,7 +28,7 @@ restart
 [13:01:34] ~%?liquidnya: !customcodes
 [13:01:34] @^helperblock: The current custom codes are: Test.
 
-customCodes/customCodes {"Test":"NB0-1MD-SLG"}
+customCodes/customCodes {"Test":{"code":"NB0-1MD-SLG","type":"smm2"}}
 
 [19:36:54] ~%?liquidnya: !customcode remove test
 [19:36:54] @^helperblock: The custom code Test for NB0-1MD-SLG has been removed.
@@ -40,7 +40,7 @@ customCodes/customCodes {}
 
 # reload codes from disk
 
-save:data/custom-codes.json {"customCodes":{"Test":"NB0-1MD-SLG","OwO":"BW2-G2R-CMG"},"version":"2.0"}
+save:data/custom-codes.json {"customCodes":{"Test":{"code":"NB0-1MD-SLG","type":"smm2"},"OwO":{"code":"BW2-G2R-CMG","type":"smm2"}},"version":"2.0"}
 
 [19:36:58] ~%?liquidnya: !customcode load
 [19:36:58] @^helperblock: Reloaded custom codes from disk.

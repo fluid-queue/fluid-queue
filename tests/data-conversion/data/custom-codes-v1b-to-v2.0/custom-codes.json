@@ -1,4 +1,13 @@
 {
-  "customCodes": { "water": "NB0-1MD-SLG", "火山猫": "BRL-F70-CLG" },
+  "customCodes": {
+    "water": {
+      "code": "NB0-1MD-SLG",
+      "type": "smm2"
+    },
+    "火山猫": {
+      "code": "BRL-F70-CLG",
+      "type": "smm2"
+    }
+  },
   "version": "2.0"
 }

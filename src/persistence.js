@@ -142,6 +142,10 @@ const loadQueueV1 = () => {
         }
       });
     }
+    // Add level type
+    levels.forEach((level) => {
+      level.type = "smm2";
+    });
     // Find the current level
     const isCurrent = (level) =>
       hasOwn(level, "current_level") && level.current_level;
@@ -217,10 +221,14 @@ const loadQueueV1 = () => {
   let hasRomHack = false;
   const checkLevel = (level) => {
     if (level.code == "UNC-LEA-RED") {
-      level.code = unclearedLevelCode();
+      Object.entries(unclearedLevel()).forEach(
+        ([name, value]) => (level[name] = value)
+      );
       hasUncleared = true;
     } else if (level.code == "R0M-HAK-LVL") {
-      level.code = romHackLevelCode();
+      Object.entries(romHackLevel()).forEach(
+        ([name, value]) => (level[name] = value)
+      );
       hasRomHack = true;
     }
   };
@@ -262,14 +270,20 @@ const waitingToObject = (
   return waiting;
 };
 
-const romHackLevelCode = () => {
+const romHackLevel = () => {
   const romHackUuid = uuidv5("ROMhack", QUEUE_NAMESPACE);
-  return "custom:" + romHackUuid;
+  return {
+    code: romHackUuid,
+    type: "customlevel",
+  };
 };
 
-const unclearedLevelCode = () => {
+const unclearedLevel = () => {
   const unclearedUuid = uuidv5("Uncleared", QUEUE_NAMESPACE);
-  return "custom:" + unclearedUuid;
+  return {
+    code: unclearedUuid,
+    type: "customlevel",
+  };
 };
 
 const addRomHack = (custom, enabled = true) => {
@@ -339,6 +353,15 @@ const loadQueueV2 = () => {
   if (state.currentLevel === null) {
     state.currentLevel = undefined;
   }
+  // patch level entries
+  [
+    ...(state.currentLevel == null ? [] : [state.currentLevel]),
+    ...state.queue,
+  ].forEach((level) => {
+    if (!hasOwn(level, "type")) {
+      level.type = "smm2";
+    }
+  });
   if (!hasOwn(state, "custom")) {
     // setup custom
     state.custom = {};
@@ -349,10 +372,14 @@ const loadQueueV2 = () => {
       let hasRomHack = false;
       const checkLevel = (level) => {
         if (level.code == "UNC-LEA-RED") {
-          level.code = unclearedLevelCode();
+          Object.entries(unclearedLevel()).forEach(
+            ([name, value]) => (level[name] = value)
+          );
           hasUncleared = true;
         } else if (level.code == "R0M-HAK-LVL") {
-          level.code = romHackLevelCode();
+          Object.entries(romHackLevel()).forEach(
+            ([name, value]) => (level[name] = value)
+          );
           hasRomHack = true;
         }
       };
@@ -545,6 +572,11 @@ const loadCustomCodesV1 = () => {
   codeListEntries = codeListEntries.filter(
     ([, levelCode]) => !LEGACY_CUSTOM_CODES.includes(levelCode)
   );
+  // convert from level codes to level entries
+  codeListEntries = codeListEntries.map(([customCode, levelCode]) => [
+    customCode,
+    { code: levelCode, type: "smm2" },
+  ]);
   const result = { customCodes: Object.fromEntries(codeListEntries) };
   return result;
 };
@@ -602,8 +634,8 @@ module.exports = {
   loadCustomCodesSync,
   saveCustomCodesSync,
   patchGlobalFs,
-  romHackLevelCode,
-  unclearedLevelCode,
+  romHackLevel,
+  unclearedLevel,
   addRomHack,
   addUncleared,
   removeRomHack,

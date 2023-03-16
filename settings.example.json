@@ -19,5 +19,12 @@
   "position": null,
   "showMakerCode": true,
   "smm1_codes_enabled": false,
-  "resolvers": ["smm2", "customcode", "customlevel", "smm2-regex", "smm1"]
+  "resolvers": [
+    "smm2",
+    "customcode",
+    "customlevel",
+    "smm2-regex",
+    "smm1",
+    "customlevel-name"
+  ]
 }

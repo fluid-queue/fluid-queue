@@ -103,9 +103,28 @@ const makerSuffix = (levelCode) => {
   return "";
 };
 
-module.exports = {
-  display(code) {
-    return code + makerSuffix(code);
+const levelType = {
+  display(level) {
+    return level.code + makerSuffix(level.code);
   },
-  extractValidCode,
+};
+
+const regexResolver = {
+  description: "smm2 level code",
+  resolve(args) {
+    const result = extractValidCode(args);
+    if (result.valid && result.validSyntax) {
+      return { type: "smm2", code: result.code };
+    }
+    return null;
+  },
+};
+
+const setup = (extensions) => {
+  extensions.registerEntryType("smm2", levelType);
+  extensions.registerResolver("smm2-regex", regexResolver);
+};
+
+module.exports = {
+  setup,
 };

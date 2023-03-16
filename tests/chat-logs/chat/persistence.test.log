@@ -21,7 +21,7 @@ accuracy 60000
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
 
 queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
 
 # let one day pass
@@ -35,12 +35,12 @@ queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"last
 [12:15:34] @^FurretWalkBot: !add MY2-H2M-DSG
 [12:15:35] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
 [12:15:36] ~%?liquidnya: !remove @FurretWalkBot
 [12:15:36] @^helperblock: @FurretWalkBot's level has been removed from the queue.
 queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
 
 # manually persist
@@ -53,18 +53,19 @@ fs-fail writeSync
 
 # still old save file
 queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
 
 # now actually save it
 [12:15:38] ~%?liquidnya: !persistence save
 [12:15:39] @^helperblock: @liquidnya Successfully persisted the queue state.
 queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 queue.json/waiting {"liquidnya":{"waitTime":1443,"weightMin":1443,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:15:33.000Z"},"furretwalkbot":{"waitTime":1,"weightMin":1,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:15:34.000Z"}}
 
 # now override it with changes
 
+# do not upgrade version to 2.x here
 save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"},"queue":[],"waiting":{}}
 
 [12:15:40] ~%?liquidnya: !list
@@ -83,6 +84,7 @@ save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","subm
 [12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by liquidnya.
 
 # autosave is still off -> same file
+# do not upgrade version to 2.x here
 queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"},"queue":[],"waiting":{}}
 
 [12:19:27] ~%?liquidnya: !persistence on
@@ -92,6 +94,6 @@ queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"li
 [12:19:28] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
 # it was automatically saved
-queue.json/currentLevel {"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"MY2-H2M-DSG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/currentLevel {"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
+queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 queue.json/waiting {"furretwalkbot":{"waitTime":1,"weightMin":1,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:19:28.000Z"}}

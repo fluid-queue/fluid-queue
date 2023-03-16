@@ -15,7 +15,7 @@ customCodes {"customCodes":{},"version":"2.0"}
 # change queue data
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
-save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["a white flag level","white flag","whiteflag","white flag level"],"display": "a white flag level","enabled": true}},"queue":[],"waiting":{}}
+save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}},"queue":[],"waiting":{}}
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 [12:19:27] ~%?liquidnya: !persistence on
@@ -23,7 +23,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60
 
 restart
 
-[12:19:29] ~%?liquidnya: !add white flag
+[12:19:29] ~%?liquidnya: !add whiteflag
 [12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
 
 # change queue data again, removing the custom level
@@ -37,19 +37,19 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{},"queue":[]
 
 # this time with no restart!
 
-[12:19:29] ~%?liquidnya: !add white flag
+[12:19:29] ~%?liquidnya: !add whiteflag
 [12:19:29] @^helperblock: liquidnya, that is an invalid level code.
 
 # adding the custom level again, also with no restart
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
-save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["a white flag level","white flag","whiteflag","white flag level"],"display": "a white flag level","enabled": true}},"queue":[],"waiting":{}}
+save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}},"queue":[],"waiting":{}}
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 [12:19:27] ~%?liquidnya: !persistence on
 [12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
 
-[12:19:29] ~%?liquidnya: !add white flag
+[12:19:29] ~%?liquidnya: !add whiteflag
 [12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
 
 [12:19:29] ~%?liquidnya: !next
@@ -59,7 +59,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60
 [12:19:29] @^helperblock: Currently playing a white flag level submitted by liquidnya.
 
 # you can use !customcode to add aliases for custom level types with the limitation to only be allowed to use one word
-[12:19:29] ~%?liquidnya: !customcode add 🏳️ white flag level
+[12:19:29] ~%?liquidnya: !customcode add 🏳️ a white flag level
 [12:19:29] @^helperblock: Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}.
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
 [12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
@@ -86,10 +86,10 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"custom":{"e9c84bd6-60
 # and it is not part of custom codes but actually just an alias
 customCodes/customCodes {}
 # it has been added to the end
-queue.json/custom {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["a white flag level","white flag","whiteflag","white flag level","🏳️"],"display": "a white flag level","enabled": true}}
+queue.json/custom {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag","🏳️"],"display": "a white flag level","enabled": true}}
 
 [12:19:29] ~%?liquidnya: !customcodes
 [12:19:29] @^helperblock: There are no custom codes set.
 
 [12:19:29] ~%?liquidnya: !customlevels
-[12:19:29] @^helperblock: The current custom level is a white flag level [a white flag level, white flag, whiteflag, white flag level, 🏳️].
+[12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag, 🏳️].

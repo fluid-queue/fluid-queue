@@ -401,12 +401,26 @@ const replace = (settings, newSettings) => {
   Object.assign(settings, newSettings);
 };
 
-const newLevel = (level_code, submitterOrUser, username = undefined) => {
+const newLevel = (
+  level_code,
+  submitterOrUser,
+  username = undefined,
+  type = undefined
+) => {
+  if (type === undefined) {
+    type = "smm2";
+  }
   if (typeof submitterOrUser === "string" && typeof username === "string") {
-    return { code: level_code, submitter: submitterOrUser, username: username };
+    return {
+      code: level_code,
+      type,
+      submitter: submitterOrUser,
+      username: username,
+    };
   } else if (typeof submitterOrUser === "object" && username === undefined) {
     return {
       code: level_code,
+      type,
       submitter: submitterOrUser.displayName,
       username: submitterOrUser.username,
     };

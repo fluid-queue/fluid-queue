@@ -1,5 +1,4 @@
 const fs = require("fs");
-const path = require("path");
 
 /**
  * @readonly
@@ -20,14 +19,6 @@ const order_options = [
  * @readonly
  */
 const list_options = ["position", "weight", "both", "none"];
-/**
- * @readonly
- * TODO: get list of resolvers from `resolvers.js` without having a circular dependency
- */
-const resolver_options = fs
-  .readdirSync(path.resolve(__dirname, "resolvers"))
-  .filter((file) => file.endsWith(".js"))
-  .map((file) => file.slice(0, -3));
 /**
  *
  * @typedef settings
@@ -68,6 +59,8 @@ const settings_validations = {
     typeof absolute_position === "boolean",
   custom_codes_enabled: (cc) => typeof cc === "boolean",
   romhacks_enabled: (hacks) => typeof hacks === "boolean", // whether or not romhacks can be submitted to the queue, only works if custom_codes_enabled is set to true
+  uncleared_enabled: (uncleared) =>
+    uncleared == null || typeof uncleared === "boolean",
   max_size: (max) => typeof max === "number",
   level_timeout: (timeout) => timeout == null || typeof timeout === "number",
   level_selection: (selections) =>
@@ -85,8 +78,7 @@ const settings_validations = {
   showMakerCode: (makerCode) =>
     makerCode == null || typeof makerCode === "boolean",
   smm1_codes_enabled: (smm1) => typeof smm1 === "boolean",
-  resolvers: (list) =>
-    list == null || (Array.isArray(list) && resolver_options.includes(list)),
+  resolvers: (list) => list == null || Array.isArray(list),
 };
 
 for (const key in settings) {

@@ -1,7 +1,8 @@
 {
   "version": "2.2",
   "currentLevel": {
-    "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
+    "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+    "type": "customlevel",
     "submitter": "FurretWalkBot",
     "username": "furretwalkbot"
   },
@@ -15,11 +16,13 @@
   "queue": [
     {
       "code": "BW2-G2R-CMG",
+      "type": "smm2",
       "submitter": "liquidnya",
       "username": "liquidnya"
     },
     {
-      "code": "custom:80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "type": "customlevel",
       "submitter": "helperblock",
       "username": "helperblock"
     }
