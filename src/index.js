@@ -865,17 +865,6 @@ async function HandleMessage(message, sender, respond) {
     } else {
       respond(quesoqueue.customCodes());
     }
-  } else if (aliases.isAlias("customlevel", message)) {
-    if (sender.isBroadcaster) {
-      const codeArguments = get_remainder(message);
-      if (codeArguments == "") {
-        respond(quesoqueue.customLevels());
-      } else {
-        // TODO!
-      }
-    } else {
-      respond(quesoqueue.customLevels());
-    }
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender.username);
     respond(
@@ -896,6 +885,8 @@ async function HandleMessage(message, sender, respond) {
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond("Next level order: " + order.reduce((acc, x) => acc + ", " + x));
     }
+  } else {
+    return await quesoqueue.handleCommands(message, sender, respond);
   }
 }
 

@@ -16,7 +16,6 @@ const defaultAliases = {
   close: ["!close"],
   current: ["!current"],
   customcode: ["!customcode", "!customcodes"],
-  customlevel: ["!customlevel", "!customlevels"],
   dismiss: ["!dismiss", "!skip", "!complete", "!completed"],
   level: ["!level"],
   list: ["!list", "!queue"],
@@ -162,6 +161,10 @@ const Aliases = {
   },
   isCommand: (cmd) => {
     return Object.keys(aliases).includes(cmd);
+  },
+  addDefault: (cmd, cmdAliases) => {
+    defaultAliases[cmd] = cmdAliases;
+    aliases = { ...defaultAliases, ...aliases };
   },
 };
 

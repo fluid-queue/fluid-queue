@@ -805,29 +805,6 @@ const queue = {
     }
   },
 
-  customLevels: () => {
-    const list = Object.entries(customLevels).flatMap(([, value]) => {
-      // translate customLevels into custom code map
-      if (value.enabled) {
-        return [value.display + " [" + value.customCodes.join(", ") + "]"];
-      } else {
-        return [];
-      }
-    });
-    if (list.length == 0) {
-      return "There are no custom levels configured.";
-    } else if (list.length == 1) {
-      return "The current custom level is " + list[0] + ".";
-    } else if (list.length == 2) {
-      return (
-        "The current custom levels are " + list[0] + " and " + list[1] + "."
-      );
-    } else {
-      list[list.length - 1] = "and " + list[list.length - 1];
-      return "The current custom levels are " + list.join(", ") + ".";
-    }
-  },
-
   save: (options = {}) => {
     options = { force: false, ...options };
     if (persist || options.force) {
@@ -921,6 +898,10 @@ const queue = {
       // only custom levels will function
       customCodes.fromObject({});
     }
+  },
+
+  handleCommands: async (message, sender, respond) => {
+    return await extensions.handleCommands(message, sender, respond);
   },
 
   load: () => {

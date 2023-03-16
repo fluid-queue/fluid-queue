@@ -3,6 +3,8 @@
 const path = require("path");
 const fs = require("fs");
 const settings = require("./settings.js");
+const aliasManagement = require("./aliases.js");
+const aliases = aliasManagement.aliases();
 
 const defaultActivated = [
   "smm2",
@@ -64,31 +66,20 @@ const resolvers = {
   },
 };
 
-const extensions = {
-  // TODO: remove environment
-  environment: {},
-  resolvers,
-  entryTypes: {},
-  extensions: [],
-  bindings: {},
-  /**
-   * TODO: remove function
-   */
-  getCustomCodes() {
-    return this.environment.customCodes;
-  },
-  ensureBinding(name) {
-    if (!(name in this.bindings)) {
-      this.bindings[name] = {};
+const bindings = {
+  objectBindings: {},
+  ensureObjectBinding(name) {
+    if (!(name in this.objectBindings)) {
+      this.objectBindings[name] = {};
     }
   },
-  getQueueBinding(name) {
-    this.ensureBinding(name);
-    return this.bindings[name];
+  getObjectBinding(name) {
+    this.ensureObjectBinding(name);
+    return this.objectBindings[name];
   },
-  overrideQueueBinding(name, newValue) {
-    this.ensureBinding(name);
-    const binding = this.bindings[name];
+  overrideObjectBinding(name, newValue) {
+    this.ensureObjectBinding(name);
+    const binding = this.objectBindings[name];
     const oldValue = { ...binding };
     Object.keys(binding).forEach((key) => {
       delete binding[key];
@@ -96,9 +87,73 @@ const extensions = {
     Object.assign(binding, newValue);
     return oldValue;
   },
-  getQueueBindings() {
-    return this.bindings;
+  getObjectBindings() {
+    return this.objectBindings;
   },
+};
+
+const commands = {
+  handlers: {},
+  register(name, handler) {
+    this.handlers[name] = handler;
+    aliases.addDefault(name, handler.aliases);
+  },
+  get_remainder(x) {
+    var index = x.indexOf(" ");
+    if (index == -1) {
+      return "";
+    }
+    return x.substr(index + 1);
+  },
+  async handle(message, sender, respond) {
+    for (const name in this.handlers) {
+      if (aliases.isAlias(name, message)) {
+        const handler = this.handlers[name];
+        return await handler.handle(
+          this.get_remainder(message),
+          sender,
+          respond
+        );
+      }
+    }
+  },
+};
+
+const extensions = {
+  // TODO: remove environment
+  environment: {},
+  resolvers,
+  entryTypes: {},
+  extensions: [],
+  bindings,
+  commands,
+  getQueueBinding(name) {
+    return this.bindings.getObjectBinding(name);
+  },
+  overrideQueueBinding(name, newValue) {
+    return this.bindings.overrideObjectBinding(name, newValue);
+  },
+  registerCommand(name, handler) {
+    // TODO: fix
+    // const AsyncFunction = (async () => {}).constructor;
+    /* if (!("handle" in handler && handler.resolve instanceof AsyncFunction)) {
+      throw new Error(`Command handler ${name} does not have an async handle function`);
+    } */
+    if (!("aliases" in handler && Array.isArray(handler.aliases))) {
+      throw new Error(`Command handler ${name} does not have an aliases array`);
+    }
+    this.commands.register(name, handler);
+  },
+  async handleCommands(message, sender, respond) {
+    return await this.commands.handle(message, sender, respond);
+  },
+  /**
+   * TODO: remove function
+   */
+  getCustomCodes() {
+    return this.environment.customCodes;
+  },
+
   /**
    * loads extensions
    */
