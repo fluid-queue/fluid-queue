@@ -177,8 +177,10 @@ const chatLogTest = (fileName) => {
               )
             );
             if (memberIdx != -1) {
-              const member = command.substring(memberIdx + 1);
-              jsonData = jsonData[member];
+              const members = command.substring(memberIdx + 1).split("/");
+              for (const member of members) {
+                jsonData = jsonData[member];
+              }
             }
             expect(jsonData).toEqual(JSON.parse(rest));
           } catch (error) {

@@ -87,6 +87,13 @@ const bindings = {
     Object.assign(binding, newValue);
     return oldValue;
   },
+  overrideObjectBindings(newBindings) {
+    // clear all bindings
+    // this is needed to keep all bindings even if newBindings does not contain an existing binding
+    Object.keys(this.objectBindings).forEach(name => this.overrideObjectBinding(name, {}));
+    // set new values
+    Object.entries(newBindings).forEach(([name, newValue]) => this.overrideObjectBinding(name, newValue));
+  },
   getObjectBindings() {
     return this.objectBindings;
   },
@@ -130,8 +137,11 @@ const extensions = {
   getQueueBinding(name) {
     return this.bindings.getObjectBinding(name);
   },
-  overrideQueueBinding(name, newValue) {
-    return this.bindings.overrideObjectBinding(name, newValue);
+  overrideQueueBindings(bindings) {
+    return this.bindings.overrideObjectBindings(bindings);
+  },
+  getQueueBindings() {
+    return this.bindings.getObjectBindings();
   },
   registerCommand(name, handler) {
     // TODO: fix

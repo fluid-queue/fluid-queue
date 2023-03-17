@@ -812,7 +812,7 @@ const queue = {
         currentLevel: current_level,
         queue: levels,
         waiting,
-        custom: customLevels,
+        extensions: extensions.getQueueBindings(),
       });
     } else {
       return false;
@@ -841,7 +841,7 @@ const queue = {
     // split waiting map into lists
     waiting = state.waiting;
 
-    extensions.overrideQueueBinding("customlevel", state.custom);
+    extensions.overrideQueueBindings(state.extensions);
 
     // check for custom level types
     queue.checkCustomLevels();

@@ -215,7 +215,7 @@ const loadQueueV1 = () => {
       waiting[level.username] = Waiting.create(now);
     }
   });
-  const custom = {};
+  const extensions = {};
   // find UNC-LEA-RED and R0M-HAK-LVL levels
   let hasUncleared = false;
   let hasRomHack = false;
@@ -236,17 +236,20 @@ const loadQueueV1 = () => {
   if (currentLevel !== undefined) {
     checkLevel(currentLevel);
   }
+  if (hasUncleared || hasRomHack) {
+    extensions.customlevel = {};
+  }
   if (hasUncleared) {
-    addUncleared(custom, false);
+    addUncleared(extensions.customlevel, false);
   }
   if (hasRomHack) {
-    addRomHack(custom, false);
+    addRomHack(extensions.customlevel, false);
   }
   return {
     currentLevel,
     queue: levels,
     waiting,
-    custom,
+    extensions,
   };
 };
 
@@ -362,37 +365,42 @@ const loadQueueV2 = () => {
       level.type = "smm2";
     }
   });
-  if (!hasOwn(state, "custom")) {
-    // setup custom
-    state.custom = {};
-    // for version 2, 2.0, and 2.1 levels will be converted
-    if (/^2(\.(0|1))?$/.test(state.version)) {
-      // find UNC-LEA-RED and R0M-HAK-LVL levels
-      let hasUncleared = false;
-      let hasRomHack = false;
-      const checkLevel = (level) => {
-        if (level.code == "UNC-LEA-RED") {
-          Object.entries(unclearedLevel()).forEach(
-            ([name, value]) => (level[name] = value)
-          );
-          hasUncleared = true;
-        } else if (level.code == "R0M-HAK-LVL") {
-          Object.entries(romHackLevel()).forEach(
-            ([name, value]) => (level[name] = value)
-          );
-          hasRomHack = true;
-        }
-      };
-      state.queue.forEach(checkLevel);
-      if (state.currentLevel !== undefined) {
-        checkLevel(state.currentLevel);
+  if (!hasOwn(state, "extensions")) {
+    // setup extensions settings
+    state.extensions = {};
+  }
+  // for version 2, 2.0, and 2.1 levels will be converted
+  if (/^2(\.(0|1))?$/.test(state.version)) {
+    // find UNC-LEA-RED and R0M-HAK-LVL levels
+    let hasUncleared = false;
+    let hasRomHack = false;
+    const checkLevel = (level) => {
+      if (level.code == "UNC-LEA-RED") {
+        Object.entries(unclearedLevel()).forEach(
+          ([name, value]) => (level[name] = value)
+        );
+        hasUncleared = true;
+      } else if (level.code == "R0M-HAK-LVL") {
+        Object.entries(romHackLevel()).forEach(
+          ([name, value]) => (level[name] = value)
+        );
+        hasRomHack = true;
       }
-      if (hasUncleared) {
-        addUncleared(state.custom, false);
+    };
+    state.queue.forEach(checkLevel);
+    if (state.currentLevel !== undefined) {
+      checkLevel(state.currentLevel);
+    }
+    if (hasUncleared || hasRomHack) {
+      if (!hasOwn(state.extensions, "customlevel")) {
+        state.extensions.customlevel = {};
       }
-      if (hasRomHack) {
-        addRomHack(state.custom, false);
-      }
+    }
+    if (hasUncleared) {
+      addUncleared(state.extensions.customlevel, false);
+    }
+    if (hasRomHack) {
+      addRomHack(state.extensions.customlevel, false);
     }
   }
   // convert waiting entries to Waiting objects
@@ -411,7 +419,7 @@ const emptyQueue = () => {
     currentLevel: undefined,
     queue: [],
     waiting: {},
-    custom: {},
+    extensions: {},
   };
 };
 
@@ -487,14 +495,14 @@ const loadQueueSync = () => {
   );
 };
 
-const createSaveFileContent = ({ currentLevel, queue, waiting, custom }) => {
+const createSaveFileContent = ({ currentLevel, queue, waiting, extensions }) => {
   return JSON.stringify(
     {
       version: QUEUE_V2.version,
       currentLevel: currentLevel === undefined ? null : currentLevel,
       queue,
       waiting,
-      custom,
+      extensions,
     },
     null,
     settings.prettySaveFiles ? 2 : 0
