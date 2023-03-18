@@ -196,7 +196,13 @@ const queue = {
     // unlurk anyone that is removed from the queue
     removedLevels.forEach((level) => twitch.notLurkingAnymore(level.username));
     // check if romhack levels or uncleared levels are disabled and need to be removed
-    queue.checkCustomLevels(false); // do not save the queue, it will be saved after onRemove returns
+    const allEntries = (
+      current_level === undefined ? [] : [current_level]
+    ).concat(levels);
+    extensions.checkEntries(allEntries);
+
+    // TODO/FIXME: remove this later!
+    customCodes.reload();
   },
 
   modRemove: (usernameArgument) => {
@@ -843,47 +849,14 @@ const queue = {
 
     extensions.overrideQueueBindings(state.extensions);
 
-    // check for custom level types
-    queue.checkCustomLevels();
-  },
-
-  checkCustomLevels: (saveQueue = true) => {
-    let queueChanged = false;
-    if (
-      !settings.romhacks_enabled &&
-      levels
-        .concat(current_level === undefined ? [] : [current_level])
-        .every((level) => level.code != persistence.romHackLevel().code) // FIXME also need to check type here
-    ) {
-      queueChanged |= persistence.removeRomHack(customLevels);
-      console.log(`ROMhack has been removed as a custom level.`);
-    } else {
-      queueChanged |= persistence.addRomHack(
-        customLevels,
-        !!settings.romhacks_enabled
-      );
-      console.log(
-        `ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`
-      );
-    }
-    if (
-      !settings.uncleared_enabled &&
-      levels
-        .concat(current_level === undefined ? [] : [current_level])
-        .every((level) => level.code != persistence.unclearedLevel().code) // FIXME also need to check type here
-    ) {
-      queueChanged |= persistence.removeUncleared(customLevels);
-      console.log(`Uncleared has been removed as a custom level.`);
-    } else {
-      queueChanged |= persistence.addUncleared(
-        customLevels,
-        !!settings.uncleared_enabled
-      );
-      console.log(
-        `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
-      );
-    }
-    if (saveQueue && queueChanged) {
+    // check levels
+    let save = false;
+    const allEntries = (
+      current_level === undefined ? [] : [current_level]
+    ).concat(levels);
+    save |= extensions.upgradeEntries(allEntries);
+    save |= extensions.checkEntries(allEntries);
+    if (save) {
       queue.save();
     }
     customCodes.reload();

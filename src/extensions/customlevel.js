@@ -1,3 +1,14 @@
+const settings = require("../settings.js");
+const { v5: uuidv5 } = require("uuid");
+
+const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
+const ROMHACK_UUID = uuidv5("ROMhack", QUEUE_NAMESPACE);
+const UNCLEARED_UUID = uuidv5("Uncleared", QUEUE_NAMESPACE);
+
+const hasOwn = (object, property) => {
+  return Object.prototype.hasOwnProperty.call(object, property);
+};
+
 const levelType = (custom) => {
   return {
     display(level) {
@@ -67,12 +78,137 @@ const customlevelCommand = (customLevels) => {
   };
 };
 
+const romHackLevel = () => {
+  return {
+    code: ROMHACK_UUID,
+    type: "customlevel",
+  };
+};
+
+const unclearedLevel = () => {
+  return {
+    code: UNCLEARED_UUID,
+    type: "customlevel",
+  };
+};
+
+const addRomHack = (custom, enabled = true) => {
+  if (hasOwn(custom, ROMHACK_UUID)) {
+    const result = custom[ROMHACK_UUID].enabled != enabled;
+    custom[ROMHACK_UUID].enabled = enabled;
+    return result;
+  } else {
+    custom[ROMHACK_UUID] = {
+      customCodes: ["ROMhack", "R0M-HAK-LVL"],
+      display: "a ROMhack",
+      enabled,
+    };
+    return true;
+  }
+};
+
+const addUncleared = (custom, enabled = true) => {
+  if (hasOwn(custom, UNCLEARED_UUID)) {
+    const result = custom[UNCLEARED_UUID].enabled != enabled;
+    custom[UNCLEARED_UUID].enabled = enabled;
+    return result;
+  } else {
+    custom[UNCLEARED_UUID] = {
+      customCodes: ["Uncleared", "UNC-LEA-RED"],
+      display: "an uncleared level",
+      enabled,
+    };
+    return true;
+  }
+};
+
+const removeRomHack = (custom) => {
+  if (hasOwn(custom, ROMHACK_UUID)) {
+    delete custom[ROMHACK_UUID];
+    return true;
+  }
+  return false;
+};
+
+const removeUncleared = (custom) => {
+  if (hasOwn(custom, UNCLEARED_UUID)) {
+    delete custom[UNCLEARED_UUID];
+    return true;
+  }
+  return false;
+};
+
+const isRomHackLevel = (entry) => {
+  return entry.type == "customlevel" && entry.code == ROMHACK_UUID;
+};
+
+const isUnclearedLevel = (entry) => {
+  return entry.type == "customlevel" && entry.code == UNCLEARED_UUID;
+};
+
+const queueHandler = (custom) => {
+  return {
+    upgrade(code) {
+      let uuid = null;
+      if (code.startsWith("custom:")) {
+        uuid = code.substring("custom:".length);
+      }
+      if (code == "UNC-LEA-RED" || uuid == UNCLEARED_UUID) {
+        addUncleared(custom, false);
+        return unclearedLevel();
+      } else if (code == "R0M-HAK-LVL" || uuid == ROMHACK_UUID) {
+        addRomHack(custom, false);
+        return romHackLevel();
+      } else if (uuid != null) {
+        if (!hasOwn(custom, uuid)) {
+          custom[uuid] = {
+            customCodes: [uuid],
+            display: "unknown custom level",
+            enabled: false,
+          };
+        }
+        return { code: uuid, type: "customlevel" };
+      }
+      return null;
+    },
+    check(allEntries) {
+      let queueChanged = false;
+      if (
+        !settings.romhacks_enabled &&
+        allEntries.every((level) => !isRomHackLevel(level))
+      ) {
+        queueChanged |= removeRomHack(custom);
+        console.log(`ROMhack has been removed as a custom level.`);
+      } else {
+        queueChanged |= addRomHack(custom, !!settings.romhacks_enabled);
+        console.log(
+          `ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`
+        );
+      }
+      if (
+        !settings.uncleared_enabled &&
+        allEntries.every((level) => !isUnclearedLevel(level))
+      ) {
+        queueChanged |= removeUncleared(custom);
+        console.log(`Uncleared has been removed as a custom level.`);
+      } else {
+        queueChanged |= addUncleared(custom, !!settings.uncleared_enabled);
+        console.log(
+          `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
+        );
+      }
+      return queueChanged;
+    },
+  };
+};
+
 const setup = (extensions) => {
   const custom = extensions.getQueueBinding("customlevel");
   extensions.registerEntryType("customlevel", levelType(custom));
   extensions.registerResolver("customlevel", resolver);
   extensions.registerResolver("customlevel-name", nameResolver);
   extensions.registerCommand("customlevel", customlevelCommand(custom));
+  extensions.registerQueueHandler(queueHandler(custom));
 };
 
 module.exports = {

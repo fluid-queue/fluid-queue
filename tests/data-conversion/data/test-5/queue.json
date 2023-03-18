@@ -6,7 +6,9 @@
     "submitter": "FurretWalkBot",
     "username": "furretwalkbot"
   },
-  "extensions": {},
+  "extensions": {
+    "customlevel": {}
+  },
   "queue": [
     {
       "code": "BW2-G2R-CMG",

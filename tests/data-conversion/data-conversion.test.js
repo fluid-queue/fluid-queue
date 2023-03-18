@@ -362,10 +362,7 @@ test("conversion-test-v2.0-to-v2.2", () => {
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-  // still the same save file
-  checkResult(mockFs, fs, test, "2.0");
-  // after first save it will be changed
-  index.quesoqueue.save();
+  // queue will be saved immediately
   checkResult(mockFs, fs, test, "2.2");
 });
 
@@ -377,10 +374,7 @@ test("conversion-test-v2.1-to-v2.2", () => {
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-  // still the same save file
-  checkResult(mockFs, fs, test, "2.1");
-  // after first save it will be changed
-  index.quesoqueue.save();
+  // queue will be saved immediately
   checkResult(mockFs, fs, test, "2.2");
 });
 
@@ -439,10 +433,7 @@ test("custom-levels-v2.0-to-v2.2", () => {
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-  // still the same save file
-  checkResult(mockFs, fs, test, "2.0");
-  // after first save it will be changed
-  index.quesoqueue.save();
+  // queue will be saved immediately
   checkResult(mockFs, fs, test, "2.2");
 });
 
@@ -454,9 +445,6 @@ test("custom-levels-v2.1-to-v2.2", () => {
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-  // still the same save file
-  checkResult(mockFs, fs, test, "2.1");
-  // after first save it will be changed
-  index.quesoqueue.save();
+  // queue will be saved immediately
   checkResult(mockFs, fs, test, "2.2");
 });

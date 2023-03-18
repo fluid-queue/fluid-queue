@@ -4,7 +4,6 @@ const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require("write-file-atomic");
 const writeFileAtomicSync = writeFileAtomic.sync;
 const { Waiting } = require("./waiting.js");
-const { v5: uuidv5 } = require("uuid");
 const path = require("path");
 
 const DATA_DIRECTORY = "data";
@@ -18,7 +17,6 @@ const CUSTOM_CODES_V2 = {
   version: "2.0", // increase major version if data format changes in a way that is not understood by a previous version of the queue
   compatibility: /^2(\.|$)/, // the version that is being accepted
 };
-const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 
 // legacy files that are converted at startup
 const QUEUE_V1 = {
@@ -142,10 +140,6 @@ const loadQueueV1 = () => {
         }
       });
     }
-    // Add level type
-    levels.forEach((level) => {
-      level.type = "smm2";
-    });
     // Find the current level
     const isCurrent = (level) =>
       hasOwn(level, "current_level") && level.current_level;
@@ -215,41 +209,11 @@ const loadQueueV1 = () => {
       waiting[level.username] = Waiting.create(now);
     }
   });
-  const extensions = {};
-  // find UNC-LEA-RED and R0M-HAK-LVL levels
-  let hasUncleared = false;
-  let hasRomHack = false;
-  const checkLevel = (level) => {
-    if (level.code == "UNC-LEA-RED") {
-      Object.entries(unclearedLevel()).forEach(
-        ([name, value]) => (level[name] = value)
-      );
-      hasUncleared = true;
-    } else if (level.code == "R0M-HAK-LVL") {
-      Object.entries(romHackLevel()).forEach(
-        ([name, value]) => (level[name] = value)
-      );
-      hasRomHack = true;
-    }
-  };
-  levels.forEach(checkLevel);
-  if (currentLevel !== undefined) {
-    checkLevel(currentLevel);
-  }
-  if (hasUncleared || hasRomHack) {
-    extensions.customlevel = {};
-  }
-  if (hasUncleared) {
-    addUncleared(extensions.customlevel, false);
-  }
-  if (hasRomHack) {
-    addRomHack(extensions.customlevel, false);
-  }
   return {
     currentLevel,
     queue: levels,
     waiting,
-    extensions,
+    extensions: {},
   };
 };
 
@@ -273,72 +237,6 @@ const waitingToObject = (
   return waiting;
 };
 
-const romHackLevel = () => {
-  const romHackUuid = uuidv5("ROMhack", QUEUE_NAMESPACE);
-  return {
-    code: romHackUuid,
-    type: "customlevel",
-  };
-};
-
-const unclearedLevel = () => {
-  const unclearedUuid = uuidv5("Uncleared", QUEUE_NAMESPACE);
-  return {
-    code: unclearedUuid,
-    type: "customlevel",
-  };
-};
-
-const addRomHack = (custom, enabled = true) => {
-  const romHackUuid = uuidv5("ROMhack", QUEUE_NAMESPACE);
-  if (hasOwn(custom, romHackUuid)) {
-    const result = custom[romHackUuid].enabled != enabled;
-    custom[romHackUuid].enabled = enabled;
-    return result;
-  } else {
-    custom[romHackUuid] = {
-      customCodes: ["ROMhack", "R0M-HAK-LVL"],
-      display: "a ROMhack",
-      enabled,
-    };
-    return true;
-  }
-};
-
-const addUncleared = (custom, enabled = true) => {
-  const unclearedUuid = uuidv5("Uncleared", QUEUE_NAMESPACE);
-  if (hasOwn(custom, unclearedUuid)) {
-    const result = custom[unclearedUuid].enabled != enabled;
-    custom[unclearedUuid].enabled = enabled;
-    return result;
-  } else {
-    custom[unclearedUuid] = {
-      customCodes: ["Uncleared", "UNC-LEA-RED"],
-      display: "an uncleared level",
-      enabled,
-    };
-    return true;
-  }
-};
-
-const removeRomHack = (custom) => {
-  const romHackUuid = uuidv5("ROMhack", QUEUE_NAMESPACE);
-  if (hasOwn(custom, romHackUuid)) {
-    delete custom[romHackUuid];
-    return true;
-  }
-  return false;
-};
-
-const removeUncleared = (custom) => {
-  const unclearedUuid = uuidv5("Uncleared", QUEUE_NAMESPACE);
-  if (hasOwn(custom, unclearedUuid)) {
-    delete custom[unclearedUuid];
-    return true;
-  }
-  return false;
-};
-
 const loadQueueV2 = () => {
   const fileName = QUEUE_V2.fileName;
   const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
@@ -356,52 +254,9 @@ const loadQueueV2 = () => {
   if (state.currentLevel === null) {
     state.currentLevel = undefined;
   }
-  // patch level entries
-  [
-    ...(state.currentLevel == null ? [] : [state.currentLevel]),
-    ...state.queue,
-  ].forEach((level) => {
-    if (!hasOwn(level, "type")) {
-      level.type = "smm2";
-    }
-  });
   if (!hasOwn(state, "extensions")) {
     // setup extensions settings
     state.extensions = {};
-  }
-  // for version 2, 2.0, and 2.1 levels will be converted
-  if (/^2(\.(0|1))?$/.test(state.version)) {
-    // find UNC-LEA-RED and R0M-HAK-LVL levels
-    let hasUncleared = false;
-    let hasRomHack = false;
-    const checkLevel = (level) => {
-      if (level.code == "UNC-LEA-RED") {
-        Object.entries(unclearedLevel()).forEach(
-          ([name, value]) => (level[name] = value)
-        );
-        hasUncleared = true;
-      } else if (level.code == "R0M-HAK-LVL") {
-        Object.entries(romHackLevel()).forEach(
-          ([name, value]) => (level[name] = value)
-        );
-        hasRomHack = true;
-      }
-    };
-    state.queue.forEach(checkLevel);
-    if (state.currentLevel !== undefined) {
-      checkLevel(state.currentLevel);
-    }
-    if (hasUncleared || hasRomHack) {
-      if (!hasOwn(state.extensions, "customlevel")) {
-        state.extensions.customlevel = {};
-      }
-    }
-    if (hasUncleared) {
-      addUncleared(state.extensions.customlevel, false);
-    }
-    if (hasRomHack) {
-      addRomHack(state.extensions.customlevel, false);
-    }
   }
   // convert waiting entries to Waiting objects
   state.waiting = Object.fromEntries(
@@ -495,7 +350,12 @@ const loadQueueSync = () => {
   );
 };
 
-const createSaveFileContent = ({ currentLevel, queue, waiting, extensions }) => {
+const createSaveFileContent = ({
+  currentLevel,
+  queue,
+  waiting,
+  extensions,
+}) => {
   return JSON.stringify(
     {
       version: QUEUE_V2.version,
@@ -642,10 +502,4 @@ module.exports = {
   loadCustomCodesSync,
   saveCustomCodesSync,
   patchGlobalFs,
-  romHackLevel,
-  unclearedLevel,
-  addRomHack,
-  addUncleared,
-  removeRomHack,
-  removeUncleared,
 };

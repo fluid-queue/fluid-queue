@@ -90,9 +90,13 @@ const bindings = {
   overrideObjectBindings(newBindings) {
     // clear all bindings
     // this is needed to keep all bindings even if newBindings does not contain an existing binding
-    Object.keys(this.objectBindings).forEach(name => this.overrideObjectBinding(name, {}));
+    Object.keys(this.objectBindings).forEach((name) =>
+      this.overrideObjectBinding(name, {})
+    );
     // set new values
-    Object.entries(newBindings).forEach(([name, newValue]) => this.overrideObjectBinding(name, newValue));
+    Object.entries(newBindings).forEach(([name, newValue]) =>
+      this.overrideObjectBinding(name, newValue)
+    );
   },
   getObjectBindings() {
     return this.objectBindings;
@@ -126,6 +130,43 @@ const commands = {
   },
 };
 
+const queueHandlers = {
+  handlers: [],
+  register(handler) {
+    this.handlers.push(handler);
+  },
+  upgrade(allEntries) {
+    let changed = false;
+    for (const entry of allEntries) {
+      if (!("type" in entry)) {
+        // upgrade entry
+        for (const handler of this.handlers) {
+          if ("upgrade" in handler && typeof handler.upgrade === "function") {
+            const result = handler.upgrade(entry.code);
+            if (result != null) {
+              Object.entries(result).forEach(
+                ([name, value]) => (entry[name] = value)
+              );
+              changed = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return changed;
+  },
+  check(allEntries) {
+    let changed = false;
+    for (const handler of this.handlers) {
+      if ("check" in handler && typeof handler.check === "function") {
+        changed |= handler.check(allEntries);
+      }
+    }
+    return changed;
+  },
+};
+
 const extensions = {
   // TODO: remove environment
   environment: {},
@@ -134,6 +175,7 @@ const extensions = {
   extensions: [],
   bindings,
   commands,
+  queueHandlers,
   getQueueBinding(name) {
     return this.bindings.getObjectBinding(name);
   },
@@ -163,7 +205,15 @@ const extensions = {
   getCustomCodes() {
     return this.environment.customCodes;
   },
-
+  registerQueueHandler(handler) {
+    this.queueHandlers.register(handler);
+  },
+  upgradeEntries(allEntries) {
+    return this.queueHandlers.upgrade(allEntries);
+  },
+  checkEntries(allEntries) {
+    return this.queueHandlers.check(allEntries);
+  },
   /**
    * loads extensions
    */

@@ -6,7 +6,9 @@
     "submitter": "liquidnya",
     "username": "liquidnya"
   },
-  "extensions": {},
+  "extensions": {
+    "customlevel": {}
+  },
   "queue": [
     {
       "code": "QWF-3K9-84G",

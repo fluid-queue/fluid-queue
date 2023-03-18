@@ -26,7 +26,6 @@ function courseIdValidity(
   dataIdCourseThreshold,
   dataIdMakerThreshold
 ) {
-  // console.log(courseIdString);
   let reversedString = courseIdString.split("").reverse();
   reversedString = reversedString
     .map((c) => standardBase30[nintendoBase30.indexOf(c)])
@@ -96,7 +95,6 @@ const extractValidCode = (levelCode) => {
 
 const makerSuffix = (levelCode) => {
   const makerCode = extractValidCode(levelCode).makerCode;
-  // console.log(`"${levelCode}" -- ${makerCode}`);
   if (makerCode && settings.showMakerCode !== false) {
     return " (maker code)";
   }
@@ -113,8 +111,22 @@ const regexResolver = {
   description: "smm2 level code",
   resolve(args) {
     const result = extractValidCode(args);
-    if (result.valid && result.validSyntax) {
+    if (result.valid) {
       return { type: "smm2", code: result.code };
+    }
+    return null;
+  },
+};
+
+const queueHandler = {
+  upgrade(code) {
+    const result = courseIdValidity(
+      code,
+      settings.dataIdCourseThreshold,
+      settings.dataIdMakerThreshold
+    );
+    if (result.valid) {
+      return { type: "smm2", code: code };
     }
     return null;
   },
@@ -123,6 +135,7 @@ const regexResolver = {
 const setup = (extensions) => {
   extensions.registerEntryType("smm2", levelType);
   extensions.registerResolver("smm2-regex", regexResolver);
+  extensions.registerQueueHandler(queueHandler);
 };
 
 module.exports = {

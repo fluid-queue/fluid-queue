@@ -286,6 +286,16 @@ The following list of commands are available to manage aliases:
 
 The aliases are saved in a file in `./settings/aliases.json`. Please use this with caution. It might render the bot inoperable.
 
+## Testing
+
+To run tests: `npm test`.
+
+If the following error occurs `TypeError: Converting circular structure to JSON` run `npm test -- --detectOpenHandles`.
+
+To run tests without log output: `npm test -- --silent`.
+
+To run a single test: `npm test -- -t custom-levels-v2.1-to-v2.2`.
+
 ## Will you add [insert feature here]?
 
 Possibly! If you have an idea for a change to the queue, feel free to post it to the issues board at https://github.com/fluid-queue/fluid-queue/issues and we can look into getting it made. Better yet, if you just can't want and want to take a crack at it yourself, feel free to edit the code and submit a pull request.
