@@ -721,7 +721,7 @@ const queue = {
   customCodeManagement: (/** @type {string}*/ codeArguments) => {
     const save = (/** @type {string} */ errorMessage) => {
       persistence.saveCustomCodesSync(
-        { customCodes: customCodes.toObject() },
+        { data: customCodes.toObject() },
         errorMessage
       );
       queue.save();
@@ -865,7 +865,7 @@ const queue = {
   loadCustomCodes: () => {
     // Check if custom codes are enabled and, if so, validate that the correct files exist.
     if (settings.custom_codes_enabled) {
-      const customCodesObject = persistence.loadCustomCodesSync().customCodes;
+      const customCodesObject = persistence.loadCustomCodesSync().data;
       customCodes.fromObject(customCodesObject);
     } else {
       // only custom levels will function

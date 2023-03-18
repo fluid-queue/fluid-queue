@@ -10,7 +10,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 # % subscriber
 
 # check that the custom codes file is initialized
-customCodes {"customCodes":{},"version":"2.0"}
+extensions/customcode {"data":{},"version":"2.0"}
 
 # change queue data
 [12:15:33] ~%?liquidnya: !persistence off
@@ -84,7 +84,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
 
 # and it is not part of custom codes but actually just an alias
-customCodes/customCodes {}
+extensions/customcode/data {}
 # it has been added to the end
 queue.json/extensions/customlevel {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag","🏳️"],"display": "a white flag level","enabled": true}}
 

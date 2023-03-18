@@ -187,16 +187,16 @@ const chatLogTest = (fileName) => {
             error.message += errorMessage(position);
             throw error;
           }
-        } else if (command.startsWith("customCodes")) {
+        } else if (command.startsWith("extensions")) {
           try {
-            const memberIdx = command.indexOf("/");
+            const args = command.split("/");
             let jsonData = JSON.parse(
               test.fs.readFileSync(
-                path.resolve(__dirname, "../../data/custom-codes.json")
+                path.resolve(__dirname, `../../data/extensions/${args[1]}.json`)
               )
             );
-            if (memberIdx != -1) {
-              const member = command.substring(memberIdx + 1);
+            if (2 in args) {
+              const member = args[2];
               jsonData = jsonData[member];
             }
             expect(jsonData).toEqual(JSON.parse(rest));

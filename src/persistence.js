@@ -13,7 +13,7 @@ const QUEUE_V2 = {
   compatibility: /^2(\.|$)/, // the version that is being accepted
 };
 const CUSTOM_CODES_V2 = {
-  fileName: path.join(DATA_DIRECTORY, "custom-codes.json"),
+  fileName: path.join(DATA_DIRECTORY, "extensions", "customcode.json"),
   version: "2.0", // increase major version if data format changes in a way that is not understood by a previous version of the queue
   compatibility: /^2(\.|$)/, // the version that is being accepted
 };
@@ -280,7 +280,7 @@ const emptyQueue = () => {
 
 const emptyCustomCodes = () => {
   return {
-    customCodes: {},
+    data: {},
   };
 };
 
@@ -369,11 +369,11 @@ const createSaveFileContent = ({
   );
 };
 
-const createCustomCodesFileContent = ({ customCodes }) => {
+const createCustomCodesFileContent = ({ data }) => {
   return JSON.stringify(
     {
       version: CUSTOM_CODES_V2.version,
-      customCodes,
+      data,
     },
     null,
     settings.prettySaveFiles ? 2 : 0
@@ -445,7 +445,7 @@ const loadCustomCodesV1 = () => {
     customCode,
     { code: levelCode, type: "smm2" },
   ]);
-  const result = { customCodes: Object.fromEntries(codeListEntries) };
+  const result = { data: Object.fromEntries(codeListEntries) };
   return result;
 };
 
@@ -491,6 +491,10 @@ const saveCustomCodesSync = (data, errorMessage = undefined) => {
 const createDataDirectory = () => {
   if (!fs.existsSync(DATA_DIRECTORY)) {
     fs.mkdirSync(DATA_DIRECTORY, { recursive: true });
+  }
+  const extensionsDir = path.join(DATA_DIRECTORY, "extensions");
+  if (!fs.existsSync(extensionsDir)) {
+    fs.mkdirSync(extensionsDir, { recursive: true });
   }
 };
 

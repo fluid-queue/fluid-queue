@@ -96,12 +96,12 @@ const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
 };
 
 const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
-  let queue_real = JSON.parse(mockFs.readFileSync("./data/custom-codes.json"));
+  let queue_real = JSON.parse(mockFs.readFileSync("./data/extensions/customcode.json"));
   let queue_expect;
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/custom-codes.json`)
+        path.resolve(__dirname, `data/${testFolder}/customcode.json`)
       )
     );
   } else {
@@ -109,7 +109,7 @@ const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
       realFs.readFileSync(
         path.resolve(
           __dirname,
-          `data/${testFolder}/custom-codes-v${version}.json`
+          `data/${testFolder}/customcode-v${version}.json`
         )
       )
     );
