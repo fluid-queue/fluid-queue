@@ -15,7 +15,6 @@ const defaultAliases = {
   clear: ["!clear"],
   close: ["!close"],
   current: ["!current"],
-  customcode: ["!customcode", "!customcodes"],
   dismiss: ["!dismiss", "!skip", "!complete", "!completed"],
   level: ["!level"],
   list: ["!list", "!queue"],

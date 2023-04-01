@@ -851,20 +851,6 @@ async function HandleMessage(message, sender, respond) {
     quesoqueue.clear();
     twitch.clearLurkers();
     respond("The queue has been cleared!");
-  } else if (
-    aliases.isAlias("customcode", message) &&
-    settings.custom_codes_enabled
-  ) {
-    if (sender.isBroadcaster) {
-      const codeArguments = get_remainder(message);
-      if (codeArguments == "") {
-        respond(quesoqueue.customCodes());
-      } else {
-        respond(await quesoqueue.customCodeManagement(codeArguments));
-      }
-    } else {
-      respond(quesoqueue.customCodes());
-    }
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender.username);
     respond(

@@ -6,6 +6,9 @@ const settings = require("./settings.js");
 const aliasManagement = require("./aliases.js");
 const aliases = aliasManagement.aliases();
 
+const fileEnding = ".js";
+const AsyncFunction = (async () => {}).constructor;
+
 const defaultActivated = [
   "smm2",
   "customcode",
@@ -14,7 +17,6 @@ const defaultActivated = [
   "smm2-regex",
 ];
 
-const fileEnding = ".js";
 const loadFiles = (directory) => {
   const result = {};
   const files = fs
@@ -168,8 +170,6 @@ const queueHandlers = {
 };
 
 const extensions = {
-  // TODO: remove environment
-  environment: {},
   resolvers,
   entryTypes: {},
   extensions: [],
@@ -186,11 +186,17 @@ const extensions = {
     return this.bindings.getObjectBindings();
   },
   registerCommand(name, handler) {
-    // TODO: fix
-    // const AsyncFunction = (async () => {}).constructor;
-    /* if (!("handle" in handler && handler.resolve instanceof AsyncFunction)) {
-      throw new Error(`Command handler ${name} does not have an async handle function`);
-    } */
+    if (
+      !(
+        "handle" in handler &&
+        typeof handler.handle === "function" &&
+        handler.handle.constructor === AsyncFunction
+      )
+    ) {
+      throw new Error(
+        `Command handler ${name} does not have an async handle function`
+      );
+    }
     if (!("aliases" in handler && Array.isArray(handler.aliases))) {
       throw new Error(`Command handler ${name} does not have an aliases array`);
     }
@@ -198,12 +204,6 @@ const extensions = {
   },
   async handleCommands(message, sender, respond) {
     return await this.commands.handle(message, sender, respond);
-  },
-  /**
-   * TODO: remove function
-   */
-  getCustomCodes() {
-    return this.environment.customCodes;
   },
   registerQueueHandler(handler) {
     this.queueHandlers.register(handler);
@@ -217,9 +217,7 @@ const extensions = {
   /**
    * loads extensions
    */
-  load(environment) {
-    // TODO: remove environment
-    this.environment = environment;
+  load() {
     // load extensions
     const extensionsPath = path.resolve(__dirname, "extensions");
     this.extensions = loadFiles(extensionsPath);

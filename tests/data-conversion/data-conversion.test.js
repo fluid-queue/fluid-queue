@@ -96,7 +96,9 @@ const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
 };
 
 const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
-  let queue_real = JSON.parse(mockFs.readFileSync("./data/extensions/customcode.json"));
+  let queue_real = JSON.parse(
+    mockFs.readFileSync("./data/extensions/customcode.json")
+  );
   let queue_expect;
   if (version === undefined) {
     queue_expect = JSON.parse(

@@ -30,8 +30,6 @@ var levels = [];
 var waiting = {};
 /** @type {boolean} */
 var persist = true; // if false the queue will not save automatically
-/** @type {Object.<string, object>} */
-var customLevels;
 
 /**
  * @typedef weightedListEntry
@@ -44,96 +42,6 @@ var customLevels;
  * @property {weightedListEntry[]} entries -
  * @property {number} offlineLength -
  */
-
-const customCodes = {
-  map: new Map(),
-  has: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.has(customCode.toUpperCase());
-  },
-  getEntry: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.get(customCode.toUpperCase()).entry;
-  },
-  getName: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.get(customCode.toUpperCase()).customCode;
-  },
-  listNames: () => {
-    return [...customCodes.map.values()]
-      .filter((e) => e.entry.type != "customlevel")
-      .map((e) => e.customCode);
-  },
-  set: (customCodeArg, entry) => {
-    const customCode = customCodeArg.trim();
-    customCodes.map.set(customCode.toUpperCase(), { customCode, entry });
-    if (entry.type == "customlevel") {
-      const uuid = entry.code;
-      if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
-        const description = customLevels[uuid];
-        description.customCodes.push(customCode);
-      }
-    }
-  },
-  delete: (customCodeArg) => {
-    let result = true;
-    const customCode = customCodeArg.trim();
-    const element = customCodes.map.get(customCode.toUpperCase());
-    if (element !== undefined && element.entry.type == "customlevel") {
-      const uuid = element.entry.code;
-      if (Object.prototype.hasOwnProperty.call(customLevels, uuid)) {
-        const description = customLevels[uuid];
-        const i = description.customCodes.findIndex(
-          (code) => code.toUpperCase() == customCode.toUpperCase()
-        );
-        if (i > -1) {
-          if (description.customCodes.length == 1) {
-            description.enabled = false;
-            result = false;
-          } else {
-            description.customCodes.splice(i, 1);
-          }
-        }
-      }
-    }
-    customCodes.map.delete(customCode.toUpperCase());
-    return result;
-  },
-  reload: () => {
-    /* does nothing at the start, but will be overriden by customCodes.fromObject */
-  },
-  fromObject: (customCodesObject) => {
-    customCodes.reload = () => {
-      customCodes.fromObject(customCodesObject);
-    };
-    const entries = Object.entries(customCodesObject).map(
-      ([customCode, entry]) => [customCode.toUpperCase(), { customCode, entry }]
-    );
-    const entriesMap = new Map(entries);
-    const customLevelsMap = new Map();
-    Object.entries(customLevels).forEach(([key, value]) => {
-      // translate customLevels into custom code map
-      if (value.enabled) {
-        value.customCodes.forEach((customCode) => {
-          customLevelsMap.set(customCode.toUpperCase(), {
-            customCode,
-            entry: { code: key, type: "customlevel" },
-          });
-        });
-      }
-    });
-    // merge custom codes with custom levels
-    // custom codes have priority! (this is important because otherwise custom codes are deleted on the next save)
-    customCodes.map = new Map([...customLevelsMap, ...entriesMap]);
-  },
-  toObject: () => {
-    return Object.fromEntries(
-      [...customCodes.map.values()]
-        .filter((e) => e.entry.type != "customlevel")
-        .map((e) => [e.customCode, e.entry])
-    );
-  },
-};
 
 const displayLevel = (level) => {
   return extensions.display(level);
@@ -200,9 +108,6 @@ const queue = {
       current_level === undefined ? [] : [current_level]
     ).concat(levels);
     extensions.checkEntries(allEntries);
-
-    // TODO/FIXME: remove this later!
-    customCodes.reload();
   },
 
   modRemove: (usernameArgument) => {
@@ -717,62 +622,6 @@ const queue = {
       );
     };
   },
-
-  customCodeManagement: (/** @type {string}*/ codeArguments) => {
-    const save = (/** @type {string} */ errorMessage) => {
-      persistence.saveCustomCodesSync(
-        { data: customCodes.toObject() },
-        errorMessage
-      );
-      queue.save();
-    };
-    let [command, ...rest] = codeArguments.split(" ");
-    if (command == "add" && rest.length == 2) {
-      const [customName, realName] = rest;
-      const resolved = extensions.resolve(realName);
-      if (resolved.entry == null) {
-        return "That is an invalid level code.";
-      }
-
-      if (customCodes.has(customName)) {
-        const existingName = customCodes.getName(customName);
-        return `The custom code ${existingName} already exists`;
-      }
-      customCodes.set(customName, resolved.entry);
-      save("An error occurred while trying to add your custom code.");
-      return `Your custom code ${customName} for ${displayLevel(
-        resolved.entry
-      )} has been added.`;
-    } else if (command == "remove" && rest.length == 1) {
-      const [customName] = rest;
-      if (!customCodes.has(customName)) {
-        return `The custom code ${customName} could not be found.`;
-      }
-      const deletedName = customCodes.getName(customName);
-      const deletedEntry = customCodes.getEntry(customName);
-
-      if (!customCodes.delete(customName)) {
-        save("An error occurred while trying to remove that custom code.");
-        // TODO: tell the user how to enable it again
-        return `The custom code ${deletedName} for ${displayLevel(
-          deletedEntry
-        )} could not be deleted, and the custom level has been disabled instead.`;
-      }
-      save("An error occurred while trying to remove that custom code.");
-      return `The custom code ${deletedName} for ${displayLevel(
-        deletedEntry
-      )} has been removed.`;
-    } else if (
-      (command == "load" || command == "reload" || command == "restore") &&
-      rest.length == 0
-    ) {
-      queue.loadCustomCodes();
-      return "Reloaded custom codes from disk.";
-    } else {
-      return "Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}.";
-    }
-  },
-
   persistenceManagement: async (/** @type {string}*/ subCommand) => {
     if (subCommand == "on") {
       persist = true;
@@ -801,16 +650,6 @@ const queue = {
     }
   },
 
-  customCodes: () => {
-    const list = customCodes.listNames();
-    if (list.length == 0) {
-      return "There are no custom codes set.";
-    } else {
-      const response = list.join(", ");
-      return "The current custom codes are: " + response + ".";
-    }
-  },
-
   save: (options = {}) => {
     options = { force: false, ...options };
     if (persist || options.force) {
@@ -827,10 +666,16 @@ const queue = {
 
   // TODO: could be used instead of the sync variant
   //       mixing sync and async might not be a good idea
-  // saveAsync: async () => {
+  //       as well as test cases not working correctly any more
+  // saveAsync: async (options = {}) => {
   //   options = { force: false, ...options };
   //   if (persist || options.force) {
-  //     return await persistence.saveQueue(current_level, levels, waiting, customLevels);
+  //     return await persistence.saveQueue({
+  //       currentLevel: current_level,
+  //       queue: levels,
+  //       waiting,
+  //       extensions: extensions.getQueueBindings(),
+  //     });
   //   } else {
   //     return false;
   //   }
@@ -859,18 +704,6 @@ const queue = {
     if (save) {
       queue.save();
     }
-    customCodes.reload();
-  },
-
-  loadCustomCodes: () => {
-    // Check if custom codes are enabled and, if so, validate that the correct files exist.
-    if (settings.custom_codes_enabled) {
-      const customCodesObject = persistence.loadCustomCodesSync().data;
-      customCodes.fromObject(customCodesObject);
-    } else {
-      // only custom levels will function
-      customCodes.fromObject({});
-    }
   },
 
   handleCommands: async (message, sender, respond) => {
@@ -886,14 +719,10 @@ const queue = {
     }
 
     // load extensions
-    extensions.load({ customCodes });
-    customLevels = extensions.getQueueBinding("customlevel");
+    extensions.load();
 
     // load queue state
     queue.loadQueueState();
-
-    // load custom codes
-    queue.loadCustomCodes();
 
     // Start the waiting time timer
     setIntervalAsync(queue.waitingTimerTick, 60000);
