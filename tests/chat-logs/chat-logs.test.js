@@ -36,6 +36,19 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
+jest.mock("uuid", () => {
+  const originalModule = jest.requireActual("uuid");
+  return {
+    __esModule: true,
+    ...originalModule,
+    // mock v4
+    v4: jest.fn(() => {
+      return originalModule.v4();
+    }),
+  };
+});
+const uuid = require("uuid");
+
 test("setup", () => {
   simRequireIndex();
 });
@@ -48,7 +61,7 @@ const parseMessage = (line) => {
   let isMod = false;
   let isSubscriber = false;
   let username;
-  while (true) {
+  for (;;) {
     if (user.startsWith("~")) {
       isBroadcaster = true;
     } else if (user.startsWith("@")) {
@@ -177,24 +190,26 @@ const chatLogTest = (fileName) => {
               )
             );
             if (memberIdx != -1) {
-              const member = command.substring(memberIdx + 1);
-              jsonData = jsonData[member];
+              const members = command.substring(memberIdx + 1).split("/");
+              for (const member of members) {
+                jsonData = jsonData[member];
+              }
             }
             expect(jsonData).toEqual(JSON.parse(rest));
           } catch (error) {
             error.message += errorMessage(position);
             throw error;
           }
-        } else if (command.startsWith("customCodes")) {
+        } else if (command.startsWith("extensions")) {
           try {
-            const memberIdx = command.indexOf("/");
+            const args = command.split("/");
             let jsonData = JSON.parse(
               test.fs.readFileSync(
-                path.resolve(__dirname, "../../customCodes.json")
+                path.resolve(__dirname, `../../data/extensions/${args[1]}.json`)
               )
             );
-            if (memberIdx != -1) {
-              const member = command.substring(memberIdx + 1);
+            if (2 in args) {
+              const member = args[2];
               jsonData = jsonData[member];
             }
             expect(jsonData).toEqual(JSON.parse(rest));
@@ -217,6 +232,8 @@ const chatLogTest = (fileName) => {
           await flushPromises();
         } else if (command == "random") {
           test.random.mockImplementationOnce(() => parseFloat(rest));
+        } else if (command == "uuidv4") {
+          uuid.v4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
           jest.spyOn(test.fs, rest).mockImplementationOnce(() => {
             throw new Error("fail on purpose in test");
@@ -286,10 +303,10 @@ const chatLogTest = (fileName) => {
 };
 
 const testFiles = fs
-  .readdirSync(path.resolve(__dirname, "logs"))
+  .readdirSync(path.resolve(__dirname, "chat"))
   .filter((file) => file.endsWith(".test.log"));
 
 for (const file of testFiles) {
-  const fileName = path.relative(".", path.resolve(__dirname, `logs/${file}`));
+  const fileName = path.relative(".", path.resolve(__dirname, `chat/${file}`));
   test(fileName, chatLogTest(fileName));
 }

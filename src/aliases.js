@@ -15,7 +15,6 @@ const defaultAliases = {
   clear: ["!clear"],
   close: ["!close"],
   current: ["!current"],
-  customcode: ["!customcode", "!customcodes"],
   dismiss: ["!dismiss", "!skip", "!complete", "!completed"],
   level: ["!level"],
   list: ["!list", "!queue"],
@@ -74,9 +73,11 @@ const Aliases = {
       Aliases.loadAliases(true);
     }
     try {
-      aliases = JSON.parse(
+      const data = JSON.parse(
         fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" })
       );
+      // override defaults
+      aliases = { ...defaultAliases, ...data };
     } catch (err) {
       console.warn(
         "An error occurred when trying to load %s. %s",
@@ -159,6 +160,10 @@ const Aliases = {
   },
   isCommand: (cmd) => {
     return Object.keys(aliases).includes(cmd);
+  },
+  addDefault: (cmd, cmdAliases) => {
+    defaultAliases[cmd] = cmdAliases;
+    aliases = { ...defaultAliases, ...aliases };
   },
 };
 

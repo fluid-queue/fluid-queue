@@ -13,7 +13,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [16:27:48] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:27:52] @^FurretWalkBot: !pos
 # !pos also works
@@ -30,7 +30,7 @@ queue.json/queue []
 [16:28:31] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 [16:28:33] @^FurretWalkBot: !leave
 [16:28:33] @^helperblock: FurretWalkBot, your level has been removed from the queue.

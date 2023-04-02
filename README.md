@@ -38,7 +38,7 @@ To close the queue press `CTRL + C` inside the terminal.
   docker compose stop
 ```
 
-The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are not yet backed up at this time - `customCodes.json` will be moved into data folder in a future update.
+The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/custom-codes.json`.
 
 To update the image pull the repo changes, then build the image locally again
 
@@ -94,7 +94,11 @@ The settings.json file contains several options to make the bot as customizable 
 
 `custom_codes_enabled` is the toggle for whether or not custom codes are allowed to be added to the queue. When enabled, users are able to add an alias to the queue as opposed to the real ID. An example of this is `!add Kamek`. Before usage, the broadcaster must add custom codes to be used. This is detailed in the commands section.
 
-`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. It is required for `custom_codes_enabled` to be toggled on to use this feature, and the ROMhack code is added/removed automatically from the custom codes list depending on this toggle.
+`romhacks_enabled` is a toggle for whether or not romhacks are allowed to be added to the queue. When enabled, users may type `!add ROMhack` to add a ROMhack to the queue. This does not send the patch, but rather gives the user a convienent way to enter the queue without a real level code. The following case insensitive aliases are setup by default: `ROMhack`, `R0M-HAK-LVL`, `rom hack`.
+See [how to remove custom level types](#removing-custom-level-types) for additional details.
+
+`uncleared_enabled` is a toggle for whether or not uncleared levels are allowed to be added to the queue. When enabled, users may type `!add Uncleared` to add an uncleared level to the queue. This is a convienent way to put an uncleared level to the queue without a real level code, so the streamer would then need to pick an uncleared level for themselves when the level shows up. The following case insensitive aliases are setup by default: `Uncleared`, `UNC-LEA-RED`, `an uncleared level`, `uncleared level`.
+See [how to remove custom level types](#removing-custom-level-types) for additional details.
 
 `max_size` is the maximum amount of levels allowed in the queue at once. The default value is `100`.
 
@@ -196,6 +200,8 @@ It is important to note that all commands that draw a level (with exception to `
 `!customcodes` will display all of the custom codes that are set, provided the feature is enabled. If this is used by the broadcaster, it can also be used to add and remove custom codes. The appropriate syntax for this is `!customcode {add/remove/load} {customCode} {ID}` where `add`/`remove`/`load` is the desired operation, customCode is the custom code that the user would like to type (example being `!add Kamek`), and ID being the ID that the custom code is an alias of. If a code is being removed, the ID is not required. Please note that while adding or removing the custom codes from the _queue_ are not case sensitive, they are case sensitive with this command.
 `!customcode load` will reload the custom codes from the `./customCodes.json` file, so you can manually edit that file and then reload the codes without having to restart the queue.
 
+`!customlevels` will display all of the custom levels including their custom codes.
+
 `!persistence` \* will give control over how and if the queue data is loaded/saved:
 
 - `!persistence save` will manually save the queue state (current level, queue, wait time) to `./data/queue.json`.
@@ -206,6 +212,103 @@ It is important to note that all commands that draw a level (with exception to `
   - make changes to `./data/queue.json`
   - use `!persistence load` to load these changes
   - use `!persistence on` to reactivate automatic saves
+
+### Custom Level Types
+
+Custom level types are levels that have no level code associated.
+
+For example one might play uncleared levels from time to time and while doing viewer levels a viewer might want to submit an uncleared level (`!add uncleared`), but does not want to add a specific uncleared level to the queue. When the level gets picked, there will be no code and the streamer only sees that an uncleared level was picked and then the streamer may pick an uncleared level on their own.
+
+Some more examples would be to be able to submit a maker team level (like team shell, team jamp or team precision) without submitting a specific level code, or to be able to submit a no skip super expert run etc. This could also be used to submit maker 1 levels or could be used for other games in general by just having a custom level type for that game and when people get picked they could join that game for example etc.
+
+#### Setting up custom level types
+
+There are some build-in custom level types:
+
+- **Uncleared levels**
+
+  To enable uncleared levels make sure to set `uncleared_enabled` to `true` in `settings.json`.
+  To add uncleared levels use:
+  `!add Uncleared`, or any of the alternatives: `!add UNC-LEA-RED`, `!add an uncleared level`, `!add uncleared level`
+
+- **ROMhacks**
+
+  To enable ROMhacks make sure to set `romhacks_enabled` to `true` in `settings.json`.
+  To add ROMhacks use:
+  `!add ROMhack`, or any of the alternatives: `!add R0M-HAK-LVL`, `!add rom hack`
+
+You can also add your own custom levels:
+
+`!customlevel add {customCode} {levelName...}`
+
+where `customCode` will be a custom code how you will add this custom level with `!add {customCode}` and `levelName...` can be multiple words to describe the custom level.
+
+For example the level name of an uncleared level is `an uncleared level`.
+The level name will appear in sentences like these:
+
+- `Currently playing {levelName...} submitted by {user}.`
+- `{user}, you have submitted {levelName...} to the queue.`
+- `{user}, {levelName...} has been added to the queue.`
+- `{user}, your level in the queue has been replaced with {levelName...}.`
+
+For example you could use this command to be able to add team shell levels to the queue: `!customlevel add teamshell a team shell level`
+and when someone uses `!add teamshell` then the bot will respond with `[...], a team shell level has been added to the queue.`.
+
+#### Removing custom level types
+
+To remove ROMhacks you would need to set `romhacks_enabled` to `false` and to remove uncleared levels you would need to set `uncleared_enabled` to `false`.
+
+The custom level type is added/removed automatically from the custom level types list in `./data/queue.json` depending on the configuration. If the configuration is set to `false`, but there are still levels in the queue, then they will still show up and are still saved to the json file, however no new levels can be added to the queue. Whenever all levels are removed from the queue (e.g. by them getting picked or by using `!clear` to remove all levels from the queue) and the configuration is set to `false` then the custom level type is removed from the save file.
+
+To remove other custom levels use the following command:
+
+`!customlevel remove {customCode}`
+
+E.g. `!cusomlevel remove teamshell`
+
+To disable custom levels instead use:
+
+`!customlevel disable {customCode}`
+
+Disabling custom levels will make them not submittable, but levels that are still present in the queue will still be displayed correctly.
+
+To enable custom levels again use:
+
+`!customlevel enable {customCode}`
+
+You can add more codes to a custom level with:
+
+`!customlevel code add {newCode} {customCode}`
+
+And also remove codes with:
+
+`!customlevel code remove {customCode}`
+
+#### Importing/Exporting custom level types
+
+To make sharing and installing custom level types easier the queue has an import and export function.
+
+`!customlevel export {customCode}`
+
+`!customlevel import {json}`
+
+For example:
+
+```
+!customlevel add teamshell a team shell level
+Created custom level "a team shell level" with code teamshell.
+!customlevel code add TS teamshell
+Added the code TS to the custom level with the name "a team shell level" and codes teamshell, TS.
+!customlevel export TS
+["d762ea56-cb01-4215-9e9c-1c4e7626da3f","a team shell level","teamshell","TS"]
+```
+
+Now someone else can just import that custom level:
+
+```
+!customlevel import ["d762ea56-cb01-4215-9e9c-1c4e7626da3f","a team shell level","teamshell","TS"]
+Created custom level "a team shell level" with codes teamshell, TS.
+```
 
 ### Aliases
 
@@ -220,6 +323,16 @@ The following list of commands are available to manage aliases:
 - `!resetcmd command` resets the command `command` to default values.
 
 The aliases are saved in a file in `./settings/aliases.json`. Please use this with caution. It might render the bot inoperable.
+
+## Testing
+
+To run tests: `npm test`.
+
+If the following error occurs `TypeError: Converting circular structure to JSON` run `npm test -- --detectOpenHandles`.
+
+To run tests without log output: `npm test -- --silent`.
+
+To run a single test: `npm test -- -t custom-levels-v2.1-to-v2.2`.
 
 ## Will you add [insert feature here]?
 

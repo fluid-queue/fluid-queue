@@ -9,13 +9,13 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 # @ moderator
 # % subscriber
 
-# check that the custom codes file is initialized with []
-customCodes []
+# check that the custom codes file is initialized
+extensions/customcode {"data":{},"version":"2.0"}
 
 [19:34:55] ~%?liquidnya: !customcode remove test
 [19:34:57] @^helperblock: The custom code test could not be found.
 [19:35:05] ~%?liquidnya: !customcode add Test NB0-1MD-SLG
-[19:35:05] @^helperblock: Your custom code Test for ID NB0-1MD-SLG has been added.
+[19:35:05] @^helperblock: Your custom code Test for NB0-1MD-SLG has been added.
 [19:35:12] ~%?liquidnya: !add Test
 [19:35:12] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
@@ -28,19 +28,19 @@ restart
 [13:01:34] ~%?liquidnya: !customcodes
 [13:01:34] @^helperblock: The current custom codes are: Test.
 
-customCodes [["Test","NB0-1MD-SLG"]]
+extensions/customcode/data {"Test":{"code":"NB0-1MD-SLG","type":"smm2"}}
 
 [19:36:54] ~%?liquidnya: !customcode remove test
-[19:36:54] @^helperblock: The custom code Test for ID NB0-1MD-SLG has been removed.
+[19:36:54] @^helperblock: The custom code Test for NB0-1MD-SLG has been removed.
 
-customCodes []
+extensions/customcode/data {}
 
 [19:36:58] ~%?liquidnya: !add test
 [19:36:58] @^helperblock: liquidnya, that is an invalid level code.
 
 # reload codes from disk
 
-save:customCodes.json [["Test","NB0-1MD-SLG"],["OwO","BW2-G2R-CMG"]]
+save:data/extensions/customcode.json {"data":{"Test":{"code":"NB0-1MD-SLG","type":"smm2"},"OwO":{"code":"BW2-G2R-CMG","type":"smm2"}},"version":"2.0"}
 
 [19:36:58] ~%?liquidnya: !customcode load
 [19:36:58] @^helperblock: Reloaded custom codes from disk.
@@ -58,3 +58,7 @@ save:customCodes.json [["Test","NB0-1MD-SLG"],["OwO","BW2-G2R-CMG"]]
 # this code is invalid because its checksum is invalid
 [23:21:21] ~%?liquidnya: !customcode add invalid-checksum MD0-2MD-SLG
 [23:21:22] @^helperblock: That is an invalid level code.
+
+# list codes
+[23:22:21] ~%?liquidnya: !customcodes
+[23:22:22] @^helperblock: The current custom codes are: Test, OwO.

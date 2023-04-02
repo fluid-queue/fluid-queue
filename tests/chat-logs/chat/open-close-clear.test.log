@@ -14,7 +14,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [01:38:00] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 # check the contents of the save file
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 # clear the queue and check file contents
 [02:15:35] ~%?liquidnya: !clear
 [02:15:35] @^helperblock: The queue has been cleared!

@@ -1,0 +1,140 @@
+# "username" will decide which of the messages are from the bot
+settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true,"showMakerCode":false}
+# restart to test with custom_codes_enabled set to true from the very beginning
+restart
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+# check that the custom codes file is initialized
+extensions/customcode {"data":{},"version":"2.0"}
+
+# change queue data
+[12:15:33] ~%?liquidnya: !persistence off
+[12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
+save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
+[12:15:48] ~%?liquidnya: !persistence load
+[12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
+[12:19:27] ~%?liquidnya: !persistence on
+[12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
+
+restart
+
+[12:19:29] ~%?liquidnya: !add whiteflag
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+# change queue data again, removing the custom level
+[12:15:33] ~%?liquidnya: !persistence off
+[12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
+save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{},"queue":[],"waiting":{}}
+[12:15:48] ~%?liquidnya: !persistence load
+[12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
+[12:19:27] ~%?liquidnya: !persistence on
+[12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
+
+# this time with no restart!
+
+[12:19:29] ~%?liquidnya: !add whiteflag
+[12:19:29] @^helperblock: liquidnya, that is an invalid level code.
+
+# adding the custom level again, also with no restart
+[12:15:33] ~%?liquidnya: !persistence off
+[12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
+save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
+[12:15:48] ~%?liquidnya: !persistence load
+[12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
+[12:19:27] ~%?liquidnya: !persistence on
+[12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
+
+[12:19:29] ~%?liquidnya: !add whiteflag
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+[12:19:29] ~%?liquidnya: !next
+[12:19:29] @^helperblock: Now playing a white flag level submitted by liquidnya.
+
+[12:19:29] ~%?liquidnya: !current
+[12:19:29] @^helperblock: Currently playing a white flag level submitted by liquidnya.
+
+# you can use !customcode to add aliases for custom level types
+[12:19:29] ~%?liquidnya: !customcode add 🏳️ a white flag level
+[12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
+
+# success?
+[12:19:29] ~%?liquidnya: !add 🏳️
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+[12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
+[12:19:29] @^helperblock: The custom code 🏳️ already exists
+
+# you can also remove custom level type aliases
+[12:19:29] ~%?liquidnya: !customcode remove 🏳️
+[12:19:29] @^helperblock: The custom code 🏳️ for a white flag level has been removed.
+
+# success?
+[12:19:29] ~%?liquidnya: !add 🏳️
+[12:19:29] @^helperblock: liquidnya, that is an invalid level code.
+
+# and it can be added back
+[12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
+[12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
+
+# it is actually just a custom code
+extensions/customcode/data {"🏳️":{"code":"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2","type":"customlevel"}}
+# and it is not part of the customlevel extension
+# also check that cache is not persisted here!
+queue.json/extensions/customlevel {"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}
+
+[12:19:29] ~%?liquidnya: !customcodes
+[12:19:29] @^helperblock: The current custom codes are: 🏳️.
+
+[12:19:29] ~%?liquidnya: !customlevels
+[12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag] (enabled).
+[12:19:29] @^FurretWalkBot: !customlevels
+[12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag].
+
+# you can use the display name of the customlevel
+[12:19:29] ~%?liquidnya: !add a white flag level
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+# case insensitive
+
+[12:19:29] ~%?liquidnya: !add A White Flag Level
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+[12:19:29] ~%?liquidnya: !add FLAG
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+# management
+uuidv4 78debbb5-2c9c-402d-9df6-0ae1fe8f1729
+[18:48:55] ~%?liquidnya: !customlevel add teamshell a team shell level
+[18:48:56] @^helperblock: Created custom level "a team shell level" with code teamshell.
+[18:48:59] ~%?liquidnya: !customlevel code add TS teamshell
+[18:49:00] @^helperblock: Added the code TS to the custom level with the name "a team shell level" and codes teamshell, TS.
+[18:49:02] ~%?liquidnya: !customlevels
+[18:49:02] @^helperblock: The current custom levels are a white flag level [whiteflag, flag] (enabled) and a team shell level [teamshell, TS] (enabled).
+[18:49:10] ~%?liquidnya: !customlevel export TS
+[18:49:10] @^helperblock: ["78debbb5-2c9c-402d-9df6-0ae1fe8f1729","a team shell level","teamshell","TS"]
+
+[18:49:55] ~%?liquidnya: !customlevel disable TS
+[18:49:55] @^helperblock: Disabled the custom level with the name "a team shell level" and codes teamshell, TS.
+[18:49:56] ~%?liquidnya: !customlevels
+[18:49:56] @^helperblock: The current custom levels are a white flag level [whiteflag, flag] (enabled) and a team shell level [teamshell, TS] (disabled).
+[18:49:56] ~%?liquidnya: !add TS
+[18:49:56] @^helperblock: liquidnya, that is an invalid level code.
+[18:50:01] ~%?liquidnya: !customlevel enable TS
+[18:50:02] @^helperblock: Enabled the custom level with the name "a team shell level" and codes teamshell, TS.
+[18:50:55] ~%?liquidnya: !add TS
+[18:50:56] @^helperblock: liquidnya, a team shell level has been added to the queue.
+
+[19:00:12] ~%?liquidnya (Fae/Faer): !customlevel code remove teamshell
+[19:00:13] @^helperblock (Any): Removed the code teamshell to the custom level with the name "a team shell level" and codes TS.
+
+[19:30:33] ~%?liquidnya: !customlevel remove a team shell level
+[19:30:33] @^helperblock: Removed the custom level with the name "a team shell level" and codes TS.
+[19:30:57] ~%?liquidnya: !customlevel import ["78debbb5-2c9c-402d-9df6-0ae1fe8f1729","a team shell level","teamshell","TS"]
+[19:30:58] @^helperblock: Created custom level "a team shell level" with codes teamshell, TS.
+
+queue.json/extensions/customlevel {"version":"1.0","data":{"78debbb5-2c9c-402d-9df6-0ae1fe8f1729":{"codes":["teamshell","TS"],"enabled":true,"name":"a team shell level"},"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}

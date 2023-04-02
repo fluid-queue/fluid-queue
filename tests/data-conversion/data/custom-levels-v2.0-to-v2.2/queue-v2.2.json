@@ -1,13 +1,22 @@
 {
   "version": "2.2",
   "currentLevel": {
-    "code": "QWF-3K9-84G",
-    "type": "smm2",
+    "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+    "type": "customlevel",
     "submitter": "FurretWalkBot",
     "username": "furretwalkbot"
   },
   "extensions": {
-    "customlevel": { "data": {}, "version": "1.0" }
+    "customlevel": {
+      "data": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
+          "enabled": false
+        }
+      },
+      "version": "1.0"
+    }
   },
   "queue": [
     {
@@ -17,8 +26,8 @@
       "username": "liquidnya"
     },
     {
-      "code": "BRL-F70-CLG",
-      "type": "smm2",
+      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "type": "customlevel",
       "submitter": "helperblock",
       "username": "helperblock"
     }

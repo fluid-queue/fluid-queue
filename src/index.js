@@ -105,17 +105,13 @@ const next_level_message = (level) => {
     return "The queue is empty.";
   }
   twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
-  if (level.code == "R0M-HAK-LVL") {
-    return "Now playing a ROMhack submitted by " + level.submitter + ".";
-  } else {
-    return (
-      "Now playing " +
-      displayLevel(level) +
-      " submitted by " +
-      level.submitter +
-      "."
-    );
-  }
+  return (
+    "Now playing " +
+    displayLevel(level) +
+    " submitted by " +
+    level.submitter +
+    "."
+  );
 };
 
 const weightedrandom_level_message = (level, percentSuffix = "") => {
@@ -123,29 +119,17 @@ const weightedrandom_level_message = (level, percentSuffix = "") => {
     return "The queue is empty.";
   }
   twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
-  if (level.code == "R0M-HAK-LVL") {
-    return (
-      "Now playing a ROMhack submitted by " +
-      level.submitter +
-      " with a " +
-      level.selectionChance +
-      "%" +
-      percentSuffix +
-      " chance of selection."
-    );
-  } else {
-    return (
-      "Now playing " +
-      displayLevel(level) +
-      " submitted by " +
-      level.submitter +
-      " with a " +
-      level.selectionChance +
-      "%" +
-      percentSuffix +
-      " chance of selection."
-    );
-  }
+  return (
+    "Now playing " +
+    displayLevel(level) +
+    " submitted by " +
+    level.submitter +
+    " with a " +
+    level.selectionChance +
+    "%" +
+    percentSuffix +
+    " chance of selection."
+  );
 };
 
 const weightednext_level_message = (level, percentSuffix = "") => {
@@ -153,46 +137,30 @@ const weightednext_level_message = (level, percentSuffix = "") => {
     return "The queue is empty.";
   }
   twitch.notLurkingAnymore(level.username); // If we pull up a level, we should reset the lurking status
-  if (level.code == "R0M-HAK-LVL") {
-    return (
-      "Now playing a ROMhack submitted by " +
-      level.submitter +
-      " with the highest wait time of " +
-      level.selectionChance +
-      "%" +
-      percentSuffix +
-      "."
-    );
-  } else {
-    return (
-      "Now playing " +
-      displayLevel(level) +
-      " submitted by " +
-      level.submitter +
-      " with the highest wait time of " +
-      level.selectionChance +
-      "%" +
-      percentSuffix +
-      "."
-    );
-  }
+  return (
+    "Now playing " +
+    displayLevel(level) +
+    " submitted by " +
+    level.submitter +
+    " with the highest wait time of " +
+    level.selectionChance +
+    "%" +
+    percentSuffix +
+    "."
+  );
 };
 
 const current_level_message = (level) => {
   if (level === undefined) {
     return "We're not playing a level right now!";
   }
-  if (level.code == "R0M-HAK-LVL") {
-    return "Currently playing a ROMhack submitted by " + level.submitter + ".";
-  } else {
-    return (
-      "Currently playing " +
-      displayLevel(level) +
-      " submitted by " +
-      level.submitter +
-      "."
-    );
-  }
+  return (
+    "Currently playing " +
+    displayLevel(level) +
+    " submitted by " +
+    level.submitter +
+    "."
+  );
 };
 
 const get_ordinal = (num) => {
@@ -776,19 +744,13 @@ async function HandleMessage(message, sender, respond) {
     var dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
       twitch.notLurkingAnymore(dip_level.username);
-      if (dip_level.code == "R0M-HAK-LVL") {
-        respond(
-          "Now playing a ROMhack submitted by " + dip_level.submitter + "."
-        );
-      } else {
-        respond(
-          "Now playing " +
-            displayLevel(dip_level) +
-            " submitted by " +
-            dip_level.submitter +
-            "."
-        );
-      }
+      respond(
+        "Now playing " +
+          displayLevel(dip_level) +
+          " submitted by " +
+          dip_level.submitter +
+          "."
+      );
     } else {
       respond("No levels in the queue were submitted by " + username + ".");
     }
@@ -889,20 +851,6 @@ async function HandleMessage(message, sender, respond) {
     quesoqueue.clear();
     twitch.clearLurkers();
     respond("The queue has been cleared!");
-  } else if (
-    aliases.isAlias("customcode", message) &&
-    settings.custom_codes_enabled
-  ) {
-    if (sender.isBroadcaster) {
-      var codeArguments = get_remainder(message);
-      if (codeArguments == "") {
-        respond(quesoqueue.customCodes());
-      } else {
-        respond(await quesoqueue.customCodeManagement(codeArguments));
-      }
-    } else {
-      respond(quesoqueue.customCodes());
-    }
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender.username);
     respond(
@@ -923,6 +871,8 @@ async function HandleMessage(message, sender, respond) {
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond("Next level order: " + order.reduce((acc, x) => acc + ", " + x));
     }
+  } else {
+    return await quesoqueue.handleCommands(message, sender, respond);
   }
 }
 

@@ -4,17 +4,32 @@ const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require("write-file-atomic");
 const writeFileAtomicSync = writeFileAtomic.sync;
 const { Waiting } = require("./waiting.js");
+const path = require("path");
 
-const FILENAME_V1 = {
-  queso: "./queso.save",
-  userOnlineTime: "./userOnlineTime.txt",
-  userWaitTime: "./userWaitTime.txt",
-  waitingUsers: "./waitingUsers.txt",
+const DATA_DIRECTORY = "data";
+const QUEUE_V2 = {
+  fileName: path.join(DATA_DIRECTORY, "queue.json"),
+  version: "2.2", // increase major version if data format changes in a way that is not understood by a previous version of the queue
+  compatibility: /^2(\.|$)/, // the version that is being accepted
 };
-const FILENAME_V2 = { directory: "./data", fileName: "./data/queue.json" };
-const VERSION_V2 = "2.1";
-const VERSION_CHECK_V2 = /^2(\.|$)/; // the version that is being accepted
-const CUSTOM_CODES_FILENAME = "./customCodes.json";
+const CUSTOM_CODES_V2 = {
+  fileName: path.join(DATA_DIRECTORY, "extensions", "customcode.json"),
+  version: "2.0", // increase major version if data format changes in a way that is not understood by a previous version of the queue
+  compatibility: /^2(\.|$)/, // the version that is being accepted
+};
+
+// legacy files that are converted at startup
+const QUEUE_V1 = {
+  queso: "queso.save",
+  userOnlineTime: "userOnlineTime.txt",
+  userWaitTime: "userWaitTime.txt",
+  waitingUsers: "waitingUsers.txt",
+  // `customCodes.json` is not in here, because it would be deleted by the queue file creation
+};
+const CUSTOM_CODES_V1 = {
+  customCodes: "customCodes.json",
+};
+const LEGACY_CUSTOM_CODES = ["R0M-HAK-LVL", "UNC-LEA-RED"]; // these level codes have been used for custom level types before introducing custom level types with UUIDs
 
 // structure of file format V1:
 // queso.save
@@ -33,6 +48,9 @@ const CUSTOM_CODES_FILENAME = "./customCodes.json";
 //   contains the time someone was last online in the queue
 //   as an ISO 8601 timestamp string in a list as a JSON
 //   where each entry corresponds to the user in the usernames list
+// customCodes.json
+//   a list of tuples where the key (first value of the tuple) is a custom code
+//   and the value (second value of the tuple) is the level code
 
 // structure of file format V2:
 // data/queue.json
@@ -40,9 +58,11 @@ const CUSTOM_CODES_FILENAME = "./customCodes.json";
 //     - version: will have the value "2.0" for now,
 //                but might change to "2.1", or "3.0", etc. later
 //                the queue accepts anything starting with "2." and will reject the file otherwise (crash)
+//                this version is independant of the npm version
 //     - currentLevel: null or the current level
 //     - queue: list of levels (not including the current level)
 //     - waiting: map of username to waiting information
+//     - custom: map of uuid to a description of what kind of level it is
 //   a level has the following fields:
 //     - code: contains the level code as a string
 //     - submitter: contains the display name of the submitter
@@ -53,6 +73,13 @@ const CUSTOM_CODES_FILENAME = "./customCodes.json";
 //     - weightMin: integer, the weighted time for weighted random in minutes
 //     - weightMsec: integer, the milliseconds part of the weight time, between 0 (inclusive) and 59999 (inclusive)
 //     - lastOnlineTime: string, ISO 8601 timestamp
+// data/custom-codes.json
+//   an object containing the following fields:
+//     - version: will have the value "2.0" for now,
+//                but might change to "2.1", or "3.0", etc. later
+//                the queue accepts anything starting with "2." and will reject the file otherwise (crash)
+//                this version is independant of the npm version or queue.json version
+//     - customCodes: map of custom codes, mapping custom codes to level codes
 
 const patchGlobalFs = () => {
   gracefulFs.gracefulify(fs);
@@ -62,7 +89,7 @@ const hasOwn = (object, property) => {
   return Object.prototype.hasOwnProperty.call(object, property);
 };
 
-const loadFileDefault = (fileName, newContent, errorMessage) => {
+const loadFileDefault = (fileName, newContent, errorMessage = undefined) => {
   if (fs.existsSync(fileName)) {
     try {
       const fileContents = JSON.parse(
@@ -71,12 +98,20 @@ const loadFileDefault = (fileName, newContent, errorMessage) => {
       console.log(`${fileName} has been successfully validated.`);
       return fileContents;
     } catch (err) {
-      console.warn(
-        "An error occurred when trying to load %s. %s",
-        fileName,
-        errorMessage,
-        err
-      );
+      if (errorMessage) {
+        console.warn(
+          "An error occurred when trying to load %s. %s",
+          fileName,
+          errorMessage,
+          err
+        );
+      } else {
+        console.warn(
+          "An error occurred when trying to load %s.",
+          fileName,
+          err
+        );
+      }
       // let it crash!
       throw err;
     }
@@ -84,51 +119,17 @@ const loadFileDefault = (fileName, newContent, errorMessage) => {
   return newContent;
 };
 
-const loadFileOrCreate = (fileName, createFunction, errorMessage) => {
-  const load = (create = false) => {
-    try {
-      if (create) {
-        createFunction();
-      }
-      const fileContents = JSON.parse(
-        fs.readFileSync(fileName, { encoding: "utf8" })
-      );
-      console.log(
-        "%s has been successfully%s validated.",
-        fileName,
-        create ? " created and" : ""
-      );
-      return fileContents;
-    } catch (err) {
-      console.warn(
-        "An error occurred when trying to %s %s. %s",
-        create ? "create" : "load",
-        fileName,
-        errorMessage,
-        err
-      );
-      // let it crash!
-      throw err;
-    }
-  };
-  if (fs.existsSync(fileName)) {
-    return load();
-  }
-  return load(true);
-};
-
 const loadQueueV1 = () => {
-  const cache_filename = FILENAME_V1.queso;
   const now = new Date().toISOString();
   let levels = [];
   let currentLevel;
   // load levels
-  if (fs.existsSync(cache_filename)) {
-    const raw_data = fs.readFileSync(cache_filename, { encoding: "utf8" });
-    levels = JSON.parse(raw_data);
+  if (fs.existsSync(QUEUE_V1.queso)) {
+    levels = loadFileDefault(QUEUE_V1.queso, []);
+
     const username_missing = (level) => !hasOwn(level, "username");
     if (levels.some(username_missing)) {
-      console.warn(`Usernames are not set in the file ${cache_filename}!`);
+      console.warn(`Usernames are not set in the file ${QUEUE_V1.queso}!`);
       console.warn(
         "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
       );
@@ -167,22 +168,22 @@ const loadQueueV1 = () => {
   }
   // load wait time
   const waitingUsers = loadFileDefault(
-    FILENAME_V1.waitingUsers,
+    QUEUE_V1.waitingUsers,
     [],
     "Weighted chance will not function."
   );
   const userWaitTime = loadFileDefault(
-    FILENAME_V1.userWaitTime,
+    QUEUE_V1.userWaitTime,
     [],
     "Weighted chance will not function."
   );
   if (waitingUsers.length != userWaitTime.length) {
     throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userWaitTime}.`
+      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userWaitTime}.`
     );
   }
   const userOnlineTime = loadFileDefault(
-    FILENAME_V1.userOnlineTime,
+    QUEUE_V1.userOnlineTime,
     undefined,
     "Online time will not be calculated correctly."
   );
@@ -191,7 +192,7 @@ const loadQueueV1 = () => {
     waitingUsers.length != userOnlineTime.length
   ) {
     throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${FILENAME_V1.waitingUsers} and ${FILENAME_V1.userOnlineTime}.`
+      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userOnlineTime}.`
     );
   }
   // convert wait time to object
@@ -212,6 +213,7 @@ const loadQueueV1 = () => {
     currentLevel,
     queue: levels,
     waiting,
+    extensions: {},
   };
 };
 
@@ -236,7 +238,7 @@ const waitingToObject = (
 };
 
 const loadQueueV2 = () => {
-  const fileName = FILENAME_V2.fileName;
+  const fileName = QUEUE_V2.fileName;
   const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
   if (!hasOwn(state, "version")) {
     throw new Error(`Queue save file ${fileName}: no version field.`);
@@ -244,13 +246,17 @@ const loadQueueV2 = () => {
     throw new Error(
       `Queue save file ${fileName}: version is not of type string.`
     );
-  } else if (!VERSION_CHECK_V2.test(state.version)) {
+  } else if (!QUEUE_V2.compatibility.test(state.version)) {
     throw new Error(
-      `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${VERSION_V2}". Save file is assumed to be incompatible. Did you downgrade versions?`
+      `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${QUEUE_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
     );
   }
   if (state.currentLevel === null) {
     state.currentLevel = undefined;
+  }
+  if (!hasOwn(state, "extensions")) {
+    // setup extensions settings
+    state.extensions = {};
   }
   // convert waiting entries to Waiting objects
   state.waiting = Object.fromEntries(
@@ -263,39 +269,57 @@ const loadQueueV2 = () => {
   return state;
 };
 
-const createEmptyQueueSync = () => {
-  const empty = {
+const emptyQueue = () => {
+  return {
     currentLevel: undefined,
     queue: [],
     waiting: {},
+    extensions: {},
   };
-  saveQueueSync(empty.currentLevel, empty.queue, empty.waiting);
-  console.log(`${FILENAME_V2.fileName} has been successfully created.`);
 };
 
-const loadQueueSync = () => {
-  // try to load queue version 2 if file exists
-  if (fs.existsSync(FILENAME_V2.fileName)) {
+const emptyCustomCodes = () => {
+  return {
+    data: {},
+  };
+};
+
+const loadSync = (
+  descriptorVersion2,
+  loadVersion2,
+  saveVersion2,
+  createVersion2,
+  filesVersion1,
+  loadVersion1
+) => {
+  // try to load version 2 if file exists
+  if (fs.existsSync(descriptorVersion2.fileName)) {
     // for now notice the user of previous save files that can be removed
-    // TODO: this is optional and can be removed
-    Object.values(FILENAME_V1).forEach((file) => {
+    // TODO: this is optional and can be removed in a later version of the queue
+    Object.values(filesVersion1).forEach((file) => {
       if (fs.existsSync(file)) {
         console.log(`${file} is no longer needed and can be deleted.`);
       }
     });
-    return loadQueueV2();
+    return loadVersion2();
   }
   // if version 2 file does not exist and any version 1 file exists try to convert version 1 to version 2
-  if (Object.values(FILENAME_V1).some((file) => fs.existsSync(file))) {
-    const stateV1 = loadQueueV1();
-    saveQueueSync(stateV1.currentLevel, stateV1.queue, stateV1.waiting);
+  if (Object.values(filesVersion1).some((file) => fs.existsSync(file))) {
+    const dataVersion1 = loadVersion1();
+    saveVersion2(dataVersion1);
+    let filesDescription;
+    if (filesVersion1.length == 1) {
+      filesDescription = "a previous save file";
+    } else {
+      filesDescription = "previous save files";
+    }
     console.log(
-      `${FILENAME_V2.fileName} has been successfully created from previous save files.`
+      `${descriptorVersion2.fileName} has been successfully created from ${filesDescription}.`
     );
-    const stateV2 = loadQueueV2();
+    const dataVersion2 = loadVersion2();
     // at this point assume everything was converted successfully (an error would have been thrown instead)
     // now delete version 1 files
-    Object.values(FILENAME_V1).forEach((file) => {
+    Object.values(filesVersion1).forEach((file) => {
       if (fs.existsSync(file)) {
         try {
           fs.unlinkSync(file);
@@ -306,37 +330,64 @@ const loadQueueSync = () => {
         }
       }
     });
-    return stateV2;
+    return dataVersion2;
   }
   // create an empty save file
-  createEmptyQueueSync();
-  return loadQueueV2();
+  const createdVersion2 = createVersion2();
+  saveVersion2(createdVersion2);
+  console.log(`${descriptorVersion2.fileName} has been successfully created.`);
+  return loadVersion2();
 };
 
-const createSaveFileContent = (currentLevel, queue, waiting) => {
+const loadQueueSync = () => {
+  return loadSync(
+    QUEUE_V2,
+    loadQueueV2,
+    saveQueueSync,
+    emptyQueue,
+    QUEUE_V1,
+    loadQueueV1
+  );
+};
+
+const createSaveFileContent = ({
+  currentLevel,
+  queue,
+  waiting,
+  extensions,
+}) => {
   return JSON.stringify(
     {
-      version: VERSION_V2,
+      version: QUEUE_V2.version,
       currentLevel: currentLevel === undefined ? null : currentLevel,
       queue,
       waiting,
+      extensions,
     },
     null,
     settings.prettySaveFiles ? 2 : 0
   );
 };
 
-const saveQueueSync = (currentLevel, queue, waiting) => {
+const createCustomCodesFileContent = ({ data }) => {
+  return JSON.stringify(
+    {
+      version: CUSTOM_CODES_V2.version,
+      data,
+    },
+    null,
+    settings.prettySaveFiles ? 2 : 0
+  );
+};
+
+const saveQueueSync = (data) => {
   try {
-    writeFileAtomicSync(
-      FILENAME_V2.fileName,
-      createSaveFileContent(currentLevel, queue, waiting)
-    );
+    writeFileAtomicSync(QUEUE_V2.fileName, createSaveFileContent(data));
     return true;
   } catch (err) {
     console.error(
       "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      FILENAME_V2.fileName,
+      QUEUE_V2.fileName,
       err
     );
     // ignore this error and keep going
@@ -346,23 +397,18 @@ const saveQueueSync = (currentLevel, queue, waiting) => {
   }
 };
 
-const saveQueue = async (
-  currentLevel,
-  queue,
-  waiting,
-  callback = undefined
-) => {
+const saveQueue = async (data, callback = undefined) => {
   try {
     await writeFileAtomic(
-      FILENAME_V2.fileName,
-      createSaveFileContent(currentLevel, queue, waiting),
+      QUEUE_V2.fileName,
+      createSaveFileContent(data),
       callback
     );
     return true;
   } catch (err) {
     console.error(
       "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      FILENAME_V2.fileName,
+      QUEUE_V2.fileName,
       err
     );
     // ignore this error and keep going
@@ -373,24 +419,67 @@ const saveQueue = async (
 };
 
 const loadCustomCodesSync = () => {
-  const codeList = loadFileOrCreate(
-    CUSTOM_CODES_FILENAME,
-    () => saveCustomCodesSync([]),
-    "Custom codes will not function."
+  return loadSync(
+    CUSTOM_CODES_V2,
+    loadCustomCodesV2,
+    saveCustomCodesSync,
+    emptyCustomCodes,
+    CUSTOM_CODES_V1,
+    loadCustomCodesV1
   );
-  return codeList;
 };
 
-const saveCustomCodesSync = (codeList, errorMessage = undefined) => {
+// returns a Map where the key is in uppercase and the entry contains an object with the unmodified `customCode` and the `levelCode`
+const loadCustomCodesV1 = () => {
+  let codeListEntries = loadFileDefault(
+    CUSTOM_CODES_V1.customCodes,
+    [],
+    "Custom codes will not function."
+  );
+  // remove custom levels from custom codes
+  codeListEntries = codeListEntries.filter(
+    ([, levelCode]) => !LEGACY_CUSTOM_CODES.includes(levelCode)
+  );
+  // convert from level codes to level entries
+  codeListEntries = codeListEntries.map(([customCode, levelCode]) => [
+    customCode,
+    { code: levelCode, type: "smm2" },
+  ]);
+  const result = { data: Object.fromEntries(codeListEntries) };
+  return result;
+};
+
+const loadCustomCodesV2 = () => {
+  const fileName = CUSTOM_CODES_V2.fileName;
+  const state = JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
+  if (!hasOwn(state, "version")) {
+    throw new Error(`Custom codes save file ${fileName}: no version field.`);
+  } else if (typeof state.version !== "string") {
+    throw new Error(
+      `Custom codes save file ${fileName}: version is not of type string.`
+    );
+  } else if (!CUSTOM_CODES_V2.compatibility.test(state.version)) {
+    throw new Error(
+      `Custom codes save file ${fileName}: version in file "${state.version}" is not compatible with custom codes save file version "${CUSTOM_CODES_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
+    );
+  }
+  console.log(`${fileName} has been successfully validated.`);
+  return state;
+};
+
+const saveCustomCodesSync = (data, errorMessage = undefined) => {
   try {
-    writeFileAtomicSync(CUSTOM_CODES_FILENAME, JSON.stringify(codeList));
+    writeFileAtomicSync(
+      CUSTOM_CODES_V2.fileName,
+      createCustomCodesFileContent(data)
+    );
   } catch (err) {
     if (errorMessage !== undefined) {
       console.warn(errorMessage);
     }
     console.error(
       "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      CUSTOM_CODES_FILENAME,
+      CUSTOM_CODES_V2.fileName,
       err
     );
     // ignore this error and keep going
@@ -400,8 +489,12 @@ const saveCustomCodesSync = (codeList, errorMessage = undefined) => {
 };
 
 const createDataDirectory = () => {
-  if (!fs.existsSync(FILENAME_V2.directory)) {
-    fs.mkdirSync(FILENAME_V2.directory, { recursive: true });
+  if (!fs.existsSync(DATA_DIRECTORY)) {
+    fs.mkdirSync(DATA_DIRECTORY, { recursive: true });
+  }
+  const extensionsDir = path.join(DATA_DIRECTORY, "extensions");
+  if (!fs.existsSync(extensionsDir)) {
+    fs.mkdirSync(extensionsDir, { recursive: true });
   }
 };
 

@@ -1,3 +1,9 @@
+# replay test log files (/tests/chat-logs/chat/*.test.log)
+*.test.log
+
+# npm package lock
+package-lock.json
+
 # QuesoQueue specific files
 /*.save
 /userWaitTime.txt

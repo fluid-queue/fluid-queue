@@ -17,7 +17,8 @@
     "node-fetch": "^2.6.7",
     "set-interval-async": "^2.0.3",
     "tmi.js": "^1.8.5",
-    "write-file-atomic": "^5.0.0"
+    "write-file-atomic": "^5.0.0",
+    "uuid": "^9.0.0"
   },
   "scripts": {
     "test": "jest --verbose",
@@ -37,5 +38,8 @@
   },
   "jest": {
     "globalSetup": "jest-chance"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }

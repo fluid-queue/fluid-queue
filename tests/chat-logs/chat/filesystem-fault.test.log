@@ -17,7 +17,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot... (0 offline)
 
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 
 
@@ -31,11 +31,11 @@ fs-fail writeSync
 
 # was not updated, but at least it did not crash or cause corrupted files!
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
 
 # now wait 2 minutes
 [02:41:13] ~%?liquidnya: OwO
 
 # save file was updated this time due to the waiting timer!
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"FurretWalkBot","username":"furretwalkbot"}, {"code":"MY2-H2M-DSG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}, {"code":"MY2-H2M-DSG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]

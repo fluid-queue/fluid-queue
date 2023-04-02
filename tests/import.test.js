@@ -1,3 +1,4 @@
 test("import fetch", () => {
-  const _fetch = require("node-fetch");
+  const fetch = require("node-fetch");
+  expect(fetch).toBeDefined();
 });

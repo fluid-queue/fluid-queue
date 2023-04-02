@@ -1,8 +1,6 @@
 "use strict";
 
 // imports
-const path = require("path");
-const fs = require("fs");
 const {
   simAdvanceTime,
   simRequireIndex,
@@ -77,7 +75,7 @@ test("weight test", async () => {
   expect(list.entries).toHaveLength(1);
   let entry;
   entry = list.entries[0];
-  expect(entry.level).toBe(level2);
+  expect(entry.level).toEqual(level2);
   // position is 0 even though its oflline position is 1 (index), but it is position 0 for the online position
   expect(entry.position).toBe(0);
   expect(entry.weight()).toBe(1);
@@ -96,11 +94,11 @@ test("weight test", async () => {
   expect(list.offlineLength).toBe(1);
   expect(list.entries).toHaveLength(2);
   entry = list.entries[0];
-  expect(entry.level).toBe(level2);
+  expect(entry.level).toEqual(level2);
   expect(entry.position).toBe(1); // level 1 was submitted before level 2
   expect(entry.weight()).toBe(11); // gained +10 weight
   entry = list.entries[1];
-  expect(entry.level).toBe(level1);
+  expect(entry.level).toEqual(level1);
   expect(entry.position).toBe(0); // level 1 was submitted before level 2
   expect(entry.weight()).toBe(1);
 });

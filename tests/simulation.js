@@ -4,6 +4,7 @@
 const jestChance = require("jest-chance");
 const { Volume, createFsFromVolume } = require("memfs");
 const path = require("path");
+const fs = require("fs");
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -136,9 +137,33 @@ const simSetChatters = (newChatters) => {
   return mockChatters;
 };
 
+/**
+ * This is neccessary, such that .js files can be found in folders
+ *
+ * @param {*} volume
+ * @param {*} srcPath
+ */
+const populateMockVolume = (volume, srcPath) => {
+  const result = {};
+  const files = fs.readdirSync(path.resolve(__dirname, "..", srcPath));
+  for (const file of files) {
+    const srcFile = path.join(srcPath, file);
+    if (
+      fs.lstatSync(path.resolve(__dirname, "..", srcPath, file)).isDirectory()
+    ) {
+      populateMockVolume(volume, srcFile);
+    } else {
+      // files are just empty files in the mock volume
+      result[srcFile] = "";
+    }
+  }
+  volume.fromJSON(result, path.resolve("."));
+};
+
 const createMockVolume = (settings = undefined) => {
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
+  populateMockVolume(volume, "./src");
   if (settings !== undefined) {
     volume.fromJSON(
       { "./settings.json": JSON.stringify(settings) },
@@ -376,12 +401,26 @@ const replace = (settings, newSettings) => {
   Object.assign(settings, newSettings);
 };
 
-const newLevel = (level_code, submitterOrUser, username = undefined) => {
+const newLevel = (
+  level_code,
+  submitterOrUser,
+  username = undefined,
+  type = undefined
+) => {
+  if (type === undefined) {
+    type = "smm2";
+  }
   if (typeof submitterOrUser === "string" && typeof username === "string") {
-    return { code: level_code, submitter: submitterOrUser, username: username };
+    return {
+      code: level_code,
+      type,
+      submitter: submitterOrUser,
+      username: username,
+    };
   } else if (typeof submitterOrUser === "object" && username === undefined) {
     return {
       code: level_code,
+      type,
       submitter: submitterOrUser.displayName,
       username: submitterOrUser.username,
     };

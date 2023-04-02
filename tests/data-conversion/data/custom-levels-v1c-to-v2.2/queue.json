@@ -1,23 +1,29 @@
 {
   "version": "2.2",
   "currentLevel": {
-    "code": "QWF-3K9-84G",
-    "type": "smm2",
-    "submitter": "FurretWalkBot",
-    "username": "furretwalkbot"
+    "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+    "type": "customlevel",
+    "submitter": "liquidnya",
+    "username": "liquidnya"
   },
   "extensions": {
     "customlevel": {
-      "data": {},
+      "data": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
+          "enabled": false
+        }
+      },
       "version": "1.0"
     }
   },
   "queue": [
     {
-      "code": "BW2-G2R-CMG",
+      "code": "QWF-3K9-84G",
       "type": "smm2",
-      "submitter": "liquidnya",
-      "username": "liquidnya"
+      "submitter": "FurretWalkBot",
+      "username": "furretwalkbot"
     },
     {
       "code": "BRL-F70-CLG",
@@ -27,9 +33,9 @@
     }
   ],
   "waiting": {
-    "liquidnya": {
-      "waitTime": 10,
-      "weightMin": 10,
+    "furretwalkbot": {
+      "waitTime": 1,
+      "weightMin": 1,
       "weightMsec": 0,
       "lastOnlineTime": "2022-04-21T00:00:00.000Z"
     },

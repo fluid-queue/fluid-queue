@@ -10,6 +10,7 @@ const {
   fetchMock,
   START_TIME,
   EMPTY_CHATTERS,
+  DEFAULT_TEST_SETTINGS,
 } = require("../simulation.js");
 
 // fake timers
@@ -94,6 +95,30 @@ const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
   expect(queue_real).toEqual(queue_expect);
 };
 
+const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
+  let queue_real = JSON.parse(
+    mockFs.readFileSync("./data/extensions/customcode.json")
+  );
+  let queue_expect;
+  if (version === undefined) {
+    queue_expect = JSON.parse(
+      realFs.readFileSync(
+        path.resolve(__dirname, `data/${testFolder}/customcode.json`)
+      )
+    );
+  } else {
+    queue_expect = JSON.parse(
+      realFs.readFileSync(
+        path.resolve(
+          __dirname,
+          `data/${testFolder}/customcode-v${version}.json`
+        )
+      )
+    );
+  }
+  expect(queue_real).toEqual(queue_expect);
+};
+
 test("conversion-test-empty", () => {
   const test = "test-empty";
   const volume = loadVolume(test);
@@ -104,6 +129,90 @@ test("conversion-test-empty", () => {
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
+  expect(mockFs.existsSync("./data/extensions/customcode.json")).toBe(false);
+});
+
+test("conversion-test-empty-custom-codes-enabled", () => {
+  const test = "test-empty-custom-codes-enabled";
+  const volume = loadVolume(test);
+  // empty file system
+  const index = simRequireIndex(volume, {
+    ...DEFAULT_TEST_SETTINGS,
+    custom_codes_enabled: true,
+  });
+  const mockFs = index.fs;
+  // should load without errors!
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  expect(mockFs.existsSync("./data/extensions/customcode.json")).toBe(true);
+  checkCustomCodes(mockFs, fs, test);
+});
+
+test("custom-codes-empty", () => {
+  const test = "custom-codes-empty";
+  const volume = loadVolume(test);
+  // empty file system
+  const index = simRequireIndex(volume, {
+    ...DEFAULT_TEST_SETTINGS,
+    custom_codes_enabled: true,
+  });
+  const mockFs = index.fs;
+  // should load without errors!
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  checkCustomCodes(mockFs, fs, test);
+  // no old files have been created
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
+});
+
+test("custom-codes-v1a-to-v2.0", () => {
+  const test = "custom-codes-v1a-to-v2.0";
+  const volume = loadVolume(test);
+  copy(
+    volume,
+    fs,
+    "./customCodes.json",
+    path.resolve(__dirname, `data/${test}/customCodes.json`)
+  );
+  // customCodes.json present
+  const index = simRequireIndex(volume, {
+    ...DEFAULT_TEST_SETTINGS,
+    custom_codes_enabled: true,
+  });
+  const mockFs = index.fs;
+  // should load without errors!
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  checkCustomCodes(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
+});
+
+test("custom-codes-v1b-to-v2.0", () => {
+  const test = "custom-codes-v1b-to-v2.0";
+  const volume = loadVolume(test);
+  copy(
+    volume,
+    fs,
+    "./customCodes.json",
+    path.resolve(__dirname, `data/${test}/customCodes.json`)
+  );
+  // customCodes.json present
+  const index = simRequireIndex(volume, {
+    ...DEFAULT_TEST_SETTINGS,
+    custom_codes_enabled: true,
+  });
+  const mockFs = index.fs;
+  // should load without errors!
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  checkCustomCodes(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
 test("conversion-test-1", () => {
@@ -265,17 +374,97 @@ test("conversion-test-corrupt-4", () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(true);
 });
 
-test("conversion-test-v2.0-to-v2.1", () => {
-  const test = "test-v2.0-to-v2.1";
+test("conversion-test-v2.0-to-v2.2", () => {
+  const test = "test-v2.0-to-v2.2";
   const volume = loadVolumeV2(test);
   const index = simRequireIndex(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
-  // still the same save file
-  checkResult(mockFs, fs, test, "2.0");
-  // after first save it will be changed
-  index.quesoqueue.save();
-  checkResult(mockFs, fs, test, "2.1");
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "2.2");
+});
+
+test("conversion-test-v2.1-to-v2.2", () => {
+  const test = "test-v2.1-to-v2.2";
+  const volume = loadVolumeV2(test, "2.1");
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "2.2");
+});
+
+test("custom-levels-v1a-to-v2.2", () => {
+  const test = "custom-levels-v1a-to-v2.2";
+  const volume = loadVolume(test);
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors, but a warning in the console
+  expect(consoleWarnMock).toHaveBeenCalledWith(
+    "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+  );
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  // no old files have been created
+  expect(mockFs.existsSync("./queso.save")).toBe(false);
+  expect(mockFs.existsSync("./userWaitTime.txt")).toBe(false);
+  expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
+});
+
+test("custom-levels-v1b-to-v2.2", () => {
+  const test = "custom-levels-v1b-to-v2.2";
+  const volume = loadVolume(test);
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./queso.save")).toBe(false);
+  expect(mockFs.existsSync("./userWaitTime.txt")).toBe(false);
+  expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
+});
+
+test("custom-levels-v1c-to-v2.2", () => {
+  const test = "custom-levels-v1c-to-v2.2";
+  const volume = loadVolume(test);
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  // old files have been deleted
+  expect(mockFs.existsSync("./queso.save")).toBe(false);
+  expect(mockFs.existsSync("./userWaitTime.txt")).toBe(false);
+  expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
+});
+
+test("custom-levels-v2.0-to-v2.2", () => {
+  const test = "custom-levels-v2.0-to-v2.2";
+  const volume = loadVolumeV2(test);
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "2.2");
+});
+
+test("custom-levels-v2.1-to-v2.2", () => {
+  const test = "custom-levels-v2.1-to-v2.2";
+  const volume = loadVolumeV2(test, "2.1");
+  const index = simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "2.2");
 });

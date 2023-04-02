@@ -1,24 +1,18 @@
 {
-  "version": "2.2",
+  "version": "2.1",
   "currentLevel": {
-    "code": "QWF-3K9-84G",
-    "type": "smm2",
+    "code": "UNC-LEA-RED",
     "submitter": "FurretWalkBot",
     "username": "furretwalkbot"
   },
-  "extensions": {
-    "customlevel": { "data": {}, "version": "1.0" }
-  },
   "queue": [
     {
-      "code": "BW2-G2R-CMG",
-      "type": "smm2",
+      "code": "R0M-HAK-LVL",
       "submitter": "liquidnya",
       "username": "liquidnya"
     },
     {
       "code": "BRL-F70-CLG",
-      "type": "smm2",
       "submitter": "helperblock",
       "username": "helperblock"
     }

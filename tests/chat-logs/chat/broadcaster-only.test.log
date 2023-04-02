@@ -48,7 +48,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [19:41:06] @^FurretWalkBot: !clear
 
 queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
 
 [19:41:48] ~%?liquidnya: !open
 [19:41:49] @^helperblock: The queue is now open!
