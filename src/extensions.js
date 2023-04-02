@@ -73,9 +73,9 @@ const getMajorVersion = (version) => {
   version = version.trim();
   const index = version.indexOf(".");
   if (index == -1) {
-    return version;
+    return parseInt(version);
   }
-  return version.substring(0, index);
+  return parseInt(version.substring(0, index));
 };
 
 const checkVersion = (currentVersion, newVersion, name = null) => {
