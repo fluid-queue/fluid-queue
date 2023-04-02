@@ -3,6 +3,8 @@ FROM node:19-alpine
 # Run as the node user for security purposes
 USER node
 
+# The base image should take care of this for us, but it doesn't hurt to specify explicitly
+ENV NODE_ENV=production
 
 # Set the base application directory
 WORKDIR /app
