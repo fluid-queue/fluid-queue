@@ -2,7 +2,10 @@
   "version": "2.2",
   "currentLevel": null,
   "extensions": {
-    "customlevel": {}
+    "customlevel": {
+      "data": {},
+      "version": "1.0"
+    }
   },
   "queue": [
     {

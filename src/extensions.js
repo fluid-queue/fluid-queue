@@ -69,19 +69,52 @@ const resolvers = {
   },
 };
 
+const getMajorVersion = (version) => {
+  version = version.trim();
+  const index = version.indexOf(".");
+  if (index == -1) {
+    return version;
+  }
+  return version.substring(0, index);
+};
+
+const checkVersion = (currentVersion, newVersion, name = null) => {
+  if (currentVersion == null || newVersion == null) {
+    throw new Error(
+      `version missing in the save file` +
+        (name == null ? "" : ` for extension ${name}`)
+    );
+  }
+  const currentMajorVersion = getMajorVersion(currentVersion);
+  const newMajorVersion = getMajorVersion(newVersion);
+  if (newMajorVersion > currentMajorVersion) {
+    throw new Error(
+      `version ${newVersion} in the save file is not compatible with current version ${currentVersion}` +
+        (name == null ? "" : ` for extension ${name}`)
+    );
+  }
+  // version is compatible for now
+};
+
 const bindings = {
   objectBindings: {},
-  ensureObjectBinding(name) {
+  emptyObjectBinding(version = "1.0") {
+    return { data: {}, version };
+  },
+  ensureObjectBinding(name, version = "1.0") {
     if (!(name in this.objectBindings)) {
-      this.objectBindings[name] = {};
+      this.objectBindings[name] = this.emptyObjectBinding(version);
     }
   },
-  getObjectBinding(name) {
-    this.ensureObjectBinding(name);
+  getObjectBinding(name, version = "1.0") {
+    this.ensureObjectBinding(name, version);
     return this.objectBindings[name];
   },
   overrideObjectBinding(name, newValue) {
-    this.ensureObjectBinding(name);
+    if (name in this.objectBindings) {
+      checkVersion(this.objectBindings[name].version, newValue.version, name);
+    }
+    this.ensureObjectBinding(name, newValue.version);
     const binding = this.objectBindings[name];
     const oldValue = { ...binding };
     Object.keys(binding).forEach((key) => {
@@ -93,8 +126,9 @@ const bindings = {
   overrideObjectBindings(newBindings) {
     // clear all bindings
     // this is needed to keep all bindings even if newBindings does not contain an existing binding
-    Object.keys(this.objectBindings).forEach((name) =>
-      this.overrideObjectBinding(name, {})
+    Object.entries(this.objectBindings).forEach(
+      ([name, value]) =>
+        this.overrideObjectBinding(name, this.emptyObjectBinding(value.version)) // keep version
     );
     // set new values
     Object.entries(newBindings).forEach(([name, newValue]) =>
@@ -177,8 +211,8 @@ const extensions = {
   bindings,
   commands,
   queueHandlers,
-  getQueueBinding(name) {
-    return this.bindings.getObjectBinding(name);
+  getQueueBinding(name, version = "1.0") {
+    return this.bindings.getObjectBinding(name, version);
   },
   overrideQueueBindings(bindings) {
     return this.bindings.overrideObjectBindings(bindings);
@@ -279,8 +313,11 @@ const extensions = {
       const entry = resolver.resolve(resolverArgs.join(" "));
       return {
         entry,
-        description: resolver.description, // FIXME
-        descriptions: [], // FIXME
+        description: entry == null ? null : resolver.description,
+        descriptions:
+          entry == null && resolver.description != null
+            ? [resolver.description]
+            : [],
       };
     }
     resolverArgs = [resolverName, ...resolverArgs];

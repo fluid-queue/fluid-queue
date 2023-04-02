@@ -295,7 +295,7 @@ const loadSync = (
   // try to load version 2 if file exists
   if (fs.existsSync(descriptorVersion2.fileName)) {
     // for now notice the user of previous save files that can be removed
-    // TODO: this is optional and can be removed
+    // TODO: this is optional and can be removed in a later version of the queue
     Object.values(filesVersion1).forEach((file) => {
       if (fs.existsSync(file)) {
         console.log(`${file} is no longer needed and can be deleted.`);

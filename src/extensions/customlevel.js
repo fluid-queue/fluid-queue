@@ -13,24 +13,42 @@ const levelType = (custom) => {
   return {
     display(level) {
       const uuid = level.code;
-      if (Object.prototype.hasOwnProperty.call(custom, uuid)) {
-        const description = custom[uuid];
+      if (Object.prototype.hasOwnProperty.call(custom.data, uuid)) {
+        const description = custom.data[uuid];
         return description.display;
       }
     },
   };
 };
 
+const ensureCache = (custom) => {
+  if (custom.cache === undefined) {
+    // this is happening everytime the queue is loaded or reloaded
+    custom.cache = {};
+    custom.cache.codes = new Map();
+    custom.cache.names = new Map();
+    Object.entries(custom.data).forEach(([uuid, value]) => {
+      custom.cache.names.set(value.display.trim().toUpperCase(), uuid);
+      value.customCodes.forEach((code) => {
+        custom.cache.codes.set(code.trim().toUpperCase(), uuid);
+      });
+    });
+    custom.cache.fromName = (name) =>
+      custom.cache.names.get(name.trim().toUpperCase());
+    custom.cache.fromCode = (code) =>
+      custom.cache.codes.get(code.trim().toUpperCase());
+  }
+};
+
 const nameResolver = (custom) => {
   return {
     description: "custom level",
     resolve(args) {
-      // TODO implementation that is not O(n)
       // TODO prevent custom codes from saving the custom levels as custom codes
-      for (const [uuid, value] of Object.entries(custom)) {
-        if (value.display.trim().toUpperCase() == args.trim().toUpperCase()) {
-          return { type: "customlevel", code: uuid };
-        }
+      ensureCache(custom);
+      const uuid = custom.cache.fromName(args);
+      if (uuid != null) {
+        return { type: "customlevel", code: uuid };
       }
       return null;
     },
@@ -41,23 +59,18 @@ const resolver = (custom) => {
   return {
     description: "custom level",
     resolve(args) {
-      // TODO implementation that is not O(n)
       // TODO prevent custom codes from saving the custom levels as custom codes
-      for (const [uuid, value] of Object.entries(custom)) {
-        if (
-          value.customCodes
-            .map((s) => s.toUpperCase())
-            .includes(args.trim().toUpperCase())
-        ) {
-          return { type: "customlevel", code: uuid };
-        }
+      ensureCache(custom);
+      const uuid = custom.cache.fromCode(args);
+      if (uuid != null) {
+        return { type: "customlevel", code: uuid };
       }
       return null;
     },
   };
 };
 
-const customlevelCommand = (customLevels) => {
+const customlevelCommand = (custom) => {
   return {
     aliases: ["!customlevel", "!customlevels"],
     async handle(message, sender, respond) {
@@ -72,7 +85,7 @@ const customlevelCommand = (customLevels) => {
       }
     },
     customLevels: () => {
-      const list = Object.entries(customLevels).flatMap(([, value]) => {
+      const list = Object.entries(custom.data).flatMap(([, value]) => {
         // translate customLevels into custom code map
         if (value.enabled) {
           return [value.display + " [" + value.customCodes.join(", ") + "]"];
@@ -111,12 +124,12 @@ const unclearedLevel = () => {
 };
 
 const addRomHack = (custom, enabled = true) => {
-  if (hasOwn(custom, ROMHACK_UUID)) {
-    const result = custom[ROMHACK_UUID].enabled != enabled;
-    custom[ROMHACK_UUID].enabled = enabled;
+  if (hasOwn(custom.data, ROMHACK_UUID)) {
+    const result = custom.data[ROMHACK_UUID].enabled != enabled;
+    custom.data[ROMHACK_UUID].enabled = enabled;
     return result;
   } else {
-    custom[ROMHACK_UUID] = {
+    custom.data[ROMHACK_UUID] = {
       customCodes: ["ROMhack", "R0M-HAK-LVL"],
       display: "a ROMhack",
       enabled,
@@ -126,12 +139,12 @@ const addRomHack = (custom, enabled = true) => {
 };
 
 const addUncleared = (custom, enabled = true) => {
-  if (hasOwn(custom, UNCLEARED_UUID)) {
-    const result = custom[UNCLEARED_UUID].enabled != enabled;
-    custom[UNCLEARED_UUID].enabled = enabled;
+  if (hasOwn(custom.data, UNCLEARED_UUID)) {
+    const result = custom.data[UNCLEARED_UUID].enabled != enabled;
+    custom.data[UNCLEARED_UUID].enabled = enabled;
     return result;
   } else {
-    custom[UNCLEARED_UUID] = {
+    custom.data[UNCLEARED_UUID] = {
       customCodes: ["Uncleared", "UNC-LEA-RED"],
       display: "an uncleared level",
       enabled,
@@ -141,16 +154,16 @@ const addUncleared = (custom, enabled = true) => {
 };
 
 const removeRomHack = (custom) => {
-  if (hasOwn(custom, ROMHACK_UUID)) {
-    delete custom[ROMHACK_UUID];
+  if (hasOwn(custom.data, ROMHACK_UUID)) {
+    delete custom.data[ROMHACK_UUID];
     return true;
   }
   return false;
 };
 
 const removeUncleared = (custom) => {
-  if (hasOwn(custom, UNCLEARED_UUID)) {
-    delete custom[UNCLEARED_UUID];
+  if (hasOwn(custom.data, UNCLEARED_UUID)) {
+    delete custom.data[UNCLEARED_UUID];
     return true;
   }
   return false;
@@ -178,8 +191,8 @@ const queueHandler = (custom) => {
         addRomHack(custom, false);
         return romHackLevel();
       } else if (uuid != null) {
-        if (!hasOwn(custom, uuid)) {
-          custom[uuid] = {
+        if (!hasOwn(custom.data, uuid)) {
+          custom.data[uuid] = {
             customCodes: [uuid],
             display: "unknown custom level",
             enabled: false,
@@ -221,7 +234,7 @@ const queueHandler = (custom) => {
 };
 
 const setup = (extensions) => {
-  const custom = extensions.getQueueBinding("customlevel");
+  const custom = extensions.getQueueBinding("customlevel", "1.0");
   extensions.registerEntryType("customlevel", levelType(custom));
   extensions.registerResolver("customlevel", resolver(custom));
   extensions.registerResolver("customlevel-name", nameResolver(custom));

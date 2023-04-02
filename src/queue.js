@@ -64,6 +64,7 @@ const queue = {
     }
     const resolved = extensions.resolve(level.code);
     if (resolved.entry == null) {
+      // TODO: maybe display all the code types that are not valid
       return level.submitter + ", that is an invalid level code.";
     }
     level = { ...level, ...resolved.entry };
@@ -146,6 +147,7 @@ const queue = {
   replace: (username, new_level_code) => {
     const resolved = extensions.resolve(new_level_code);
     if (resolved.entry == null) {
+      // TODO: maybe display all the code types that are not valid
       return username + ", that level code is invalid.";
     }
     const entry = { code: new_level_code, ...resolved.entry };
@@ -657,7 +659,12 @@ const queue = {
         currentLevel: current_level,
         queue: levels,
         waiting,
-        extensions: extensions.getQueueBindings(),
+        // TODO: add test case to check that only data and version are persisted
+        extensions: Object.fromEntries(
+          Object.entries(extensions.getQueueBindings()).map(([key, value]) => {
+            return [key, { data: value.data, version: value.version }];
+          })
+        ),
       });
     } else {
       return false;
@@ -743,7 +750,7 @@ const queue = {
         }
       });
     queue.save();
-    // TODO: use this instead?
+    // TODO: use this instead? (see comment of queue.saveAsync)
     // await queue.saveAsync();
   },
 

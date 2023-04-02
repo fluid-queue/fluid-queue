@@ -7,7 +7,10 @@
     "username": "liquidnya"
   },
   "extensions": {
-    "customlevel": {}
+    "customlevel": {
+      "data": {},
+      "version": "1.0"
+    }
   },
   "queue": [
     {

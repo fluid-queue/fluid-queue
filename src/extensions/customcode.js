@@ -114,10 +114,9 @@ const commandHandler = (resolveLevel, displayLevel) => {
 
         if (!customCodes.delete(customName)) {
           save("An error occurred while trying to remove that custom code.");
-          // TODO: tell the user how to enable it again
           return `The custom code ${deletedName} for ${displayLevel(
             deletedEntry
-          )} could not be deleted, and the custom level has been disabled instead.`;
+          )} could not be deleted.`;
         }
         save("An error occurred while trying to remove that custom code.");
         return `The custom code ${deletedName} for ${displayLevel(
