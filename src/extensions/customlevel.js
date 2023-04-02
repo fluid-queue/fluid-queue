@@ -21,22 +21,36 @@ const levelType = (custom) => {
   };
 };
 
-const resolver = {
-  description: "custom level",
-  resolve() {
-    // TODO implement
-    // TODO prevent custom codes from saving the custom levels as custom codes
-    return null;
-  },
+const nameResolver = (custom) => {
+  return {
+    description: "custom level",
+    resolve(args) {
+      // TODO implementation that is not O(n)
+      // TODO prevent custom codes from saving the custom levels as custom codes
+      for (const [uuid, value] of Object.entries(custom)) {
+        if (value.display.trim().toUpperCase() == args.trim().toUpperCase()) {
+          return { type: "customlevel", code: uuid };
+        }
+      }
+      return null;
+    },
+  };
 };
 
-const nameResolver = {
-  description: "custom level",
-  resolve() {
-    // TODO implement
-    // TODO prevent custom codes from saving the custom levels as custom codes
-    return null;
-  },
+const resolver = (custom) => {
+  return {
+    description: "custom level",
+    resolve(args) {
+      // TODO implementation that is not O(n)
+      // TODO prevent custom codes from saving the custom levels as custom codes
+      for (const [uuid, value] of Object.entries(custom)) {
+        if (value.customCodes.map(s => s.toUpperCase()).includes(args.trim().toUpperCase())) {
+          return { type: "customlevel", code: uuid };
+        }
+      }
+      return null;
+    },
+  };
 };
 
 const customlevelCommand = (customLevels) => {
@@ -205,8 +219,8 @@ const queueHandler = (custom) => {
 const setup = (extensions) => {
   const custom = extensions.getQueueBinding("customlevel");
   extensions.registerEntryType("customlevel", levelType(custom));
-  extensions.registerResolver("customlevel", resolver);
-  extensions.registerResolver("customlevel-name", nameResolver);
+  extensions.registerResolver("customlevel", resolver(custom));
+  extensions.registerResolver("customlevel-name", nameResolver(custom));
   extensions.registerCommand("customlevel", customlevelCommand(custom));
   extensions.registerQueueHandler(queueHandler(custom));
 };

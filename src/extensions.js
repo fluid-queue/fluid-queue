@@ -278,8 +278,8 @@ const extensions = {
       const entry = resolver.resolve(resolverArgs.join(" "));
       return {
         entry,
-        description: resolver.description,
-        descriptions: [],
+        description: resolver.description, // FIXME
+        descriptions: [], // FIXME
       };
     }
     resolverArgs = [resolverName, ...resolverArgs];

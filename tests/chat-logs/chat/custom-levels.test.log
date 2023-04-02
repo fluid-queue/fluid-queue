@@ -83,13 +83,13 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
 [12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
 
-# and it is not part of custom codes but actually just an alias
-extensions/customcode/data {}
-# it has been added to the end
-queue.json/extensions/customlevel {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag","🏳️"],"display": "a white flag level","enabled": true}}
+# it is actually just a custom code
+extensions/customcode/data {"🏳️":{"code":"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2","type":"customlevel"}}
+# and it is not part of the customlevel extension
+queue.json/extensions/customlevel {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}}
 
 [12:19:29] ~%?liquidnya: !customcodes
-[12:19:29] @^helperblock: There are no custom codes set.
+[12:19:29] @^helperblock: The current custom codes are: 🏳️.
 
 [12:19:29] ~%?liquidnya: !customlevels
-[12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag, 🏳️].
+[12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag].

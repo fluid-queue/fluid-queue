@@ -18,7 +18,6 @@ const customCodes = {
   },
   listNames: () => {
     return [...customCodes.map.values()]
-      .filter((e) => e.entry.type != "customlevel")
       .map((e) => e.customCode);
   },
   set: (customCodeArg, entry) => {
