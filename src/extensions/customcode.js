@@ -88,9 +88,9 @@ const commandHandler = (resolveLevel, displayLevel) => {
         );
       };
       let [command, ...rest] = codeArguments.split(" ");
-      if (command == "add" && rest.length == 2) {
-        const [customName, realName] = rest;
-        const resolved = resolveLevel(realName);
+      if (command == "add" && rest.length >= 2) {
+        const [customName, ...realName] = rest;
+        const resolved = resolveLevel(realName.join(" "));
         if (resolved.entry == null) {
           return "That is an invalid level code.";
         }

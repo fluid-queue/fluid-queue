@@ -58,10 +58,8 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] ~%?liquidnya: !current
 [12:19:29] @^helperblock: Currently playing a white flag level submitted by liquidnya.
 
-# you can use !customcode to add aliases for custom level types with the limitation to only be allowed to use one word
+# you can use !customcode to add aliases for custom level types
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ a white flag level
-[12:19:29] @^helperblock: Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}.
-[12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
 [12:19:29] @^helperblock: Your custom code 🏳️ for a white flag level has been added.
 
 # success?
