@@ -10,41 +10,45 @@ This project is based on Queso Queue Plus, which was originally developed by Sho
 
 ### Docker instructions
 
-You need to have docker engine installed on the system for this to work.
+You need to have the Docker Engine installed on the system, as well as Docker Compose, for this to work.
 
-First, you must clone the project. Either download the source or run the following command:
+First, download the [sample Compose file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/docker-compose.sample.yml) and rename it to `docker-compose.yml`. Place it in the directory you want to use for the bot. Next, create a `data` and `settings` directory to store the bot's data and configuration in, and replace the volume paths in `docker-compose.yml` with your local paths.
 
-```bash
-  git clone https://github.com/fluid-queue/fluid-queue.git
-```
+Next, download the [sample `settings.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings.example.json) into your `settings` directory, rename it to `settings.json`, and edit it appropriately (as described below).
 
-After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
+Once you have your `settings.json` edited and inside your `settings` directory, your (empty, for now) `data` directory, and your `docker-compose.yml` pointing to the correct paths, you can run the bot. From the directory with `docker-compose.yml`:
 
 ```bash
-cp settings.example.json settings.json
-
-# now edit settings.json with your favorite text editor
+  docker compose up
 ```
 
-Next, build and run the image (detached):
+This will start the bot in "attached" mode, so you can see all the output. Assuming everything worked and the bot is connected to IRC, press `CTRL+C` to kill the bot. You can now start it in "detached" mode so it will keep running in the background:
 
 ```bash
   docker compose up -d
 ```
 
-To close the queue press `CTRL + C` inside the terminal.
+From here, if you want to stop the bot, you can simply run the following command from the same directory:
 
 ```bash
   docker compose stop
 ```
 
-The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/custom-codes.json`.
+Unless you stop the bot manually with that command, the container will continue running, restarting automatically even through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/extensions/customcode.json`.
 
-To update the image pull the repo changes, then build the image locally again
+To update the image, first bring down the container with the `-v` option (to remove ephemeral volumes):
 
 ```bash
-  docker compose up -d --build
+  docker compose down -v
 ```
+
+Then you can pull the updated container:
+
+```bash
+  docker compose pull
+```
+
+And now you can run the container again.
 
 ### Run NodeJs locally
 
@@ -57,13 +61,13 @@ First, you must clone the project. Either download the source or run the followi
 Next, install the dependencies for the project using the following command:
 
 ```bash
-  npm install
+  NODE_ENV=production npm install
 ```
 
 After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
 
 ```bash
-cp settings.example.json settings.json
+cp settings.example.json data/settings.json
 
 # now edit settings.json with your favorite text editor
 ```
