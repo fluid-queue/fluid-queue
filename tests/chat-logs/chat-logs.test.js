@@ -36,6 +36,19 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
+jest.mock("uuid", () => {
+  const originalModule = jest.requireActual("uuid");
+  return {
+    __esModule: true,
+    ...originalModule,
+    // mock v4
+    v4: jest.fn(() => {
+      return originalModule.v4();
+    }),
+  };
+});
+const uuid = require("uuid");
+
 test("setup", () => {
   simRequireIndex();
 });
@@ -219,6 +232,8 @@ const chatLogTest = (fileName) => {
           await flushPromises();
         } else if (command == "random") {
           test.random.mockImplementationOnce(() => parseFloat(rest));
+        } else if (command == "uuidv4") {
+          uuid.v4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
           jest.spyOn(test.fs, rest).mockImplementationOnce(() => {
             throw new Error("fail on purpose in test");

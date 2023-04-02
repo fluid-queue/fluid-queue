@@ -266,11 +266,49 @@ To remove other custom levels use the following command:
 
 E.g. `!cusomlevel remove teamshell`
 
-TODO: disable/enable custom level types + explanation
+To disable custom levels instead use:
+
+`!customlevel disable {customCode}`
+
+Disabling custom levels will make them not submittable, but levels that are still present in the queue will still be displayed correctly.
+
+To enable custom levels again use:
+
+`!customlevel enable {customCode}`
+
+You can add more codes to a custom level with:
+
+`!customlevel code add {newCode} {customCode}`
+
+And also remove codes with:
+
+`!customlevel code remove {customCode}`
 
 #### Importing/Exporting custom level types
 
-TODO
+To make sharing and installing custom level types easier the queue has an import and export function.
+
+`!customlevel export {customCode}`
+
+`!customlevel import {json}`
+
+For example:
+
+```
+!customlevel add teamshell a team shell level
+Created custom level "a team shell level" with code teamshell.
+!customlevel code add TS teamshell
+Added the code TS to the custom level with the name "a team shell level" and codes teamshell, TS.
+!customlevel export TS
+["d762ea56-cb01-4215-9e9c-1c4e7626da3f","a team shell level","teamshell","TS"]
+```
+
+Now someone else can just import that custom level:
+
+```
+!customlevel import ["d762ea56-cb01-4215-9e9c-1c4e7626da3f","a team shell level","teamshell","TS"]
+Created custom level "a team shell level" with codes teamshell, TS.
+```
 
 ### Aliases
 

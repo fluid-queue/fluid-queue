@@ -134,6 +134,7 @@ const bindings = {
       delete binding[key];
     });
     Object.assign(binding, newValue);
+    binding.save = () => this.save(name);
     return oldValue;
   },
   overrideObjectBindings(newBindings) {
