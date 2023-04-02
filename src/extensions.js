@@ -98,12 +98,25 @@ const checkVersion = (currentVersion, newVersion, name = null) => {
 
 const bindings = {
   objectBindings: {},
-  emptyObjectBinding(version = "1.0") {
-    return { data: {}, version };
+  saveHandler: null,
+  save(name) {
+    if (this.saveHandler == null) {
+      console.warn(
+        `extension ${name} requested to save, but no save handler is registered`
+      );
+      return;
+    }
+    this.saveHandler(name);
+  },
+  setSaveHandler(saveHandler) {
+    this.saveHandler = saveHandler;
+  },
+  emptyObjectBinding(name, version = "1.0") {
+    return { data: {}, version, save: () => this.save(name) };
   },
   ensureObjectBinding(name, version = "1.0") {
     if (!(name in this.objectBindings)) {
-      this.objectBindings[name] = this.emptyObjectBinding(version);
+      this.objectBindings[name] = this.emptyObjectBinding(name, version);
     }
   },
   getObjectBinding(name, version = "1.0") {
@@ -128,7 +141,10 @@ const bindings = {
     // this is needed to keep all bindings even if newBindings does not contain an existing binding
     Object.entries(this.objectBindings).forEach(
       ([name, value]) =>
-        this.overrideObjectBinding(name, this.emptyObjectBinding(value.version)) // keep version
+        this.overrideObjectBinding(
+          name,
+          this.emptyObjectBinding(name, value.version)
+        ) // keep version
     );
     // set new values
     Object.entries(newBindings).forEach(([name, newValue]) =>
@@ -219,6 +235,12 @@ const extensions = {
   },
   getQueueBindings() {
     return this.bindings.getObjectBindings();
+  },
+  setQueueBindingSaveHandler(saveHandler) {
+    if (typeof saveHandler !== "function") {
+      throw new Error("Save handler is not a function");
+    }
+    return this.bindings.setSaveHandler(saveHandler);
   },
   registerCommand(name, handler) {
     if (

@@ -15,7 +15,7 @@ const levelType = (custom) => {
       const uuid = level.code;
       if (Object.prototype.hasOwnProperty.call(custom.data, uuid)) {
         const description = custom.data[uuid];
-        return description.display;
+        return description.name;
       }
     },
   };
@@ -28,8 +28,8 @@ const ensureCache = (custom) => {
     custom.cache.codes = new Map();
     custom.cache.names = new Map();
     Object.entries(custom.data).forEach(([uuid, value]) => {
-      custom.cache.names.set(value.display.trim().toUpperCase(), uuid);
-      value.customCodes.forEach((code) => {
+      custom.cache.names.set(value.name.trim().toUpperCase(), uuid);
+      value.codes.forEach((code) => {
         custom.cache.codes.set(code.trim().toUpperCase(), uuid);
       });
     });
@@ -78,7 +78,12 @@ const customlevelCommand = (custom) => {
         if (message == "") {
           respond(this.customLevels());
         } else {
-          // TODO!
+          const [command] = message.trim().split(" ");
+          if (command == "add") {
+            // TODO
+          } else {
+            return "Invalid arguments. The correct syntax is !customlevel {add/remove} {code} {levelName...}.";
+          }
         }
       } else {
         respond(this.customLevels());
@@ -88,7 +93,7 @@ const customlevelCommand = (custom) => {
       const list = Object.entries(custom.data).flatMap(([, value]) => {
         // translate customLevels into custom code map
         if (value.enabled) {
-          return [value.display + " [" + value.customCodes.join(", ") + "]"];
+          return [value.name + " [" + value.codes.join(", ") + "]"];
         } else {
           return [];
         }
@@ -130,8 +135,8 @@ const addRomHack = (custom, enabled = true) => {
     return result;
   } else {
     custom.data[ROMHACK_UUID] = {
-      customCodes: ["ROMhack", "R0M-HAK-LVL"],
-      display: "a ROMhack",
+      codes: ["ROMhack", "R0M-HAK-LVL"],
+      name: "a ROMhack",
       enabled,
     };
     return true;
@@ -145,8 +150,8 @@ const addUncleared = (custom, enabled = true) => {
     return result;
   } else {
     custom.data[UNCLEARED_UUID] = {
-      customCodes: ["Uncleared", "UNC-LEA-RED"],
-      display: "an uncleared level",
+      codes: ["Uncleared", "UNC-LEA-RED"],
+      name: "an uncleared level",
       enabled,
     };
     return true;
@@ -193,8 +198,8 @@ const queueHandler = (custom) => {
       } else if (uuid != null) {
         if (!hasOwn(custom.data, uuid)) {
           custom.data[uuid] = {
-            customCodes: [uuid],
-            display: "unknown custom level",
+            codes: [uuid],
+            name: "unknown custom level",
             enabled: false,
           };
         }

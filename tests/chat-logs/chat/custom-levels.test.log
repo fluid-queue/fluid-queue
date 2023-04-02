@@ -15,7 +15,7 @@ extensions/customcode {"data":{},"version":"2.0"}
 # change queue data
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
-save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
+save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 [12:19:27] ~%?liquidnya: !persistence on
@@ -43,7 +43,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{},"queue
 # adding the custom level again, also with no restart
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
-save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
+save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customlevel":{"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}},"queue":[],"waiting":{}}
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 [12:19:27] ~%?liquidnya: !persistence on
@@ -87,7 +87,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 extensions/customcode/data {"🏳️":{"code":"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2","type":"customlevel"}}
 # and it is not part of the customlevel extension
 # also check that cache is not persisted here!
-queue.json/extensions/customlevel {"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"customCodes":["whiteflag","flag"],"display": "a white flag level","enabled": true}}}
+queue.json/extensions/customlevel {"version":"1.0","data":{"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"codes":["whiteflag","flag"],"name": "a white flag level","enabled": true}}}
 
 [12:19:29] ~%?liquidnya: !customcodes
 [12:19:29] @^helperblock: The current custom codes are: 🏳️.

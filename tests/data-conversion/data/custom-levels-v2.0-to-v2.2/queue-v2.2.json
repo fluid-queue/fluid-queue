@@ -10,8 +10,8 @@
     "customlevel": {
       "data": {
         "80e63dc1-78f8-5310-b6c3-f15b11436860": {
-          "customCodes": ["ROMhack", "R0M-HAK-LVL"],
-          "display": "a ROMhack",
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
           "enabled": false
         }
       },

@@ -699,6 +699,10 @@ const queue = {
     // split waiting map into lists
     waiting = state.waiting;
 
+    extensions.setQueueBindingSaveHandler((name) => {
+      console.trace(`Extension ${name} requested to save`);
+      queue.save();
+    });
     extensions.overrideQueueBindings(state.extensions);
 
     // check levels

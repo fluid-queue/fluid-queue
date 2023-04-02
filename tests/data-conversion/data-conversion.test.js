@@ -129,6 +129,24 @@ test("conversion-test-empty", () => {
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
+  expect(mockFs.existsSync("./data/extensions/customcode.json")).toBe(false);
+});
+
+test("conversion-test-empty-custom-codes-enabled", () => {
+  const test = "test-empty-custom-codes-enabled";
+  const volume = loadVolume(test);
+  // empty file system
+  const index = simRequireIndex(volume, {
+    ...DEFAULT_TEST_SETTINGS,
+    custom_codes_enabled: true,
+  });
+  const mockFs = index.fs;
+  // should load without errors!
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  checkResult(mockFs, fs, test);
+  expect(mockFs.existsSync("./data/extensions/customcode.json")).toBe(true);
+  checkCustomCodes(mockFs, fs, test);
 });
 
 test("custom-codes-empty", () => {
