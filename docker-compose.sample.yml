@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 fluid:
-  container_name: 'fluid-queue'
-  image: 'fluidqueue/fluid-queue'
+  container_name: "fluid-queue"
+  image: "fluidqueue/fluid-queue"
   volumes:
     - /host/path/to/settings:/app/settings
     - /host/path/to/data:/app/data
