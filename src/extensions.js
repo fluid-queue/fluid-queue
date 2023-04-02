@@ -13,8 +13,8 @@ const defaultActivated = [
   "smm2",
   "customcode",
   "customlevel",
-  "smm1",
-  "smm2-regex",
+  // "smm1",
+  "smm2-lenient",
   "customlevel-name",
 ];
 
