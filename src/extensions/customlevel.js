@@ -401,6 +401,11 @@ const customlevelCommand = (custom) => {
               return;
             }
             for (const code of codes) {
+              if (code.indexOf(' ') != -1) {
+                // whitespace not allowed in codes!
+                respond(`Invalid data.`);
+                return;
+              }
               const fromCode = custom.fromArguments(code);
               if (fromCode != null) {
                 respond(
