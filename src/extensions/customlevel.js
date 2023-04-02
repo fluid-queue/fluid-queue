@@ -44,7 +44,11 @@ const resolver = (custom) => {
       // TODO implementation that is not O(n)
       // TODO prevent custom codes from saving the custom levels as custom codes
       for (const [uuid, value] of Object.entries(custom)) {
-        if (value.customCodes.map(s => s.toUpperCase()).includes(args.trim().toUpperCase())) {
+        if (
+          value.customCodes
+            .map((s) => s.toUpperCase())
+            .includes(args.trim().toUpperCase())
+        ) {
           return { type: "customlevel", code: uuid };
         }
       }

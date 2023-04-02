@@ -17,8 +17,7 @@ const customCodes = {
     return customCodes.map.get(customCode.toUpperCase()).customCode;
   },
   listNames: () => {
-    return [...customCodes.map.values()]
-      .map((e) => e.customCode);
+    return [...customCodes.map.values()].map((e) => e.customCode);
   },
   set: (customCodeArg, entry) => {
     const customCode = customCodeArg.trim();
