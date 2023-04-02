@@ -7,8 +7,9 @@
 /data/
 /settings/
 
-# Secrets
+# Secrets and non-sample sample files
 settings.json
+docker-compose.yml
 
 # JSHint config file
 .jshintrc

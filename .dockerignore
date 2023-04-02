@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Allow the actual bot code
+!/package.json
+!/package-lock.json
+!/src
