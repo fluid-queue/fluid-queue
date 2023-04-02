@@ -28,6 +28,8 @@ const QUEUE_V1 = {
 };
 const CUSTOM_CODES_V1 = {
   customCodes: "customCodes.json",
+  // for easier migration from old Docker (demize/quesoqueue)
+  customCodesInData: "data/customCodes.json"
 };
 const LEGACY_CUSTOM_CODES = ["R0M-HAK-LVL", "UNC-LEA-RED"]; // these level codes have been used for custom level types before introducing custom level types with UUIDs
 
@@ -431,8 +433,16 @@ const loadCustomCodesSync = () => {
 
 // returns a Map where the key is in uppercase and the entry contains an object with the unmodified `customCode` and the `levelCode`
 const loadCustomCodesV1 = () => {
+  // Check for both variants to ensure everyone can migrate
+  let codeListFilename;
+  if(fs.existsSync(CUSTOM_CODES_V1.customCodesInData)) {
+    codeListFilename = CUSTOM_CODES_V1.customCodesInData;
+  } else {
+    codeListFilename = CUSTOM_CODES_V1.customCodes;
+  }
+
   let codeListEntries = loadFileDefault(
-    CUSTOM_CODES_V1.customCodes,
+    codeListFilename,
     [],
     "Custom codes will not function."
   );
