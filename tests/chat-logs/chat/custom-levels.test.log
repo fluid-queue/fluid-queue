@@ -93,3 +93,16 @@ queue.json/extensions/customlevel {"e9c84bd6-60af-4ce3-a149-bd54ddf3edd2":{"cust
 
 [12:19:29] ~%?liquidnya: !customlevels
 [12:19:29] @^helperblock: The current custom level is a white flag level [whiteflag, flag].
+
+# you can use the display name of the customlevel
+[12:19:29] ~%?liquidnya: !add a white flag level
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+# case insensitive
+
+[12:19:29] ~%?liquidnya: !add A White Flag Level
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+
+[12:19:29] ~%?liquidnya: !add FLAG
+[12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
+

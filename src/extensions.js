@@ -15,6 +15,7 @@ const defaultActivated = [
   "customlevel",
   "smm1",
   "smm2-regex",
+  "customlevel-name",
 ];
 
 const loadFiles = (directory) => {
