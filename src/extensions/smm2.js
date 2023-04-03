@@ -1,10 +1,7 @@
 "use strict";
 
 const settings = require("../settings.js");
-
-const standardBase30 = "0123456789abcdefghijklmnopqrst";
-const nintendoBase30 = "0123456789BCDFGHJKLMNPQRSTVWXY";
-const arbitraryXorValue = 377544828;
+const parsing = require("./helpers/codeparsing.js");
 
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
@@ -29,42 +26,22 @@ function courseIdValidity(
   dataIdCourseThreshold,
   dataIdMakerThreshold
 ) {
-  let reversedString = courseIdString.split("").reverse();
-  reversedString = reversedString
-    .map((c) => standardBase30[nintendoBase30.indexOf(c)])
-    .join("");
-  let courseBits = parseInt(reversedString, 30);
+  let parsed = parsing.courseIdValidity(courseIdString);
 
-  let courseBitsString = courseBits.toString(2);
-  if (courseBitsString.length !== 44) {
+  // If it's just invalid, return that
+  if (!parsed.valid) {
     return { valid: false, makerCode: false };
   }
-  let dataId =
-    parseInt(
-      courseBitsString
-        .substring(32, 44)
-        .concat(courseBitsString.substring(10, 30)),
-      2
-    ) ^ arbitraryXorValue;
-  let fieldA = parseInt(courseBitsString.substring(0, 4), 2);
-  let fieldB = parseInt(courseBitsString.substring(4, 10), 2);
-  let fieldD = parseInt(courseBitsString.substring(30, 31, 2));
-  let fieldE = parseInt(courseBitsString.substring(31, 32, 2));
 
-  if (
-    fieldA !== 8 ||
-    fieldB !== (dataId - 31) % 64 ||
-    (fieldD == 0 && dataId < 3000004) ||
-    fieldE != 1
-  ) {
-    return { valid: false, makerCode: fieldD == 1 };
-  } else if (typeof dataIdMakerThreshold === "number" && fieldD == 1) {
-    return { valid: dataId <= dataIdMakerThreshold, makerCode: true };
-  } else if (typeof dataIdCourseThreshold === "number" && fieldD == 0) {
-    return { valid: dataId <= dataIdCourseThreshold, makerCode: false };
+  // Check the thresholds, if applicable
+  if (typeof dataIdMakerThreshold === "number" && parsed.makerCode) {
+    return { valid: parsed.dataId <= dataIdMakerThreshold, makerCode: true };
+  } else if (typeof dataIdCourseThreshold === "number" && !parsed.makerCode) {
+    return { valid: parsed.dataId <= dataIdCourseThreshold, makerCode: false };
   }
 
-  return { valid: true, makerCode: fieldD == 1 };
+  // Return the parsed results
+  return { valid: parsed.valid, makerCode: parsed.makerCode };
 }
 
 // this function extracts a level code found in someones message
