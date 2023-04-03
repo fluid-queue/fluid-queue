@@ -147,11 +147,14 @@ const queueHandler = {
   },
 };
 
-const setup = (extensions) => {
-  extensions.registerEntryType("smm2", levelType);
-  extensions.registerResolver("smm2", strictResolver);
-  extensions.registerResolver("smm2-lenient", resolver);
-  extensions.registerQueueHandler(queueHandler);
+/**
+ * @param {import('../extensions.js').extensionsApi} extensionsApi
+ */
+const setup = (extensionsApi) => {
+  extensionsApi.registerEntryType("smm2", levelType);
+  extensionsApi.registerResolver("smm2", strictResolver);
+  extensionsApi.registerResolver("smm2-lenient", resolver);
+  extensionsApi.registerQueueHandler(queueHandler);
 };
 
 module.exports = {

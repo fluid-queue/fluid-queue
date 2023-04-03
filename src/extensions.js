@@ -36,6 +36,18 @@ const resolvers = {
   available: {},
   activatedOrder: [],
   activatedSet: new Set(),
+  get api() {
+    return {
+      registerResolver: (name, resolver) => {
+        if (
+          !("resolve" in resolver && typeof resolver.resolve === "function")
+        ) {
+          throw new Error(`Resolver ${name} does not have a resolve function`);
+        }
+        this.register(name, resolver);
+      },
+    };
+  },
   load() {
     // load settings
     if (settings.resolvers != null) {
@@ -99,6 +111,13 @@ const checkVersion = (currentVersion, newVersion, name = null) => {
 const bindings = {
   objectBindings: {},
   saveHandler: null,
+  get api() {
+    return {
+      getQueueBinding: (name, version = "1.0") => {
+        return this.getObjectBinding(name, version);
+      },
+    };
+  },
   save(name) {
     if (this.saveHandler == null) {
       console.warn(
@@ -159,6 +178,29 @@ const bindings = {
 
 const commands = {
   handlers: {},
+  get api() {
+    return {
+      registerCommand: (name, handler) => {
+        if (
+          !(
+            "handle" in handler &&
+            typeof handler.handle === "function" &&
+            handler.handle.constructor === AsyncFunction
+          )
+        ) {
+          throw new Error(
+            `Command handler ${name} does not have an async handle function`
+          );
+        }
+        if (!("aliases" in handler && Array.isArray(handler.aliases))) {
+          throw new Error(
+            `Command handler ${name} does not have an aliases array`
+          );
+        }
+        this.register(name, handler);
+      },
+    };
+  },
   register(name, handler) {
     this.handlers[name] = handler;
     aliases.addDefault(name, handler.aliases);
@@ -186,6 +228,11 @@ const commands = {
 
 const queueHandlers = {
   handlers: [],
+  get api() {
+    return {
+      registerQueueHandler: this.register.bind(this),
+    };
+  },
   register(handler) {
     this.handlers.push(handler);
   },
@@ -221,16 +268,43 @@ const queueHandlers = {
   },
 };
 
+/**
+ * @typedef {object} queueEntry
+ * @property {string} [type] - The type of the queue entry. This should have been set after the entry has been resolved.
+ * @property {string} code - The level code.
+ * @property {string} [submitter] - The display name of the user who submitted the queue entry. This is only set if the entry was added to the queue.
+ * @property {string} [username] - The username of the user who submitted the queue entry. This is only set if the entry was added to the queue.
+ */
+
+/**
+ * @typedef {object} resolveResult
+ * @property {?queueEntry} entry - A queue entry if it could be resolved.
+ * @property {?string} description - A description of what kind of queue entry was resolved. This is only set whenever entry is set.
+ * @property {[string]} descriptions - A list of descriptions what kind of queue entries could not be resolved. This is only set whenerver entry is not set.
+ */
+
 const extensions = {
   resolvers,
-  entryTypes: {},
-  extensions: [],
   bindings,
   commands,
   queueHandlers,
-  getQueueBinding(name, version = "1.0") {
-    return this.bindings.getObjectBinding(name, version);
+  entryTypes: {},
+  extensions: [],
+  /**
+   * @type {extensionsApi}
+   */
+  get api() {
+    return {
+      ...this.resolvers.api,
+      ...this.bindings.api,
+      ...this.commands.api,
+      ...this.queueHandlers.api,
+      registerEntryType: this.registerEntryType.bind(this),
+      resolve: this.resolve.bind(this),
+      display: this.display.bind(this),
+    };
   },
+
   overrideQueueBindings(bindings) {
     return this.bindings.overrideObjectBindings(bindings);
   },
@@ -243,28 +317,8 @@ const extensions = {
     }
     return this.bindings.setSaveHandler(saveHandler);
   },
-  registerCommand(name, handler) {
-    if (
-      !(
-        "handle" in handler &&
-        typeof handler.handle === "function" &&
-        handler.handle.constructor === AsyncFunction
-      )
-    ) {
-      throw new Error(
-        `Command handler ${name} does not have an async handle function`
-      );
-    }
-    if (!("aliases" in handler && Array.isArray(handler.aliases))) {
-      throw new Error(`Command handler ${name} does not have an aliases array`);
-    }
-    this.commands.register(name, handler);
-  },
   async handleCommands(message, sender, respond) {
     return await this.commands.handle(message, sender, respond);
-  },
-  registerQueueHandler(handler) {
-    this.queueHandlers.register(handler);
   },
   upgradeEntries(allEntries) {
     return this.queueHandlers.upgrade(allEntries);
@@ -282,7 +336,9 @@ const extensions = {
     // setup extensions
     Object.entries(this.extensions).forEach(([name, extension]) => {
       if ("setup" in extension && typeof extension.setup === "function") {
-        extension.setup(this);
+        // setup function will get an api object instead of the extensions object directly
+        // such that only those functions can be called that are meant to be exposed to the extension
+        extension.setup(this.api);
       } else {
         console.warn(`Extension ${name} does not have a setup function`);
       }
@@ -297,12 +353,6 @@ const extensions = {
     }
     this.entryTypes[name] = entryType;
   },
-  registerResolver(name, resolver) {
-    if (!("resolve" in resolver && typeof resolver.resolve === "function")) {
-      throw new Error(`Resolver ${name} does not have a resolve function`);
-    }
-    this.resolvers.register(name, resolver);
-  },
   get availableResolvers() {
     return this.activated
       .filter((name) => name in this.available)
@@ -315,10 +365,16 @@ const extensions = {
     if (code == null) {
       // can not display queue entry
       console.error("Can not display queue entry: %s", JSON.stringify(entry));
-      return "unknown entry";
+      return (
+        "unknown entry" + (entry.type == null ? "" : ` of type ${entry.type}`)
+      );
     }
     return code;
   },
+  /**
+   * @param {queueEntry} entry - The queue entry to be displayed.
+   * @returns {string} a string representation of how the queue entry should be displayed in chat.
+   */
   display(entry) {
     const type = entry.type;
     if (type != null && type in this.entryTypes) {
@@ -327,10 +383,19 @@ const extensions = {
     }
     return this.displayFallback(entry);
   },
-  resolve(args) {
+  /**
+   * Resolving a level code to a queue entry or null.
+   * If the user input starts with a resolver name followed by a space, then only that specific resolver is used.
+   * Otherwise all resolvers are run in order until a queue entry is found.
+   *
+   * @method
+   * @param {string} levelCode User input of a level code, can contain spaces.
+   * @returns {resolveResult} a resolve result or null if it could not be resolved.
+   */
+  resolve(levelCode) {
     const descriptions = new Set();
-    // check if args start with a resolver name
-    let [resolverName, ...resolverArgs] = args.trim().split(/\s+/);
+    // check if levelCode start with a resolver name
+    let [resolverName, ...resolverArgs] = levelCode.trim().split(/\s+/);
     const resolver = this.resolvers.get(resolverName);
     if (resolver != null) {
       const entry = resolver.resolve(resolverArgs.join(" "));
@@ -365,5 +430,11 @@ const extensions = {
     };
   },
 };
+
+/**
+ * @typedef {Object} extensionsApi
+ * @property {typeof extensions.display} display
+ * @property {typeof extensions.resolve} resolve
+ */
 
 module.exports = extensions;

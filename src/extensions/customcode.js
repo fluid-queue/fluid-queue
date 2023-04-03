@@ -145,13 +145,16 @@ const commandHandler = (resolveLevel, displayLevel) => {
   };
 };
 
-const setup = (extensions) => {
-  extensions.registerResolver("customcode", resolver);
+/**
+ * @param {import('../extensions.js').extensionsApi} extensionsApi
+ */
+const setup = (extensionsApi) => {
+  extensionsApi.registerResolver("customcode", resolver);
   const handler = commandHandler(
-    (code) => extensions.resolve(code),
-    (level) => extensions.display(level)
+    (code) => extensionsApi.resolve(code),
+    (level) => extensionsApi.display(level)
   );
-  extensions.registerCommand("customcode", handler);
+  extensionsApi.registerCommand("customcode", handler);
   handler.loadCustomCodes();
 };
 
