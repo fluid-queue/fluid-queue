@@ -2,8 +2,8 @@
 
 ## Breaking changes
 
-- Move `settings.js` to the `settings` directory and deprecate loading
-  `settings.js` from the root. The deprecation warning means this isn't breaking
+- Move `settings.json` to the `settings` directory and deprecate loading
+  `settings.json` from the root. The deprecation warning means this isn't breaking
   yet, but **this will break eventually**.
 
 ## New features
