@@ -36,6 +36,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
     - [Improving The Documentation](#improving-the-documentation)
   - [Styleguides](#styleguides)
     - [Commit Messages](#commit-messages)
+  - [Git Workflow](#git-workflow)
     - [Branch Naming](#branch-naming)
   - [Join The Project Team](#join-the-project-team)
   - [Attribution](#attribution)
@@ -157,7 +158,7 @@ Additionally, you probably want to have a text editor or IDE with an eslint plug
 
 Once your changes have been made, please run eslint again to identify any linter or formatting errors, and address any errors it gives you. The output from eslint should be blank before you open a pull request. Similarly, please run `npm test` to run the built-in tests and confirm none are failing. We cannot merge your code until it passes both the eslint checks and the tests. Finally, run `npx prettier --write .` to run prettier on your code and ensure it's consistent with our format, and commit any changes it makes.
 
-Once eslint and the tests are successful, commit your code to your fork, and create a pull request against the `main` branch (you may need to [compare branches](https://github.com/fluid-queue/fluid-queue/compare) to open a pull request). Fill out the information requested in the template, open a pull request, and we'll review your contributions and provide feedback.
+Once eslint and the tests are successful, commit your code to your fork, and create a pull request against the `develop` branch (you may need to [compare branches](https://github.com/fluid-queue/fluid-queue/compare) to open a pull request). Fill out the information requested in the template, open a pull request, and we'll review your contributions and provide feedback.
 
 #### Pull Request Reviews
 
@@ -189,6 +190,14 @@ Large pull requests will be squashed and merged, and should have a more detailed
 
 In either case, remember that the commit itself shows the line-by-line changes, so while we request your commit messages be accurate and complete, they don't need to be _verbose_.
 
+## Git Workflow
+
+We generally follow the gitflow workflow for this project. This means a couple things:
+
+1. We develop against the `develop` branch primarily. New features and non-urgent bugfixes should be branched from `develop` and PRs should be opened against it. The project maintainers will decide when a release is ready and start a `release` branch to prepare the release, which will be merged into `main` and a tag created.
+2. Branch naming is important, as it makes it clear what kind of work is happening and whether a branch is based on `main` or `develop`.
+3. Any changes that are based on `main` need to be backported to `develop` as well.
+
 ### Branch Naming
 
 Branch names within the repository should consist of two parts: `tag/branch-name`. The tag should be a brief description of the type of work being done, and the name should be a concise description of the work being done. Tags should be a single word; names may be multiple words, separated by spaces. Starting the branch name with a tag helps to more quickly understand the purpose of a branch.
@@ -196,10 +205,12 @@ Branch names within the repository should consist of two parts: `tag/branch-name
 We would recommend using the following tags if possible, to maintain consistency within the repository:
 
 - `feature`: implementation of new features
-- `bugfix`: fixing a bug or regression in an existing feature
+- `bugfix`: fixing a bug or regression in an existing feature; should be based on and merged into `develop`
+- `hotfix`: an urgent bug fix based on and merged into `main`
 - `docs`: working on the included documentation
 - `refactor`: refactoring part of the codebase without intruducing a new feature or fixing any bugs
 - `dev`: working on the repository's workflows, linter configuration, etc
+- `archive`: scrapped features and old branches that have value as artifacts of how we handled certain things
 
 This is not an exhaustive list of tags that can be used, however it should cover most cases.
 
