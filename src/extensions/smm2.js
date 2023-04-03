@@ -29,7 +29,7 @@ function courseIdValidity(
   let parsed = parsing.courseIdValidity(courseIdString);
 
   // If it's just invalid, return that
-  if (!parsed.valid) {
+  if (!parsed.valid || parsed.type !== parsing.CodeTypes.NSO) {
     return { valid: false, makerCode: false };
   }
 
