@@ -21,6 +21,7 @@
   "smm1_codes_enabled": false,
   "resolvers": [
     "smm2",
+    "ocw",
     "customcode",
     "customlevel",
     "smm1",
