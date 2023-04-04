@@ -13,7 +13,7 @@ const levelCodeRegex = new RegExp(
 );
 
 function courseIdValidity(courseIdString) {
-  //
+  // Parse the code details out
   let parsed = parsing.courseIdValidity(courseIdString);
 
   // Make sure it's an OCW code

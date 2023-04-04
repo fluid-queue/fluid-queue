@@ -2,11 +2,18 @@ const standardBase30 = "0123456789abcdefghijklmnopqrst";
 const nintendoBase30 = "0123456789BCDFGHJKLMNPQRSTVWXY";
 const arbitraryXorValue = 377544828;
 
+// Magic numbers borrowed from the OCW Project
 const VALUE_SIZE_B = BigInt(26);
 const META_SIZE_B = BigInt(8);
 const VALUE_SIZE_C = BigInt(6);
 const INT4_MASK = BigInt(0b1111);
 const INT8_MASK = BigInt(0b11111111);
+const OCW_LEVEL_META = BigInt(808);
+const OCW_MAKER_META = BigInt(1337);
+
+// Magic numbers slightly reverse engineered from actual NSO codes
+const NSO_LEVEL_META = BigInt(2117);
+const NSO_MAKER_META = BigInt(2245);
 
 const CodeTypes = {
   Invalid: "INVALID",
@@ -26,6 +33,7 @@ function parseBigInt(value, radix) {
   return parts.reduce((r, v) => r * factor + BigInt(parseInt(v, radix)), 0n);
 }
 
+// Get the unchanging meta bits and turn them into a number
 function getMeta(courseBits) {
   let a =
     (courseBits >> (VALUE_SIZE_B + META_SIZE_B + VALUE_SIZE_C)) & INT4_MASK;
@@ -69,28 +77,29 @@ function courseIdValidity(courseIdString) {
     dataId = 0;
   }
 
-  if (courseMeta === BigInt(808)) {
+  // Use the meta bits to determine a level type
+  if (courseMeta === OCW_LEVEL_META) {
     return {
       type: CodeTypes.OCW,
       valid: true,
       makerCode: false,
       dataId: dataId,
     };
-  } else if (courseMeta === BigInt(1337)) {
+  } else if (courseMeta === OCW_MAKER_META) {
     return {
       type: CodeTypes.OCW,
       valid: true,
       makerCode: true,
       dataId: dataId,
     };
-  } else if (courseMeta === BigInt(2117)) {
+  } else if (courseMeta === NSO_LEVEL_META) {
     return {
       type: CodeTypes.NSO,
       valid: true,
       makerCode: false,
       dataId: dataId,
     };
-  } else if (courseMeta === BigInt(2245)) {
+  } else if (courseMeta === NSO_MAKER_META) {
     return {
       type: CodeTypes.NSO,
       valid: true,
@@ -99,6 +108,7 @@ function courseIdValidity(courseIdString) {
     };
   }
 
+  // If the code doesn't match the known metas, it's invalid
   return {
     type: CodeTypes.Invalid,
     valid: false,
