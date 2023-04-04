@@ -21,10 +21,12 @@
   "smm1_codes_enabled": false,
   "resolvers": [
     "smm2",
+    "ocw",
     "customcode",
     "customlevel",
     "smm1",
     "smm2-lenient",
+    "ocw-lenient",
     "customlevel-name"
   ]
 }
