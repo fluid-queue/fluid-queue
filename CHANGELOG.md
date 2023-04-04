@@ -25,3 +25,4 @@
   Docker Hub (#36)
 - Allow for migration of customCodes.json from the data directory for migration
   from the old Docker container (demize/quesoqueue) (#36)
+- Add banner in console log on application startup
