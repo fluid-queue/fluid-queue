@@ -43,10 +43,27 @@ const list_options = ["position", "weight", "both", "none"];
  * @property {boolean} [showMakerCode] - if maker codes should be marked as such
  */
 
+// To try to
+let settingsJson;
+try {
+  settingsJson = fs.readFileSync("settings/settings.json", {
+    encoding: "utf8",
+  });
+} catch (err) {
+  if (err.code === "ENOENT") {
+    settingsJson = fs.readFileSync("settings.json", { encoding: "utf8" });
+    console.warn(
+      "Loading settings.json from the root directory is deprecated and may stop working in a future release."
+    );
+    console.warn("Please move settings.json into the settings directory.");
+  } else {
+    // We only care about the file not being found, other errors should be thrown
+    throw err;
+  }
+}
+
 /** @type {settings} */
-const settings = JSON.parse(
-  fs.readFileSync("settings.json", { encoding: "utf8" })
-);
+const settings = JSON.parse(settingsJson);
 
 /** @type {{[key: string]: (setting: any) => boolean}} */
 const settings_validations = {

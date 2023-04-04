@@ -166,7 +166,7 @@ const createMockVolume = (settings = undefined) => {
   populateMockVolume(volume, "./src");
   if (settings !== undefined) {
     volume.fromJSON(
-      { "./settings.json": JSON.stringify(settings) },
+      { "./settings/settings.json": JSON.stringify(settings) },
       path.resolve(".")
     );
   }
@@ -245,7 +245,7 @@ const simRequireIndex = (
         volume = new Volume();
         volume.fromJSON(files);
         volume.fromJSON(
-          { "./settings.json": JSON.stringify(mockSettings) },
+          { "./settings/settings.json": JSON.stringify(mockSettings) },
           path.resolve(".")
         );
       }
