@@ -51,11 +51,14 @@ const extractValidCode = (levelCode, lenient = false) => {
 };
 
 const codeSuffix = (levelCode) => {
-  const makerCode = extractValidCode(levelCode).makerCode;
-  if (makerCode && settings.showMakerCode !== false) {
-    return " (OCW maker code)";
+  if (settings.showMakerCode !== false) {
+    const makerCode = extractValidCode(levelCode).makerCode;
+    if (makerCode) {
+      return " (OCW maker code)";
+    }
+    return " (OCW level code)";
   }
-  return " (OCW level code)";
+  return " (OCW)";
 };
 
 const levelType = {
