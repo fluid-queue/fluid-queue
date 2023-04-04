@@ -52,6 +52,8 @@ First, download the [sample Compose file](https://raw.githubusercontent.com/flui
 
 Next, download the [sample `settings.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings/settings.example.json) into your `settings` directory, rename it to `settings.json`, and edit it appropriately (as described below). Do not forget to set your `clientId` and `clientSecret`.
 
+**Important note:** Docker permissions can be a little weird; make sure that your `data` and `settings` directories (and the files within) are either read/write for everyone (e.g. `chmod -R go+rw data/ settings/`) or owned by UID 1000. Failure to account for permissions can result in crashes.
+
 Once you have your `settings.json` edited and inside your `settings` directory, your (empty, for now) `data` directory, and your `docker-compose.yml` pointing to the correct paths, you can run the bot. From the directory with `docker-compose.yml`:
 
 ```bash
