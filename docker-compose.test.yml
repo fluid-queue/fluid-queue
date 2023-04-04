@@ -3,6 +3,4 @@ services:
     build: .
     environment:
       - NODE_ENV=development
-    volumes:
-      - ./tests:/app/tests
     command: sh -c 'npm install && npm run test'
