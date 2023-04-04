@@ -11,7 +11,10 @@ package-lock.json
 /customCodes.json
 /userOnlineTime.txt
 /data/
-/settings/
+/settings/*
+
+# Don't ignore the example settings file
+!/settings/settings.example.json
 
 # Secrets and non-sample sample files
 settings.json
