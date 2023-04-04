@@ -5,6 +5,9 @@ const parsing = require("./helpers/codeparsing.js");
 // If anyone figures that out, we can update this, but it would still be different
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
+const levelCodeRegexStrict = new RegExp(
+  `^(${code})${delim}(${code})${delim}(${code})$`
+);
 const levelCodeRegex = new RegExp(
   `(${code})${delim}(${code})${delim}(${code})`
 );
@@ -22,9 +25,14 @@ function courseIdValidity(courseIdString) {
   return { valid: parsed.valid, makerCode: parsed.makerCode };
 }
 
-const extractValidCode = (levelCode) => {
+const extractValidCode = (levelCode, lenient = false) => {
   // TODO: iterate through matches and check if the code is valid for each match and return the first valid one to make this even more lenient
-  let match = levelCode.match(levelCodeRegex);
+  let match;
+  if (lenient) {
+    match = levelCode.match(levelCodeRegex);
+  } else {
+    match = levelCode.match(levelCodeRegexStrict);
+  }
   if (match) {
     let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
     let validity = courseIdValidity(courseIdString);
@@ -59,7 +67,18 @@ const levelType = {
 const resolver = {
   description: "ocw level code",
   resolve(args) {
-    const result = extractValidCode(args);
+    const result = extractValidCode(args, false);
+    if (result.valid) {
+      return { type: "ocw", code: result.code };
+    }
+    return null;
+  },
+};
+
+const lenientResolver = {
+  description: "ocw level code",
+  resolve(args) {
+    const result = extractValidCode(args, true);
     if (result.valid) {
       return { type: "ocw", code: result.code };
     }
@@ -80,6 +99,7 @@ const queueHandler = {
 const setup = (extensions) => {
   extensions.registerEntryType("ocw", levelType);
   extensions.registerResolver("ocw", resolver);
+  extensions.registerResolver("ocw-lenient", lenientResolver);
   extensions.registerQueueHandler(queueHandler);
 };
 
