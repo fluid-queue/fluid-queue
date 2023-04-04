@@ -17,20 +17,29 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Table of Contents
 
-- [I Have a Question](#i-have-a-question)
-  - [Discord Server](#discord-server)
-- [I Want To Contribute](#i-want-to-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Your First Code Contribution](#your-first-code-contribution)
-    - [Environment Setup](#environment-setup)
-    - [Making Your Changes](#making-your-changes)
-    - [Opening a Pull Request](#opening-a-pull-request)
-    - [Pull Request Reviews](#pull-request-reviews)
-  - [Improving The Documentation](#improving-the-documentation)
-- [Styleguides](#styleguides)
-  - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
+- [Contributing to fluid-queue](#contributing-to-fluid-queue)
+  - [Table of Contents](#table-of-contents)
+  - [I Have a Question](#i-have-a-question)
+    - [Discord Server](#discord-server)
+  - [I Want To Contribute](#i-want-to-contribute)
+    - [Reporting Bugs](#reporting-bugs)
+      - [Before Submitting a Bug Report](#before-submitting-a-bug-report)
+      - [How Do I Submit a Good Bug Report?](#how-do-i-submit-a-good-bug-report)
+    - [Suggesting Enhancements](#suggesting-enhancements)
+      - [Before Submitting an Enhancement](#before-submitting-an-enhancement)
+      - [How Do I Submit a Good Enhancement Suggestion?](#how-do-i-submit-a-good-enhancement-suggestion)
+    - [Your First Code Contribution](#your-first-code-contribution)
+      - [Environment Setup](#environment-setup)
+      - [Making Your Changes](#making-your-changes)
+      - [Opening a Pull Request](#opening-a-pull-request)
+      - [Pull Request Reviews](#pull-request-reviews)
+    - [Improving The Documentation](#improving-the-documentation)
+  - [Styleguides](#styleguides)
+    - [Commit Messages](#commit-messages)
+  - [Git Workflow](#git-workflow)
+    - [Branch Naming](#branch-naming)
+  - [Join The Project Team](#join-the-project-team)
+  - [Attribution](#attribution)
 
 ## I Have a Question
 
@@ -125,7 +134,7 @@ In addition the the Bug Report template mentioned earlier, we also have a Featur
 
 #### Environment Setup
 
-You will need to have [Node.js] installed on your machine in order to run the bot locally, so make sure that's installed. You'll also want an editor; while you can use any text editor, we would recommend one like VS Code (with the eslint extension) for syntax highlighting and built-in linting.
+You will need to have [Node.js](https://nodejs.org) installed on your machine in order to run the bot locally, so make sure that's installed. You'll also want an editor; while you can use any text editor, we would recommend one like VS Code (with the eslint extension) for syntax highlighting and built-in linting.
 
 Once you have Node and your editor set up, fork the repository, clone it, and create a branch to work in:
 
@@ -134,6 +143,8 @@ $ git clone git@github.com:your-username/fluid-queue.git
 $ cd fluid-queue
 $ git checkout -b your-first-contribution
 ```
+
+While we recommend keeping in mind our [guidelines for branch naming](#branch-naming),
 
 Then you'll want to install the dependencies with `npm install`. Make sure this installed eslint by running `./node_modules/.bin/eslint src`; this should return successfully with no output. You should also check to make sure prettier is installed with `npx prettier --check .` as prettier is used for enforcing formatting. Now you can open the code in your editor and make your changes!
 
@@ -147,7 +158,7 @@ Additionally, you probably want to have a text editor or IDE with an eslint plug
 
 Once your changes have been made, please run eslint again to identify any linter or formatting errors, and address any errors it gives you. The output from eslint should be blank before you open a pull request. Similarly, please run `npm test` to run the built-in tests and confirm none are failing. We cannot merge your code until it passes both the eslint checks and the tests. Finally, run `npx prettier --write .` to run prettier on your code and ensure it's consistent with our format, and commit any changes it makes.
 
-Once eslint and the tests are successful, commit your code to your fork, and create a pull request against the `main` branch (you may need to [compare branches](https://github.com/fluid-queue/fluid-queue/compare) to open a pull request). Fill out the information requested in the template, open a pull request, and we'll review your contributions and provide feedback.
+Once eslint and the tests are successful, commit your code to your fork, and create a pull request against the `develop` branch (you may need to [compare branches](https://github.com/fluid-queue/fluid-queue/compare) to open a pull request). Fill out the information requested in the template, open a pull request, and we'll review your contributions and provide feedback.
 
 #### Pull Request Reviews
 
@@ -169,7 +180,7 @@ One thing to keep in mind for the documentation site is the order of the pages, 
 
 ## Styleguides
 
-Code style is enforced through eslint; when writing code, please ensure you have no errors from eslint.
+Code style is enforced through eslint and prettier; when writing code, please ensure you run prettier prior to your commit and have no eslint errors.
 
 ### Commit Messages
 
@@ -178,6 +189,32 @@ Commit messages should have a brief heading summarizing the changes in the commi
 Large pull requests will be squashed and merged, and should have a more detailed commit message to cover all the changes.
 
 In either case, remember that the commit itself shows the line-by-line changes, so while we request your commit messages be accurate and complete, they don't need to be _verbose_.
+
+## Git Workflow
+
+We generally follow the gitflow workflow for this project. This means a couple things:
+
+1. We develop against the `develop` branch primarily. New features and non-urgent bugfixes should be branched from `develop` and PRs should be opened against it. The project maintainers will decide when a release is ready and start a `release` branch to prepare the release, which will be merged into `main` and a tag created.
+2. Branch naming is important, as it makes it clear what kind of work is happening and whether a branch is based on `main` or `develop`.
+3. Any changes that are based on `main` need to be backported to `develop` as well.
+
+### Branch Naming
+
+Branch names within the repository should consist of two parts: `tag/branch-name`. The tag should be a brief description of the type of work being done, and the name should be a concise description of the work being done. Tags should be a single word; names may be multiple words, separated by spaces. Starting the branch name with a tag helps to more quickly understand the purpose of a branch.
+
+We would recommend using the following tags if possible, to maintain consistency within the repository:
+
+- `feature`: implementation of new features
+- `bugfix`: fixing a bug or regression in an existing feature; should be based on and merged into `develop`
+- `hotfix`: an urgent bug fix based on and merged into `main`
+- `docs`: working on the included documentation
+- `refactor`: refactoring part of the codebase without intruducing a new feature or fixing any bugs
+- `dev`: working on the repository's workflows, linter configuration, etc
+- `archive`: scrapped features and old branches that have value as artifacts of how we handled certain things
+
+This is not an exhaustive list of tags that can be used, however it should cover most cases.
+
+This convention is not required for external contributors, as external branches belong to their own repositories, however we expect to follow this convention internally.
 
 ## Join The Project Team
 
