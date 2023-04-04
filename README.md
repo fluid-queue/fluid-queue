@@ -14,7 +14,7 @@ You need to have the Docker Engine installed on the system, as well as Docker Co
 
 First, download the [sample Compose file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/docker-compose.sample.yml) and rename it to `docker-compose.yml`. Place it in the directory you want to use for the bot. Next, create a `data` and `settings` directory to store the bot's data and configuration in, and replace the volume paths in `docker-compose.yml` with your local paths.
 
-Next, download the [sample `settings.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings.example.json) into your `settings` directory, rename it to `settings.json`, and edit it appropriately (as described below).
+Next, download the [sample `settings.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings/settings.example.json) into your `settings` directory, rename it to `settings.json`, and edit it appropriately (as described below).
 
 Once you have your `settings.json` edited and inside your `settings` directory, your (empty, for now) `data` directory, and your `docker-compose.yml` pointing to the correct paths, you can run the bot. From the directory with `docker-compose.yml`:
 
@@ -67,7 +67,7 @@ Next, install the dependencies for the project using the following command:
 After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
 
 ```bash
-cp settings.example.json data/settings.json
+cp settings/settings.example.json settings/settings.json
 
 # now edit settings.json with your favorite text editor
 ```
