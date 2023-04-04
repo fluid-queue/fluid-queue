@@ -50,6 +50,6 @@
       "eslint --cache --fix",
       "prettier --write"
     ],
-    "*.{json,css,md}": "prettier --write"
+    "*.{json,yml,md}": "prettier --write"
   }
 }
