@@ -75,9 +75,11 @@ const extractValidCode = (levelCode, strict = true) => {
 };
 
 const makerSuffix = (levelCode) => {
-  const makerCode = extractValidCode(levelCode).makerCode;
-  if (makerCode && settings.showMakerCode !== false) {
-    return " (maker code)";
+  if (settings.showMakerCode !== false) {
+    const makerCode = extractValidCode(levelCode).makerCode;
+    if (makerCode) {
+      return " (maker code)";
+    }
   }
   return "";
 };
