@@ -1,5 +1,7 @@
-# "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+# this captures the chat messages of that user as the chatbot responses
+chatbot helperblock
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters 
 chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
 # chatty chat log
@@ -21,7 +23,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [20:29:54] @^helperblock: liquidnya, that is an invalid level code.
 
 # configure ocw
-settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
 # restart to reload settings
 restart
 
@@ -39,7 +41,7 @@ restart
 # [20:36:21] @^helperblock: liquidnya, RHC-D08-CC8 (OCW) has been added to the queue.
 
 # showMakerCode
-settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
 # restart to reload settings
 restart
 

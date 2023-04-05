@@ -5,6 +5,14 @@
 - Move `settings.json` to the `settings` directory and deprecate loading
   `settings.json` from the root. The deprecation warning means this isn't breaking
   yet, but **this will break eventually**.
+- Minimum node version is 16.
+- Settings `username` and `password` are removed and no longer supported.
+  Instead `clientId` and `clientSecret` have to be supplied as well as a `settings/tokens.json` file is now required, containing the following properties:
+  - `accessToken` - a twitch access token with the following scopes: `chat:edit`, `chat:read`, `moderator:read:chatters`
+  - `refreshToken` - a twitch refresh token
+  - `expiresIn` initially set to `0`
+  - `obtainmentTimestamp` initially set to `0`
+- The bot has to be the broadcaster or a moderator in your chat
 
 ## New features
 

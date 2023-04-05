@@ -7,8 +7,9 @@
 /data/
 /settings/*
 
-# Don't ignore the example settings file
+# Don't ignore the example files
 !/settings/settings.example.json
+!/settings/tokens.example.json
 
 # Secrets and non-sample sample files
 settings.json

@@ -22,9 +22,9 @@ const list_options = ["position", "weight", "both", "none"];
 /**
  *
  * @typedef settings
- * @property {string} username - username bot will use to connect to twitch
- * @property {string} password - oauth token generated at https://twitchapps.com/tmi/
  * @property {string} channel - channel for bot to run in
+ * @property {string} clientId - client id of the twitch application
+ * @property {string} clientSecret - client secret of the twitch application
  * @property {boolean} [start_open] - whether queue will start open
  * @property {boolean} [enable_absolute_position] - display position including offline levels
  * @property {boolean} [custom_codes_enabled] - allow custom codes
@@ -44,14 +44,17 @@ const list_options = ["position", "weight", "both", "none"];
  */
 
 // To try to
+let fileName;
 let settingsJson;
 try {
-  settingsJson = fs.readFileSync("settings/settings.json", {
+  fileName = "settings/settings.json";
+  settingsJson = fs.readFileSync(fileName, {
     encoding: "utf8",
   });
 } catch (err) {
   if (err.code === "ENOENT") {
-    settingsJson = fs.readFileSync("settings.json", { encoding: "utf8" });
+    fileName = "settings.json";
+    settingsJson = fs.readFileSync(fileName, { encoding: "utf8" });
     console.warn(
       "Loading settings.json from the root directory is deprecated and may stop working in a future release."
     );
@@ -67,10 +70,12 @@ const settings = JSON.parse(settingsJson);
 
 /** @type {{[key: string]: (setting: any) => boolean}} */
 const settings_validations = {
-  username: (name) => typeof name === "string",
-  password: (pass) => typeof pass === "string" && pass.startsWith("oauth"),
   channel: (channel) =>
     typeof channel === "string" && /^[a-z0-9_]{2,}$/.test(channel), // channel needs to be a valid twitch username (this is used in the chatters URL in twitch.js)
+  clientId: (clientId) =>
+    typeof clientId === "string" && clientId != "{YOUR_CLIENT_ID}",
+  clientSecret: (clientSecret) =>
+    typeof clientSecret === "string" && clientSecret != "{YOUR_CLIENT_SECRET}",
   start_open: (open) => typeof open === "boolean",
   enable_absolute_position: (absolute_position) =>
     typeof absolute_position === "boolean",
@@ -102,15 +107,19 @@ for (const key in settings) {
   if (Object.hasOwnProperty.call(settings, key)) {
     try {
       if (!settings_validations[key](settings[key])) {
-        throw new Error(`problem with ${key}`);
+        throw new Error(
+          `${fileName}: the value of the setting ${key} is not valid.`
+        );
       }
     } catch (e) {
       if (e instanceof TypeError) {
-        throw new TypeError(`${key} is not a valid option!`);
+        throw new TypeError(
+          `${fileName}: setting ${key} is not a valid option!`
+        );
       }
       throw e;
     }
   }
 }
 
-module.exports = settings;
+module.exports = { ...settings, fileName };

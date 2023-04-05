@@ -1,0 +1,6 @@
+{
+  "accessToken": "{INITIAL_ACCESS_TOKEN}",
+  "refreshToken": "{INITIAL_REFRESH_TOKEN}",
+  "expiresIn": 0,
+  "obtainmentTimestamp": 0
+}
