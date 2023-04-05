@@ -176,7 +176,7 @@ const chatLogTest = (fileName) => {
           accuracy = parseInt(rest);
         } else if (command == "chatbot") {
           chatbot = rest.trim().toLowerCase();
-        }else if (command == "settings") {
+        } else if (command == "settings") {
           // TODO: ideally new settings would be written to settings.json
           //       and settings.js could be reloaded instead to validate settings
           replace(test.settings, JSON.parse(rest));
@@ -249,7 +249,10 @@ const chatLogTest = (fileName) => {
           };
           // console.log(`${time}`, chat.sender, 'sends', chat.message);
           // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
-          if (chatbot != null && chat.sender.username == chatbot.toLowerCase()) {
+          if (
+            chatbot != null &&
+            chat.sender.username == chatbot.toLowerCase()
+          ) {
             // this is a message by the chat bot, check replyMessageQueue
             let shift = replyMessageQueue.shift();
             if (shift === undefined) {

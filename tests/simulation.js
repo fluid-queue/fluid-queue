@@ -10,8 +10,8 @@ const fs = require("fs");
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
 const DEFAULT_TEST_SETTINGS = {
   channel: "queso_queue_test_channel",
-  clientId:"",
-  clientSecret:"",
+  clientId: "",
+  clientSecret: "",
   max_size: 50,
   level_timeout: 10,
   level_selection: [
@@ -103,7 +103,7 @@ const { twitchApi } = require("../src/twitch-api.js");
 const dynamic = require("set-interval-async/dynamic");
 
 // mock chatters
-twitchApi.getChatters.mockImplementation(() =>Promise.resolve(mockChatters));
+twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
 
 /**
  * @param {Object} newChatters chatters as returned by the chatters resource, see `../src/twitch.js`
@@ -133,7 +133,7 @@ const simSetChatters = (newChatters) => {
   let users = [];
   Object.keys(newChatters.chatters).forEach((y) =>
     newChatters.chatters[y].forEach((z) => users.push({ userName: z }))
-  )
+  );
   mockChatters = users;
   return mockChatters;
 };
@@ -269,8 +269,8 @@ const simRequireIndex = (
       twitch = require("../src/twitch.js").twitch();
       const queue = require("../src/queue.js");
 
-// spy on the quesoqueue that index will use
-const quesoqueueSpy = jest.spyOn(queue, "quesoqueue");
+      // spy on the quesoqueue that index will use
+      const quesoqueueSpy = jest.spyOn(queue, "quesoqueue");
 
       // run index.js
       require("../src/index.js");

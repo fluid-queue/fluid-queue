@@ -38,19 +38,19 @@ class TwitchApi {
    */
   async setup() {
     if (
-        settings.clientId == null ||
-        settings.clientId == "" ||
-        settings.clientId == "{YOUR_CLIENT_ID}"
-      ) {
-        throw new Error(`${settings.fileName}: Invalid clientId.`);
-      }
-      if (
-        settings.clientSecret == null ||
-        settings.clientSecret == "" ||
-        settings.clientSecret == "{YOUR_CLIENT_SECRET}"
-      ) {
-        throw new Error(`${settings.fileName}: Invalid clientSecret.`);
-      }
+      settings.clientId == null ||
+      settings.clientId == "" ||
+      settings.clientId == "{YOUR_CLIENT_ID}"
+    ) {
+      throw new Error(`${settings.fileName}: Invalid clientId.`);
+    }
+    if (
+      settings.clientSecret == null ||
+      settings.clientSecret == "" ||
+      settings.clientSecret == "{YOUR_CLIENT_SECRET}"
+    ) {
+      throw new Error(`${settings.fileName}: Invalid clientSecret.`);
+    }
     // validation is done before setting anything up to help users figure out problems early
     const tokenData = JSON.parse(fs.readFileSync(tokensFileName, "utf-8"));
     if (
