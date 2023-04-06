@@ -4,6 +4,7 @@ const tmi = require("@twurple/auth-tmi");
 const settings = require("./settings.js");
 const fs = require("fs");
 const gracefulFs = require("graceful-fs");
+const { SingleValueCache } = require("./cache.js");
 
 const tokensFileName = "./settings/tokens.json";
 
@@ -25,13 +26,25 @@ class TwitchApi {
    */
   #broadcasterUser;
   /**
-   * @type {import('@twurple/api').HelixChatChatter[]}
+   * @type {SingleValueCache<import('@twurple/api').HelixChatChatter[]>}
    */
-  #chattersCache = [];
+  #chattersCache;
+
+  constructor() {
+    this.#chattersCache = new SingleValueCache(
+      this.#loadChatters.bind(this),
+      [],
+      30_000
+    );
+  }
+
+  // visible for testing
   /**
-   * @type {Date}
+   * @type {?ApiClient}
    */
-  #chattersCacheTime = null;
+  get apiClient() {
+    return this.#apiClient;
+  }
 
   /**
    * Setup authentication.
@@ -88,7 +101,12 @@ class TwitchApi {
       "chatters",
     ]);
     // create the api client
-    this.#apiClient = new ApiClient({ authProvider: this.#authProvider });
+    this.#apiClient = new ApiClient({
+      authProvider: this.#authProvider,
+      logger: {
+        //minLevel: 'debug'
+      },
+    });
     // get the user id of the channel/broadcaster
     this.#broadcasterUser = await this.#apiClient.asIntent(
       ["user-by-name"],
@@ -110,31 +128,43 @@ class TwitchApi {
     return new tmi.client({ ...opts, authProvider: this.#authProvider });
   }
 
-  async #useCache(forceLoad = false) {
-    if (forceLoad) {
-      // do not use the cache here
-      // this is most likely because of the !level command
-      return false;
-    }
+  async #loadChatters() {
+    return await this.#apiClient.asIntent(["chatters"], async (ctx) => {
+      const result = [];
+      const pushAll = (data) => data.forEach(result.push.bind(result));
+      // request the maximum of 1000 to reduce number of requests
+      let page = await ctx.chat.getChatters(
+        this.#broadcasterUser,
+        this.#botUserId,
+        { limit: 1000 }
+      );
+      pushAll(page.data);
+      while (page.cursor != null) {
+        page = await ctx.chat.getChatters(
+          this.#broadcasterUser,
+          this.#botUserId,
+          { cursor: page.cursor }
+        );
+        pushAll(page.data);
+      }
+      console.log(`Fetched ${result.length} chatters`);
+      return result;
+    });
+  }
+
+  /**
+   * @returns {Promise<boolean>} if the api has limited use
+   */
+  async #isLimited() {
     const rateLimiterStats = await this.#apiClient.asIntent(
       ["chatters"],
       async (ctx) => ctx.rateLimiterStats
     );
-    if (
+    return (
       rateLimiterStats != null &&
       rateLimiterStats.lastKnownRemainingRequests != null &&
       rateLimiterStats.lastKnownRemainingRequests < 3
-    ) {
-      // use cache because of rate limiting
-      return true;
-    }
-    if (this.#chattersCacheTime == null) {
-      // there is no cache to be used
-      return false;
-    }
-    const diffTimeMs = new Date() - this.#chattersCacheTime;
-    // use cache for 30 seconds
-    return diffTimeMs < 30_000;
+    );
   }
 
   /**
@@ -145,23 +175,20 @@ class TwitchApi {
    * @param {boolean} invalidateCache If set to true this always reloads chatters from the api.
    * @returns {Promise<import('@twurple/api').HelixChatChatter[]>}
    */
-  async getChatters(forceLoad = false) {
-    if (!(await this.#useCache(forceLoad))) {
-      try {
-        this.#chattersCache = await this.#apiClient.asIntent(
-          ["chatters"],
-          async (ctx) => {
-            return await ctx.chat
-              .getChattersPaginated(this.#broadcasterUser, this.#botUserId)
-              .getAll();
-          }
-        );
-      } catch (e) {
-        console.warn("Error getting online users", e.stack || e);
-      }
-      this.#chattersCacheTime = new Date();
+  async getChatters(options = {}) {
+    options = { forceRefresh: false, ...options };
+    if (options.forceRefresh) {
+      console.log("Force refresh");
+      return await this.#chattersCache.fetch({
+        forceRefresh: options.forceRefresh,
+      });
     }
-    return this.#chattersCache;
+    if (await this.#isLimited()) {
+      console.warn("Use cache because of rate limits.");
+      // use cache because of rate limiting
+      return this.#chattersCache.get();
+    }
+    return await this.#chattersCache.fetch();
   }
 }
 

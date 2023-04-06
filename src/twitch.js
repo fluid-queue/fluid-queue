@@ -7,9 +7,9 @@ var lurkers = new Set();
 
 const twitch = {
   getOnlineUsers: async (options = {}) => {
-    options = { forceLoad: false, ...options };
+    options = { forceRefresh: false, ...options };
     var online_users = new Set();
-    const chatters = await twitchApi.getChatters(options.forceLoad);
+    const chatters = await twitchApi.getChatters(options.forceRefresh);
     chatters.forEach((chatter) => online_users.add(chatter.userName));
     var current_time = Date.now();
     Object.keys(recent_chatters)

@@ -324,7 +324,7 @@ const queue = {
 
   next: async (list = undefined) => {
     if (list === undefined) {
-      list = await queue.list({ forceLoad: true });
+      list = await queue.list({ forceRefresh: true });
     }
     const both = list.online.concat(list.offline);
     const removedLevels = current_level === undefined ? [] : [current_level];
@@ -345,12 +345,12 @@ const queue = {
   },
 
   subnext: async () => {
-    const list = await queue.sublist({ forceLoad: true });
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.next(list);
   },
 
   modnext: async () => {
-    const list = await queue.modlist({ forceLoad: true });
+    const list = await queue.modlist({ forceRefresh: true });
     return await queue.next(list);
   },
 
@@ -380,7 +380,7 @@ const queue = {
 
   random: async (list = undefined) => {
     if (list === undefined) {
-      list = await queue.list({ forceLoad: true });
+      list = await queue.list({ forceRefresh: true });
     }
     const removedLevels = current_level === undefined ? [] : [current_level];
     let eligible_levels = list.online;
@@ -407,18 +407,18 @@ const queue = {
   },
 
   subrandom: async () => {
-    const list = await queue.sublist({ forceLoad: true });
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.random(list);
   },
 
   modrandom: async () => {
-    const list = await queue.modlist({ forceLoad: true });
+    const list = await queue.modlist({ forceRefresh: true });
     return await queue.random(list);
   },
 
   weightedrandom: async (list = undefined) => {
     const weightedList = await queue.weightedList(false, list, {
-      forceLoad: true,
+      forceRefresh: true,
     });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
@@ -545,7 +545,7 @@ const queue = {
 
   weightednext: async (list = undefined) => {
     const weightedList = await queue.weightedList(true, list, {
-      forceLoad: true,
+      forceRefresh: true,
     });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
@@ -575,12 +575,12 @@ const queue = {
   },
 
   weightedsubrandom: async () => {
-    const list = await queue.sublist({ forceLoad: true });
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.weightedrandom(list);
   },
 
   weightedsubnext: async () => {
-    const list = await queue.sublist({ forceLoad: true });
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.weightednext(list);
   },
 

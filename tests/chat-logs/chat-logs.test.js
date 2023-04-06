@@ -120,7 +120,7 @@ const parseMessage = (line) => {
 
 const chatLogTest = (fileName) => {
   return async () => {
-    let test = await simRequireIndex();
+    let test = simRequireIndex();
     let chatbot = null;
 
     let replyMessageQueue = [];
@@ -170,7 +170,7 @@ const chatLogTest = (fileName) => {
           end: { column: line.length + 1, line: lineno },
         };
         if (command == "restart") {
-          test = await simRequireIndex(test.volume, test.settings, new Date());
+          test = simRequireIndex(test.volume, test.settings, new Date());
           test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
         } else if (command == "accuracy") {
           accuracy = parseInt(rest);
