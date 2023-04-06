@@ -1,5 +1,11 @@
 FROM node:19-alpine
 
+# For version information
+ARG SOURCE_COMMIT
+ARG DOCKER_TAG
+ENV SOURCE_COMMIT=$SOURCE_COMMIT
+ENV DOCKER_TAG=$DOCKER_TAG
+
 # Run as the node user for security purposes
 USER node
 
