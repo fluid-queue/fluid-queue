@@ -7,7 +7,6 @@ const {
   simRequireIndex,
   simSetChatters,
   createMockVolume,
-  fetchMock,
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
@@ -20,8 +19,7 @@ const consoleWarnMock = jest.spyOn(global.console, "warn");
 const consoleErrorMock = jest.spyOn(global.console, "error");
 
 beforeEach(() => {
-  // reset fetch
-  fetchMock.mockClear();
+  // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time

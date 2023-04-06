@@ -9,9 +9,9 @@ const fs = require("fs");
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
 const DEFAULT_TEST_SETTINGS = {
-  username: "queso_queue_test_username",
-  password: "oauth:test",
   channel: "queso_queue_test_channel",
+  clientId: "",
+  clientSecret: "",
   max_size: 50,
   level_timeout: 10,
   level_selection: [
@@ -42,9 +42,10 @@ const EMPTY_CHATTERS = {
 const AsyncFunction = (async () => {}).constructor;
 
 // mock variables
-var mockChatters = EMPTY_CHATTERS;
+var mockChatters = [];
 
 // mocks
+jest.mock("../src/twitch-api.js");
 jest.mock("../src/chatbot.js");
 jest.mock("node-fetch", () => jest.fn());
 
@@ -98,15 +99,11 @@ jest.mock("set-interval-async/dynamic", () => {
 });
 
 // only import after mocking!
-const fetch = require("node-fetch");
+const { twitchApi } = require("../src/twitch-api.js");
 const dynamic = require("set-interval-async/dynamic");
 
-// mock fetch
-fetch.mockImplementation(() =>
-  Promise.resolve({
-    json: () => Promise.resolve(mockChatters),
-  })
-);
+// mock chatters
+twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
 
 /**
  * @param {Object} newChatters chatters as returned by the chatters resource, see `../src/twitch.js`
@@ -133,7 +130,11 @@ const simSetChatters = (newChatters) => {
       newChatters.chatters[key] = [];
     }
   });
-  mockChatters = newChatters;
+  let users = [];
+  Object.keys(newChatters.chatters).forEach((y) =>
+    newChatters.chatters[y].forEach((z) => users.push({ userName: z }))
+  );
+  mockChatters = users;
   return mockChatters;
 };
 
@@ -236,6 +237,11 @@ const simRequireIndex = (
         mockSettings = DEFAULT_TEST_SETTINGS;
       }
 
+      // remove fileName setting
+      if (mockSettings.fileName != null) {
+        mockSettings.fileName = undefined;
+      }
+
       // create virtual file system
       if (volume === undefined) {
         volume = createMockVolume(mockSettings);
@@ -279,7 +285,6 @@ const simRequireIndex = (
       chatbot_helper = chatbot.helper.mock.results[0].value;
 
       expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
-      expect(chatbot_helper.connect).toHaveBeenCalledTimes(1);
       expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
       expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
 
@@ -442,7 +447,6 @@ module.exports = {
   newLevel,
   flushPromises,
   clearAllTimers,
-  fetchMock: fetch,
   START_TIME,
   DEFAULT_TEST_SETTINGS,
   EMPTY_CHATTERS,
