@@ -147,7 +147,7 @@ class TwitchApi {
         );
         pushAll(page.data);
       }
-      console.log(`Fetched ${result.length} chatters`);
+      // console.log(`Fetched ${result.length} chatters`);
       return result;
     });
   }
@@ -178,7 +178,7 @@ class TwitchApi {
   async getChatters(options = {}) {
     options = { forceRefresh: false, ...options };
     if (options.forceRefresh) {
-      console.log("Force refresh");
+      // console.log("Force refresh");
       return await this.#chattersCache.fetch({
         forceRefresh: options.forceRefresh,
       });
