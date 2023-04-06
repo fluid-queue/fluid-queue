@@ -13,10 +13,11 @@ This project is based on Queso Queue Plus, which was originally developed by Sho
 To use the queue, you need an access and refresh token from twitch.
 The following steps are needed:
 
-1. Setup an application for your streamer user account on twitch if you do not have one already
-   and make sure to set the redirect URL to `http://localhost:3000`:
-   https://dev.twitch.tv/docs/authentication/register-app/
-2. Install the twitch-cli: https://dev.twitch.tv/docs/cli/
+1. Register an application with Twitch to use for your bot.
+   Regardless of whether you're planning on using a bot account, this can be created and owned by your streamer account.
+   When creating the application make sure to set the redirect URL to `http://localhost:3000`.
+   See <https://dev.twitch.tv/docs/authentication/register-app/> for more details.
+2. Install the twitch-cli: <https://dev.twitch.tv/docs/cli/>
 3. Use the token command of the twitch-cli to create the token
    The bot requires the following permissions:
 
@@ -33,7 +34,7 @@ The following steps are needed:
 
    After you finish the process there will be an `User Access Token` and a `Refresh Token` in the output of the cli.
 
-4. Now download the [sample `tokens.json` file](#TODO) into your `settings` directory, rename it to `tokens.json`, and edit it like this:
+4. Now download the [sample `tokens.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings/tokens.example.json) into your `settings` directory, rename it to `tokens.json`, and edit it like this:
 
    - Replace `{INITIAL_ACCESS_TOKEN}` with the `User Access Token` from the cli output
    - Replace `{INITIAL_REFRESH_TOKEN}` with the `Refresh Token` from the cli output
