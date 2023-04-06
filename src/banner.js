@@ -15,11 +15,13 @@ const version = () => {
   }
 
   // Use the Docker variables if they exist and this is the develop tag
+  // (or the "this" tag which seems to be used for automated tests???)
   if (
-    process.env.DOCKER_TAG === "develop" &&
-    process.env.SOURCE_COMMIT != null
+    (process.env.DOCKER_TAG == "this" ||
+    process.env.DOCKER_TAG == "develop") &&
+    process.env.SOURCE_COMMIT
   ) {
-    return "develop-" + process.env.SOURCE_COMMIT.slice(0, 8);
+    return process.env.DOCKER_TAG + "-" + process.env.SOURCE_COMMIT.slice(0, 8);
   }
 
   // Use the NPM version if it's available
