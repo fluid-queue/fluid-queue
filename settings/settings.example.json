@@ -1,7 +1,7 @@
 {
-  "username": "coolbot (required, lowercase username of the bot account)",
-  "password": "supersecretplease (required, starts with oauth)",
   "channel": "coolstreamer (required, lowercase username of your chat)",
+  "clientId": "{YOUR_CLIENT_ID}",
+  "clientSecret": "{YOUR_CLIENT_SECRET}",
   "start_open": false,
   "enable_absolute_position": false,
   "custom_codes_enabled": false,

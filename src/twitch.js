@@ -1,35 +1,16 @@
-const fetch = require("node-fetch");
+const { twitchApi } = require("./twitch-api.js");
 
 var recent_chatters = {};
 var subscribers = new Set();
 var mods = new Set();
 var lurkers = new Set();
-var lastOnlineUsers;
 
 const twitch = {
-  getOnlineUsers: async (channel) => {
-    const channel_url =
-      "https://tmi.twitch.tv/group/user/" + channel + "/chatters";
+  getOnlineUsers: async (options = {}) => {
+    options = { forceRefresh: false, ...options };
     var online_users = new Set();
-    try {
-      await fetch(channel_url)
-        .then((res) => res.json())
-        .then((x) =>
-          Object.keys(x.chatters).forEach((y) =>
-            x.chatters[y].forEach((z) => online_users.add(z))
-          )
-        );
-      lastOnlineUsers = online_users;
-    } catch (error) {
-      if (typeof lastOnlineUsers !== "undefined") {
-        online_users = lastOnlineUsers;
-        console.log("Error with getting online users. Using old list.");
-      } else {
-        console.log(
-          "Error with getting online users. Using recent chatters due to there being no available old list."
-        );
-      }
-    }
+    const chatters = await twitchApi.getChatters(options.forceRefresh);
+    chatters.forEach((chatter) => online_users.add(chatter.userName));
     var current_time = Date.now();
     Object.keys(recent_chatters)
       .filter(
@@ -43,13 +24,13 @@ const twitch = {
     return subscribers.has(username);
   },
 
-  getOnlineSubscribers: async (channel) => {
-    var online_users = await twitch.getOnlineUsers(channel);
+  getOnlineSubscribers: async (options = {}) => {
+    var online_users = await twitch.getOnlineUsers(options);
     return new Set([...online_users].filter((x) => subscribers.has(x)));
   },
 
-  getOnlineMods: async (channel) => {
-    var online_users = await twitch.getOnlineUsers(channel);
+  getOnlineMods: async (options = {}) => {
+    var online_users = await twitch.getOnlineUsers(options);
     return new Set([...online_users].filter((x) => mods.has(x)));
   },
 

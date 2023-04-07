@@ -324,7 +324,7 @@ const queue = {
 
   next: async (list = undefined) => {
     if (list === undefined) {
-      list = await queue.list();
+      list = await queue.list({ forceRefresh: true });
     }
     const both = list.online.concat(list.offline);
     const removedLevels = current_level === undefined ? [] : [current_level];
@@ -345,12 +345,12 @@ const queue = {
   },
 
   subnext: async () => {
-    const list = await queue.sublist();
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.next(list);
   },
 
   modnext: async () => {
-    const list = await queue.modlist();
+    const list = await queue.modlist({ forceRefresh: true });
     return await queue.next(list);
   },
 
@@ -380,7 +380,7 @@ const queue = {
 
   random: async (list = undefined) => {
     if (list === undefined) {
-      list = await queue.list();
+      list = await queue.list({ forceRefresh: true });
     }
     const removedLevels = current_level === undefined ? [] : [current_level];
     let eligible_levels = list.online;
@@ -407,17 +407,19 @@ const queue = {
   },
 
   subrandom: async () => {
-    const list = await queue.sublist();
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.random(list);
   },
 
   modrandom: async () => {
-    const list = await queue.modlist();
+    const list = await queue.modlist({ forceRefresh: true });
     return await queue.random(list);
   },
 
   weightedrandom: async (list = undefined) => {
-    const weightedList = await queue.weightedList(false, list);
+    const weightedList = await queue.weightedList(false, list, {
+      forceRefresh: true,
+    });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -476,9 +478,9 @@ const queue = {
   },
 
   /** @type {(sorted?: boolean, list?: onlineOfflineList) => Promise<weightedList>} */
-  weightedList: async (sorted = undefined, list = undefined) => {
+  weightedList: async (sorted = undefined, list = undefined, options = {}) => {
     if (list === undefined) {
-      list = await queue.list();
+      list = await queue.list(options);
     }
     const online_users = list.online;
     if (online_users.length == 0 || Object.keys(waiting).length == 0) {
@@ -542,7 +544,9 @@ const queue = {
   },
 
   weightednext: async (list = undefined) => {
-    const weightedList = await queue.weightedList(true, list);
+    const weightedList = await queue.weightedList(true, list, {
+      forceRefresh: true,
+    });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -571,20 +575,20 @@ const queue = {
   },
 
   weightedsubrandom: async () => {
-    const list = await queue.sublist();
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.weightedrandom(list);
   },
 
   weightedsubnext: async () => {
-    const list = await queue.sublist();
+    const list = await queue.sublist({ forceRefresh: true });
     return await queue.weightednext(list);
   },
 
   /** @type {() => Promise<onlineOfflineList> } */
-  list: async () => {
+  list: async (options = {}) => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineUsers(settings.channel).then((online_users) => {
+    await twitch.getOnlineUsers(options).then((online_users) => {
       [online, offline] = partition(levels, (x) =>
         online_users.has(x.username)
       );
@@ -592,10 +596,10 @@ const queue = {
     return { online, offline };
   },
 
-  sublist: async () => {
+  sublist: async (options = {}) => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineSubscribers(settings.channel).then((online_users) => {
+    await twitch.getOnlineSubscribers(options).then((online_users) => {
       [online, offline] = partition(levels, (x) =>
         online_users.has(x.username)
       );
@@ -603,10 +607,10 @@ const queue = {
     return { online, offline };
   },
 
-  modlist: async () => {
+  modlist: async (options = {}) => {
     let online = [];
     let offline = [];
-    await twitch.getOnlineMods(settings.channel).then((online_users) => {
+    await twitch.getOnlineMods(options).then((online_users) => {
       [online, offline] = partition(levels, (x) =>
         online_users.has(x.username)
       );

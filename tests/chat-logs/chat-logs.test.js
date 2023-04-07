@@ -15,7 +15,6 @@ const {
   replace,
   flushPromises,
   clearAllTimers,
-  fetchMock,
   START_TIME,
   EMPTY_CHATTERS,
 } = require("../simulation.js");
@@ -28,8 +27,7 @@ const isPronoun = (text) => {
 jest.useFakeTimers();
 
 beforeEach(() => {
-  // reset fetch
-  fetchMock.mockClear();
+  // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
@@ -49,8 +47,8 @@ jest.mock("uuid", () => {
 });
 const uuid = require("uuid");
 
-test("setup", () => {
-  simRequireIndex();
+test("setup", async () => {
+  await simRequireIndex();
 });
 
 const parseMessage = (line) => {
@@ -123,6 +121,7 @@ const parseMessage = (line) => {
 const chatLogTest = (fileName) => {
   return async () => {
     let test = simRequireIndex();
+    let chatbot = null;
 
     let replyMessageQueue = [];
     let accuracy = 0;
@@ -175,6 +174,8 @@ const chatLogTest = (fileName) => {
           test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
         } else if (command == "accuracy") {
           accuracy = parseInt(rest);
+        } else if (command == "chatbot") {
+          chatbot = rest.trim().toLowerCase();
         } else if (command == "settings") {
           // TODO: ideally new settings would be written to settings.json
           //       and settings.js could be reloaded instead to validate settings
@@ -248,7 +249,10 @@ const chatLogTest = (fileName) => {
           };
           // console.log(`${time}`, chat.sender, 'sends', chat.message);
           // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
-          if (chat.sender.username == test.settings.username.toLowerCase()) {
+          if (
+            chatbot != null &&
+            chat.sender.username == chatbot.toLowerCase()
+          ) {
             // this is a message by the chat bot, check replyMessageQueue
             let shift = replyMessageQueue.shift();
             if (shift === undefined) {
