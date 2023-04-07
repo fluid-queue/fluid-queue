@@ -28,7 +28,9 @@ function parseBigInt(value, radix) {
     i = value.length % size || size,
     parts = [value.slice(0, i)];
 
-  while (i < value.length) parts.push(value.slice(i, (i += size)));
+  while (i < value.length) {
+    parts.push(value.slice(i, (i += size)));
+  }
 
   return parts.reduce((r, v) => r * factor + BigInt(parseInt(v, radix)), 0n);
 }
