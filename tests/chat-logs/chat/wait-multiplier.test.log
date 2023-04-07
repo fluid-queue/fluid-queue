@@ -1,5 +1,7 @@
-# "username" will decide which of the messages are from the bot
-settings {"username":"helperblock","password":"oauth:test","channel":"liquidnya","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true, "subscriberWeightMultiplier": 1.2,"showMakerCode":false}
+# this captures the chat messages of that user as the chatbot responses
+chatbot helperblock
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true, "subscriberWeightMultiplier": 1.2,"showMakerCode":false}
 # restart to start queue open (reload settings)
 restart
 # chatters 

@@ -8,43 +8,85 @@ This project is based on Queso Queue Plus, which was originally developed by Sho
 
 ## How do I use this?
 
+### Setting up token
+
+To use the queue, you need an access and refresh token from twitch.
+The following steps are needed:
+
+1. Register an application with Twitch to use for your bot.
+   Regardless of whether you're planning on using a bot account, this can be created and owned by your streamer account.
+   When creating the application make sure to set the redirect URL to `http://localhost:3000`.
+   See <https://dev.twitch.tv/docs/authentication/register-app/> for more details.
+2. Install the twitch-cli: <https://dev.twitch.tv/docs/cli/>
+3. Use the token command of the twitch-cli to create the token
+   The bot requires the following permissions:
+
+   - `chat:read` to be able to read your chat
+   - `chat:edit` to be able to send chat messages
+   - `moderator:read:chatters` to be able to check who is connected to chat
+
+   You can use this command to generate the [token](https://dev.twitch.tv/docs/cli/token-command/#user-access-token):
+   `twitch token -u -s "chat:read chat:edit moderator:read:chatters"`
+
+   The cli will ask you about your client id and client secret that can be found by managing your application created in step 1.
+   The cli will open a web page where you can login either with your bot account or with your streamer account depending if you want to run the bot with your streamer account or bot account.
+   In case you are using your bot account please make sure that the bot account is a moderator in your chat as this is required for checking which people in the queue are connected to chat.
+
+   After you finish the process there will be an `User Access Token` and a `Refresh Token` in the output of the cli.
+
+4. Now download the [sample `tokens.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings/tokens.example.json) into your `settings` directory, rename it to `tokens.json`, and edit it like this:
+
+   - Replace `{INITIAL_ACCESS_TOKEN}` with the `User Access Token` from the cli output
+   - Replace `{INITIAL_REFRESH_TOKEN}` with the `Refresh Token` from the cli output
+
+   Make sure to not copy any spaces and to replace the curly brackets.
+   The expiry values should be left as `0`. See <https://twurple.js.org/docs/auth/providers/refreshing.html> for more details.
+
+5. Do not forget to set both `clientId` and `clientSecret` in `settings/settings.json` in a later step of the instructions!
+
 ### Docker instructions
 
-You need to have docker engine installed on the system for this to work.
+You need to have the Docker Engine installed on the system, as well as Docker Compose, for this to work.
 
-First, you must clone the project. Either download the source or run the following command:
+First, download the [sample Compose file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/docker-compose.sample.yml) and rename it to `docker-compose.yml`. Place it in the directory you want to use for the bot. Next, create a `data` and `settings` directory to store the bot's data and configuration in, and replace the volume paths in `docker-compose.yml` with your local paths.
+
+Next, download the [sample `settings.json` file](https://raw.githubusercontent.com/fluid-queue/fluid-queue/main/settings/settings.example.json) into your `settings` directory, rename it to `settings.json`, and edit it appropriately (as described below). Do not forget to set your `clientId` and `clientSecret`.
+
+**Important note:** Docker permissions can be a little weird; make sure that your `data` and `settings` directories (and the files within) are either read/write for everyone (e.g. `chmod -R go+rw data/ settings/`) or owned by UID 1000. Failure to account for permissions can result in crashes.
+
+Once you have your `settings.json` edited and inside your `settings` directory, your (empty, for now) `data` directory, and your `docker-compose.yml` pointing to the correct paths, you can run the bot. From the directory with `docker-compose.yml`:
 
 ```bash
-  git clone https://github.com/fluid-queue/fluid-queue.git
+  docker compose up
 ```
 
-After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
-
-```bash
-cp settings.example.json settings.json
-
-# now edit settings.json with your favorite text editor
-```
-
-Next, build and run the image (detached):
+This will start the bot in "attached" mode, so you can see all the output. Assuming everything worked and the bot is connected to IRC, press `CTRL+C` to kill the bot. You can now start it in "detached" mode so it will keep running in the background:
 
 ```bash
   docker compose up -d
 ```
 
-To close the queue press `CTRL + C` inside the terminal.
+From here, if you want to stop the bot, you can simply run the following command from the same directory:
 
 ```bash
   docker compose stop
 ```
 
-The container will restart unless stopped, including through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/custom-codes.json`.
+Unless you stop the bot manually with that command, the container will continue running, restarting automatically even through a reboot. The queue will be persisted on your local host in the data folder - `data/queue.json` - custom codes are persisted too - `data/extensions/customcode.json`.
 
-To update the image pull the repo changes, then build the image locally again
+To update the image, first bring down the container with the `-v` option (to remove ephemeral volumes):
 
 ```bash
-  docker compose up -d --build
+  docker compose down -v
 ```
+
+Then you can pull the updated container:
+
+```bash
+  docker compose pull
+```
+
+And now you can run the container again.
 
 ### Run NodeJs locally
 
@@ -57,13 +99,13 @@ First, you must clone the project. Either download the source or run the followi
 Next, install the dependencies for the project using the following command:
 
 ```bash
-  npm install
+  NODE_ENV=production npm install
 ```
 
-After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor.
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. Do not forget to set your `clientId` and `clientSecret`.
 
 ```bash
-cp settings.example.json settings.json
+cp settings/settings.example.json settings/settings.json
 
 # now edit settings.json with your favorite text editor
 ```
@@ -82,11 +124,11 @@ The command `npm run start` is the only command you will need to the next time y
 
 The settings.json file contains several options to make the bot as customizable as possible.
 
-`username` is the username of your bot account or your account.
-
-`password` is the oauth token of the bot, including the portion that says 'oauth'. This can be generated at https://twitchapps.com/tmi/.
-
 `channel` is the channel that the bot will run in. This should be your Twitch account username, only containing underscores and lowercase alphanumeric characters.
+
+`clientId` the client ID of your application. This needs to be set! See [setting up token](#setting-up-token) for details.
+
+`clientSecret` the client secret of your application. This needs to be set! See [setting up token](#setting-up-token) for details.
 
 `start_open` is the toggle for whether or not the queue will start open. The default value is `false`.
 

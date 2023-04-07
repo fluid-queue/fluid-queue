@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  fluid:
+    container_name: "fluid-queue"
+    image: "fluidqueue/fluid-queue:latest" # Change the tag if you need to use develop
+    volumes: # Change these to the correct paths
+      - ./settings:/home/node/settings
+      - ./data:/home/node/data
+    restart: unless-stopped

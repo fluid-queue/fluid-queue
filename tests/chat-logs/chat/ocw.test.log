@@ -1,0 +1,51 @@
+# this captures the chat messages of that user as the chatbot responses
+chatbot helperblock
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+# chatters 
+chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+[02:19:13] ~%?liquidnya: !open
+[02:19:14] @^helperblock: The queue is now open!
+
+# smm2 codes can be submitted
+[02:19:42] @^FurretWalkBot: !add NB0-1MD-SLG
+[02:19:42] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
+
+# can not add ocw level codes because ocw is not configured yet!
+[20:29:40] ~%?liquidnya: !add N41-Q4W-HD5
+[20:29:41] @^helperblock: liquidnya, that is an invalid level code.
+[20:29:53] ~%?liquidnya: !add RHC-D08-CC8
+[20:29:54] @^helperblock: liquidnya, that is an invalid level code.
+
+# configure ocw
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+# restart to reload settings
+restart
+
+# now it is working!
+[20:32:15] ~%?liquidnya: !add N41-Q4W-HD5
+[20:32:16] @^helperblock: liquidnya, N41-Q4W-HD5 (OCW) has been added to the queue.
+[20:32:21] ~%?liquidnya: !add RHC-D08-CC8
+[20:32:21] @^helperblock: liquidnya, RHC-D08-CC8 (OCW) has been added to the queue.
+
+# also check if ocw-lenient is working
+# FIXME: this is not working yet, because not all matches are checked
+# [20:36:15] ~%?liquidnya: !add please play this level N41-Q4W-HD5 thank you!
+# [20:36:16] @^helperblock: liquidnya, N41-Q4W-HD5 (OCW) has been added to the queue.
+# [20:36:21] ~%?liquidnya: !add please play this level RHC-D08-CC8 thank you!
+# [20:36:21] @^helperblock: liquidnya, RHC-D08-CC8 (OCW) has been added to the queue.
+
+# showMakerCode
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+# restart to reload settings
+restart
+
+[20:32:15] ~%?liquidnya: !add N41-Q4W-HD5
+[20:32:16] @^helperblock: liquidnya, N41-Q4W-HD5 (OCW level code) has been added to the queue.
+[20:32:21] ~%?liquidnya: !add RHC-D08-CC8
+[20:32:21] @^helperblock: liquidnya, RHC-D08-CC8 (OCW maker code) has been added to the queue.

@@ -11,10 +11,15 @@ package-lock.json
 /customCodes.json
 /userOnlineTime.txt
 /data/
-/settings/
+/settings/*
 
-# Secrets
+# Don't ignore the example files
+!/settings/settings.example.json
+!/settings/tokens.example.json
+
+# Secrets and non-sample sample files
 settings.json
+docker-compose.yml
 
 # JSHint config file
 .jshintrc

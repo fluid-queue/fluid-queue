@@ -34,20 +34,16 @@ const defaultTestSettings = {
 };
 
 // mock variables
-var mockChatters;
+var mockChatters = [];
 
 // mocks
-jest.mock("node-fetch", () => jest.fn());
+jest.mock("../src/twitch-api.js");
 
 // only import after mocking!
-const fetch = require("node-fetch");
+const { twitchApi } = require("../src/twitch-api.js");
 
-// mock fetch
-fetch.mockImplementation(() =>
-  Promise.resolve({
-    json: () => Promise.resolve(mockChatters),
-  })
-);
+// mock chatters
+twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
 
 // fake timers
 jest.useFakeTimers();
@@ -61,12 +57,16 @@ const setChatters = (newChatters) => {
       chatters: newChatters,
     };
   }
-  mockChatters = newChatters;
+  let users = [];
+  Object.keys(newChatters.chatters).forEach((y) =>
+    newChatters.chatters[y].forEach((z) => users.push({ userName: z }))
+  );
+  mockChatters = users;
+  return mockChatters;
 };
 
 beforeEach(() => {
-  // reset fetch
-  fetch.mockClear();
+  // reset chatters
   setChatters(defaultTestChatters);
 
   // reset time
@@ -152,5 +152,5 @@ test("online users", async () => {
   );
 
   // the twitch api has been called 8 times
-  expect(fetch.mock.calls.length).toBe(8);
+  expect(twitchApi.getChatters.mock.calls.length).toBe(8);
 });

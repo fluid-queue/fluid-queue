@@ -4,11 +4,11 @@ root = true
 # properties for all files
 [*]
 end_of_line = lf
-insert_final_newline = true
+insert_final_newline = true # prettier doesn't care, so this keeps things consistent
 trim_trailing_whitespace = true
 charset = utf-8
 
 # JS, YAML files
-[*.{js, yml}]
+[*.{js,json,ts,yml}]
 intent_style = space
 indent_size = 2

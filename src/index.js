@@ -1,3 +1,4 @@
+require("./banner.js").printBanner();
 const settings = require("./settings.js");
 const chatbot = require("./chatbot.js");
 const queue = require("./queue.js");
@@ -5,6 +6,7 @@ const twitch = require("./twitch.js").twitch();
 const timer = require("./timer.js");
 const persistence = require("./persistence.js");
 const aliasManagement = require("./aliases.js");
+const { twitchApi } = require("./twitch-api.js");
 
 const quesoqueue = queue.quesoqueue();
 const aliases = aliasManagement.aliases();
@@ -19,12 +21,14 @@ aliases.loadAliases();
 var queue_open = settings.start_open;
 var selection_iter = 0;
 let level_timer;
-if (settings.level_timeout)
+
+if (settings.level_timeout) {
   level_timer = timer.timer(() => {
     chatbot_helper.say(
       `@${settings.channel} the timer has expired for this level!`
     );
   }, settings.level_timeout * 1000 * 60);
+}
 
 const get_remainder = (x) => {
   var index = x.indexOf(" ");
@@ -876,11 +880,16 @@ async function HandleMessage(message, sender, respond) {
   }
 }
 
-// Set up the chatbot helper and connect to the Twitch channel.
-const chatbot_helper = chatbot.helper(
-  settings.username,
-  settings.password,
-  settings.channel
-);
+// Set up the chatbot helper
+const chatbot_helper = chatbot.helper(settings.channel);
 chatbot_helper.setup(HandleMessage);
-chatbot_helper.connect();
+
+// run async code
+(async () => {
+  console.log("Initializing twitch api...");
+  // setup the twitch api
+  await twitchApi.setup();
+  console.log("Connecting to twitch chat...");
+  // connect to the Twitch channel.
+  await chatbot_helper.connect();
+})();
