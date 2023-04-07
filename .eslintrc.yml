@@ -11,3 +11,5 @@ extends:
 overrides: []
 parserOptions:
   ecmaVersion: latest
+rules:
+  curly: "error"
