@@ -17,7 +17,7 @@
     "@twurple/auth": "^6.1.0",
     "@twurple/auth-tmi": "^6.1.0",
     "graceful-fs": "^4.2.11",
-    "set-interval-async": "^2.0.3",
+    "set-interval-async": "^3.0.3",
     "uuid": "^9.0.0",
     "write-file-atomic": "^5.0.0"
   },
