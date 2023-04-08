@@ -3,7 +3,7 @@
 // imports
 const jestChance = require("jest-chance");
 const readline = require("readline");
-const { fail } = require("assert");
+import { fail } from "assert";
 const path = require("path");
 const fs = require("fs");
 const { codeFrameColumns } = require("@babel/code-frame");
@@ -19,7 +19,7 @@ const {
   EMPTY_CHATTERS,
 } = require("../simulation.js");
 
-const isPronoun = (text) => {
+const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
 };
 
@@ -51,7 +51,7 @@ test("setup", async () => {
   await simRequireIndex();
 });
 
-const parseMessage = (line) => {
+const parseMessage = (line: string) => {
   const idx = line.indexOf(":");
   let user = line.substring(0, idx).trim();
   let message = line.substring(idx + 1);
@@ -118,15 +118,15 @@ const parseMessage = (line) => {
   };
 };
 
-const chatLogTest = (fileName) => {
+const chatLogTest = (fileName: string) => {
   return async () => {
     let test = simRequireIndex();
     let chatbot = null;
 
-    let replyMessageQueue = [];
+    let replyMessageQueue: Array<{ message: string; error: Error }> = [];
     let accuracy = 0;
 
-    function pushMessageWithStack(message) {
+    function pushMessageWithStack(message: string) {
       let error = new Error("<Stack Trace Capture>");
       Error.captureStackTrace(error, pushMessageWithStack);
       replyMessageQueue.push({ message, error });
@@ -142,7 +142,7 @@ const chatLogTest = (fileName) => {
         crlfDelay: Infinity,
       });
 
-      let errorMessage = (position) => {
+      let errorMessage = (position: Object) => {
         let contents = codeFrameColumns(
           fs.readFileSync(fileName).toString(),
           position
@@ -197,7 +197,7 @@ const chatLogTest = (fileName) => {
               }
             }
             expect(jsonData).toEqual(JSON.parse(rest));
-          } catch (error) {
+          } catch (error: any) {
             error.message += errorMessage(position);
             throw error;
           }
@@ -214,7 +214,7 @@ const chatLogTest = (fileName) => {
               jsonData = jsonData[member];
             }
             expect(jsonData).toEqual(JSON.parse(rest));
-          } catch (error) {
+          } catch (error: any) {
             error.message += errorMessage(position);
             throw error;
           }
@@ -258,15 +258,15 @@ const chatLogTest = (fileName) => {
             if (shift === undefined) {
               try {
                 expect(replyMessageQueue).toContain(chat.message);
-              } catch (error) {
+              } catch (error: any) {
                 error.message += errorMessage(position);
                 throw error;
               }
             }
             try {
-              expect(shift.message).toBe(chat.message);
-            } catch (error) {
-              error.stack = shift.error.stack.replace(
+              expect(shift?.message).toBe(chat.message);
+            } catch (error: any) {
+              error.stack = shift?.error.stack?.replace(
                 shift.error.message,
                 error.message + errorMessage(position)
               );
@@ -279,7 +279,7 @@ const chatLogTest = (fileName) => {
                 chat.sender,
                 test.chatbot_helper.say
               );
-            } catch (error) {
+            } catch (error: any) {
               error.message += errorMessage(position);
               throw error;
             }
@@ -292,9 +292,9 @@ const chatLogTest = (fileName) => {
       // replyMessageQueue should be empty now!
       try {
         expect(replyMessageQueue.map((m) => m.message)).toEqual([]);
-      } catch (error) {
+      } catch (error: any) {
         let shift = replyMessageQueue.shift();
-        error.stack = shift.error.stack.replace(
+        error.stack = shift?.error.stack?.replace(
           shift.error.message,
           error.message + "\n\n" + `not given in test file ${fileName}`
         );
@@ -308,7 +308,7 @@ const chatLogTest = (fileName) => {
 
 const testFiles = fs
   .readdirSync(path.resolve(__dirname, "chat"))
-  .filter((file) => file.endsWith(".test.log"));
+  .filter((file: string) => file.endsWith(".test.log"));
 
 for (const file of testFiles) {
   const fileName = path.relative(".", path.resolve(__dirname, `chat/${file}`));

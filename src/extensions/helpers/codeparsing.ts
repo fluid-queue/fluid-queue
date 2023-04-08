@@ -22,7 +22,7 @@ const CodeTypes = {
 };
 
 // https://stackoverflow.com/a/55646905
-function parseBigInt(value, radix) {
+function parseBigInt(value: string, radix: number) {
   var size = 10,
     factor = BigInt(radix ** size),
     i = value.length % size || size,
@@ -36,16 +36,16 @@ function parseBigInt(value, radix) {
 }
 
 // Get the unchanging meta bits and turn them into a number
-function getMeta(courseBits) {
+function getMeta(courseBits: bigint) {
   let a =
     (courseBits >> (VALUE_SIZE_B + META_SIZE_B + VALUE_SIZE_C)) & INT4_MASK;
   let b = (courseBits >> BigInt(VALUE_SIZE_C)) & BigInt(INT8_MASK);
   return (a << BigInt(META_SIZE_B)) | b;
 }
 
-function courseIdValidity(courseIdString) {
-  let reversedString = courseIdString.split("").reverse();
-  reversedString = reversedString
+function _courseIdValidity(courseIdString: string) {
+  let _reversedString = courseIdString.split("").reverse();
+  let reversedString = _reversedString
     .map((c) => standardBase30[nintendoBase30.indexOf(c)])
     .join("");
   let courseBits = parseBigInt(reversedString, 30);
@@ -64,7 +64,7 @@ function courseIdValidity(courseIdString) {
         type: CodeTypes.Invalid,
         valid: false,
         makerCode: false,
-        dataId: dataId,
+        dataId: 0,
       };
     }
     dataId =
@@ -119,7 +119,4 @@ function courseIdValidity(courseIdString) {
   };
 }
 
-module.exports = {
-  courseIdValidity: courseIdValidity,
-  CodeTypes: CodeTypes,
-};
+export { _courseIdValidity as courseIdValidity, CodeTypes };

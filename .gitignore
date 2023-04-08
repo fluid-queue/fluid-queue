@@ -123,6 +123,9 @@ dist
 # TernJS port file
 .tern-port
 
+# TypeScript output
+/build/
+
 # allow test files
 # like *.test.log even if *.log is ignored
 # replay test log files (/tests/chat-logs/chat/*.test.log)

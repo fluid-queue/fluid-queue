@@ -6,7 +6,8 @@ const settings = require("./settings.js");
 const aliasManagement = require("./aliases.js");
 const aliases = aliasManagement.aliases();
 
-const fileEnding = ".js";
+// jest runs on the source, not the build, so this needs to load extensions as typescript too
+const fileEnding = [".js", ".ts"];
 const AsyncFunction = (async () => {}).constructor;
 
 const defaultActivated = [
@@ -22,7 +23,7 @@ const loadFiles = (directory) => {
   const result = {};
   const files = fs
     .readdirSync(directory)
-    .filter((file) => file.endsWith(fileEnding));
+    .filter((file) => fileEnding.some((ext) => file.endsWith(ext)));
   for (const file of files) {
     const filePath = path.join(directory, file);
     const name = file.slice(0, -fileEnding.length);
