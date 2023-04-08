@@ -47,7 +47,6 @@ var mockChatters = [];
 // mocks
 jest.mock("../src/twitch-api.js");
 jest.mock("../src/chatbot.js");
-jest.mock("node-fetch", () => jest.fn());
 
 jest.mock("set-interval-async/dynamic", () => {
   const dynamic = jest.requireActual("set-interval-async/dynamic");
