@@ -1,5 +1,8 @@
 const settings = require("../settings.js");
-const parsing = require("./helpers/codeparsing.js");
+import {
+  courseIdValidity as _courseIdValidity,
+  CodeTypes,
+} from "./helpers/codeparsing";
 
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different
@@ -12,12 +15,12 @@ const levelCodeRegex = new RegExp(
   `(${code})${delim}(${code})${delim}(${code})`
 );
 
-function courseIdValidity(courseIdString) {
+function courseIdValidity(courseIdString: string) {
   // Parse the code details out
-  let parsed = parsing.courseIdValidity(courseIdString);
+  let parsed = _courseIdValidity(courseIdString);
 
   // Make sure it's an OCW code
-  if (parsed.type !== parsing.CodeTypes.OCW) {
+  if (parsed.type !== CodeTypes.OCW) {
     return { valid: false, makerCode: false };
   }
 
@@ -25,7 +28,7 @@ function courseIdValidity(courseIdString) {
   return { valid: parsed.valid, makerCode: parsed.makerCode };
 }
 
-const extractValidCode = (levelCode, lenient = false) => {
+const extractValidCode = (levelCode: string, lenient = false) => {
   // TODO: iterate through matches and check if the code is valid for each match and return the first valid one to make this even more lenient
   let match;
   if (lenient) {
@@ -50,7 +53,7 @@ const extractValidCode = (levelCode, lenient = false) => {
   };
 };
 
-const codeSuffix = (levelCode) => {
+const codeSuffix = (levelCode: string) => {
   if (settings.showMakerCode !== false) {
     const makerCode = extractValidCode(levelCode).makerCode;
     if (makerCode) {
@@ -62,14 +65,19 @@ const codeSuffix = (levelCode) => {
 };
 
 const levelType = {
-  display(level) {
+  display(level: {
+    code: string;
+    valid: boolean;
+    validSyntax: boolean;
+    makerCode: boolean;
+  }) {
     return level.code + codeSuffix(level.code);
   },
 };
 
 const resolver = {
   description: "ocw level code",
-  resolve(args) {
+  resolve(args: string) {
     const result = extractValidCode(args, false);
     if (result.valid) {
       return { type: "ocw", code: result.code };
@@ -80,7 +88,7 @@ const resolver = {
 
 const lenientResolver = {
   description: "ocw level code",
-  resolve(args) {
+  resolve(args: string) {
     const result = extractValidCode(args, true);
     if (result.valid) {
       return { type: "ocw", code: result.code };
@@ -90,7 +98,7 @@ const lenientResolver = {
 };
 
 const queueHandler = {
-  upgrade(code) {
+  upgrade(code: string) {
     const result = courseIdValidity(code);
     if (result.valid) {
       return { type: "ocw", code: code };
@@ -99,7 +107,7 @@ const queueHandler = {
   },
 };
 
-const setup = (extensions) => {
+const setup = (extensions: any) => {
   extensions.registerEntryType("ocw", levelType);
   extensions.registerResolver("ocw", resolver);
   extensions.registerResolver("ocw-lenient", lenientResolver);
