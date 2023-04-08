@@ -41,6 +41,7 @@ const list_options = ["position", "weight", "both", "none"];
  * @property {typeof list_options[number]} [position] - which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  * @property {typeof list_options[number]} [list] - how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise
  * @property {boolean} [showMakerCode] - if maker codes should be marked as such
+ * @property {string[]} [resolvers] - the resolver names that are enabled, see extensions.ts for options
  */
 
 // To try to
