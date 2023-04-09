@@ -128,3 +128,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# TypeScript output
+/build/
