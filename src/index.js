@@ -4,7 +4,7 @@ const chatbot = require("./chatbot.js");
 const queue = require("./queue");
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer");
-const persistence = require("./persistence.js");
+const persistence = require("./persistence");
 const aliasManagement = require("./aliases.js");
 const { twitchApi } = require("./twitch-api.js");
 

@@ -1,21 +1,17 @@
 const settings = require("./settings").default;
 const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
-const persistence = require("./persistence.js");
-const { Waiting } = require("./waiting.js");
 const { Extensions } = require("./extensions");
+import * as persistence from "./persistence";
+import Waiting from "./waiting";
 
 const extensions = new Extensions();
 
 // All the types we need to define
 
-type waiting_t = {
-  weight: () => number,
-  addOneMinute: (multiplier: number, now?: string) => void,
-};
-
 type Level = {
   code: string,
+  type: string | null,
   submitter: string,
   username: string,
 };
@@ -40,7 +36,7 @@ type weightedList = {
 var loaded: boolean = false;
 var current_level: (Level | undefined);
 var levels: Level[] = [];
-var waiting: Record<string, waiting_t>;
+var waiting: Record<string, Waiting>;
 var persist: boolean = true; // if false the queue will not save automatically
 
 
@@ -277,13 +273,13 @@ const queue = {
     if (index != -1) {
       console.log(
         "Elegible users: " +
-          weightedList.entries
-            .map((entry) => entry.level.username)
-            .reduce((a, b) => a + ", " + b)
+        weightedList.entries
+          .map((entry) => entry.level.username)
+          .reduce((a, b) => a + ", " + b)
       );
       console.log(
         "Elegible users time: " +
-          weightedList.entries.map((entry) => entry.weight())
+        weightedList.entries.map((entry) => entry.weight())
       );
       const weight = weightedList.entries[index].weight();
       const totalWeight = weightedList.totalWeight;
@@ -441,13 +437,13 @@ const queue = {
 
     console.log(
       "Elegible users: " +
-        weightedList.entries
-          .map((entry) => entry.level.username)
-          .reduce((a, b) => a + ", " + b)
+      weightedList.entries
+        .map((entry) => entry.level.username)
+        .reduce((a, b) => a + ", " + b)
     );
     console.log(
       "Elegible users time: " +
-        weightedList.entries.map((entry) => entry.weight())
+      weightedList.entries.map((entry) => entry.weight())
     );
 
     console.log("Random number: " + randomNumber);
@@ -461,9 +457,9 @@ const queue = {
 
     console.log(
       "Chosen index was " +
-        levelIndex +
-        " after a cumulative time of " +
-        gettingThereSomeday
+      levelIndex +
+      " after a cumulative time of " +
+      gettingThereSomeday
     );
     current_level = weightedList.entries[levelIndex].level;
 
@@ -664,9 +660,9 @@ const queue = {
   save: (options: { force: boolean } = { force: false }) => {
     if (persist || options.force) {
       return persistence.saveQueueSync({
-        currentLevel: current_level,
+        currentLevel: current_level ?? null,
         queue: levels,
-        waiting,
+        waiting: Waiting.recordToJson(waiting),
         // TODO: add test case to check that only data and version are persisted
         extensions: extensions.persistedQueueBindings(),
       });
@@ -698,10 +694,10 @@ const queue = {
 
   loadQueueState: () => {
     const state = persistence.loadQueueSync();
-    current_level = state.currentLevel;
+    current_level = state.currentLevel ?? undefined;
     levels = state.queue;
     // split waiting map into lists
-    waiting = state.waiting;
+    waiting = Waiting.fromRecord(state.waiting);
 
     extensions.setQueueBindingSaveHandler(() => {
       queue.save();
