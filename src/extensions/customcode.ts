@@ -1,66 +1,96 @@
-const settings = require("../settings").default;
+import ExtensionsApi, {
+  ResolveResult,
+  QueueEntry,
+  Chatter,
+} from "../extensions";
+import settings from "../settings";
 // TODO: move persistence functionality into extensions API
-const persistence = require("../persistence");
+import * as persistence from "../persistence";
 
-const customCodes = {
-  map: new Map(),
-  has: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.has(customCode.toUpperCase());
-  },
-  getEntry: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.get(customCode.toUpperCase()).entry;
-  },
-  getName: (customCodeArg) => {
-    const customCode = customCodeArg.trim();
-    return customCodes.map.get(customCode.toUpperCase()).customCode;
-  },
-  listNames: () => {
-    return [...customCodes.map.values()].map((e) => e.customCode);
-  },
-  set: (customCodeArg, entry) => {
-    const customCode = customCodeArg.trim();
-    customCodes.map.set(customCode.toUpperCase(), { customCode, entry });
-  },
-  delete: (customCodeArg) => {
-    let result = true;
-    const customCode = customCodeArg.trim();
-    customCodes.map.delete(customCode.toUpperCase());
-    return result;
-  },
-  reload: () => {
+class CustomCodes {
+  map: Map<
+    string,
+    { customCode: string; entry: persistence.CustomCodesEntryV2 }
+  > = new Map<
+    string,
+    { customCode: string; entry: persistence.CustomCodesEntryV2 }
+  >();
+  reload: () => void = () => {
     /* does nothing at the start, but will be overriden by customCodes.fromObject */
-  },
-  fromObject: (customCodesObject) => {
-    customCodes.reload = () => {
-      customCodes.fromObject(customCodesObject);
+  };
+
+  has(customCodeArg: string): boolean {
+    const customCode = customCodeArg.trim();
+    return this.map.has(customCode.toUpperCase());
+  }
+  getEntry(customCodeArg: string): persistence.CustomCodesEntryV2 | null {
+    const customCode = customCodeArg.trim();
+    return this.map.get(customCode.toUpperCase())?.entry ?? null;
+  }
+  getName(customCodeArg: string): string | null {
+    const customCode = customCodeArg.trim();
+    return this.map.get(customCode.toUpperCase())?.customCode ?? null;
+  }
+  listNames(): string[] {
+    return [...this.map.values()].map((e) => e.customCode);
+  }
+  set(customCodeArg: string, entry: persistence.CustomCodesEntryV2): void {
+    const customCode = customCodeArg.trim();
+    this.map.set(customCode.toUpperCase(), { customCode, entry });
+  }
+  delete(customCodeArg: string): boolean {
+    const customCode = customCodeArg.trim();
+    return this.map.delete(customCode.toUpperCase());
+  }
+  fromObject(customCodesObject: persistence.CustomCodesV2) {
+    this.reload = () => {
+      this.fromObject(customCodesObject);
     };
-    const entries = Object.entries(customCodesObject).map(
-      ([customCode, entry]) => [customCode.toUpperCase(), { customCode, entry }]
+    const entries: [
+      string,
+      { customCode: string; entry: persistence.CustomCodesEntryV2 }
+    ][] = Object.entries(customCodesObject).map(
+      ([customCode, entry]): [
+        string,
+        { customCode: string; entry: persistence.CustomCodesEntryV2 }
+      ] => [customCode.toUpperCase(), { customCode, entry }]
     );
-    customCodes.map = new Map(entries);
-  },
-  toObject: () => {
+    this.map = new Map(entries);
+  }
+  toObject(): persistence.CustomCodesV2 {
     return Object.fromEntries(
-      [...customCodes.map.values()].map((e) => [e.customCode, e.entry])
+      [...this.map.values()].map((e) => [e.customCode, e.entry])
     );
-  },
-};
+  }
+}
+
+const customCodes = new CustomCodes();
 
 const resolver = {
   description: "custom code",
-  resolve(args) {
+  resolve(args: string): ResolveResult | null {
     if (customCodes.has(args)) {
       return customCodes.getEntry(args);
     }
+    return null;
   },
 };
 
-const commandHandler = (resolveLevel, displayLevel) => {
+const commandHandler = (
+  resolveLevel: (
+    code: string
+  ) =>
+    | { entry: ResolveResult; description: string | null }
+    | { descriptions: string[] },
+  displayLevel: (entry: Partial<QueueEntry>) => string
+) => {
   return {
     aliases: ["!customcode", "!customcodes"],
-    async handle(message, sender, respond) {
+    async handle(
+      message: string,
+      sender: Chatter,
+      respond: (message: string) => void
+    ) {
       if (sender.isBroadcaster) {
         if (message == "") {
           respond(this.customCodes());
@@ -80,18 +110,18 @@ const commandHandler = (resolveLevel, displayLevel) => {
         return "The current custom codes are: " + response + ".";
       }
     },
-    customCodeManagement(/** @type {string}*/ codeArguments) {
-      const save = (/** @type {string} */ errorMessage) => {
+    customCodeManagement(codeArguments: string) {
+      const save = (errorMessage: string) => {
         persistence.saveCustomCodesSync(
           { data: customCodes.toObject() },
           errorMessage
         );
       };
-      let [command, ...rest] = codeArguments.split(" ");
+      const [command, ...rest] = codeArguments.split(" ");
       if (command == "add" && rest.length >= 2) {
         const [customName, ...realName] = rest;
         const resolved = resolveLevel(realName.join(" "));
-        if (resolved.entry == null) {
+        if (!("entry" in resolved)) {
           return "That is an invalid level code.";
         }
 
@@ -99,7 +129,15 @@ const commandHandler = (resolveLevel, displayLevel) => {
           const existingName = customCodes.getName(customName);
           return `The custom code ${existingName} already exists`;
         }
-        customCodes.set(customName, resolved.entry);
+        let code: string | undefined;
+        if (resolved.entry.code === undefined) {
+          code = realName.join(" ");
+        } else if (typeof resolved.entry.code === "string") {
+          code = resolved.entry.code;
+        } else {
+          code = undefined;
+        }
+        customCodes.set(customName, { ...resolved.entry, code });
         save("An error occurred while trying to add your custom code.");
         return `Your custom code ${customName} for ${displayLevel(
           resolved.entry
@@ -111,6 +149,9 @@ const commandHandler = (resolveLevel, displayLevel) => {
         }
         const deletedName = customCodes.getName(customName);
         const deletedEntry = customCodes.getEntry(customName);
+        if (deletedEntry == null) {
+          return `The custom code ${customName} could not be found.`;
+        }
 
         if (!customCodes.delete(customName)) {
           save("An error occurred while trying to remove that custom code.");
@@ -145,13 +186,13 @@ const commandHandler = (resolveLevel, displayLevel) => {
   };
 };
 
-const setup = (extensions) => {
-  extensions.registerResolver("customcode", resolver);
+const setup = (api: ExtensionsApi) => {
+  api.registerResolver("customcode", resolver);
   const handler = commandHandler(
-    (code) => extensions.resolve(code),
-    (level) => extensions.display(level)
+    (code: string) => api.resolve(code),
+    (level: Partial<QueueEntry>) => api.display(level)
   );
-  extensions.registerCommand("customcode", handler);
+  api.registerCommand("customcode", handler);
   handler.loadCustomCodes();
 };
 

@@ -507,13 +507,6 @@ const queueHandler = (custom: CustomData) => {
         custom.addRomHack(false);
         return romHackLevel();
       } else if (uuid != null) {
-        if (!custom.has(uuid)) {
-          custom.add(uuid, {
-            codes: [uuid],
-            name: `unknown custom level (${uuid})`,
-            enabled: false,
-          });
-        }
         return { code: uuid, type: "customlevel" };
       }
       return null;
@@ -546,16 +539,6 @@ const queueHandler = (custom: CustomData) => {
           `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
         );
       }
-      allEntries
-        .filter((entry) => entry.type == "customlevel")
-        .filter((entry) => !custom.has(entry.code))
-        .forEach((entry) => {
-          custom.add(entry.code, {
-            codes: [entry.code],
-            name: `unknown custom level (${entry.code})`,
-            enabled: false,
-          });
-        });
       return queueChanged;
     },
   };

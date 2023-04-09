@@ -1,16 +1,16 @@
 const settings = require("./settings").default;
 const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
-const { Extensions } = require("./extensions");
 import * as persistence from "./persistence";
 import Waiting from "./waiting";
+import { Extensions } from "./extensions";
 
 const extensions = new Extensions();
 
 // All the types we need to define
 
 type Level = {
-  code: string,
+  code?: string,
   type: string | null,
   submitter: string,
   username: string,
@@ -55,16 +55,16 @@ const partition = (list: Level[], predicate: (value: Level, index: number, array
 };
 
 const queue = {
-  add: (level: Level) => {
+  add: (codeLevel: Required<Level>) => {
     if (settings.max_size && levels.length >= settings.max_size) {
       return "Sorry, the level queue is full!";
     }
-    const resolved = extensions.resolve(level.code);
-    if (resolved.entry == null) {
+    const resolved = extensions.resolve(codeLevel.code);
+    if (!("entry" in resolved)) {
       // TODO: maybe display all the code types that are not valid
-      return level.submitter + ", that is an invalid level code.";
+      return codeLevel.submitter + ", that is an invalid level code.";
     }
-    level = { ...level, ...resolved.entry };
+    const level: Level = { ...codeLevel, ...resolved.entry, code: resolved.entry.code };
     if (
       current_level != undefined &&
       current_level.submitter == level.submitter &&
@@ -143,16 +143,16 @@ const queue = {
 
   replace: (username: string, new_level_code: string) => {
     const resolved = extensions.resolve(new_level_code);
-    if (resolved.entry == null) {
+    if (!("entry" in resolved)) {
       // TODO: maybe display all the code types that are not valid
       return username + ", that level code is invalid.";
     }
-    const entry: Level = { code: new_level_code, ...resolved.entry };
+    const entry: Partial<Level> = { ...resolved.entry, code: resolved.entry.code };
     const findLevel: (Level | undefined) = levels.find((x) => x.submitter == username);
     if (findLevel != undefined) {
       findLevel.code = entry.code;
-      findLevel.submitter = entry.submitter;
-      findLevel.username = entry.username;
+      findLevel.submitter = entry.submitter ?? findLevel.submitter;
+      findLevel.username = entry.username ?? findLevel.username;
       queue.save();
       return (
         username +
@@ -295,9 +295,12 @@ const queue = {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be punted.";
     }
-    var top = current_level;
+    const top = current_level;
     current_level = undefined;
-    queue.add(top);
+    levels.push(top);
+    if (!Object.prototype.hasOwnProperty.call(waiting, top.username)) {
+      waiting[top.username] = Waiting.create();
+    }
     queue.save();
     return "Ok, adding the current level back into the queue.";
   },
