@@ -25,8 +25,8 @@ const levelCodeRegex = new RegExp(
  */
 function courseIdValidity(
   courseIdString: string,
-  dataIdCourseThreshold?: number,
-  dataIdMakerThreshold?: number
+  dataIdCourseThreshold?: number | null,
+  dataIdMakerThreshold?: number | null
 ) {
   const parsed = _courseIdValidity(courseIdString);
 

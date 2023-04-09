@@ -1,7 +1,4 @@
-// FIXME: remove this!
-// @ts-nocheck
-
-const settings = require("./settings.js");
+const settings = require("./settings").default;
 const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
 const persistence = require("./persistence.js");

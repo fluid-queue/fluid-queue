@@ -78,12 +78,12 @@ test("online users", async () => {
   let settings;
   jest.isolateModules(() => {
     // setup settings mock
-    jest.mock("../src/settings.js", () => {
-      return {};
+    jest.mock("../src/settings", () => {
+      return { default: {} };
     });
 
     // import settings and replace them
-    settings = require("../src/settings.js");
+    settings = require("../src/settings").default;
     replace(settings, defaultTestSettings);
 
     // import twitch.js

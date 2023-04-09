@@ -168,7 +168,8 @@ const createMockVolume = (settings = undefined) => {
 };
 
 /**
- * @typedef { import("../src/settings.js").settings } settings
+ * TODO: Remove this type
+ * @typedef { import("../src/settings").Settings } settings
  */
 
 /**
@@ -265,7 +266,7 @@ const simRequireIndex = async (
       fs = require("fs");
 
       // import settings
-      settings = require("../src/settings.js");
+      settings = require("../src/settings").default;
 
       // import libraries
       chatbot = require("../src/chatbot.js");
