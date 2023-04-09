@@ -2,6 +2,7 @@
   "extends": ["../tsconfig.json"],
   "include": ["./**/*"],
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "strict": true
   }
 }

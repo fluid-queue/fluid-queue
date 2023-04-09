@@ -9,6 +9,7 @@ import ExtensionsApi, {
 import settings from "../settings";
 import { checkVersion } from "./helpers/version";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
+import { z } from "zod";
 
 const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 const ROMHACK_UUID = uuidv5("ROMhack", QUEUE_NAMESPACE);
@@ -60,8 +61,14 @@ const levelType = (custom: CustomData) => {
   };
 };
 
-type CustomLevelV1 = { name: string; codes: string[]; enabled: boolean };
-type CustomDataV1 = Record<string, CustomLevelV1>;
+const CustomLevelV1 = z.object({
+  name: z.string(),
+  codes: z.array(z.string()),
+  enabled: z.boolean(),
+});
+type CustomLevelV1 = z.infer<typeof CustomLevelV1>;
+const CustomDataV1 = z.record(CustomLevelV1);
+type CustomDataV1 = z.infer<typeof CustomDataV1>;
 
 class CustomTransient {
   cache: { codes: Map<string, string>; names: Map<string, string> } = {
@@ -560,10 +567,8 @@ const queueBinding = {
   empty: {},
   initialize: (data: CustomDataV1) => new CustomTransient(data),
   deserialize(value: PersistedBinding): CustomDataV1 {
-    // check version
     checkVersion(this.version, value.version, this.name);
-    // FIXME: validate and transform data
-    return value.data as CustomDataV1;
+    return CustomDataV1.parse(value.data);
   },
   serialize(data: CustomDataV1): PersistedBinding {
     return { data, version: this.version };
@@ -571,9 +576,7 @@ const queueBinding = {
 };
 
 const setup = (api: ExtensionsApi) => {
-  const binding = api.createQueueBinding<CustomDataV1, CustomTransient>(
-    queueBinding
-  );
+  const binding = api.createQueueBinding(queueBinding);
   const custom = new CustomData(binding);
   api.registerEntryType("customlevel", levelType(custom));
   api.registerResolver("customlevel", resolver(custom));
