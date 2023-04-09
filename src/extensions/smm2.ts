@@ -1,6 +1,5 @@
-"use strict";
-
-const settings = require("../settings.js");
+import ExtensionsApi from "../extensions";
+import * as settings from "../settings";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
@@ -26,10 +25,10 @@ const levelCodeRegex = new RegExp(
  */
 function courseIdValidity(
   courseIdString: string,
-  dataIdCourseThreshold: number,
-  dataIdMakerThreshold: number
+  dataIdCourseThreshold?: number,
+  dataIdMakerThreshold?: number
 ) {
-  let parsed = _courseIdValidity(courseIdString);
+  const parsed = _courseIdValidity(courseIdString);
 
   // If it's just invalid, return that
   if (!parsed.valid || parsed.type !== CodeTypes.NSO) {
@@ -37,9 +36,9 @@ function courseIdValidity(
   }
 
   // Check the thresholds, if applicable
-  if (typeof dataIdMakerThreshold === "number" && parsed.makerCode) {
+  if (dataIdMakerThreshold != null && parsed.makerCode) {
     return { valid: parsed.dataId <= dataIdMakerThreshold, makerCode: true };
-  } else if (typeof dataIdCourseThreshold === "number" && !parsed.makerCode) {
+  } else if (dataIdCourseThreshold != null && !parsed.makerCode) {
     return { valid: parsed.dataId <= dataIdCourseThreshold, makerCode: false };
   }
 
@@ -55,10 +54,10 @@ function courseIdValidity(
 // - and a `validSyntax` field which will be true iff a level/maker code has the correct syntax
 const extractValidCode = (levelCode: string, strict = true) => {
   // TODO: iterate through matches and check if the code is valid for each match and return the first valid one to make this even more lenient
-  let match = levelCode.match(strict ? levelCodeRegexStrict : levelCodeRegex);
+  const match = levelCode.match(strict ? levelCodeRegexStrict : levelCodeRegex);
   if (match) {
-    let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
-    let validity = courseIdValidity(
+    const courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
+    const validity = courseIdValidity(
       courseIdString,
       settings.dataIdCourseThreshold,
       settings.dataIdMakerThreshold
@@ -88,12 +87,7 @@ const makerSuffix = (levelCode: string) => {
 };
 
 const levelType = {
-  display(level: {
-    code: string;
-    valid: boolean;
-    validSyntax: boolean;
-    makerCode: boolean;
-  }) {
+  display(level: { code: string }) {
     return level.code + makerSuffix(level.code);
   },
 };
@@ -121,7 +115,7 @@ const resolver = {
 };
 
 const queueHandler = {
-  upgrade(code: string) {
+  upgrade(code: string): { type: string; code: string } | null {
     const result = courseIdValidity(
       code,
       settings.dataIdCourseThreshold,
@@ -134,13 +128,9 @@ const queueHandler = {
   },
 };
 
-const setup = (extensions: any) => {
-  extensions.registerEntryType("smm2", levelType);
-  extensions.registerResolver("smm2", strictResolver);
-  extensions.registerResolver("smm2-lenient", resolver);
-  extensions.registerQueueHandler(queueHandler);
-};
-
-module.exports = {
-  setup,
+export const setup = (api: ExtensionsApi) => {
+  api.registerEntryType("smm2", levelType);
+  api.registerResolver("smm2", strictResolver);
+  api.registerResolver("smm2-lenient", resolver);
+  api.registerQueueHandler(queueHandler);
 };

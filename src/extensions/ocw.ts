@@ -1,4 +1,5 @@
-const settings = require("../settings.js");
+import ExtensionsApi from "../extensions";
+import * as settings from "../settings";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
@@ -17,7 +18,7 @@ const levelCodeRegex = new RegExp(
 
 function courseIdValidity(courseIdString: string) {
   // Parse the code details out
-  let parsed = _courseIdValidity(courseIdString);
+  const parsed = _courseIdValidity(courseIdString);
 
   // Make sure it's an OCW code
   if (parsed.type !== CodeTypes.OCW) {
@@ -37,8 +38,8 @@ const extractValidCode = (levelCode: string, lenient = false) => {
     match = levelCode.match(levelCodeRegexStrict);
   }
   if (match) {
-    let courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
-    let validity = courseIdValidity(courseIdString);
+    const courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
+    const validity = courseIdValidity(courseIdString);
     return {
       ...validity,
       code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(),
@@ -65,12 +66,7 @@ const codeSuffix = (levelCode: string) => {
 };
 
 const levelType = {
-  display(level: {
-    code: string;
-    valid: boolean;
-    validSyntax: boolean;
-    makerCode: boolean;
-  }) {
+  display(level: { code: string }) {
     return level.code + codeSuffix(level.code);
   },
 };
@@ -107,13 +103,9 @@ const queueHandler = {
   },
 };
 
-const setup = (extensions: any) => {
-  extensions.registerEntryType("ocw", levelType);
-  extensions.registerResolver("ocw", resolver);
-  extensions.registerResolver("ocw-lenient", lenientResolver);
-  extensions.registerQueueHandler(queueHandler);
-};
-
-module.exports = {
-  setup,
+export const setup = (api: ExtensionsApi) => {
+  api.registerEntryType("ocw", levelType);
+  api.registerResolver("ocw", resolver);
+  api.registerResolver("ocw-lenient", lenientResolver);
+  api.registerQueueHandler(queueHandler);
 };
