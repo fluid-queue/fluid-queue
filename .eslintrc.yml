@@ -1,4 +1,6 @@
-plugins: ["jest"]
+plugins:
+  - jest
+  - "@typescript-eslint"
 env:
   browser: true
   commonjs: true
@@ -7,9 +9,12 @@ env:
   node: true
 extends:
   - eslint:recommended
+  - plugin:@typescript-eslint/eslint-recommended
+  - plugin:@typescript-eslint/recommended
   - prettier
 overrides: []
 parserOptions:
   ecmaVersion: latest
+  sourceType: module
 rules:
   curly: "error"
