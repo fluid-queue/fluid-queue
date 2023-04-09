@@ -34,21 +34,25 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
-jest.mock("uuid", () => {
-  const originalModule = jest.requireActual("uuid");
-  return {
-    __esModule: true,
-    ...originalModule,
-    // mock v4
-    v4: jest.fn(() => {
-      return originalModule.v4();
-    }),
-  };
-});
-const uuid = require("uuid");
+let uuid: {v4: jest.Mock<string, [], unknown>} | null = null;
+
+const mocks = () => {
+  jest.mock("uuid", () => {
+    const originalModule = jest.requireActual("uuid");
+    return {
+      __esModule: true,
+      ...originalModule,
+      // mock v4
+      v4: jest.fn(() => {
+        return originalModule.v4();
+      }),
+    };
+  });
+  uuid = require("uuid");
+};
 
 test("setup", async () => {
-  await simRequireIndex();
+  await simRequireIndex(undefined, undefined, undefined, mocks);
 });
 
 const parseMessage = (line: string) => {
@@ -120,7 +124,7 @@ const parseMessage = (line: string) => {
 
 const chatLogTest = (fileName: string) => {
   return async () => {
-    let test = simRequireIndex();
+    let test = await simRequireIndex(undefined, undefined, undefined, mocks);
     let chatbot = null;
 
     let replyMessageQueue: Array<{ message: string; error: Error }> = [];
@@ -162,6 +166,7 @@ const chatLogTest = (fileName: string) => {
         ) {
           continue;
         }
+        // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
         const idx = line.indexOf(" ");
         const command = idx == -1 ? line : line.substring(0, idx);
         const rest = idx == -1 ? undefined : line.substring(idx + 1);
@@ -170,7 +175,9 @@ const chatLogTest = (fileName: string) => {
           end: { column: line.length + 1, line: lineno },
         };
         if (command == "restart") {
-          test = simRequireIndex(test.volume, test.settings, new Date());
+          const time = new Date();
+          await clearAllTimers();
+          test = await simRequireIndex(test.volume, test.settings, time, mocks);
           test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
         } else if (command == "accuracy") {
           accuracy = parseInt(rest);
@@ -234,6 +241,9 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "random") {
           test.random.mockImplementationOnce(() => parseFloat(rest));
         } else if (command == "uuidv4") {
+          if (uuid == null) {
+            throw new Error("Mocks not initialized!");
+          }
           uuid.v4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
           jest.spyOn(test.fs, rest).mockImplementationOnce(() => {

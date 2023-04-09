@@ -36,6 +36,7 @@ export type SaveHandler = (name?: string) => void;
 export interface ObjectBinding {
   data: object;
   version: string;
+  transient: unknown | null;
   save(): void;
 }
 
@@ -265,7 +266,7 @@ class Bindings {
   }
 
   emptyObjectBinding(name: string, version = "1.0"): ObjectBinding {
-    return { data: {}, version, save: () => this.save(name) };
+    return { data: {}, version, save: () => this.save(name), transient: null };
   }
   ensureObjectBinding(name: string, version = "1.0"): void {
     if (!(name in this.objectBindings)) {
@@ -289,6 +290,7 @@ class Bindings {
     const oldValue = { ...binding };
     binding.data = newValue.data;
     binding.version = newValue.version;
+    binding.transient = null;
     if (newValue.save != null) {
       binding.save = newValue.save;
     }
@@ -369,6 +371,8 @@ class QueueHandlers {
     let changed = false;
     for (const entry of allEntries) {
       if (entry.type == null) {
+        // set type to null in case it is undefined
+        entry.type = null;
         // upgrade entry
         for (const handler of this.handlers) {
           if (handler.upgrade != null) {
@@ -382,8 +386,6 @@ class QueueHandlers {
             }
           }
         }
-        // could not be upgraded => type is null
-        entry.type = null;
       }
     }
     return changed;

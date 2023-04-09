@@ -1,9 +1,12 @@
+// FIXME: remove this!
+// @ts-nocheck
+
 const settings = require("./settings.js");
 const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
 const persistence = require("./persistence.js");
 const { Waiting } = require("./waiting.js");
-const { Extensions } = require("./extensions.js");
+const { Extensions } = require("./extensions");
 
 const extensions = new Extensions();
 
@@ -717,8 +720,8 @@ const queue = {
     const allEntries = (
       current_level === undefined ? [] : [current_level]
     ).concat(levels);
-    save ||= extensions.upgradeEntries(allEntries);
-    save ||= extensions.checkEntries(allEntries);
+    save = extensions.upgradeEntries(allEntries) || save;
+    save = extensions.checkEntries(allEntries) || save;
     if (save) {
       queue.save();
     }

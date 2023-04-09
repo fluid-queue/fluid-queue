@@ -39,56 +39,64 @@ const EMPTY_CHATTERS = {
   },
 };
 // async function type
-const AsyncFunction = (async () => {}).constructor;
+const AsyncFunction = (async () => {
+  /* used for type information */
+}).constructor;
 
 // mock variables
 var mockChatters = [];
 
-// mocks
-jest.mock("../src/twitch-api.js");
-jest.mock("../src/chatbot.js");
+var clearAllTimersIntern = null;
 
-jest.mock("set-interval-async/dynamic", () => {
-  // using fixed timers instead of dynamic timers
-  // TODO: why do these work with tests? why are dynamic timers not working?
-  const timers = jest.requireActual("set-interval-async/fixed");
-  return {
-    setIntervalAsync: (handler, interval, ...args) => {
-      if (this.asyncTimers === undefined) {
-        this.asyncTimers = [];
-      }
-      const timer = timers.setIntervalAsync(handler, interval, ...args);
-      this.asyncTimers.push(timer);
-      return timer;
-    },
-    clearIntervalAsync: async (timer) => {
-      if (this.asyncTimers === undefined) {
-        this.asyncTimers = [];
-      }
-      const index = this.asyncTimers.findIndex((t) => t === timer);
-      if (index != -1) {
-        this.asyncTimers.splice(index, 1);
-        await timers.clearIntervalAsync(timer);
-      }
-    },
-    clearAllTimers: async () => {
-      if (this.asyncTimers === undefined) {
-        this.asyncTimers = [];
-      }
-      while (this.asyncTimers.length) {
-        const t = this.asyncTimers.pop();
-        await timers.clearIntervalAsync(t);
-      }
-    },
-  };
-});
+const mockModules = () => {
+  // mocks
+  jest.mock("../src/twitch-api.js");
+  jest.mock("../src/chatbot.js");
+  jest.mock("node-fetch", () => jest.fn());
 
-// only import after mocking!
-const { twitchApi } = require("../src/twitch-api.js");
-const dynamic = require("set-interval-async/dynamic");
+  jest.mock("set-interval-async/dynamic", () => {
+    // using fixed timers instead of dynamic timers
+    // TODO: why do these work with tests? why are dynamic timers not working?
+    const timers = jest.requireActual("set-interval-async/fixed");
+    const result = {
+      setIntervalAsync: (handler, interval, ...args) => {
+        if (this.asyncTimers === undefined) {
+          this.asyncTimers = [];
+        }
+        const timer = timers.setIntervalAsync(handler, interval, ...args);
+        this.asyncTimers.push(timer);
+        return timer;
+      },
+      clearIntervalAsync: async (timer) => {
+        if (this.asyncTimers === undefined) {
+          this.asyncTimers = [];
+        }
+        const index = this.asyncTimers.findIndex((t) => t === timer);
+        if (index != -1) {
+          this.asyncTimers.splice(index, 1);
+          await timers.clearIntervalAsync(timer);
+        }
+      },
+      clearAllTimers: async () => {
+        if (this.asyncTimers === undefined) {
+          this.asyncTimers = [];
+        }
+        while (this.asyncTimers.length) {
+          const t = this.asyncTimers.pop();
+          await timers.clearIntervalAsync(t);
+        }
+      },
+    };
+    clearAllTimersIntern = result.clearAllTimers.bind(result);
+    return result;
+  });
 
-// mock chatters
-twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
+  // only import after mocking!
+  const { twitchApi } = require("../src/twitch-api.js");
+
+  // mock chatters
+  twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
+};
 
 /**
  * @param {Object} newChatters chatters as returned by the chatters resource, see `../src/twitch.js`
@@ -181,12 +189,13 @@ const createMockVolume = (settings = undefined) => {
  * @param {Volume | undefined} mockFs This virtual file system will be copied over
  * @param {settings | undefined} mockSettings {@link settings} Settings to be used
  * @param {number | Date} mockTime
- * @returns {index} {@link index}
+ * @returns {Promise<index>} {@link index}
  */
-const simRequireIndex = (
+const simRequireIndex = async (
   volume = undefined,
   mockSettings = undefined,
-  mockTime = undefined
+  mockTime = undefined,
+  setupMocks = undefined
 ) => {
   let fs;
   let settings;
@@ -198,7 +207,16 @@ const simRequireIndex = (
   let twitch;
 
   try {
-    jest.isolateModules(() => {
+    let main;
+    await clearAllTimers();
+    jest.resetModules();
+    await mockModules();
+    if (setupMocks !== undefined) {
+      await setupMocks();
+    }
+    jest.useFakeTimers();
+    await jest.isolateModulesAsync(async () => {
+      // mockModules();
       // remove timers
       jest.clearAllTimers();
 
@@ -251,36 +269,30 @@ const simRequireIndex = (
 
       // import libraries
       chatbot = require("../src/chatbot.js");
-      twitch = require("../src/twitch.js").twitch();
-      const queue = require("../src/queue.js");
-
-      // spy on the quesoqueue that index will use
-      const quesoqueueSpy = jest.spyOn(queue, "quesoqueue");
+      twitch = require("../src/twitch").twitch();
+      // const queue = require("../src/queue");
 
       // run index.js
-      require("../src/index.js");
-
-      // get hold of the queue
-      expect(quesoqueueSpy).toHaveBeenCalledTimes(1);
-      quesoqueue = quesoqueueSpy.mock.results[0].value;
-      quesoqueueSpy.mockRestore();
-
-      // get hold of chatbot_helper
-      expect(chatbot.helper).toHaveBeenCalledTimes(1);
-      chatbot_helper = chatbot.helper.mock.results[0].value;
-
-      expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
-      expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
-      expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
-
-      // get hold of the handle function
-      // the first argument of setup has to be an AsyncFunction
-      expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(
-        AsyncFunction
-      );
-      handle_func = chatbot_helper.setup.mock.calls[0][0];
+      let idx = require("../src/index.js");
+      main = idx.main;
+      quesoqueue = idx.quesoqueue;
     });
+    await main();
+
+    // get hold of chatbot_helper
+    expect(chatbot.helper).toHaveBeenCalledTimes(1);
+    chatbot_helper = chatbot.helper.mock.results[0].value;
+
+    expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
+    expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
+    expect(chatbot_helper.say).toHaveBeenCalledTimes(0);
+
+    // get hold of the handle function
+    // the first argument of setup has to be an AsyncFunction
+    expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(AsyncFunction);
+    handle_func = chatbot_helper.setup.mock.calls[0][0];
   } catch (err) {
+    console.warn(err);
     err.simIndex = {
       fs,
       volume,
@@ -313,8 +325,12 @@ const flushPromises = async () => {
 };
 
 const clearAllTimers = async () => {
+  const time = new Date();
   jest.clearAllTimers();
-  await dynamic.clearAllTimers();
+  if (clearAllTimersIntern != null) {
+    await clearAllTimersIntern;
+  }
+  jest.setSystemTime(time);
 };
 
 /**

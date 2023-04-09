@@ -59,24 +59,32 @@ const initCustom = (binding) => {
   return {
     binding,
     get cache() {
-      if (this.binding.cache === undefined) {
+      if (this.binding.transient == null) {
+        this.binding.transient = {};
         // this is happening everytime the queue is loaded or reloaded
-        this.binding.cache = {};
-        this.binding.cache.codes = new Map();
-        this.binding.cache.names = new Map();
+        this.binding.transient.cache = {};
+        this.binding.transient.cache.codes = new Map();
+        this.binding.transient.cache.names = new Map();
         Object.entries(this.binding.data).forEach(([uuid, value]) => {
-          this.binding.cache.names.set(value.name.trim().toUpperCase(), uuid);
+          this.binding.transient.cache.names.set(
+            value.name.trim().toUpperCase(),
+            uuid
+          );
           value.codes.forEach((code) => {
-            this.binding.cache.codes.set(code.trim().toUpperCase(), uuid);
+            this.binding.transient.cache.codes.set(
+              code.trim().toUpperCase(),
+              uuid
+            );
           });
         });
       }
-      return this.binding.cache;
+      return this.binding.transient.cache;
     },
     fromName(name) {
       return this.cache.names.get(name.trim().toUpperCase());
     },
     fromCode(code) {
+      // console.log(`fromCode(${code}) => ${JSON.stringify({...this.cache.codes})}.get(${code.trim().toUpperCase()}) => ${this.cache.codes.get(code.trim().toUpperCase())}`);
       return this.cache.codes.get(code.trim().toUpperCase());
     },
     fromArguments(args) {

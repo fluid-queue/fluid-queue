@@ -54,9 +54,6 @@
   "engines": {
     "node": ">=16.14.0"
   },
-  "jest": {
-    "globalSetup": "jest-chance"
-  },
   "optionalDependencies": {
     "fsevents": "^2.3.2"
   },
