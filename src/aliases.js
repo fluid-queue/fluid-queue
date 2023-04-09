@@ -1,7 +1,7 @@
 const fs = require("fs");
 const writeFileAtomic = require("write-file-atomic");
 const writeFileAtomicSync = writeFileAtomic.sync;
-const settings = require("./settings.js");
+const settings = require("./settings").default;
 
 const ALIASES_FILE = {
   directory: "./settings",

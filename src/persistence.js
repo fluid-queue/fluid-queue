@@ -1,4 +1,4 @@
-const settings = require("./settings.js");
+const settings = require("./settings").default;
 const fs = require("fs");
 const gracefulFs = require("graceful-fs");
 const writeFileAtomic = require("write-file-atomic");

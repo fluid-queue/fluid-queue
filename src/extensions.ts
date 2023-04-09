@@ -1,6 +1,6 @@
 import * as path from "path";
 import { promises as fsPromises } from "fs";
-import * as settings from "./settings";
+import settings from "./settings";
 import { aliases as aliasesFunction } from "./aliases";
 const aliases = aliasesFunction();
 

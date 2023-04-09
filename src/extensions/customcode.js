@@ -1,4 +1,4 @@
-const settings = require("../settings.js");
+const settings = require("../settings").default;
 // TODO: move persistence functionality into extensions API
 const persistence = require("../persistence.js");
 

@@ -1,7 +1,7 @@
 const { ApiClient } = require("@twurple/api");
 const { RefreshingAuthProvider } = require("@twurple/auth");
 const tmi = require("@twurple/auth-tmi");
-const settings = require("./settings.js");
+const settings = require("./settings").default;
 const fs = require("fs");
 const gracefulFs = require("graceful-fs");
 const { SingleValueCache } = require("./cache.js");
