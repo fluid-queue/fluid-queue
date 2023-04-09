@@ -1,5 +1,13 @@
-import ExtensionsApi, { ObjectBinding, QueueEntry, DisplayEntry, Responder, Chatter } from "../extensions";
+import ExtensionsApi, {
+  QueueEntry,
+  DisplayEntry,
+  Responder,
+  Chatter,
+  PersistedBinding,
+  TypedBinding,
+} from "../extensions";
 import settings from "../settings";
+import { checkVersion } from "./helpers/version";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
 
 const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
@@ -52,25 +60,19 @@ const levelType = (custom: CustomData) => {
   };
 };
 
-type CustomLevelV1 = { name: string, codes: string[], enabled: boolean };
+type CustomLevelV1 = { name: string; codes: string[]; enabled: boolean };
 type CustomDataV1 = Record<string, CustomLevelV1>;
 
 class CustomTransient {
-  cache: { codes: Map<string, string>, names: Map<string, string> } = {
+  cache: { codes: Map<string, string>; names: Map<string, string> } = {
     codes: new Map(),
     names: new Map(),
   };
   constructor(data: CustomDataV1) {
     Object.entries(data).forEach(([uuid, value]) => {
-      this.cache.names.set(
-        value.name.trim().toUpperCase(),
-        uuid
-      );
+      this.cache.names.set(value.name.trim().toUpperCase(), uuid);
       value.codes.forEach((code) => {
-        this.cache.codes.set(
-          code.trim().toUpperCase(),
-          uuid
-        );
+        this.cache.codes.set(code.trim().toUpperCase(), uuid);
       });
     });
   }
@@ -83,23 +85,16 @@ class CustomTransient {
 }
 
 class CustomData {
-  binding: ObjectBinding;
+  binding: TypedBinding<CustomDataV1, CustomTransient>;
 
-  constructor(binding: ObjectBinding) {
+  constructor(binding: TypedBinding<CustomDataV1, CustomTransient>) {
     this.binding = binding;
   }
   get data(): CustomDataV1 {
-    // we are doing a cast here for now!
-    return this.binding.data as CustomDataV1;
+    return this.binding.data;
   }
-  get cache(): CustomTransient {
-    const transient = this.binding.transient;
-    if (transient != null && typeof transient === "object" && transient instanceof CustomTransient) {
-      return transient;
-    }
-    const newTransient = new CustomTransient(this.data);
-    this.binding.transient = newTransient;
-    return newTransient;
+  get cache(): { codes: Map<string, string>; names: Map<string, string> } {
+    return this.binding.transient.cache;
   }
   fromName(name: string): string | null {
     return this.cache.names.get(name.trim().toUpperCase()) ?? null;
@@ -244,7 +239,7 @@ const customlevelCommand = (custom: CustomData) => {
         } else {
           const args = message.trim().split(" ");
           let [command] = args;
-          const [,...rest] = args;
+          const [, ...rest] = args;
           command = command.toLowerCase();
           if (command == "code" && rest.length >= 2) {
             const [subcommand, code, ...codeOrNameRest] = rest;
@@ -253,7 +248,8 @@ const customlevelCommand = (custom: CustomData) => {
               const fromCode = custom.fromCode(code);
               if (fromCode != null) {
                 respond(
-                  `The custom level with the code ${code} already exists with the name "${custom.get(fromCode).name
+                  `The custom level with the code ${code} already exists with the name "${
+                    custom.get(fromCode).name
                   }" and codes ${custom.get(fromCode).codes.join(", ")}.`
                 );
                 return;
@@ -265,7 +261,8 @@ const customlevelCommand = (custom: CustomData) => {
                 custom.add(fromArguments, value);
                 custom.save();
                 respond(
-                  `Added the code ${code} to the custom level with the name "${value.name
+                  `Added the code ${code} to the custom level with the name "${
+                    value.name
                   }" and codes ${value.codes.join(", ")}.`
                 );
                 return;
@@ -281,7 +278,8 @@ const customlevelCommand = (custom: CustomData) => {
                 );
                 if (newCodes.length == 0) {
                   respond(
-                    `Can not remove the code ${code} from the custom level with the name "${custom.get(fromCode).name
+                    `Can not remove the code ${code} from the custom level with the name "${
+                      custom.get(fromCode).name
                     }" and codes ${custom
                       .get(fromCode)
                       .codes.join(", ")}, since it is the only code left.`
@@ -293,7 +291,8 @@ const customlevelCommand = (custom: CustomData) => {
                 custom.add(fromCode, value);
                 custom.save();
                 respond(
-                  `Removed the code ${code} to the custom level with the name "${value.name
+                  `Removed the code ${code} to the custom level with the name "${
+                    value.name
                   }" and codes ${value.codes.join(", ")}.`
                 );
                 return;
@@ -317,8 +316,9 @@ const customlevelCommand = (custom: CustomData) => {
               custom.save();
               respond(
                 (command == "enable" ? "Enabled" : "Disabled") +
-                ` the custom level with the name "${value.name
-                }" and codes ${value.codes.join(", ")}.`
+                  ` the custom level with the name "${
+                    value.name
+                  }" and codes ${value.codes.join(", ")}.`
               );
               return;
             }
@@ -332,7 +332,8 @@ const customlevelCommand = (custom: CustomData) => {
               custom.remove(fromArguments);
               custom.save();
               respond(
-                `Removed the custom level with the name "${value.name
+                `Removed the custom level with the name "${
+                  value.name
                 }" and codes ${value.codes.join(", ")}.`
               );
               return;
@@ -357,7 +358,8 @@ const customlevelCommand = (custom: CustomData) => {
             const fromName = custom.fromArguments(levelName);
             if (fromName != null) {
               respond(
-                `The custom level with the name "${custom.get(fromName).name
+                `The custom level with the name "${
+                  custom.get(fromName).name
                 }" already exists with codes ${custom
                   .get(fromName)
                   .codes.join(", ")}.`
@@ -367,7 +369,8 @@ const customlevelCommand = (custom: CustomData) => {
             const fromCode = custom.fromArguments(code);
             if (fromCode != null) {
               respond(
-                `The custom level with the code ${code} already exists with the name "${custom.get(fromCode).name
+                `The custom level with the code ${code} already exists with the name "${
+                  custom.get(fromCode).name
                 }" and codes ${custom.get(fromCode).codes.join(", ")}.`
               );
               return;
@@ -412,7 +415,8 @@ const customlevelCommand = (custom: CustomData) => {
             const fromName = custom.fromArguments(levelName);
             if (fromName != null) {
               respond(
-                `The custom level with the name "${custom.get(fromName).name
+                `The custom level with the name "${
+                  custom.get(fromName).name
                 }" already exists with codes ${custom
                   .get(fromName)
                   .codes.join(", ")}.`
@@ -428,7 +432,8 @@ const customlevelCommand = (custom: CustomData) => {
               const fromCode = custom.fromArguments(code);
               if (fromCode != null) {
                 respond(
-                  `The custom level with the code ${code} already exists with the name "${custom.get(fromCode).name
+                  `The custom level with the code ${code} already exists with the name "${
+                    custom.get(fromCode).name
                   }" and codes ${custom.get(fromCode).codes.join(", ")}.`
                 );
                 return;
@@ -436,7 +441,8 @@ const customlevelCommand = (custom: CustomData) => {
             }
             if (custom.has(uuid)) {
               respond(
-                `The custom level with the uuid ${uuid} already exists with the name "${custom.get(uuid).name
+                `The custom level with the uuid ${uuid} already exists with the name "${
+                  custom.get(uuid).name
                 }" and codes ${custom.get(uuid).codes.join(", ")}.`
               );
               return;
@@ -514,7 +520,8 @@ const queueHandler = (custom: CustomData) => {
         queueChanged = custom.removeRomHack() || queueChanged;
         console.log(`ROMhack has been removed as a custom level.`);
       } else {
-        queueChanged = custom.addRomHack(!!settings.romhacks_enabled) || queueChanged;
+        queueChanged =
+          custom.addRomHack(!!settings.romhacks_enabled) || queueChanged;
         console.log(
           `ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`
         );
@@ -526,7 +533,8 @@ const queueHandler = (custom: CustomData) => {
         queueChanged = custom.removeUncleared() || queueChanged;
         console.log(`Uncleared has been removed as a custom level.`);
       } else {
-        queueChanged = custom.addUncleared(!!settings.uncleared_enabled) || queueChanged;
+        queueChanged =
+          custom.addUncleared(!!settings.uncleared_enabled) || queueChanged;
         console.log(
           `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
         );
@@ -546,8 +554,26 @@ const queueHandler = (custom: CustomData) => {
   };
 };
 
+const queueBinding = {
+  name: "customlevel",
+  version: "1.0",
+  empty: {},
+  initialize: (data: CustomDataV1) => new CustomTransient(data),
+  deserialize(value: PersistedBinding): CustomDataV1 {
+    // check version
+    checkVersion(this.version, value.version, this.name);
+    // FIXME: validate and transform data
+    return value.data as CustomDataV1;
+  },
+  serialize(data: CustomDataV1): PersistedBinding {
+    return { data, version: this.version };
+  },
+};
+
 const setup = (api: ExtensionsApi) => {
-  const binding = api.getQueueBinding("customlevel", "1.0");
+  const binding = api.createQueueBinding<CustomDataV1, CustomTransient>(
+    queueBinding
+  );
   const custom = new CustomData(binding);
   api.registerEntryType("customlevel", levelType(custom));
   api.registerResolver("customlevel", resolver(custom));

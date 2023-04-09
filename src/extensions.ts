@@ -33,6 +33,50 @@ export interface CodeResolver {
 
 export type SaveHandler = (name?: string) => void;
 
+export interface PersistedBinding {
+  data: unknown;
+  version: string;
+}
+
+export interface TypedBinding<Data, Transient> {
+  data: Data;
+  transient: Transient;
+  save(): void;
+}
+
+interface BindingOperations {
+  fromPersisted(value: PersistedBinding): void;
+  toPersisted(): PersistedBinding;
+  clear(): void;
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+type FunctionOrData<
+  Type,
+  Arguments extends unknown[]
+> = Type extends () => unknown
+  ? (...args: Arguments) => Type
+  : ((...args: Arguments) => Type) | Type;
+
+export interface BindingDescription<Data, Transient> {
+  name: string;
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  empty: FunctionOrData<Data, []>;
+  initialize: FunctionOrData<Transient, [Data]>;
+
+  serialize(data: Data, transient: Transient): PersistedBinding;
+  deserialize(value: PersistedBinding): Data;
+}
+
+interface TypeBindingBuilder<Data, Transient> {
+  build(value?: PersistedBinding): { data: Data; transient: Transient };
+  update(
+    binding: TypedBinding<Data, Transient>,
+    value?: PersistedBinding
+  ): void;
+}
+
 export interface ObjectBinding {
   data: object;
   version: string;
@@ -78,7 +122,9 @@ export interface QueueEntry extends Record<string, unknown>, QueueSubmitter {
   type: string | null;
 }
 
-export type DisplayEntry = NonNullableRequired<Pick<QueueEntry, "code" | "type">> &
+export type DisplayEntry = NonNullableRequired<
+  Pick<QueueEntry, "code" | "type">
+> &
   Partial<QueueEntry>;
 
 export interface EntryType {
@@ -95,7 +141,9 @@ export interface ResolversApi {
 }
 
 export interface BindingsApi {
-  getQueueBinding(name: string, version?: string): ObjectBinding;
+  createQueueBinding<Data, Transient>(
+    description: BindingDescription<Data, Transient>
+  ): TypedBinding<Data, Transient>;
 }
 
 export interface CommandsApi {
@@ -216,42 +264,11 @@ class ConfiguredResolvers implements Iterable<CodeResolver> {
   }
 }
 
-const getMajorVersion = (version: string): number => {
-  version = version.trim();
-  const index = version.indexOf(".");
-  if (index == -1) {
-    return parseInt(version);
-  }
-  return parseInt(version.substring(0, index));
-};
-
-const checkVersion = (
-  currentVersion: string,
-  newVersion: string,
-  [name]: string
-): void => {
-  if (currentVersion == null || newVersion == null) {
-    throw new Error(
-      `version missing in the save file` +
-        (name == null ? "" : ` for extension ${name}`)
-    );
-  }
-  const currentMajorVersion = getMajorVersion(currentVersion);
-  const newMajorVersion = getMajorVersion(newVersion);
-  if (newMajorVersion > currentMajorVersion) {
-    throw new Error(
-      `version ${newVersion} in the save file is not compatible with current version ${currentVersion}` +
-        (name == null ? "" : ` for extension ${name}`)
-    );
-  }
-  // version is compatible for now
-};
-
-class Bindings {
-  private objectBindings: Record<string, ObjectBinding> = {};
+class TypedBindings {
+  private persistedBindings: Record<string, PersistedBinding> = {};
+  private typeBindings: Record<string, BindingOperations> = {};
   private saveHandler: SaveHandler | null = null;
-
-  save(name: string) {
+  private save(name: string) {
     if (this.saveHandler == null) {
       console.warn(
         `extension ${name} requested to save, but no save handler is registered`
@@ -260,68 +277,91 @@ class Bindings {
     }
     this.saveHandler(name);
   }
-
   setSaveHandler(saveHandler: SaveHandler) {
     this.saveHandler = saveHandler;
   }
-
-  emptyObjectBinding(name: string, version = "1.0"): ObjectBinding {
-    return { data: {}, version, save: () => this.save(name), transient: null };
+  createTypeBindingBuilder<Data, Transient>(
+    description: BindingDescription<Data, Transient>
+  ): TypeBindingBuilder<Data, Transient> {
+    const buildData = (value?: PersistedBinding) => {
+      if (value != null) {
+        return description.deserialize(value);
+      }
+      if (typeof description.empty === "function") {
+        return description.empty();
+      } else {
+        return description.empty;
+      }
+    };
+    const buildTransient = (data: Data) => {
+      if (typeof description.initialize === "function") {
+        return description.initialize(data);
+      } else {
+        return description.initialize;
+      }
+    };
+    return {
+      build(value?: PersistedBinding) {
+        const data = buildData(value);
+        const transient = buildTransient(data);
+        return { data, transient };
+      },
+      update(binding: TypedBinding<Data, Transient>, value?: PersistedBinding) {
+        const { data, transient } = this.build(value);
+        binding.data = data;
+        binding.transient = transient;
+      },
+    };
   }
-  ensureObjectBinding(name: string, version = "1.0"): void {
-    if (!(name in this.objectBindings)) {
-      this.objectBindings[name] = this.emptyObjectBinding(name, version);
-    }
-  }
-  getObjectBinding(name: string, version = "1.0"): ObjectBinding {
-    this.ensureObjectBinding(name, version);
-    return this.objectBindings[name];
-  }
-
-  overrideObjectBinding(
-    name: string,
-    newValue: PartialRequired<ObjectBinding, "version" | "data">
-  ): ObjectBinding {
-    if (name in this.objectBindings) {
-      checkVersion(this.objectBindings[name].version, newValue.version, name);
-    }
-    this.ensureObjectBinding(name, newValue.version);
-    const binding = this.objectBindings[name];
-    const oldValue = { ...binding };
-    binding.data = newValue.data;
-    binding.version = newValue.version;
-    binding.transient = null;
-    if (newValue.save != null) {
-      binding.save = newValue.save;
-    }
-    return oldValue;
-  }
-  overrideObjectBindings(
-    newBindings: Record<
-      string,
-      PartialRequired<ObjectBinding, "version" | "data">
-    >
-  ) {
-    // clear all bindings
-    // this is needed to keep all bindings even if newBindings does not contain an existing binding
-    for (const [name, value] of Object.entries(this.objectBindings)) {
-      this.overrideObjectBinding(
-        name,
-        this.emptyObjectBinding(name, value.version) // keep version
+  createTypeBinding<Data, Transient>(
+    description: BindingDescription<Data, Transient>
+  ): TypedBinding<Data, Transient> {
+    if (description.name in this.typeBindings) {
+      throw new Error(
+        `Type binding of name ${description.name} already exists!`
       );
     }
-    // set new values
-    for (const [name, newValue] of Object.entries(newBindings)) {
-      this.overrideObjectBinding(name, newValue);
+    const builder = this.createTypeBindingBuilder(description);
+    const { data, transient } = builder.build();
+    const binding = {
+      data,
+      transient,
+      save: this.save.bind(this, description.name),
+      fromPersisted(value: PersistedBinding) {
+        builder.update(this, value);
+      },
+      toPersisted(): PersistedBinding {
+        return description.serialize(this.data, this.transient);
+      },
+      clear() {
+        builder.update(this);
+      },
+    };
+    this.typeBindings[description.name] = binding;
+    return binding;
+  }
+  fromPersisted(newBindings: Record<string, PersistedBinding>) {
+    this.persistedBindings = newBindings;
+    // update bindings
+    for (const [name, value] of Object.entries(this.typeBindings)) {
+      if (name in this.persistedBindings) {
+        value.fromPersisted(this.persistedBindings[name]);
+      } else {
+        value.clear();
+      }
     }
   }
-  getObjectBindings(): Record<string, ObjectBinding> {
-    return this.objectBindings;
+  toPersisted(): Record<string, PersistedBinding> {
+    // update persisted data
+    for (const [name, value] of Object.entries(this.typeBindings)) {
+      this.persistedBindings[name] = value.toPersisted();
+    }
+    return this.persistedBindings;
   }
 
   get api(): BindingsApi {
     return {
-      getQueueBinding: this.getObjectBinding.bind(this),
+      createQueueBinding: this.createTypeBinding.bind(this),
     };
   }
 }
@@ -411,19 +451,17 @@ class QueueHandlers {
 export class Extensions {
   private resolvers: RegisterResolvers | ConfiguredResolvers =
     new RegisterResolvers();
-  private bindings: Bindings = new Bindings();
+  private bindings: TypedBindings = new TypedBindings();
   private commands: Commands = new Commands();
   private queueHandlers: QueueHandlers = new QueueHandlers();
   private entryTypes: Record<string, EntryType> = {};
   private extensions: Record<string, ExtensionModule> | null = null;
 
-  overrideQueueBindings(
-    bindings: Record<string, PartialRequired<ObjectBinding, "version" | "data">>
-  ): void {
-    this.bindings.overrideObjectBindings(bindings);
+  overrideQueueBindings(bindings: Record<string, PersistedBinding>): void {
+    this.bindings.fromPersisted(bindings);
   }
-  getQueueBindings(): Record<string, ObjectBinding> {
-    return this.bindings.getObjectBindings();
+  persistedQueueBindings(): Record<string, PersistedBinding> {
+    return this.bindings.toPersisted();
   }
   setQueueBindingSaveHandler(saveHandler: SaveHandler): void {
     this.bindings.setSaveHandler(saveHandler);

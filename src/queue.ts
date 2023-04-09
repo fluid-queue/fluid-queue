@@ -671,11 +671,7 @@ const queue = {
         queue: levels,
         waiting,
         // TODO: add test case to check that only data and version are persisted
-        extensions: Object.fromEntries(
-          Object.entries(extensions.getQueueBindings()).map(([key, value]) => {
-            return [key, { data: value.data, version: value.version }];
-          })
-        ),
+        extensions: extensions.persistedQueueBindings(),
       });
     } else {
       return false;
