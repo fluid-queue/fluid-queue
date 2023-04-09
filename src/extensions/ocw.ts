@@ -1,5 +1,5 @@
 import ExtensionsApi from "../extensions";
-import * as settings from "../settings";
+import settings from "../settings";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,

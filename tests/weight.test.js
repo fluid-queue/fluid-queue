@@ -19,7 +19,7 @@ const consoleErrorMock = jest.spyOn(global.console, "error");
 
 jest.useFakeTimers();
 
-beforeEach(() => {
+const setupMocks = () => {
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
@@ -29,13 +29,16 @@ beforeEach(() => {
   // reset console
   consoleWarnMock.mockClear();
   consoleErrorMock.mockClear();
-});
+};
+
+beforeEach(setupMocks);
 test("weight test", async () => {
   const volume = createMockVolume();
   const index = await simRequireIndex(
     volume,
     DEFAULT_TEST_SETTINGS,
-    START_TIME
+    START_TIME,
+    setupMocks
   );
   const queue = index.quesoqueue;
   const twitch = index.twitch;

@@ -1,7 +1,7 @@
 require("./banner.js").printBanner();
 const settings = require("./settings.js");
 const chatbot = require("./chatbot.js");
-const queue = require("./queue.js");
+const queue = require("./queue");
 const twitch = require("./twitch.js").twitch();
 const timer = require("./timer");
 const persistence = require("./persistence.js");
@@ -886,18 +886,20 @@ chatbot_helper.setup(HandleMessage);
 // run async code
 const main = async () => {
   // setup the twitch api
-  console.log("Initializing twitch api...");
   await twitchApi.setup();
 
   // loading the queue
-  console.log("Loading queue state...");
   await quesoqueue.load();
 
   // connect to the Twitch channel.
-  console.log("Connecting to twitch chat...");
   await chatbot_helper.connect();
 };
 
-module.exports = {
-  run: main(),
-};
+if (process.env.NODE_ENV == "test") {
+  module.exports = {
+    main,
+    quesoqueue,
+  };
+} else {
+  main();
+}

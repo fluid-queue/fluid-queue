@@ -1,5 +1,5 @@
 import ExtensionsApi from "../extensions";
-import * as settings from "../settings";
+import settings from "../settings";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
@@ -77,7 +77,19 @@ const extractValidCode = (levelCode: string, strict = true) => {
 };
 
 const makerSuffix = (levelCode: string) => {
-  if (settings.showMakerCode !== false) {
+  console.log(JSON.stringify(settings));
+  console.log(
+    `settings.showMakerCode !== undefined => ${
+      settings.showMakerCode !== undefined
+    }`
+  );
+  console.log(
+    `settings.showMakerCode !== false => ${settings.showMakerCode !== false}`
+  );
+  if (
+    settings.showMakerCode !== undefined &&
+    settings.showMakerCode !== false
+  ) {
     const makerCode = extractValidCode(levelCode).makerCode;
     if (makerCode) {
       return " (maker code)";
