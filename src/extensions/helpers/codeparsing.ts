@@ -23,10 +23,10 @@ const CodeTypes = {
 
 // https://stackoverflow.com/a/55646905
 function parseBigInt(value: string, radix: number) {
-  var size = 10,
-    factor = BigInt(radix ** size),
-    i = value.length % size || size,
-    parts = [value.slice(0, i)];
+  const size = 10;
+  const factor = BigInt(radix ** size);
+  let i = value.length % size || size;
+  const parts = [value.slice(0, i)];
 
   while (i < value.length) {
     parts.push(value.slice(i, (i += size)));
@@ -37,24 +37,24 @@ function parseBigInt(value: string, radix: number) {
 
 // Get the unchanging meta bits and turn them into a number
 function getMeta(courseBits: bigint) {
-  let a =
+  const a =
     (courseBits >> (VALUE_SIZE_B + META_SIZE_B + VALUE_SIZE_C)) & INT4_MASK;
-  let b = (courseBits >> BigInt(VALUE_SIZE_C)) & BigInt(INT8_MASK);
+  const b = (courseBits >> BigInt(VALUE_SIZE_C)) & BigInt(INT8_MASK);
   return (a << BigInt(META_SIZE_B)) | b;
 }
 
 function _courseIdValidity(courseIdString: string) {
-  let _reversedString = courseIdString.split("").reverse();
-  let reversedString = _reversedString
+  const _reversedString = courseIdString.split("").reverse();
+  const reversedString = _reversedString
     .map((c) => standardBase30[nintendoBase30.indexOf(c)])
     .join("");
-  let courseBits = parseBigInt(reversedString, 30);
+  const courseBits = parseBigInt(reversedString, 30);
 
   // Extract the course meta bits to determine valid/invalid and maker/course ID
-  let courseMeta = getMeta(courseBits);
+  const courseMeta = getMeta(courseBits);
 
   // Extract the data ID so it can be used for NSO codes
-  let courseBitsString = courseBits.toString(2);
+  const courseBitsString = courseBits.toString(2);
 
   // This is a useful check, but needs to be limited to NSO codes
   let dataId;

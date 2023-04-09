@@ -1,7 +1,7 @@
 import * as path from "path";
 import { promises as fsPromises } from "fs";
-import * as settings from "./settings.js";
-import { aliases as aliasesFunction } from "./aliases.js";
+import * as settings from "./settings";
+import { aliases as aliasesFunction } from "./aliases";
 const aliases = aliasesFunction();
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
@@ -16,23 +16,24 @@ const defaultActivated: string[] = [
   "customlevel-name",
 ];
 
+// internal interface
 interface ExtensionModule {
   setup(api: ExtensionsApi): Promise<void> | void;
 }
 
-interface ResolveResult extends Record<string, unknown> {
+export interface ResolveResult extends Record<string, unknown> {
   type: string;
   code?: string | null;
 }
 
-interface CodeResolver {
+export interface CodeResolver {
   description?: string;
   resolve(code: string): ResolveResult | null;
 }
 
-type SaveHandler = (name?: string) => void;
+export type SaveHandler = (name?: string) => void;
 
-interface ObjectBinding {
+export interface ObjectBinding {
   data: object;
   version: string;
   save(): void;
@@ -50,10 +51,10 @@ type NonNullableRequired<T> = {
   [P in keyof T]-?: NonNullable<T[P]>;
 };
 
-type Responder = (message: string) => void;
+export type Responder = (message: string) => void;
 
 // TODO: move this somewhere else!
-interface Chatter {
+export interface Chatter {
   username: string;
   displayName: string;
   isSubscriber: boolean;
@@ -61,50 +62,54 @@ interface Chatter {
   isBroadcaster: boolean;
 }
 
-interface CommandHandler {
+export interface CommandHandler {
   aliases: string[];
   handle(message: string, chatter: Chatter, respond: Responder): Promise<void>;
 }
 
-interface QueueSubmitter {
+export interface QueueSubmitter {
   username: string;
   submitter: string;
 }
 
-interface QueueEntry extends Record<string, unknown>, QueueSubmitter {
+export interface QueueEntry extends Record<string, unknown>, QueueSubmitter {
   code: string;
   type: string | null;
 }
 
-type Entry = NonNullableRequired<Pick<QueueEntry, "code" | "type">> &
+export type Entry = NonNullableRequired<Pick<QueueEntry, "code" | "type">> &
   Partial<QueueEntry>;
 
-interface EntryType {
+export interface EntryType {
   display(entry: Entry): string;
 }
 
-interface QueueHandler {
+export interface QueueHandler {
   upgrade?(code: string): ResolveResult | null;
   check?(allEntried: QueueEntry[]): boolean;
 }
 
-interface ResolversApi {
+export interface ResolversApi {
   registerResolver(name: string, resolver: CodeResolver): void;
 }
 
-interface BindingsApi {
+export interface BindingsApi {
   getQueueBinding(name: string, version?: string): void;
 }
 
-interface CommandsApi {
+export interface CommandsApi {
   registerCommand(name: string, handler: CommandHandler): void;
 }
 
-interface QueueHandlersApi {
+export interface QueueHandlersApi {
   registerQueueHandler(queueHandler: QueueHandler): void;
 }
 
-interface ExtensionsApi extends ResolversApi, BindingsApi, CommandsApi {
+export default interface ExtensionsApi
+  extends ResolversApi,
+    BindingsApi,
+    CommandsApi,
+    QueueHandlersApi {
   registerEntryType(name: string, entryType: EntryType): void;
   resolve(
     levelCode: string
@@ -500,7 +505,7 @@ export class Extensions {
     // check if args start with a resolver name
     const levelCodeArgs = levelCode.trim().split(/\s+/);
     const [resolverName] = levelCodeArgs;
-    let [,...resolverArgs] = levelCodeArgs;
+    let [, ...resolverArgs] = levelCodeArgs;
     const resolver = this.resolvers.get(resolverName);
     if (resolver != null) {
       const entry = resolver.resolve(resolverArgs.join(" "));
