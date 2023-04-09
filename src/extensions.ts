@@ -65,7 +65,7 @@ export interface Chatter {
 
 export interface CommandHandler {
   aliases: string[];
-  handle(message: string, chatter: Chatter, respond: Responder): Promise<void>;
+  handle(message: string, sender: Chatter, respond: Responder): Promise<void>;
 }
 
 export interface QueueSubmitter {
@@ -78,11 +78,11 @@ export interface QueueEntry extends Record<string, unknown>, QueueSubmitter {
   type: string | null;
 }
 
-export type Entry = NonNullableRequired<Pick<QueueEntry, "code" | "type">> &
+export type DisplayEntry = NonNullableRequired<Pick<QueueEntry, "code" | "type">> &
   Partial<QueueEntry>;
 
 export interface EntryType {
-  display(entry: Entry): string;
+  display(entry: DisplayEntry): string;
 }
 
 export interface QueueHandler {
@@ -95,7 +95,7 @@ export interface ResolversApi {
 }
 
 export interface BindingsApi {
-  getQueueBinding(name: string, version?: string): void;
+  getQueueBinding(name: string, version?: string): ObjectBinding;
 }
 
 export interface CommandsApi {
