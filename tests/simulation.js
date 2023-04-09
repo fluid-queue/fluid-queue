@@ -47,16 +47,17 @@ var mockChatters = [];
 // mocks
 jest.mock("../src/twitch-api.js");
 jest.mock("../src/chatbot.js");
-jest.mock("node-fetch", () => jest.fn());
 
 jest.mock("set-interval-async/dynamic", () => {
-  const dynamic = jest.requireActual("set-interval-async/dynamic");
+  // using fixed timers instead of dynamic timers
+  // TODO: why do these work with tests? why are dynamic timers not working?
+  const timers = jest.requireActual("set-interval-async/fixed");
   return {
     setIntervalAsync: (handler, interval, ...args) => {
       if (this.asyncTimers === undefined) {
         this.asyncTimers = [];
       }
-      const timer = dynamic.setIntervalAsync(handler, interval, ...args);
+      const timer = timers.setIntervalAsync(handler, interval, ...args);
       this.asyncTimers.push(timer);
       return timer;
     },
@@ -67,23 +68,7 @@ jest.mock("set-interval-async/dynamic", () => {
       const index = this.asyncTimers.findIndex((t) => t === timer);
       if (index != -1) {
         this.asyncTimers.splice(index, 1);
-        await dynamic.clearIntervalAsync(timer);
-      }
-    },
-    flushPromises: async () => {
-      await new Promise(jest.requireActual("timers").setImmediate);
-      if (this.asyncTimers === undefined) {
-        this.asyncTimers = [];
-      }
-      // TODO: maybe this is not a good idea since
-      for (const t of this.asyncTimers) {
-        for (const iterationId in t.promises) {
-          try {
-            await t.promises[iterationId];
-          } catch (_) {
-            // Do nothing.
-          }
-        }
+        await timers.clearIntervalAsync(timer);
       }
     },
     clearAllTimers: async () => {
@@ -92,7 +77,7 @@ jest.mock("set-interval-async/dynamic", () => {
       }
       while (this.asyncTimers.length) {
         const t = this.asyncTimers.pop();
-        await dynamic.clearIntervalAsync(t);
+        await timers.clearIntervalAsync(t);
       }
     },
   };
@@ -324,7 +309,7 @@ const simRequireIndex = (
 };
 
 const flushPromises = async () => {
-  await dynamic.flushPromises();
+  await new Promise(jest.requireActual("timers").setImmediate);
 };
 
 const clearAllTimers = async () => {
@@ -340,6 +325,7 @@ const clearAllTimers = async () => {
  * @param {number} accuracy How accurate timers are being simulated, in milliseconds
  */
 const simAdvanceTime = async (ms, accuracy = 0) => {
+  const currentTime = new Date();
   await flushPromises();
 
   // advance by accuracy intervals
@@ -353,6 +339,7 @@ const simAdvanceTime = async (ms, accuracy = 0) => {
     jest.advanceTimersByTime(ms);
     await flushPromises();
   }
+  expect(new Date() - currentTime).toEqual(ms);
 };
 
 /**
