@@ -3,7 +3,9 @@ const twitch = require("./twitch.js").twitch();
 const { setIntervalAsync } = require("set-interval-async/dynamic");
 const persistence = require("./persistence.js");
 const { Waiting } = require("./waiting.js");
-const extensions = require("./extensions.js");
+const { Extensions } = require("./extensions.js");
+
+const extensions = new Extensions();
 
 /**
  * @typedef waiting
@@ -724,7 +726,7 @@ const queue = {
     return await extensions.handleCommands(message, sender, respond);
   },
 
-  load: () => {
+  load: async () => {
     if (loaded) {
       // only reload queue state
       queue.loadQueueState();
@@ -733,7 +735,7 @@ const queue = {
     }
 
     // load extensions
-    extensions.load();
+    await extensions.load();
 
     // load queue state
     queue.loadQueueState();

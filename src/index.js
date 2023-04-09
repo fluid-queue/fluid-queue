@@ -15,7 +15,6 @@ const { displayLevel } = queue;
 // patch fs to use the graceful-fs, to retry a file rename under windows
 persistence.patchGlobalFs();
 persistence.createDataDirectory();
-quesoqueue.load();
 aliases.loadAliases();
 
 var queue_open = settings.start_open;
@@ -885,11 +884,20 @@ const chatbot_helper = chatbot.helper(settings.channel);
 chatbot_helper.setup(HandleMessage);
 
 // run async code
-(async () => {
-  console.log("Initializing twitch api...");
+const main = async () => {
   // setup the twitch api
+  console.log("Initializing twitch api...");
   await twitchApi.setup();
-  console.log("Connecting to twitch chat...");
+
+  // loading the queue
+  console.log("Loading queue state...");
+  await quesoqueue.load();
+
   // connect to the Twitch channel.
+  console.log("Connecting to twitch chat...");
   await chatbot_helper.connect();
-})();
+};
+
+module.exports = {
+  run: main(),
+};
