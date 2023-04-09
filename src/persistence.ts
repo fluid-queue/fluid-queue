@@ -71,11 +71,11 @@ type UserOnlineTimeV1 = z.infer<typeof UserOnlineTimeV1>;
 
 const EntryV2 = z
   .object({
-    code: z.string().describe("contains the level code as a string"),
+    code: z.string().describe("contains the level code as a string").optional(),
     type: z.string().nullable().default(null),
   })
   .passthrough();
-type EntryV2 = z.infer<typeof EntryV2>;
+export type EntryV2 = z.infer<typeof EntryV2>;
 
 const SubmittedEntryV2 = z
   .object({
@@ -128,8 +128,16 @@ const CustomCodesV1 = z
   .transform((array) => Object.fromEntries(array));
 type CustomCodesV1 = z.infer<typeof CustomCodesV1>;
 
-const CustomCodesV2 = z.record(z.string().describe("custom code"), EntryV2);
-type CustomCodesV2 = z.infer<typeof CustomCodesV2>;
+const CustomCodesEntryV2 = EntryV2.extend({
+  type: z.string(),
+});
+export type CustomCodesEntryV2 = z.infer<typeof CustomCodesEntryV2>;
+
+const CustomCodesV2 = z.record(
+  z.string().describe("custom code"),
+  CustomCodesEntryV2
+);
+export type CustomCodesV2 = z.infer<typeof CustomCodesV2>;
 
 export const patchGlobalFs = () => {
   gracefulFs.gracefulify(fs);
@@ -504,8 +512,8 @@ const loadCustomCodesV2 = (): ExtensionDataV2<CustomCodesV2> => {
 };
 
 export const saveCustomCodesSync = (
-  data: ExtensionDataV2<CustomCodesV2>,
-  errorMessage = undefined
+  data: Omit<ExtensionDataV2<CustomCodesV2>, "version">,
+  errorMessage?: string
 ) => {
   try {
     writeFileAtomicSync(

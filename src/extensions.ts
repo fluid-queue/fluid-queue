@@ -23,7 +23,10 @@ interface ExtensionModule {
 
 export interface ResolveResult extends Record<string, unknown> {
   type: string;
-  code?: string | null;
+  /**
+   * if code is undefined => code is deleted!
+   */
+  code?: string;
 }
 
 export interface CodeResolver {
@@ -34,7 +37,7 @@ export interface CodeResolver {
 export type SaveHandler = (name?: string) => void;
 
 export interface PersistedBinding {
-  data: unknown;
+  data?: unknown;
   version: string;
 }
 
@@ -61,7 +64,6 @@ type FunctionOrData<
 export interface BindingDescription<Data, Transient> {
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   empty: FunctionOrData<Data, []>;
   initialize: FunctionOrData<Transient, [Data]>;
 
@@ -83,11 +85,6 @@ export interface ObjectBinding {
   transient: unknown | null;
   save(): void;
 }
-
-/**
- * The properties K of type T are required, and all other properties are optional.
- */
-type PartialRequired<T, K extends keyof T> = Partial<T> & Pick<Required<T>, K>;
 
 /**
  * All properties of type T are required and not null
@@ -118,7 +115,7 @@ export interface QueueSubmitter {
 }
 
 export interface QueueEntry extends Record<string, unknown>, QueueSubmitter {
-  code: string;
+  code?: string;
   type: string | null;
 }
 
@@ -407,12 +404,16 @@ class QueueHandlers {
   register(handler: QueueHandler) {
     this.handlers.push(handler);
   }
-  upgrade(allEntries: PartialRequired<QueueEntry, "code">[]): boolean {
+  upgrade(allEntries: Partial<QueueEntry>[]): boolean {
     let changed = false;
     for (const entry of allEntries) {
       if (entry.type == null) {
         // set type to null in case it is undefined
         entry.type = null;
+        if (entry.code === undefined) {
+          // entry without code can not be upgraded!
+          break;
+        }
         // upgrade entry
         for (const handler of this.handlers) {
           if (handler.upgrade != null) {
@@ -473,7 +474,7 @@ export class Extensions {
   ): Promise<void> {
     return await this.commands.handle(message, sender, respond);
   }
-  upgradeEntries(allEntries: PartialRequired<QueueEntry, "code">[]): boolean {
+  upgradeEntries(allEntries: Partial<QueueEntry>[]): boolean {
     return this.queueHandlers.upgrade(allEntries);
   }
   checkEntries(allEntries: QueueEntry[]): boolean {
