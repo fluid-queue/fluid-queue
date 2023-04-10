@@ -1,55 +1,51 @@
-import { ApiClient } from "@twurple/api";
+import { ApiClient, UserIdResolvable } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import * as tmi from "@twurple/auth-tmi";
 import { settings, fileName as settingsFile } from "./settings";
 import * as fs from "fs";
 import * as gracefulFs from "graceful-fs";
 import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
-import { HelixChatChatter } from "@twurple/api/lib";
-
-// TODO: Once cache.js is migrated, this needs to be changed to a regular import and some bits in the rest of the file tweaked
-import cache = require("./cache.js");
+import { HelixChatChatter, HelixUser } from "@twurple/api/lib";
+import { SingleValueCache } from "./cache";
+import { Duration } from "@js-joda/core";
 
 const tokensFileName = "./settings/tokens.json";
 
 class TwitchApi {
-  /**
-   * @type {?RefreshingAuthProvider}
-   */
   #authProvider: RefreshingAuthProvider | null = null;
-  /**
-   * @type {?string}
-   */
   #botUserId: string | null = null;
-  /**
-   * @type {?ApiClient}
-   */
   #apiClient: ApiClient | null = null;
-  /**
-   * @type {?import('@twurple/api').HelixUser}
-   */
-  #broadcasterUser: import("@twurple/api").HelixUser | null = null;
-  /**
-   * @type {SingleValueCache<import('@twurple/api').HelixChatChatter[]>}
-   */
-  #chattersCache: cache.SingleValueCache<
-    import("@twurple/api").HelixChatChatter[]
-  >;
+  #broadcasterUser: HelixUser | null = null;
+  #chattersCache: SingleValueCache<HelixChatChatter[]>;
 
   constructor() {
-    this.#chattersCache = new cache.SingleValueCache(
+    this.#chattersCache = new SingleValueCache(
       this.#loadChatters.bind(this),
       [],
-      30_000
+      Duration.ofSeconds(30)
     );
   }
 
   // visible for testing
-  /**
-   * @type {?ApiClient}
-   */
-  get apiClient() {
+  get apiClient(): ApiClient {
+    if (this.#apiClient == null) {
+      throw new Error("Tried to load chatters before client set up");
+    }
     return this.#apiClient;
+  }
+
+  private get broadcaster(): UserIdResolvable {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Tried to load chatters before client set up");
+    }
+    return this.#broadcasterUser;
+  }
+
+  private get moderator(): UserIdResolvable {
+    if (this.#botUserId == null) {
+      throw new Error("Tried to load chatters before client set up");
+    }
+    return this.#botUserId;
   }
 
   /**
@@ -127,8 +123,8 @@ class TwitchApi {
    *
    * How the tmi client is authenticating is transparent to the user.
    *
-   * @param {import('@types/tmi.js').Options} opts The options of the tmi client.
-   * @returns {import('@types/tmi.js').Client} A new tmi client that has authentication build in.
+   * @param opts The options of the tmi client.
+   * @returns A new tmi client that has authentication build in.
    */
   createTmiClient(opts: TmiOptions): TmiClient {
     if (this.#authProvider == null) {
@@ -138,25 +134,19 @@ class TwitchApi {
   }
 
   async #loadChatters() {
-    if (this.#apiClient == null) {
-      throw new Error("Tried to load chatters before client set up");
-    }
-    return await this.#apiClient.asIntent(["chatters"], async (ctx) => {
-      if (this.#broadcasterUser == null || this.#botUserId == null) {
-        throw new Error("Tried to load chatters before client set up");
-      }
+    return await this.apiClient.asIntent(["chatters"], async (ctx) => {
       const result: HelixChatChatter[] = [];
       // request the maximum of 1000 to reduce number of requests
       let page = await ctx.chat.getChatters(
-        this.#broadcasterUser.id,
-        this.#botUserId,
+        this.broadcaster,
+        this.moderator,
         { limit: 1000 }
       );
       result.push(...page.data);
       while (page.cursor != null) {
         page = await ctx.chat.getChatters(
-          this.#broadcasterUser,
-          this.#botUserId,
+          this.broadcaster,
+          this.moderator,
           { after: page.cursor, limit: 1000 }
         );
         result.push(...page.data);
@@ -167,13 +157,10 @@ class TwitchApi {
   }
 
   /**
-   * @returns {Promise<boolean>} if the api has limited use
+   * @returns if the api has limited use
    */
   async #isLimited(): Promise<boolean> {
-    if (this.#apiClient == null) {
-      throw new Error("Tried to load chatters before client set up");
-    }
-    const rateLimiterStats = await this.#apiClient.asIntent(
+    const rateLimiterStats = await this.apiClient.asIntent(
       ["chatters"],
       async (ctx) => ctx.rateLimiterStats
     );
@@ -189,8 +176,8 @@ class TwitchApi {
    *
    * The contents are cached for 30 seconds, however the cache could be kept for longer if the api is limitting or errors.
    *
-   * @param {boolean} invalidateCache If set to true this always reloads chatters from the api.
-   * @returns {Promise<import('@twurple/api').HelixChatChatter[]>}
+   * @param forceRefresh If set to true this always reloads chatters from the api.
+   * @returns chatters
    */
   async getChatters(forceRefresh: boolean): Promise<HelixChatChatter[]> {
     if (forceRefresh) {
