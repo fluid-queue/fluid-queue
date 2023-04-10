@@ -24,7 +24,5 @@ RUN npm ci
 # Copy the application itself
 COPY --chown=node:node . /home/node
 
-EXPOSE 9229
-
 # Run the bot, no need for an entrypoint script
 CMD [ "npm", "run", "start"]

@@ -7,6 +7,4 @@ services:
       - NODE_ENV=development
       - DOCKER_TAG
       - SOURCE_COMMIT
-    ports:
-      - "9229:9229"
     command: sh -c 'npm install && NODE_ENV=test npm run test-ci'
