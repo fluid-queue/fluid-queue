@@ -2,7 +2,11 @@ const {
   BroadcastOnce,
   ConcurrentLoader,
   SingleValueCache,
-} = require("../src/cache.js");
+} = require("../src/cache");
+
+const {
+  Duration
+} = require("@js-joda/core");
 
 const expectErrorMessage = (promise) => {
   return expect(
@@ -215,7 +219,7 @@ test("SingleValueCache:ttl", async () => {
   const fetchMethod = jest.fn(async () => {
     return null;
   });
-  const cache = new SingleValueCache(fetchMethod, "init", 30_000);
+  const cache = new SingleValueCache(fetchMethod, "init", Duration.ofSeconds(30));
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
   expect(cache.get()).toEqual("init");
@@ -262,7 +266,7 @@ test("SingleValueCache:error", async () => {
   const fetchMethod = jest.fn(async () => {
     return null;
   });
-  const cache = new SingleValueCache(fetchMethod, "init", 30_000);
+  const cache = new SingleValueCache(fetchMethod, "init", Duration.ofSeconds(30));
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
   expect(cache.get()).toEqual("init");
@@ -294,7 +298,7 @@ test("SingleValueCache:fetch-concurrently", async () => {
   const fetchMethod = jest.fn(async () => {
     return null;
   });
-  const cache = new SingleValueCache(fetchMethod, "init", 30_000);
+  const cache = new SingleValueCache(fetchMethod, "init", Duration.ofSeconds(30));
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
   expect(cache.get()).toEqual("init");
@@ -344,7 +348,7 @@ test("SingleValueCache:long-load", async () => {
   const fetchMethod = jest.fn(async () => {
     return null;
   });
-  const cache = new SingleValueCache(fetchMethod, "init", 30_000);
+  const cache = new SingleValueCache(fetchMethod, "init", Duration.ofSeconds(30));
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
   expect(cache.get()).toEqual("init");

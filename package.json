@@ -13,6 +13,7 @@
     "url": "https://github.com/fluid-queue/fluid-queue.git"
   },
   "dependencies": {
+    "@js-joda/core": "^5.5.2",
     "@twurple/api": "^6.1.0",
     "@twurple/auth": "^6.1.0",
     "@twurple/auth-tmi": "^6.1.0",
