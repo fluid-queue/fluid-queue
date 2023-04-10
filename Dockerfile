@@ -10,7 +10,7 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 
 # Install the dependencies
-RUN npm install
+RUN npm ci
 
 # Copy the application itself
 COPY . /build
