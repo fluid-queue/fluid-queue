@@ -34,7 +34,7 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
-let uuid: {v4: jest.Mock<string, [], unknown>} | null = null;
+let uuid: { v4: jest.Mock<string, [], unknown> } | null = null;
 
 const mocks = () => {
   jest.mock("uuid", () => {

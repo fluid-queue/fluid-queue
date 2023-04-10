@@ -37,10 +37,10 @@ const defaultTestSettings = {
 var mockChatters = [];
 
 // mocks
-jest.mock("../src/twitch-api.js");
+jest.mock("../src/twitch-api");
 
 // only import after mocking!
-const { twitchApi } = require("../src/twitch-api.js");
+const { twitchApi } = require("../src/twitch-api");
 
 // mock chatters
 twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
@@ -86,8 +86,8 @@ test("online users", async () => {
     settings = require("../src/settings").default;
     replace(settings, defaultTestSettings);
 
-    // import twitch.js
-    twitch = require("../src/twitch.js").twitch();
+    // import twitch
+    twitch = require("../src/twitch").twitch;
   });
 
   expect(settings.channel).toBe("queso_queue_test_channel");
