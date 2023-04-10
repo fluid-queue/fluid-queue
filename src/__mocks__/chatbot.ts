@@ -11,6 +11,4 @@ const chatbot_helper = jest.fn((): Chatbot => {
   };
 });
 
-export {
-  chatbot_helper as helper
-};
+export { chatbot_helper as helper };

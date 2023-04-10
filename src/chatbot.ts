@@ -18,15 +18,19 @@ const build_chatter = function (
   };
 };
 
-type HandleFunc = ((command: string, chatter: Chatter, respond: (response_text: string) => void) => void);
+type HandleFunc = (
+  command: string,
+  chatter: Chatter,
+  respond: (response_text: string) => void
+) => void;
 
 export type Chatbot = {
-  client: (Client | null),
-  handle_func: ( HandleFunc | null),
-  connect: () => Promise<[string, number]>,
-  setup: (handle_func: HandleFunc) => void,
-  say: (message: string) => void,
-}
+  client: Client | null;
+  handle_func: HandleFunc | null;
+  connect: () => Promise<[string, number]>;
+  setup: (handle_func: HandleFunc) => void;
+  say: (message: string) => void;
+};
 
 const chatbot_helper = function (channel: string): Chatbot {
   const tmi_settings = {
@@ -52,7 +56,12 @@ const chatbot_helper = function (channel: string): Chatbot {
         };
 
         // Called every time a message comes in
-        const onMessageHandler = (channel: string, tags: ChatUserstate, message: string, self: boolean) => {
+        const onMessageHandler = (
+          channel: string,
+          tags: ChatUserstate,
+          message: string,
+          self: boolean
+        ) => {
           if (self) {
             return;
           } // Ignore messages from the bot
@@ -63,7 +72,9 @@ const chatbot_helper = function (channel: string): Chatbot {
           };
           let chatter;
           if (!tags.username || !tags["display-name"]) {
-            throw new Error("Encountered a user with no username or no display name");
+            throw new Error(
+              "Encountered a user with no username or no display name"
+            );
           }
           if (tags.badges == null) {
             chatter = build_chatter(
@@ -111,4 +122,4 @@ const chatbot_helper = function (channel: string): Chatbot {
 
 export function helper(channel: string) {
   return chatbot_helper(channel);
-};
+}
