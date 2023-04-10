@@ -1,4 +1,4 @@
-require("./banner.js").printBanner();
+require("./banner").printBanner();
 const settings = require("./settings").default;
 const chatbot = require("./chatbot.js");
 const queue = require("./queue");

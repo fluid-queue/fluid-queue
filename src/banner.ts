@@ -41,6 +41,6 @@ const printBanner = () => {
   }
 };
 
-module.exports = {
+export {
   printBanner,
 };
