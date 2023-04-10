@@ -1,8 +1,12 @@
 services:
   sut:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.test
     environment:
       - NODE_ENV=development
       - DOCKER_TAG
       - SOURCE_COMMIT
-    command: sh -c 'npm install && npm run test'
+    ports:
+      - "9229:9229"
+    command: sh -c 'npm install && NODE_ENV=test npm run test-ci'
