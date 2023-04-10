@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./build",
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "rootDir": "src",
   },
-  "rootDirs": ["./src/tsconfig.json", "./tests/tsconfig.json"]
+  "exclude": ["build", "tests/**/*", "src/__mocks__/*", "jest.config.js"],
 }
