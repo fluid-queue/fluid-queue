@@ -1,6 +1,6 @@
 require("./banner").printBanner();
 const settings = require("./settings").default;
-const chatbot = require("./chatbot.js");
+const chatbot = require("./chatbot");
 const queue = require("./queue");
 const twitch = require("./twitch").twitch;
 const timer = require("./timer");
