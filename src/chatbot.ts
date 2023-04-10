@@ -1,12 +1,14 @@
-const { twitchApi } = require("./twitch-api");
+import { twitchApi } from "./twitch-api";
+import { Chatter } from "./extensions";
+import { ChatUserstate, Client } from "tmi.js";
 
 const build_chatter = function (
-  username,
-  displayName,
-  isSubscriber,
-  isMod,
-  isBroadcaster
-) {
+  username: string,
+  displayName: string,
+  isSubscriber: boolean,
+  isMod: boolean,
+  isBroadcaster: boolean
+): Chatter {
   return {
     username: username,
     displayName: displayName,
@@ -16,8 +18,18 @@ const build_chatter = function (
   };
 };
 
-const chatbot_helper = function (channel) {
-  var tmi_settings = {
+type HandleFunc = ((command: string, chatter: Chatter, respond: (response_text: string) => void) => void);
+
+export type Chatbot = {
+  client: (Client | null),
+  handle_func: ( HandleFunc | null),
+  connect: () => Promise<[string, number]>,
+  setup: (handle_func: HandleFunc) => void,
+  say: (message: string) => void,
+}
+
+const chatbot_helper = function (channel: string): Chatbot {
+  const tmi_settings = {
     connection: {
       reconnect: true,
       maxReconnectAttempts: 50,
@@ -35,21 +47,24 @@ const chatbot_helper = function (channel) {
       this.client = client;
       if (this.handle_func != null) {
         // Called every time the bot connects to Twitch chat
-        const onConnectedHandler = (addr, port) => {
+        const onConnectedHandler = (addr: string, port: number) => {
           console.log(`* Connected to ${addr}:${port}`);
         };
 
         // Called every time a message comes in
-        const onMessageHandler = (channel, tags, message, self) => {
+        const onMessageHandler = (channel: string, tags: ChatUserstate, message: string, self: boolean) => {
           if (self) {
             return;
           } // Ignore messages from the bot
           // Remove whitespace from chat message
           const command = message.trim();
-          const respond = (response_text) => {
+          const respond = (response_text: string) => {
             client.say(channel, response_text);
           };
-          var chatter;
+          let chatter;
+          if (!tags.username || !tags["display-name"]) {
+            throw new Error("Encountered a user with no username or no display name");
+          }
           if (tags.badges == null) {
             chatter = build_chatter(
               tags.username,
@@ -68,6 +83,9 @@ const chatbot_helper = function (channel) {
               tags.badges.broadcaster != undefined
             );
           }
+          if (!this.handle_func) {
+            throw new Error("Handled a message before handler func set up");
+          }
           this.handle_func(command, chatter, respond);
         };
         // Register our event handlers (defined below)
@@ -78,18 +96,19 @@ const chatbot_helper = function (channel) {
       return await client.connect();
     },
 
-    setup(handle_func) {
+    setup(handle_func: HandleFunc) {
       this.handle_func = handle_func;
     },
 
-    say: function (message) {
+    say: function (message: string) {
+      if (this.client == null) {
+        throw new Error("Trying to send message with null client");
+      }
       this.client.say("#" + channel, message);
     },
   };
 };
 
-module.exports = {
-  helper: function (channel) {
-    return chatbot_helper(channel);
-  },
+export function helper(channel: string) {
+  return chatbot_helper(channel);
 };

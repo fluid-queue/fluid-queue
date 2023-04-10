@@ -51,7 +51,7 @@ var clearAllTimersIntern = null;
 const mockModules = () => {
   // mocks
   jest.mock("../src/twitch-api");
-  jest.mock("../src/chatbot.js");
+  jest.mock("../src/chatbot");
   jest.mock("node-fetch", () => jest.fn());
 
   jest.mock("set-interval-async/dynamic", () => {
@@ -269,7 +269,7 @@ const simRequireIndex = async (
       settings = require("../src/settings").default;
 
       // import libraries
-      chatbot = require("../src/chatbot.js");
+      chatbot = require("../src/chatbot");
       twitch = require("../src/twitch").twitch;
       // const queue = require("../src/queue");
 
