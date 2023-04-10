@@ -6,5 +6,6 @@
     "checkJs": false,
     "rootDir": "src",
   },
-  "exclude": ["build", "tests/**/*", "src/__mocks__/*", "jest.config.js"],
+  "include": ["src/**/*"],
+  "exclude": ["src/__mocks__/*"],
 }
