@@ -50,7 +50,7 @@ var clearAllTimersIntern = null;
 
 const mockModules = () => {
   // mocks
-  jest.mock("../src/twitch-api.js");
+  jest.mock("../src/twitch-api");
   jest.mock("../src/chatbot.js");
   jest.mock("node-fetch", () => jest.fn());
 
@@ -92,7 +92,7 @@ const mockModules = () => {
   });
 
   // only import after mocking!
-  const { twitchApi } = require("../src/twitch-api.js");
+  const { twitchApi } = require("../src/twitch-api");
 
   // mock chatters
   twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
@@ -270,7 +270,7 @@ const simRequireIndex = async (
 
       // import libraries
       chatbot = require("../src/chatbot.js");
-      twitch = require("../src/twitch").twitch();
+      twitch = require("../src/twitch").twitch;
       // const queue = require("../src/queue");
 
       // run index.js

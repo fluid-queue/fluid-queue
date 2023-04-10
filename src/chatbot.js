@@ -1,4 +1,4 @@
-const { twitchApi } = require("./twitch-api.js");
+const { twitchApi } = require("./twitch-api");
 
 const build_chatter = function (
   username,

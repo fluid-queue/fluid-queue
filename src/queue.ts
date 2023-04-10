@@ -1,5 +1,5 @@
 const settings = require("./settings").default;
-const twitch = require("./twitch.js").twitch();
+import { twitch } from "./twitch";
 const { setIntervalAsync } = require("set-interval-async/dynamic");
 import * as persistence from "./persistence";
 import Waiting from "./waiting";
@@ -10,42 +10,44 @@ const extensions = new Extensions();
 // All the types we need to define
 
 type Level = {
-  code?: string,
-  type: string | null,
-  submitter: string,
-  username: string,
+  code?: string;
+  type: string | null;
+  submitter: string;
+  username: string;
 };
 
 type onlineOfflineList = {
-  online: Level[],
-  offline: Level[],
+  online: Level[];
+  offline: Level[];
 };
 
 type weightedListEntry = {
-  level: Level,
-  weight: () => number,
-  position: number,
+  level: Level;
+  weight: () => number;
+  position: number;
 };
 
 type weightedList = {
-  totalWeight: number,
-  entries: weightedListEntry[],
-  offlineLength: number,
+  totalWeight: number;
+  entries: weightedListEntry[];
+  offlineLength: number;
 };
 
 var loaded: boolean = false;
-var current_level: (Level | undefined);
+var current_level: Level | undefined;
 var levels: Level[] = [];
 var waiting: Record<string, Waiting>;
 var persist: boolean = true; // if false the queue will not save automatically
-
 
 const displayLevel = (level: Level) => {
   return extensions.display(level);
 };
 
 // this implementation can probably still be improved
-const partition = (list: Level[], predicate: (value: Level, index: number, array: Level[]) => boolean) => {
+const partition = (
+  list: Level[],
+  predicate: (value: Level, index: number, array: Level[]) => boolean
+) => {
   return [
     list.filter(predicate),
     list.filter(function (value: Level, index: number, array: Level[]) {
@@ -64,7 +66,11 @@ const queue = {
       // TODO: maybe display all the code types that are not valid
       return codeLevel.submitter + ", that is an invalid level code.";
     }
-    const level: Level = { ...codeLevel, ...resolved.entry, code: resolved.entry.code };
+    const level: Level = {
+      ...codeLevel,
+      ...resolved.entry,
+      code: resolved.entry.code,
+    };
     if (
       current_level != undefined &&
       current_level.submitter == level.submitter &&
@@ -147,8 +153,13 @@ const queue = {
       // TODO: maybe display all the code types that are not valid
       return username + ", that level code is invalid.";
     }
-    const entry: Partial<Level> = { ...resolved.entry, code: resolved.entry.code };
-    const findLevel: (Level | undefined) = levels.find((x) => x.submitter == username);
+    const entry: Partial<Level> = {
+      ...resolved.entry,
+      code: resolved.entry.code,
+    };
+    const findLevel: Level | undefined = levels.find(
+      (x) => x.submitter == username
+    );
     if (findLevel != undefined) {
       findLevel.code = entry.code;
       findLevel.submitter = entry.submitter ?? findLevel.submitter;
@@ -180,7 +191,10 @@ const queue = {
   },
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
-  position: async (username: string, list: (onlineOfflineList | undefined) = undefined): Promise<number> => {
+  position: async (
+    username: string,
+    list: onlineOfflineList | undefined = undefined
+  ): Promise<number> => {
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -215,7 +229,10 @@ const queue = {
   },
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
-  weightedPosition: async (username: string, list: (onlineOfflineList | undefined) = undefined): Promise<number> => {
+  weightedPosition: async (
+    username: string,
+    list: onlineOfflineList | undefined = undefined
+  ): Promise<number> => {
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -273,13 +290,13 @@ const queue = {
     if (index != -1) {
       console.log(
         "Elegible users: " +
-        weightedList.entries
-          .map((entry) => entry.level.username)
-          .reduce((a, b) => a + ", " + b)
+          weightedList.entries
+            .map((entry) => entry.level.username)
+            .reduce((a, b) => a + ", " + b)
       );
       console.log(
         "Elegible users time: " +
-        weightedList.entries.map((entry) => entry.weight())
+          weightedList.entries.map((entry) => entry.weight())
       );
       const weight = weightedList.entries[index].weight();
       const totalWeight = weightedList.totalWeight;
@@ -322,9 +339,9 @@ const queue = {
     return response;
   },
 
-  next: async (list: (onlineOfflineList | undefined) = undefined) => {
+  next: async (list: onlineOfflineList | undefined = undefined) => {
     if (list === undefined) {
-      list = await queue.list({ forceRefresh: true });
+      list = await queue.list(true);
     }
     const both = list.online.concat(list.offline);
     const removedLevels = current_level === undefined ? [] : [current_level];
@@ -337,7 +354,9 @@ const queue = {
       current_level = both.shift();
       queue.removeWaiting();
     }
-    var index = levels.findIndex((x) => x.submitter == current_level?.submitter);
+    var index = levels.findIndex(
+      (x) => x.submitter == current_level?.submitter
+    );
     levels.splice(index, 1);
     queue.onRemove(removedLevels);
     queue.save();
@@ -345,12 +364,12 @@ const queue = {
   },
 
   subnext: async () => {
-    const list = await queue.sublist({ forceRefresh: true });
+    const list = await queue.sublist(true);
     return await queue.next(list);
   },
 
   modnext: async () => {
-    const list = await queue.modlist({ forceRefresh: true });
+    const list = await queue.modlist(true);
     return await queue.next(list);
   },
 
@@ -382,9 +401,9 @@ const queue = {
     return current_level;
   },
 
-  random: async (list: (onlineOfflineList | undefined) = undefined) => {
+  random: async (list: onlineOfflineList | undefined = undefined) => {
     if (list === undefined) {
-      list = await queue.list({ forceRefresh: true });
+      list = await queue.list(true);
     }
     const removedLevels = current_level === undefined ? [] : [current_level];
     let eligible_levels = list.online;
@@ -411,19 +430,17 @@ const queue = {
   },
 
   subrandom: async () => {
-    const list = await queue.sublist({ forceRefresh: true });
+    const list = await queue.sublist(true);
     return await queue.random(list);
   },
 
   modrandom: async () => {
-    const list = await queue.modlist({ forceRefresh: true });
+    const list = await queue.modlist(true);
     return await queue.random(list);
   },
 
-  weightedrandom: async (list: (onlineOfflineList | undefined) = undefined) => {
-    const weightedList = await queue.weightedList(false, list, {
-      forceRefresh: true,
-    });
+  weightedrandom: async (list: onlineOfflineList | undefined = undefined) => {
+    const weightedList = await queue.weightedList(false, list, true);
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -440,13 +457,13 @@ const queue = {
 
     console.log(
       "Elegible users: " +
-      weightedList.entries
-        .map((entry) => entry.level.username)
-        .reduce((a, b) => a + ", " + b)
+        weightedList.entries
+          .map((entry) => entry.level.username)
+          .reduce((a, b) => a + ", " + b)
     );
     console.log(
       "Elegible users time: " +
-      weightedList.entries.map((entry) => entry.weight())
+        weightedList.entries.map((entry) => entry.weight())
     );
 
     console.log("Random number: " + randomNumber);
@@ -460,13 +477,15 @@ const queue = {
 
     console.log(
       "Chosen index was " +
-      levelIndex +
-      " after a cumulative time of " +
-      gettingThereSomeday
+        levelIndex +
+        " after a cumulative time of " +
+        gettingThereSomeday
     );
     current_level = weightedList.entries[levelIndex].level;
 
-    const index = levels.findIndex((x) => x.username == current_level?.username);
+    const index = levels.findIndex(
+      (x) => x.username == current_level?.username
+    );
     levels.splice(index, 1);
 
     const selectionChance = queue.percent(
@@ -482,9 +501,13 @@ const queue = {
   },
 
   /** @type {(sorted?: boolean, list?: onlineOfflineList) => Promise<weightedList>} */
-  weightedList: async (sorted: (boolean | undefined) = undefined, list: (onlineOfflineList | undefined) = undefined, options = {}): Promise<weightedList> => {
+  weightedList: async (
+    sorted: boolean | undefined = undefined,
+    list: onlineOfflineList | undefined = undefined,
+    forceRefresh = false
+  ): Promise<weightedList> => {
     if (list === undefined) {
-      list = await queue.list(options);
+      list = await queue.list(forceRefresh);
     }
     const online_users = list.online;
     if (online_users.length == 0 || Object.keys(waiting).length == 0) {
@@ -547,10 +570,8 @@ const queue = {
     return 1.0;
   },
 
-  weightednext: async (list: (onlineOfflineList | undefined) = undefined) => {
-    const weightedList = await queue.weightedList(true, list, {
-      forceRefresh: true,
-    });
+  weightednext: async (list: onlineOfflineList | undefined = undefined) => {
+    const weightedList = await queue.weightedList(true, list, true);
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -563,7 +584,9 @@ const queue = {
     current_level = weightedList.entries[0].level;
 
     // index of the level can be different than 0
-    const index = levels.findIndex((x) => x.username == current_level?.username);
+    const index = levels.findIndex(
+      (x) => x.username == current_level?.username
+    );
     levels.splice(index, 1);
 
     let selectionChance = queue.percent(
@@ -579,46 +602,52 @@ const queue = {
   },
 
   weightedsubrandom: async () => {
-    const list = await queue.sublist({ forceRefresh: true });
+    const list = await queue.sublist(true);
     return await queue.weightedrandom(list);
   },
 
   weightedsubnext: async () => {
-    const list = await queue.sublist({ forceRefresh: true });
+    const list = await queue.sublist(true);
     return await queue.weightednext(list);
   },
 
   /** @type {() => Promise<onlineOfflineList> } */
-  list: async (options = {}) => {
+  list: async (forceRefresh = false) => {
     let online: Level[] = [];
     let offline: Level[] = [];
-    await twitch.getOnlineUsers(options).then((online_users: Set<string>) => {
-      [online, offline] = partition(levels, (x) =>
-        online_users.has(x.username)
-      );
-    });
+    await twitch
+      .getOnlineUsers(forceRefresh)
+      .then((online_users: Set<string>) => {
+        [online, offline] = partition(levels, (x) =>
+          online_users.has(x.username)
+        );
+      });
     return { online, offline };
   },
 
-  sublist: async (options = {}) => {
+  sublist: async (forceRefresh = false) => {
     let online: Level[] = [];
     let offline: Level[] = [];
-    await twitch.getOnlineSubscribers(options).then((online_users: Set<string>) => {
-      [online, offline] = partition(levels, (x) =>
-        online_users.has(x.username)
-      );
-    });
+    await twitch
+      .getOnlineSubscribers(forceRefresh)
+      .then((online_users: Set<string>) => {
+        [online, offline] = partition(levels, (x) =>
+          online_users.has(x.username)
+        );
+      });
     return { online, offline };
   },
 
-  modlist: async (options = {}) => {
+  modlist: async (forceRefresh = false) => {
     let online: Level[] = [];
     let offline: Level[] = [];
-    await twitch.getOnlineMods(options).then((online_users: Set<string>) => {
-      [online, offline] = partition(levels, (x) =>
-        online_users.has(x.username)
-      );
-    });
+    await twitch
+      .getOnlineMods(forceRefresh)
+      .then((online_users: Set<string>) => {
+        [online, offline] = partition(levels, (x) =>
+          online_users.has(x.username)
+        );
+      });
     return { online, offline };
   },
 

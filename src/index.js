@@ -2,11 +2,11 @@ require("./banner.js").printBanner();
 const settings = require("./settings").default;
 const chatbot = require("./chatbot.js");
 const queue = require("./queue");
-const twitch = require("./twitch.js").twitch();
+const twitch = require("./twitch").twitch;
 const timer = require("./timer");
 const persistence = require("./persistence");
 const aliasManagement = require("./aliases.js");
-const { twitchApi } = require("./twitch-api.js");
+const { twitchApi } = require("./twitch-api");
 
 const quesoqueue = queue.quesoqueue();
 const aliases = aliasManagement.aliases();
