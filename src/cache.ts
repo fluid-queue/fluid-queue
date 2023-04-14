@@ -1,47 +1,10 @@
-import {Duration, Instant} from "@js-joda/core";
-
-/**
- * This class provides a channel where only one message can be sent.
- * The message being sent is broadcast to all subscribers to the channel.
- */
-export class BroadcastOnce<T> {
-  private subscribers: ((value: T | PromiseLike<T>) => void)[] | null = [];
-
-  /**
-   * @param value This value is sent to all subscribers.
-   */
-  send(value: T | PromiseLike<T>): void {
-    if (this.subscribers == null) {
-      throw new Error(`${this.constructor.name}: value has already been sent.`);
-    }
-    this.subscribers.forEach((resolve) => resolve(value));
-    this.subscribers = null;
-  }
-
-  /**
-   * Subscribe and receive the value when it is send.
-   *
-   * @returns A promise to the value that will be send.
-   */
-  recv(): Promise<T> {
-    if (this.subscribers == null) {
-      throw new Error(`${this.constructor.name}: value has already been sent.`);
-    }
-    return new Promise((resolve, reject) => {
-      if (this.subscribers == null) {
-        // this should not happen, since the constructor calls the executor synchronously on construction!
-        reject(new Error("unreachable"));
-        return;
-      }
-      this.subscribers.push(resolve);
-    });
-  }
-}
+import { Duration, Instant } from "@js-joda/core";
+import { BroadcastOnce } from "./sync";
 
 /**
  * This class creates an adapter for loading data asynchronously.
  * Calls to {@link ConcurrentLoader.fetch} while data is still being loaded will resolve to the same result as the data that is currently being loaded.
- * 
+ *
  */
 export class ConcurrentLoader<T> {
   private fetchMethod: () => Promise<T>;
@@ -52,7 +15,7 @@ export class ConcurrentLoader<T> {
    */
   constructor(fetchMethod: () => T | PromiseLike<T>) {
     this.fetchMethod = async () => {
-      // create an async function to handle errors and immediate values 
+      // create an async function to handle errors and immediate values
       return await Promise.resolve(fetchMethod());
     };
   }
@@ -90,7 +53,11 @@ export class SingleValueCache<T> {
   private timeToLive: Duration;
   private loader: ConcurrentLoader<T>;
 
-  constructor(fetchMethod: () => T | PromiseLike<T>, initialValue: T, timeToLive: Duration) {
+  constructor(
+    fetchMethod: () => T | PromiseLike<T>,
+    initialValue: T,
+    timeToLive: Duration
+  ) {
     this.loader = new ConcurrentLoader(() => this.updateCache(fetchMethod));
     this.value = initialValue;
     this.timeToLive = timeToLive;

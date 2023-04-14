@@ -7,7 +7,7 @@
     "url": "https://github.com/fluid-queue/fluid-queue/issues"
   },
   "license": "GPL-3.0",
-  "main": "src/index.js",
+  "main": "build/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/fluid-queue/fluid-queue.git"

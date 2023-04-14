@@ -1,5 +1,6 @@
+import { Chatter } from "./extensions-api/command";
+import { QueueSubmitter, isQueueSubmitter } from "./extensions-api/queue-entry";
 import { twitchApi } from "./twitch-api";
-import { Chatter } from "./extensions";
 import { ChatUserstate, Client } from "tmi.js";
 
 const build_chatter = function (
@@ -10,7 +11,14 @@ const build_chatter = function (
   isBroadcaster: boolean
 ): Chatter {
   return {
-    username: username,
+    toString() {
+      return this.displayName;
+    },
+    equals(other: Partial<QueueSubmitter>) {
+      return isQueueSubmitter(this, other);
+    },
+    // FIXME: id
+    login: username,
     displayName: displayName,
     isSubscriber: isSubscriber,
     isMod: isMod,

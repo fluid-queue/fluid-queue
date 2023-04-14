@@ -5,18 +5,25 @@ import { settings, fileName as settingsFile } from "./settings";
 import * as fs from "fs";
 import * as gracefulFs from "graceful-fs";
 import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
-import { HelixChatChatter, HelixUser } from "@twurple/api/lib";
+import { HelixUser } from "@twurple/api/lib";
 import { SingleValueCache } from "./cache";
 import { Duration } from "@js-joda/core";
 
 const tokensFileName = "./settings/tokens.json";
+
+// use this interface to only return those getters and not much more!
+export interface ChatChatter {
+  get userId(): string;
+  get userName(): string;
+  get userDisplayName(): string;
+}
 
 class TwitchApi {
   #authProvider: RefreshingAuthProvider | null = null;
   #botUserId: string | null = null;
   #apiClient: ApiClient | null = null;
   #broadcasterUser: HelixUser | null = null;
-  #chattersCache: SingleValueCache<HelixChatChatter[]>;
+  #chattersCache: SingleValueCache<ChatChatter[]>;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -135,20 +142,17 @@ class TwitchApi {
 
   async #loadChatters() {
     return await this.apiClient.asIntent(["chatters"], async (ctx) => {
-      const result: HelixChatChatter[] = [];
+      const result: ChatChatter[] = [];
       // request the maximum of 1000 to reduce number of requests
-      let page = await ctx.chat.getChatters(
-        this.broadcaster,
-        this.moderator,
-        { limit: 1000 }
-      );
+      let page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+        limit: 1000,
+      });
       result.push(...page.data);
       while (page.cursor != null) {
-        page = await ctx.chat.getChatters(
-          this.broadcaster,
-          this.moderator,
-          { after: page.cursor, limit: 1000 }
-        );
+        page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+          after: page.cursor,
+          limit: 1000,
+        });
         result.push(...page.data);
       }
       // console.log(`Fetched ${result.length} chatters`);
@@ -179,7 +183,7 @@ class TwitchApi {
    * @param forceRefresh If set to true this always reloads chatters from the api.
    * @returns chatters
    */
-  async getChatters(forceRefresh: boolean): Promise<HelixChatChatter[]> {
+  async getChatters(forceRefresh: boolean): Promise<ChatChatter[]> {
     if (forceRefresh) {
       // console.log("Force refresh");
       return await this.#chattersCache.fetch({

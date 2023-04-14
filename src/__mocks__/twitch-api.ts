@@ -1,3 +1,5 @@
+import { HelixChatChatter } from "@twurple/api/lib";
+
 class TwitchApiMock {
   async setup() {
     // do nothing
@@ -7,12 +9,10 @@ class TwitchApiMock {
       "This should never be called from tests -> Use the chatbot.js mock instead!"
     );
   }
-  getChatters = jest.fn(async () => {
+  getChatters = jest.fn(async (): Promise<HelixChatChatter[]> => {
     return [];
   });
 }
 
-module.exports = {
-  TwitchApi: TwitchApiMock,
-  twitchApi: new TwitchApiMock(),
-};
+export { TwitchApiMock as TwitchApi };
+export const twitchApi = new TwitchApiMock();
