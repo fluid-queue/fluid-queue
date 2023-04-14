@@ -77,7 +77,6 @@ const extractValidCode = (levelCode: string, strict = true) => {
 };
 
 const makerSuffix = (levelCode: string) => {
-  console.log(JSON.stringify(settings));
   console.log(
     `settings.showMakerCode !== undefined => ${
       settings.showMakerCode !== undefined
@@ -98,51 +97,44 @@ const makerSuffix = (levelCode: string) => {
   return "";
 };
 
-const levelType = {
-  display(level: { code: string }) {
-    return level.code + makerSuffix(level.code);
-  },
-};
+function display(code: string) {
+  return code + makerSuffix(code);
+}
 
-const strictResolver = {
-  description: "smm2 level code",
-  resolve(args: string) {
-    const result = extractValidCode(args, true);
-    if (result.valid) {
-      return { type: "smm2", code: result.code };
-    }
-    return null;
-  },
-};
+function strictResolve(args: string) {
+  const result = extractValidCode(args, true);
+  if (result.valid) {
+    return { code: result.code };
+  }
+  return null;
+}
 
-const resolver = {
-  description: "smm2 level code",
-  resolve(args: string) {
-    const result = extractValidCode(args, false);
-    if (result.valid) {
-      return { type: "smm2", code: result.code };
-    }
-    return null;
-  },
-};
+function resolve(args: string) {
+  const result = extractValidCode(args, false);
+  if (result.valid) {
+    return { code: result.code };
+  }
+  return null;
+}
 
-const queueHandler = {
-  upgrade(code: string): { type: string; code: string } | null {
-    const result = courseIdValidity(
-      code,
-      settings.dataIdCourseThreshold,
-      settings.dataIdMakerThreshold
-    );
-    if (result.valid) {
-      return { type: "smm2", code: code };
-    }
-    return null;
-  },
-};
+function upgrade(code: string): { code: string } | null {
+  const result = courseIdValidity(
+    code,
+    settings.dataIdCourseThreshold,
+    settings.dataIdMakerThreshold
+  );
+  if (result.valid) {
+    return { code: code };
+  }
+  return null;
+}
 
-export const setup = (api: ExtensionsApi) => {
-  api.registerEntryType("smm2", levelType);
-  api.registerResolver("smm2", strictResolver);
-  api.registerResolver("smm2-lenient", resolver);
-  api.registerQueueHandler(queueHandler);
-};
+export async function setup(api: ExtensionsApi) {
+  api
+    .queueEntry("smm2", "smm2 level code")
+    .usingCode()
+    .build(display)
+    .registerResolver("smm2", strictResolve)
+    .registerResolver("smm2-lenient", resolve)
+    .registerUpgrade(upgrade);
+}

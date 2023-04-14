@@ -1,11 +1,10 @@
-import ExtensionsApi, {
-  QueueEntry,
-  DisplayEntry,
-  Responder,
-  Chatter,
+import ExtensionsApi from "../extensions";
+import { Chatter, Responder } from "../extensions-api/command";
+import {
   PersistedBinding,
   TypedBinding,
-} from "../extensions";
+} from "../extensions-api/queue-binding";
+import { QueueEntry } from "../extensions-api/queue-entry";
 import settings from "../settings";
 import { checkVersion } from "./helpers/version";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
@@ -33,31 +32,33 @@ const unclearedLevel = () => {
   };
 };
 
-const isRomHackLevel = (entry: Partial<QueueEntry>): boolean => {
-  return entry.type == "customlevel" && entry.code == ROMHACK_UUID;
+const isRomHackLevel = (entry: QueueEntry): boolean => {
+  // FIXME: this is not ideal -> rewrite queueHandler.check
+  const raw = entry.serialize();
+  return raw.type == "customlevel" && raw.code == ROMHACK_UUID;
 };
 
-const isUnclearedLevel = (entry: Partial<QueueEntry>): boolean => {
-  return entry.type == "customlevel" && entry.code == UNCLEARED_UUID;
+const isUnclearedLevel = (entry: QueueEntry): boolean => {
+  // FIXME: this is not ideal -> rewrite queueHandler.check
+  const raw = entry.serialize();
+  return raw.type == "customlevel" && raw.code == UNCLEARED_UUID;
 };
 
-const levelType = (custom: CustomData) => {
-  return {
-    display(level: DisplayEntry) {
-      const uuid = level.code;
-      if (custom.has(uuid)) {
-        const description = custom.get(uuid);
-        return description.name;
-      } else {
-        const name = `unknown custom level (${uuid})`;
-        custom.add(uuid, {
-          codes: [uuid],
-          name,
-          enabled: false,
-        });
-        return name;
-      }
-    },
+const display = (custom: CustomData) => {
+  return (code: string) => {
+    const uuid = code;
+    if (custom.has(uuid)) {
+      const description = custom.get(uuid);
+      return description.name;
+    } else {
+      const name = `unknown custom level (${uuid})`;
+      custom.add(uuid, {
+        codes: [uuid],
+        name,
+        enabled: false,
+      });
+      return name;
+    }
   };
 };
 
@@ -207,30 +208,24 @@ class CustomData {
 }
 
 const nameResolver = (custom: CustomData) => {
-  return {
-    description: "custom level",
-    resolve(args: string) {
-      // TODO prevent custom codes from saving the custom levels as custom codes
-      const uuid = custom.fromName(args);
-      if (uuid != null && custom.get(uuid).enabled) {
-        return { type: "customlevel", code: uuid };
-      }
-      return null;
-    },
+  return (args: string) => {
+    // TODO prevent custom codes from saving the custom levels as custom codes
+    const uuid = custom.fromName(args);
+    if (uuid != null && custom.get(uuid).enabled) {
+      return { code: uuid };
+    }
+    return null;
   };
 };
 
 const resolver = (custom: CustomData) => {
-  return {
-    description: "custom level",
-    resolve(args: string) {
-      // TODO prevent custom codes from saving the custom levels as custom codes
-      const uuid = custom.fromCode(args);
-      if (uuid != null && custom.get(uuid).enabled) {
-        return { type: "customlevel", code: uuid };
-      }
-      return null;
-    },
+  return (args: string) => {
+    // TODO prevent custom codes from saving the custom levels as custom codes
+    const uuid = custom.fromCode(args);
+    if (uuid != null && custom.get(uuid).enabled) {
+      return { code: uuid };
+    }
+    return null;
   };
 };
 
@@ -492,25 +487,27 @@ const customlevelCommand = (custom: CustomData) => {
     },
   };
 };
+function upgrade(custom: CustomData) {
+  return (code: string) => {
+    let uuid = null;
+    if (code.startsWith("custom:")) {
+      uuid = code.substring("custom:".length);
+    }
+    if (code == "UNC-LEA-RED" || uuid == UNCLEARED_UUID) {
+      custom.addUncleared(false);
+      return unclearedLevel();
+    } else if (code == "R0M-HAK-LVL" || uuid == ROMHACK_UUID) {
+      custom.addRomHack(false);
+      return romHackLevel();
+    } else if (uuid != null) {
+      return { code: uuid, type: "customlevel" };
+    }
+    return null;
+  };
+}
 
 const queueHandler = (custom: CustomData) => {
   return {
-    upgrade(code: string) {
-      let uuid = null;
-      if (code.startsWith("custom:")) {
-        uuid = code.substring("custom:".length);
-      }
-      if (code == "UNC-LEA-RED" || uuid == UNCLEARED_UUID) {
-        custom.addUncleared(false);
-        return unclearedLevel();
-      } else if (code == "R0M-HAK-LVL" || uuid == ROMHACK_UUID) {
-        custom.addRomHack(false);
-        return romHackLevel();
-      } else if (uuid != null) {
-        return { code: uuid, type: "customlevel" };
-      }
-      return null;
-    },
     check(allEntries: QueueEntry[]) {
       let queueChanged = false;
       if (
@@ -558,16 +555,18 @@ const queueBinding = {
   },
 };
 
-const setup = (api: ExtensionsApi) => {
+export async function setup(api: ExtensionsApi) {
   const binding = api.createQueueBinding(queueBinding);
   const custom = new CustomData(binding);
-  api.registerEntryType("customlevel", levelType(custom));
-  api.registerResolver("customlevel", resolver(custom));
-  api.registerResolver("customlevel-name", nameResolver(custom));
+
+  api
+    .queueEntry("customlevel", "custom level")
+    .usingCode()
+    .build(display(custom))
+    .registerResolver("customlevel", resolver(custom))
+    .registerResolver("customlevel-name", nameResolver(custom))
+    .registerUpgrade(upgrade(custom));
+
   api.registerCommand("customlevel", customlevelCommand(custom));
   api.registerQueueHandler(queueHandler(custom));
-};
-
-module.exports = {
-  setup,
-};
+}

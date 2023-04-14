@@ -159,6 +159,7 @@ const createMockVolume = (settings = undefined) => {
   volume.mkdirSync(path.resolve("."), { recursive: true });
   populateMockVolume(volume, "./src");
   if (settings !== undefined) {
+    console.log("./settings/settings.json: " + JSON.stringify(settings));
     volume.fromJSON(
       { "./settings/settings.json": JSON.stringify(settings) },
       path.resolve(".")
@@ -274,7 +275,7 @@ const simRequireIndex = async (
       // const queue = require("../src/queue");
 
       // run index.js
-      let idx = require("../src/index.js");
+      let idx = require("../src/index");
       main = idx.main;
       quesoqueue = idx.quesoqueue;
     });
@@ -400,7 +401,29 @@ const buildChatter = (
   isMod,
   isBroadcaster
 ) => {
-  return { username, displayName, isSubscriber, isMod, isBroadcaster };
+  return {
+    // FIXME: user id
+    login: username,
+    displayName,
+    isSubscriber,
+    isMod,
+    isBroadcaster,
+    toString() {
+      return this.displayName;
+    },
+    equals(other) {
+      if (other.id !== undefined && this.id !== undefined) {
+        return other.id == this.id;
+      }
+      if (other.login !== undefined) {
+        return other.login == this.login;
+      }
+      if (other.displayName !== undefined) {
+        return other.displayName == this.displayName;
+      }
+      return false;
+    },
+  };
 };
 
 const replace = (settings, newSettings) => {
@@ -408,36 +431,6 @@ const replace = (settings, newSettings) => {
     delete settings[key];
   });
   Object.assign(settings, newSettings);
-};
-
-const newLevel = (
-  level_code,
-  submitterOrUser,
-  username = undefined,
-  type = undefined
-) => {
-  if (type === undefined) {
-    type = "smm2";
-  }
-  if (typeof submitterOrUser === "string" && typeof username === "string") {
-    return {
-      code: level_code,
-      type,
-      submitter: submitterOrUser,
-      username: username,
-    };
-  } else if (typeof submitterOrUser === "object" && username === undefined) {
-    return {
-      code: level_code,
-      type,
-      submitter: submitterOrUser.displayName,
-      username: submitterOrUser.username,
-    };
-  } else {
-    throw new Error(
-      `newLevel called with invalid arguments: submitterOrUser=${submitterOrUser}, username=${username}`
-    );
-  }
 };
 
 module.exports = {
@@ -448,7 +441,6 @@ module.exports = {
   buildChatter,
   createMockVolume,
   replace,
-  newLevel,
   flushPromises,
   clearAllTimers,
   START_TIME,

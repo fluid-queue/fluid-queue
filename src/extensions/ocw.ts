@@ -65,47 +65,40 @@ const codeSuffix = (levelCode: string) => {
   return " (OCW)";
 };
 
-const levelType = {
-  display(level: { code: string }) {
-    return level.code + codeSuffix(level.code);
-  },
-};
+function display(code: string) {
+  return code + codeSuffix(code);
+}
 
-const resolver = {
-  description: "ocw level code",
-  resolve(args: string) {
-    const result = extractValidCode(args, false);
-    if (result.valid) {
-      return { type: "ocw", code: result.code };
-    }
-    return null;
-  },
-};
+function resolver(args: string) {
+  const result = extractValidCode(args, false);
+  if (result.valid) {
+    return { code: result.code };
+  }
+  return null;
+}
 
-const lenientResolver = {
-  description: "ocw level code",
-  resolve(args: string) {
-    const result = extractValidCode(args, true);
-    if (result.valid) {
-      return { type: "ocw", code: result.code };
-    }
-    return null;
-  },
-};
+function lenientResolver(args: string) {
+  const result = extractValidCode(args, true);
+  if (result.valid) {
+    return { code: result.code };
+  }
+  return null;
+}
 
-const queueHandler = {
-  upgrade(code: string) {
-    const result = courseIdValidity(code);
-    if (result.valid) {
-      return { type: "ocw", code: code };
-    }
-    return null;
-  },
-};
+function upgrade(code: string): { code: string } | null {
+  const result = courseIdValidity(code);
+  if (result.valid) {
+    return { code: code };
+  }
+  return null;
+}
 
-export const setup = (api: ExtensionsApi) => {
-  api.registerEntryType("ocw", levelType);
-  api.registerResolver("ocw", resolver);
-  api.registerResolver("ocw-lenient", lenientResolver);
-  api.registerQueueHandler(queueHandler);
-};
+export async function setup(api: ExtensionsApi) {
+  api
+    .queueEntry("ocw", "ocw level code")
+    .usingCode()
+    .build(display)
+    .registerResolver("ocw", resolver)
+    .registerResolver("ocw-lenient", lenientResolver)
+    .registerUpgrade(upgrade);
+}

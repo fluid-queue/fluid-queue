@@ -96,7 +96,7 @@ const parseMessage = (line: string) => {
       username = maybeUsername;
     }
   }
-  let displayName = user;
+  const displayName = user;
   if (username === undefined) {
     username = displayName.toLowerCase();
   }
@@ -127,11 +127,11 @@ const chatLogTest = (fileName: string) => {
     let test = await simRequireIndex(undefined, undefined, undefined, mocks);
     let chatbot = null;
 
-    let replyMessageQueue: Array<{ message: string; error: Error }> = [];
+    const replyMessageQueue: Array<{ message: string; error: Error }> = [];
     let accuracy = 0;
 
     function pushMessageWithStack(message: string) {
-      let error = new Error("<Stack Trace Capture>");
+      const error = new Error("<Stack Trace Capture>");
       Error.captureStackTrace(error, pushMessageWithStack);
       replyMessageQueue.push({ message, error });
     }
@@ -146,8 +146,8 @@ const chatLogTest = (fileName: string) => {
         crlfDelay: Infinity,
       });
 
-      let errorMessage = (position: Object) => {
-        let contents = codeFrameColumns(
+      const errorMessage = (position: unknown) => {
+        const contents = codeFrameColumns(
           fs.readFileSync(fileName).toString(),
           position
         );
@@ -157,7 +157,7 @@ const chatLogTest = (fileName: string) => {
       };
 
       let lineno = 0;
-      for await (let line of rl) {
+      for await (const line of rl) {
         lineno++;
         if (
           line.trim().startsWith("#") ||
@@ -187,6 +187,8 @@ const chatLogTest = (fileName: string) => {
           // TODO: ideally new settings would be written to settings.json
           //       and settings.js could be reloaded instead to validate settings
           replace(test.settings, JSON.parse(rest));
+
+          console.log("set settings to: " + JSON.stringify(test.settings));
         } else if (command == "chatters") {
           simSetChatters(JSON.parse(rest));
         } else if (command.startsWith("queue.json")) {
@@ -204,8 +206,10 @@ const chatLogTest = (fileName: string) => {
               }
             }
             expect(jsonData).toEqual(JSON.parse(rest));
-          } catch (error: any) {
-            error.message += errorMessage(position);
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              error.message += errorMessage(position);
+            }
             throw error;
           }
         } else if (command.startsWith("extensions")) {
@@ -221,8 +225,10 @@ const chatLogTest = (fileName: string) => {
               jsonData = jsonData[member];
             }
             expect(jsonData).toEqual(JSON.parse(rest));
-          } catch (error: any) {
-            error.message += errorMessage(position);
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              error.message += errorMessage(position);
+            }
             throw error;
           }
         } else if (command.startsWith("save")) {
@@ -259,27 +265,28 @@ const chatLogTest = (fileName: string) => {
           };
           // console.log(`${time}`, chat.sender, 'sends', chat.message);
           // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
-          if (
-            chatbot != null &&
-            chat.sender.username == chatbot.toLowerCase()
-          ) {
+          if (chatbot != null && chat.sender.login == chatbot.toLowerCase()) {
             // this is a message by the chat bot, check replyMessageQueue
-            let shift = replyMessageQueue.shift();
+            const shift = replyMessageQueue.shift();
             if (shift === undefined) {
               try {
                 expect(replyMessageQueue).toContain(chat.message);
-              } catch (error: any) {
-                error.message += errorMessage(position);
+              } catch (error: unknown) {
+                if (error instanceof Error) {
+                  error.message += errorMessage(position);
+                }
                 throw error;
               }
             }
             try {
               expect(shift?.message).toBe(chat.message);
-            } catch (error: any) {
-              error.stack = shift?.error.stack?.replace(
-                shift.error.message,
-                error.message + errorMessage(position)
-              );
+            } catch (error: unknown) {
+              if (error instanceof Error) {
+                error.stack = shift?.error.stack?.replace(
+                  shift.error.message,
+                  error.message + errorMessage(position)
+                );
+              }
               throw error;
             }
           } else {
@@ -289,8 +296,10 @@ const chatLogTest = (fileName: string) => {
                 chat.sender,
                 test.chatbot_helper.say
               );
-            } catch (error: any) {
-              error.message += errorMessage(position);
+            } catch (error: unknown) {
+              if (error instanceof Error) {
+                error.message += errorMessage(position);
+              }
               throw error;
             }
           }
@@ -302,12 +311,14 @@ const chatLogTest = (fileName: string) => {
       // replyMessageQueue should be empty now!
       try {
         expect(replyMessageQueue.map((m) => m.message)).toEqual([]);
-      } catch (error: any) {
-        let shift = replyMessageQueue.shift();
-        error.stack = shift?.error.stack?.replace(
-          shift.error.message,
-          error.message + "\n\n" + `not given in test file ${fileName}`
-        );
+      } catch (error: unknown) {
+        const shift = replyMessageQueue.shift();
+        if (error instanceof Error) {
+          error.stack = shift?.error.stack?.replace(
+            shift.error.message,
+            error.message + "\n\n" + `not given in test file ${fileName}`
+          );
+        }
         throw error;
       }
     } finally {

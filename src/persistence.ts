@@ -69,12 +69,12 @@ const UserOnlineTimeV1 = z
   .nullable();
 type UserOnlineTimeV1 = z.infer<typeof UserOnlineTimeV1>;
 
-const EntryV2 = z
-  .object({
-    code: z.string().describe("contains the level code as a string").optional(),
-    type: z.string().nullable().default(null),
-  })
-  .passthrough();
+const EntryV2 = z.object({
+  code: z.string().describe("contains the level code as a string").optional(),
+  type: z.string().nullable().default(null),
+  data: z.any().optional(),
+});
+
 export type EntryV2 = z.infer<typeof EntryV2>;
 
 const SubmittedEntryV2 = z
@@ -128,15 +128,7 @@ const CustomCodesV1 = z
   .transform((array) => Object.fromEntries(array));
 type CustomCodesV1 = z.infer<typeof CustomCodesV1>;
 
-const CustomCodesEntryV2 = EntryV2.extend({
-  type: z.string(),
-});
-export type CustomCodesEntryV2 = z.infer<typeof CustomCodesEntryV2>;
-
-const CustomCodesV2 = z.record(
-  z.string().describe("custom code"),
-  CustomCodesEntryV2
-);
+const CustomCodesV2 = z.record(z.string().describe("custom code"), EntryV2);
 export type CustomCodesV2 = z.infer<typeof CustomCodesV2>;
 
 export const patchGlobalFs = () => {
@@ -386,7 +378,9 @@ export const loadQueueSync = (): QueueV2 => {
   );
 };
 
-const createSaveFileContent = (queue: Omit<QueueV2, "version">) => {
+const createSaveFileContent = (
+  queue: Omit<z.input<typeof QueueV2>, "version">
+) => {
   return JSON.stringify(
     {
       ...queue,
@@ -402,15 +396,17 @@ const createCustomCodesFileContent = (
 ) => {
   return JSON.stringify(
     {
-      version: CUSTOM_CODES_V2.version,
       ...data,
+      version: CUSTOM_CODES_V2.version,
     },
     null,
     settings.prettySaveFiles ? 2 : 0
   );
 };
 
-export const saveQueueSync = (data: Omit<QueueV2, "version">) => {
+export const saveQueueSync = (
+  data: Omit<z.input<typeof QueueV2>, "version">
+) => {
   try {
     writeFileAtomicSync(QUEUE_V2.fileName, createSaveFileContent(data));
     return true;
@@ -427,7 +423,9 @@ export const saveQueueSync = (data: Omit<QueueV2, "version">) => {
   }
 };
 
-export const saveQueue = async (data: Omit<QueueV2, "version">) => {
+export const saveQueue = async (
+  data: Omit<z.input<typeof QueueV2>, "version">
+) => {
   try {
     await new Promise<void>((resolve, reject) =>
       writeFileAtomic(

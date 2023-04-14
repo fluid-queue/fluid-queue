@@ -51,28 +51,22 @@ const extractValidCode = (levelCode: string) => {
   };
 };
 
-const levelType = {
-  display(level: { code: string }) {
-    return level.code;
-  },
-};
+function display(code: string) {
+  return code;
+}
 
-const resolver = {
-  description: "smm1 level code",
-  resolve(args: string): { type: string; code: string } | null {
-    const result = extractValidCode(args.trim());
-    if (result.valid) {
-      return { type: "smm1", code: result.code };
-    }
-    return null;
-  },
-};
+function resolver(code: string): { code: string } | null {
+  const result = extractValidCode(code.trim());
+  if (result.valid) {
+    return { code: result.code };
+  }
+  return null;
+}
 
-const setup = (api: ExtensionsApi) => {
-  api.registerEntryType("smm1", levelType);
-  api.registerResolver("smm1", resolver);
-};
-
-module.exports = {
-  setup,
-};
+export async function setup(api: ExtensionsApi) {
+  api
+    .queueEntry("smm1", "smm1 level code")
+    .usingCode()
+    .build(display)
+    .registerResolver("smm1", resolver);
+}
