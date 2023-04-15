@@ -160,4 +160,6 @@ const twitch = {
   },
 };
 
-export { twitch };
+type Twitch = typeof twitch;
+
+export { twitch, Twitch };

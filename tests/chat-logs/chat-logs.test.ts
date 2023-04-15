@@ -1,13 +1,12 @@
 "use strict";
 
 // imports
-const jestChance = require("jest-chance");
-const readline = require("readline");
-import { fail } from "assert";
-const path = require("path");
-const fs = require("fs");
-const { codeFrameColumns } = require("@babel/code-frame");
-const {
+import * as jestChance from "jest-chance";
+import readline from "readline";
+import path from "path";
+import fs from "fs";
+import { SourceLocation, codeFrameColumns } from "@babel/code-frame";
+import {
   simRequireIndex,
   simSetTime,
   simSetChatters,
@@ -17,7 +16,9 @@ const {
   clearAllTimers,
   START_TIME,
   EMPTY_CHATTERS,
-} = require("../simulation.js");
+  asMock,
+} from "../simulation";
+import { Settings } from "../../src/settings";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -137,7 +138,7 @@ const chatLogTest = (fileName: string) => {
     }
 
     try {
-      test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
+      asMock(test.chatbot_helper.say).mockImplementation(pushMessageWithStack);
 
       const fileStream = fs.createReadStream(fileName);
 
@@ -146,7 +147,7 @@ const chatLogTest = (fileName: string) => {
         crlfDelay: Infinity,
       });
 
-      const errorMessage = (position: unknown) => {
+      const errorMessage = (position: SourceLocation) => {
         const contents = codeFrameColumns(
           fs.readFileSync(fileName).toString(),
           position
@@ -169,7 +170,7 @@ const chatLogTest = (fileName: string) => {
         // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
         const idx = line.indexOf(" ");
         const command = idx == -1 ? line : line.substring(0, idx);
-        const rest = idx == -1 ? undefined : line.substring(idx + 1);
+        const rest = idx == -1 ? "" : line.substring(idx + 1);
         let position = {
           start: { column: idx + 2, line: lineno },
           end: { column: line.length + 1, line: lineno },
@@ -178,7 +179,9 @@ const chatLogTest = (fileName: string) => {
           const time = new Date();
           await clearAllTimers();
           test = await simRequireIndex(test.volume, test.settings, time, mocks);
-          test.chatbot_helper.say.mockImplementation(pushMessageWithStack);
+          asMock(test.chatbot_helper.say).mockImplementation(
+            pushMessageWithStack
+          );
         } else if (command == "accuracy") {
           accuracy = parseInt(rest);
         } else if (command == "chatbot") {
@@ -186,7 +189,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "settings") {
           // TODO: ideally new settings would be written to settings.json
           //       and settings.js could be reloaded instead to validate settings
-          replace(test.settings, JSON.parse(rest));
+          replace(test.settings, Settings.parse(JSON.parse(rest)));
 
           console.log("set settings to: " + JSON.stringify(test.settings));
         } else if (command == "chatters") {
@@ -196,7 +199,8 @@ const chatLogTest = (fileName: string) => {
             const memberIdx = command.indexOf("/");
             let jsonData = JSON.parse(
               test.fs.readFileSync(
-                path.resolve(__dirname, "../../data/queue.json")
+                path.resolve(__dirname, "../../data/queue.json"),
+                "utf-8"
               )
             );
             if (memberIdx != -1) {
@@ -217,7 +221,11 @@ const chatLogTest = (fileName: string) => {
             const args = command.split("/");
             let jsonData = JSON.parse(
               test.fs.readFileSync(
-                path.resolve(__dirname, `../../data/extensions/${args[1]}.json`)
+                path.resolve(
+                  __dirname,
+                  `../../data/extensions/${args[1]}.json`
+                ),
+                "utf-8"
               )
             );
             if (2 in args) {
@@ -252,7 +260,19 @@ const chatLogTest = (fileName: string) => {
           }
           uuid.v4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
-          jest.spyOn(test.fs, rest).mockImplementationOnce(() => {
+          if (
+            !(
+              rest in test.fs &&
+              typeof (test.fs as Record<string, unknown>)[rest] === "function"
+            )
+          ) {
+            throw new Error(
+              `The function ${rest} is not part of the file system!`
+            );
+          }
+          const key: keyof jest.FunctionProperties<typeof test.fs> =
+            rest as keyof jest.FunctionProperties<typeof test.fs>;
+          jest.spyOn(test.fs, key).mockImplementationOnce(() => {
             throw new Error("fail on purpose in test");
           });
         } else if (command.startsWith("[") && command.endsWith("]")) {
