@@ -77,14 +77,6 @@ const extractValidCode = (levelCode: string, strict = true) => {
 };
 
 const makerSuffix = (levelCode: string) => {
-  console.log(
-    `settings.showMakerCode !== undefined => ${
-      settings.showMakerCode !== undefined
-    }`
-  );
-  console.log(
-    `settings.showMakerCode !== false => ${settings.showMakerCode !== false}`
-  );
   if (
     settings.showMakerCode !== undefined &&
     settings.showMakerCode !== false
