@@ -8,6 +8,7 @@
   },
   "license": "GPL-3.0",
   "main": "build/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/fluid-queue/fluid-queue.git"
@@ -19,13 +20,14 @@
     "@twurple/auth-tmi": "^6.1.0",
     "graceful-fs": "^4.2.11",
     "set-interval-async": "^3.0.3",
+    "ts-node": "^10.9.1",
     "uuid": "^9.0.0",
     "write-file-atomic": "^5.0.0",
     "zod": "^3.21.4"
   },
   "scripts": {
-    "test": "jest --verbose",
-    "test-ci": "jest --ci",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose",
+    "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --ci",
     "start": "node ./build/index.js",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
     "build": "npx tsc --build",

@@ -1,5 +1,5 @@
-import { aliases as aliasesFunction } from "../aliases";
-import { QueueSubmitter } from "./queue-entry";
+import { aliases as aliasesFunction } from "../aliases.js";
+import { QueueSubmitter } from "./queue-entry.js";
 const aliases = aliasesFunction();
 
 export type Responder = (message: string) => void;

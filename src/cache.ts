@@ -1,5 +1,5 @@
 import { Duration, Instant } from "@js-joda/core";
-import { BroadcastOnce } from "./sync";
+import { BroadcastOnce } from "./sync.js";
 
 /**
  * This class creates an adapter for loading data asynchronously.

@@ -1,10 +1,10 @@
-import ExtensionsApi from "../extensions";
-import settings from "../settings";
+import ExtensionsApi from "../extensions.js";
+import settings from "../settings.js";
 // TODO: move persistence functionality into extensions API
-import * as persistence from "../persistence";
-import { Entry, PersistedEntry } from "../extensions-api/queue-entry";
-import { Result } from "../extensions-api/helpers";
-import { Chatter } from "../extensions-api/command";
+import * as persistence from "../persistence.js";
+import { Entry, PersistedEntry } from "../extensions-api/queue-entry.js";
+import { Result } from "../extensions-api/helpers.js";
+import { Chatter } from "../extensions-api/command.js";
 
 class CustomCodes {
   map: Map<string, { customCode: string; entry: Entry }> = new Map<

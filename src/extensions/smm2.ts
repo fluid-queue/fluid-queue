@@ -1,9 +1,9 @@
-import ExtensionsApi from "../extensions";
-import settings from "../settings";
+import ExtensionsApi from "../extensions.js";
+import settings from "../settings.js";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
-} from "./helpers/codeparsing";
+} from "./helpers/codeparsing.js";
 
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";

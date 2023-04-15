@@ -3,9 +3,16 @@
   "compilerOptions": {
     "outDir": "./build",
     "allowJs": false,
-    "rootDir": "src",
-    "strict": true
+    "rootDir": ".",
+    "strict": true,
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "target": "ES2021",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2021"],
+    "rootDirs": ["src", "tests"]
   },
   "include": ["src/**/*"],
-  "exclude": ["src/__mocks__/*"]
+  "exclude": []
 }

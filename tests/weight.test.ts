@@ -1,4 +1,5 @@
 // imports
+import { jest } from "@jest/globals";
 import {
   simAdvanceTime,
   simRequireIndex,
@@ -8,8 +9,8 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-} from "./simulation";
-import { Queue } from "../src/queue";
+} from "./simulation.js";
+import { Queue } from "../src/queue.js";
 
 // console checks
 const consoleWarnMock = jest.spyOn(global.console, "warn");

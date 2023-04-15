@@ -1,4 +1,4 @@
-import { FunctionOrData } from "./helpers";
+import { FunctionOrData } from "./helpers.js";
 
 export interface PersistedBinding {
   data?: unknown;

@@ -1,12 +1,12 @@
-import ExtensionsApi from "../extensions";
-import { Chatter, Responder } from "../extensions-api/command";
+import ExtensionsApi from "../extensions.js";
+import { Chatter, Responder } from "../extensions-api/command.js";
 import {
   PersistedBinding,
   TypedBinding,
-} from "../extensions-api/queue-binding";
-import { QueueEntry } from "../extensions-api/queue-entry";
-import settings from "../settings";
-import { checkVersion } from "./helpers/version";
+} from "../extensions-api/queue-binding.js";
+import { QueueEntry } from "../extensions-api/queue-entry.js";
+import settings from "../settings.js";
+import { checkVersion } from "./helpers/version.js";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
 import { z } from "zod";
 

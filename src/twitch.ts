@@ -1,6 +1,6 @@
-import { Chatter } from "./extensions-api/command";
-import { QueueSubmitter } from "./extensions-api/queue-entry";
-import { twitchApi } from "./twitch-api";
+import { Chatter } from "./extensions-api/command.js";
+import { QueueSubmitter } from "./extensions-api/queue-entry.js";
+import { twitchApi } from "./twitch-api.js";
 
 const recent_chatters: Record<string, number> = {};
 const subscribers = new Set();

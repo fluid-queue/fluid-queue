@@ -1,15 +1,19 @@
-import { printBanner } from "./banner";
+import { printBanner } from "./banner.js";
 printBanner();
-import { OnlineOfflineList, WeightedList, quesoqueue as queue } from "./queue";
-import { twitch } from "./twitch";
-import { timer, Timer } from "./timer";
-import { patchGlobalFs, createDataDirectory } from "./persistence";
-import * as aliasManagement from "./aliases";
-import { twitchApi } from "./twitch-api";
-import settings from "./settings";
-import { helper } from "./chatbot";
-import { QueueEntry } from "./extensions-api/queue-entry";
-import { Chatter, Responder } from "./extensions-api/command";
+import {
+  OnlineOfflineList,
+  WeightedList,
+  quesoqueue as queue,
+} from "./queue.js";
+import { twitch } from "./twitch.js";
+import { timer, Timer } from "./timer.js";
+import { patchGlobalFs, createDataDirectory } from "./persistence.js";
+import * as aliasManagement from "./aliases.js";
+import { twitchApi } from "./twitch-api.js";
+import settings from "./settings.js";
+import { helper } from "./chatbot.js";
+import { QueueEntry } from "./extensions-api/queue-entry.js";
+import { Chatter, Responder } from "./extensions-api/command.js";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -863,22 +867,11 @@ const chatbot_helper = helper(settings.channel);
 chatbot_helper.setup(HandleMessage);
 
 // run async code
-const main = async () => {
-  // setup the twitch api
-  await twitchApi.setup();
+// setup the twitch api
+await twitchApi.setup();
 
-  // loading the queue
-  await quesoqueue.load();
+// loading the queue
+await quesoqueue.load();
 
-  // connect to the Twitch channel.
-  await chatbot_helper.connect();
-};
-
-if (process.env.NODE_ENV == "test") {
-  module.exports = {
-    main,
-    quesoqueue,
-  };
-} else {
-  main();
-}
+// connect to the Twitch channel.
+await chatbot_helper.connect();

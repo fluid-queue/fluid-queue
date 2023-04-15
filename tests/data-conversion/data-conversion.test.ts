@@ -1,4 +1,5 @@
 // imports
+import { jest } from "@jest/globals";
 import path from "path";
 import fs from "fs";
 import { Volume } from "memfs";
@@ -9,7 +10,10 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-} from "../simulation";
+  setPath,
+} from "../simulation.js";
+setPath("../");
+import { fileURLToPath } from "url";
 
 // fake timers
 jest.useFakeTimers();
@@ -49,19 +53,28 @@ const loadVolume = (testFolder: string) => {
     volume,
     fs,
     "./queso.save",
-    path.resolve(__dirname, `data/${testFolder}/queso.save`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${testFolder}/queso.save`
+    )
   );
   copy(
     volume,
     fs,
     "./userWaitTime.txt",
-    path.resolve(__dirname, `data/${testFolder}/userWaitTime.txt`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${testFolder}/userWaitTime.txt`
+    )
   );
   copy(
     volume,
     fs,
     "./waitingUsers.txt",
-    path.resolve(__dirname, `data/${testFolder}/waitingUsers.txt`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${testFolder}/waitingUsers.txt`
+    )
   );
   return volume;
 };
@@ -73,7 +86,10 @@ const loadVolumeV2 = (testFolder: string, version = "2.0") => {
     volume,
     fs,
     "./data/queue.json",
-    path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${testFolder}/queue-v${version}.json`
+    )
   );
   return volume;
 };
@@ -91,14 +107,20 @@ const checkResult = (
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/queue.json`),
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          `data/${testFolder}/queue.json`
+        ),
         "utf-8"
       )
     );
   } else {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`),
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          `data/${testFolder}/queue-v${version}.json`
+        ),
         "utf-8"
       )
     );
@@ -119,7 +141,10 @@ const checkCustomCodes = (
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/customcode.json`),
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          `data/${testFolder}/customcode.json`
+        ),
         "utf-8"
       )
     );
@@ -127,7 +152,7 @@ const checkCustomCodes = (
     queue_expect = JSON.parse(
       realFs.readFileSync(
         path.resolve(
-          __dirname,
+          path.dirname(fileURLToPath(import.meta.url)),
           `data/${testFolder}/customcode-v${version}.json`
         ),
         "utf-8"
@@ -192,7 +217,10 @@ test("custom-codes-v1a-to-v2.0", async () => {
     volume,
     fs,
     "./customCodes.json",
-    path.resolve(__dirname, `data/${test}/customCodes.json`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${test}/customCodes.json`
+    )
   );
   // customCodes.json present
   const index = await simRequireIndex(volume, {
@@ -216,7 +244,10 @@ test("custom-codes-v1b-to-v2.0", async () => {
     volume,
     fs,
     "./customCodes.json",
-    path.resolve(__dirname, `data/${test}/customCodes.json`)
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      `data/${test}/customCodes.json`
+    )
   );
   // customCodes.json present
   const index = await simRequireIndex(volume, {

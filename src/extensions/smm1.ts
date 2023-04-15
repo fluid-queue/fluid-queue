@@ -1,4 +1,4 @@
-import ExtensionsApi from "../extensions";
+import ExtensionsApi from "../extensions.js";
 import { createHmac } from "crypto";
 
 const delim = "[-. ]?";

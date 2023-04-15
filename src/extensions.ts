@@ -1,22 +1,22 @@
 import * as path from "path";
 import { promises as fsPromises } from "fs";
-import settings from "./settings";
+import settings from "./settings.js";
 import {
   BindingsApi,
   PersistedBinding,
   SaveHandler,
   TypedBindings,
-} from "./extensions-api/queue-binding";
+} from "./extensions-api/queue-binding.js";
 import {
   Chatter,
   Commands,
   CommandsApi,
   Responder,
-} from "./extensions-api/command";
+} from "./extensions-api/command.js";
 import {
   QueueHandlers,
   QueueHandlersApi,
-} from "./extensions-api/queue-handler";
+} from "./extensions-api/queue-handler.js";
 import {
   Entry,
   PersistedEntry,
@@ -24,16 +24,17 @@ import {
   QueueEntry,
   QueueSubmitter,
   queueSubmitter,
-} from "./extensions-api/queue-entry";
-import { Result, notNullish } from "./extensions-api/helpers";
+} from "./extensions-api/queue-entry.js";
+import { Result, notNullish } from "./extensions-api/helpers.js";
 import {
   ConfiguredResolvers,
   RegisterResolvers,
   QueueEntryDeserializer,
   QueueEntryUpgrade,
   QueueEntryApi,
-} from "./extensions-api/resolvers";
-import { BroadcastOnce, SendOnce } from "./sync";
+} from "./extensions-api/resolvers.js";
+import { BroadcastOnce, SendOnce } from "./sync.js";
+import { fileURLToPath } from "url";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
 const fileEnding: string[] = [".js", ".ts"];
@@ -113,18 +114,18 @@ const loadExtensionModules = async (
   const result: Record<string, ExtensionModule> = {};
 
   const files = await fsPromises.readdir(directory);
-  const moduleNames = files.flatMap((file) => {
+  const moduleFiles = files.flatMap((fileName) => {
     return fileEnding.flatMap((ext) => {
-      if (file.endsWith(ext)) {
-        return [file.slice(0, -ext.length)];
+      if (fileName.endsWith(ext)) {
+        return [{ name: fileName.slice(0, -ext.length), fileName }];
       }
       return [];
     });
   });
 
   const importModules: Promise<{ name: string; module: object }>[] =
-    moduleNames.map(async (name) => {
-      const importName = path.join(directory, name);
+    moduleFiles.map(async ({ name, fileName }) => {
+      const importName = path.join(directory, fileName);
       const module = await import(importName);
       return { name, module };
     });
@@ -215,7 +216,10 @@ export class Extensions {
       return;
     }
     // load extensions
-    const extensionsPath = path.resolve(__dirname, "extensions");
+    const extensionsPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "extensions"
+    );
     this.extensions = await loadExtensionModules(extensionsPath);
     // setup extensions
 

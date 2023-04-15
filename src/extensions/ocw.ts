@@ -1,9 +1,9 @@
-import ExtensionsApi from "../extensions";
-import settings from "../settings";
+import ExtensionsApi from "../extensions.js";
+import settings from "../settings.js";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
-} from "./helpers/codeparsing";
+} from "./helpers/codeparsing.js";
 
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different

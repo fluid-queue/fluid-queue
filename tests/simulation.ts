@@ -1,20 +1,25 @@
 // imports
+import { jest } from "@jest/globals";
 import * as jestChance from "jest-chance";
 import { Volume, createFsFromVolume } from "memfs";
 import path from "path";
 import fs from "fs";
-import { ChatChatter } from "../src/twitch-api";
+import * as twitchApiModule from "../src/twitch-api.js";
 import {
   SetIntervalAsyncHandler,
   SetIntervalAsyncTimer,
 } from "set-interval-async";
-import { Settings } from "../src/settings";
-import { Chatter, Responder } from "../src/extensions-api/command";
-import { helper } from "../src/chatbot";
+import { Settings } from "../src/settings.js";
+import { Chatter, Responder } from "../src/extensions-api/command.js";
+import { Chatbot, helper } from "../src/chatbot.js";
 import { z } from "zod";
-import { QueueSubmitter } from "../src/extensions-api/queue-entry";
-import { Queue } from "../src/queue";
-import { Twitch } from "../src/twitch";
+import { QueueSubmitter } from "../src/extensions-api/queue-entry.js";
+import { Queue } from "../src/queue.js";
+import { Twitch } from "../src/twitch.js";
+import * as setIntervalAsyncFixed from "set-interval-async/fixed";
+import * as timers from "timers";
+import { fileURLToPath } from "url";
+import { HelixChatChatter } from "@twurple/api";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -62,20 +67,40 @@ const AsyncFunction = (async () => {
 }).constructor;
 
 // mock variables
-let mockChatters: ChatChatter[] = [];
+let mockChatters: twitchApiModule.ChatChatter[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
-const mockModules = () => {
+let addPath = "./";
+export function setPath(newPath: string) {
+  addPath = newPath;
+}
+
+const mockModules = async () => {
   // mocks
-  jest.mock("../src/twitch-api");
-  jest.mock("../src/chatbot");
+  await mockTwitchApi();
+  jest.unstable_mockModule("../src/chatbot.js", () => {
+    const chatbot_helper = jest.fn((): Chatbot => {
+      return {
+        client: null, // do not mock client, since it is not used outside
+        handle_func: null, // not used outside either
+        connect: jest.fn<Chatbot["connect"]>(),
+        setup: jest.fn<Chatbot["setup"]>(() => undefined),
+        say: jest.fn<Chatbot["say"]>(() => undefined),
+      };
+    });
+    return {
+      helper: chatbot_helper,
+    };
+  });
   jest.mock("node-fetch", () => jest.fn());
 
   jest.mock("set-interval-async/dynamic", () => {
     // using fixed timers instead of dynamic timers
     // TODO: why do these work with tests? why are dynamic timers not working?
-    const timers = jest.requireActual("set-interval-async/fixed");
+    const timers = jest.requireActual<typeof setIntervalAsyncFixed>(
+      "set-interval-async/fixed"
+    );
     const asyncTimers: SetIntervalAsyncTimer<unknown[]>[] = [];
     const result = {
       setIntervalAsync<HandlerArgs extends unknown[]>(
@@ -103,19 +128,29 @@ const mockModules = () => {
       clearAllTimers: async () => {
         while (asyncTimers.length) {
           const t = asyncTimers.pop();
-          await timers.clearIntervalAsync(t);
+          if (t !== undefined) {
+            await timers.clearIntervalAsync(t);
+          }
         }
       },
     };
     clearAllTimersIntern = result.clearAllTimers.bind(result);
-    return result;
+    return {
+      __esModule: true, // Use it when dealing with esModules
+      ...timers,
+      ...result,
+    };
   });
 
   // only import after mocking!
-  const { twitchApi } = require("../src/twitch-api");
+  const { twitchApi } = jest.requireMock<typeof twitchApiModule>(
+    "../src/twitch-api.js"
+  );
 
   // mock chatters
-  twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
+  asMock(twitchApi.getChatters).mockImplementation(() =>
+    Promise.resolve(mockChatters)
+  );
 };
 
 const simSetChatters = (
@@ -128,7 +163,7 @@ const simSetChatters = (
   } else {
     chatters = newChatters["chatters"];
   }
-  const users: ChatChatter[] = [];
+  const users: twitchApiModule.ChatChatter[] = [];
   Object.keys(chatters).forEach((y) =>
     // FIXME: add user id
     chatters[y].forEach((z) =>
@@ -154,11 +189,22 @@ const populateMockVolume = (
   srcPath: string
 ) => {
   const result: Record<string, string> = {};
-  const files = fs.readdirSync(path.resolve(__dirname, "..", srcPath));
+  const files = fs.readdirSync(
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", srcPath)
+  );
   for (const file of files) {
     const srcFile = path.join(srcPath, file);
     if (
-      fs.lstatSync(path.resolve(__dirname, "..", srcPath, file)).isDirectory()
+      fs
+        .lstatSync(
+          path.resolve(
+            path.dirname(fileURLToPath(import.meta.url)),
+            "..",
+            srcPath,
+            file
+          )
+        )
+        .isDirectory()
     ) {
       populateMockVolume(volume, srcFile);
     } else {
@@ -191,7 +237,7 @@ type Index = {
   settings: z.output<typeof Settings>;
   chatbot: { helper: typeof helper };
   chatbot_helper: ReturnType<typeof helper>;
-  random: jest.SpyInstance<number, []>;
+  random: jest.Spied<() => number>;
   quesoqueue: Queue;
   handle_func: (message: string, sender: Chatter, respond: Responder) => void;
   twitch: Twitch;
@@ -199,8 +245,32 @@ type Index = {
 
 function asMock<R, A extends unknown[]>(
   fn: (...args: A) => R
-): jest.Mock<R, A> {
-  return <jest.Mock<R>>fn;
+): jest.Mock<(...args: A) => R> {
+  return <jest.Mock<(...args: A) => R>>fn;
+}
+
+export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
+  jest.unstable_mockModule("../src/twitch-api.js", () => {
+    class TwitchApi {
+      async setup() {
+        // do nothing
+      }
+      createTmiClient() {
+        throw new Error(
+          "This should never be called from tests -> Use the chatbot.js mock instead!"
+        );
+      }
+      getChatters = jest.fn(async (): Promise<HelixChatChatter[]> => {
+        return [];
+      });
+    }
+    return {
+      TwitchApi,
+      twitchApi: new TwitchApi(),
+    };
+  });
+  return await import("../src/twitch-api.js");
+  //return jest.requireMock<typeof twitchApiModule>("../src/twitch-api.js");
 }
 
 /**
@@ -216,7 +286,7 @@ const simRequireIndex = async (
   let settings: z.output<typeof Settings> | undefined;
   let chatbot: { helper: typeof helper } | undefined;
   let chatbot_helper: ReturnType<typeof helper> | undefined;
-  let random: jest.SpyInstance<number, []> | undefined;
+  let random: jest.Spied<() => number> | undefined;
   let quesoqueue: Queue | undefined;
   let handle_func:
     | ((message: string, sender: Chatter, respond: Responder) => void)
@@ -224,9 +294,6 @@ const simRequireIndex = async (
   let twitch: Twitch | undefined;
 
   try {
-    let main: () => Promise<void> = async () => {
-      // NO-OP
-    };
     await clearAllTimers();
     jest.resetModules();
     await mockModules();
@@ -235,7 +302,10 @@ const simRequireIndex = async (
     }
     jest.useFakeTimers();
     await jest.isolateModulesAsync(async () => {
-      // mockModules();
+      await mockModules();
+      if (setupMocks !== undefined) {
+        await setupMocks();
+      }
       // remove timers
       jest.clearAllTimers();
 
@@ -275,30 +345,45 @@ const simRequireIndex = async (
 
       // setup virtual file system
       const mockFs = createFsFromVolume(volume);
-      jest.mock("fs", () => mockFs);
-      fs = require("fs");
+      jest.mock("fs", () => ({
+        __esModule: true, // Use it when dealing with esModules
+        ...mockFs,
+        default: mockFs,
+        toString() {
+          return "fs mock";
+        },
+      }));
+      jest.unstable_mockModule("fs", () => ({
+        ...mockFs,
+        default: mockFs,
+        toString() {
+          return "fs module mock";
+        },
+      }));
+      fs = (await import("fs")).default;
 
       // import settings
-      settings = require("../src/settings").default;
+      settings = (await import("../src/settings.js")).default;
 
       // import libraries
-      chatbot = require("../src/chatbot");
-      twitch = require("../src/twitch").twitch;
-      // const queue = require("../src/queue");
+      chatbot = await import("../src/chatbot.js");
+      twitch = (await import("../src/twitch.js")).twitch;
+      const queue = await import("../src/queue.js");
+      quesoqueue = queue.quesoqueue();
 
       // run index.js
-      const idx = require("../src/index");
-      main = idx.main;
-      quesoqueue = idx.quesoqueue;
+      await import("../src/index.js");
     });
-    await main();
     if (chatbot === undefined) {
       throw new Error("chatbot was not loaded correctly");
     }
 
     // get hold of chatbot_helper
     expect(asMock(chatbot.helper)).toHaveBeenCalledTimes(1);
-    chatbot_helper = asMock(chatbot.helper).mock.results[0].value;
+    const result = asMock(chatbot.helper).mock.results[0];
+    if (result.type === "return") {
+      chatbot_helper = result.value;
+    }
 
     if (chatbot_helper === undefined) {
       throw new Error("chatbot_helper was not setup correctly");
@@ -365,7 +450,7 @@ const simRequireIndex = async (
 };
 
 const flushPromises = async () => {
-  await new Promise(jest.requireActual("timers").setImmediate);
+  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
 };
 
 const clearAllTimers = async () => {
