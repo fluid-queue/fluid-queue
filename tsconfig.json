@@ -2,8 +2,7 @@
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
     "outDir": "./build",
-    "allowJs": true,
-    "checkJs": false,
+    "allowJs": false,
     "rootDir": "src",
     "strict": true
   },
