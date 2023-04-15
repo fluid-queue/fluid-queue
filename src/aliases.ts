@@ -1,14 +1,14 @@
-const fs = require("fs");
-const writeFileAtomic = require("write-file-atomic");
-const writeFileAtomicSync = writeFileAtomic.sync;
-const settings = require("./settings").default;
+import fs from "fs";
+import { sync as writeFileAtomicSync } from "write-file-atomic";
+import settings from "./settings";
+import { AlternativeServiceOptions } from "http2";
 
 const ALIASES_FILE = {
   directory: "./settings",
   fileName: "./settings/aliases.json",
 };
 
-const defaultAliases = {
+const defaultAliases: Record<string, string[]> = {
   add: ["!add"],
   back: ["!back"],
   brb: ["!brb", "!lurk"],
@@ -44,7 +44,7 @@ const defaultAliases = {
   weightedsubrandom: ["!weightedsubrandom"],
 };
 
-let aliases;
+let aliases: typeof defaultAliases;
 
 const Aliases = {
   saveAliases: () => {
@@ -82,12 +82,12 @@ const Aliases = {
       console.warn(
         "An error occurred when trying to load %s. %s",
         ALIASES_FILE.fileName,
-        err.message
+        err instanceof Error ? err.message : err
       );
       throw err;
     }
   },
-  addAlias: (cmd, alias) => {
+  addAlias: (cmd: string, alias: string) => {
     if (!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)) {
       return false;
     }
@@ -106,11 +106,11 @@ const Aliases = {
     Aliases.saveAliases();
     return true;
   },
-  removeAlias: (cmd, alias) => {
+  removeAlias: (cmd: string, alias: string) => {
     if (!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)) {
       return false;
     }
-    if (!Object.values(aliases).filter((x) => x.includes(alias)).length > 0) {
+    if (Object.values(aliases).filter((x) => x.includes(alias)).length <= 0) {
       return false;
     }
     if (!aliases[cmd].includes(alias)) {
@@ -121,10 +121,10 @@ const Aliases = {
     Aliases.saveAliases();
     return true;
   },
-  isDisabled: (cmd) => {
+  isDisabled: (cmd: string) => {
     return aliases[cmd].includes("disabled");
   },
-  disableCommand: (cmd) => {
+  disableCommand: (cmd: string) => {
     if (!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)) {
       return false;
     }
@@ -132,7 +132,7 @@ const Aliases = {
     Aliases.saveAliases();
     return true;
   },
-  enableCommand: (cmd) => {
+  enableCommand: (cmd: string) => {
     if (!Aliases.isCommand(cmd) || Aliases.isDisabled(cmd)) {
       aliases[cmd].pop();
       Aliases.saveAliases();
@@ -140,13 +140,13 @@ const Aliases = {
     }
     return false;
   },
-  isAlias: (cmd, message) => {
+  isAlias: (cmd: string, message: string) => {
     if (Aliases.isDisabled(cmd)) {
       return false;
     }
     return aliases[cmd].includes(message.split(" ")[0]);
   },
-  resetCommand: (cmd) => {
+  resetCommand: (cmd: string) => {
     if (Aliases.isCommand(cmd)) {
       aliases[cmd] = [];
       defaultAliases[cmd].forEach((x) => Aliases.addAlias(cmd, x));
@@ -158,17 +158,17 @@ const Aliases = {
   getCommands: () => {
     return Object.keys(aliases);
   },
-  isCommand: (cmd) => {
+  isCommand: (cmd: string) => {
     return Object.keys(aliases).includes(cmd);
   },
-  addDefault: (cmd, cmdAliases) => {
+  addDefault: (cmd: string, cmdAliases: string[]) => {
     defaultAliases[cmd] = cmdAliases;
     aliases = { ...defaultAliases, ...aliases };
   },
 };
 
-module.exports = {
-  aliases: () => {
-    return Aliases;
-  },
-};
+function getAliases() {
+  return Aliases;
+}
+
+export { getAliases as aliases };
