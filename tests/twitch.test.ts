@@ -1,15 +1,15 @@
 import { ChatChatter, twitchApi } from "../src/twitch-api";
+import { asMock, buildChatter, replace } from "./simulation";
 import { HelixChatChatter } from "@twurple/api/lib";
 import { twitch } from "../src/twitch";
-import settings from "../src/settings";
-const { replace, buildChatter } = require("./simulation.js");
+import settings, { Settings } from "../src/settings";
 
 // constants
 const defaultTestChatters: HelixChatChatter[] = [];
 const defaultTestSettings = {
-  username: "queso_queue_test_username",
-  password: "",
   channel: "queso_queue_test_channel",
+  clientId: "",
+  clientSecret: "",
   max_size: 50,
   level_timeout: 10,
   level_selection: [
@@ -28,12 +28,6 @@ let mockChatters: ChatChatter[] = [];
 
 // mocks
 jest.mock("../src/twitch-api");
-
-function asMock<R, A extends unknown[]>(
-  fn: (...args: A) => R
-): jest.Mock<R, A> {
-  return <jest.Mock<R>>fn;
-}
 
 // mock chatters
 asMock(twitchApi.getChatters).mockImplementation(() =>
@@ -59,7 +53,7 @@ test("online users", async () => {
   jest.mock("../src/settings", () => {
     return { default: {} };
   });
-  replace(settings, defaultTestSettings);
+  replace(settings, Settings.parse(defaultTestSettings));
 
   if (settings === undefined || twitch === undefined) {
     expect(settings).not.toBeUndefined();

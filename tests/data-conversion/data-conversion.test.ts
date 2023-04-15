@@ -1,16 +1,15 @@
-"use strict";
-
 // imports
-const path = require("path");
-const fs = require("fs");
-const {
+import path from "path";
+import fs from "fs";
+import { Volume } from "memfs";
+import {
   simRequireIndex,
   simSetChatters,
   createMockVolume,
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-} = require("../simulation.js");
+} from "../simulation";
 
 // fake timers
 jest.useFakeTimers();
@@ -30,7 +29,12 @@ beforeEach(() => {
   consoleErrorMock.mockClear();
 });
 
-const copy = (volume, realFs, mockFileName, realFileName) => {
+const copy = (
+  volume: InstanceType<typeof Volume>,
+  realFs: typeof fs,
+  mockFileName: string,
+  realFileName: string
+) => {
   if (realFs.existsSync(realFileName)) {
     volume.fromJSON(
       { [mockFileName]: realFs.readFileSync(realFileName, "utf-8") },
@@ -39,8 +43,8 @@ const copy = (volume, realFs, mockFileName, realFileName) => {
   }
 };
 
-const loadVolume = (testFolder) => {
-  let volume = createMockVolume();
+const loadVolume = (testFolder: string) => {
+  const volume = createMockVolume();
   copy(
     volume,
     fs,
@@ -62,8 +66,8 @@ const loadVolume = (testFolder) => {
   return volume;
 };
 
-const loadVolumeV2 = (testFolder, version = "2.0") => {
-  let volume = createMockVolume();
+const loadVolumeV2 = (testFolder: string, version = "2.0") => {
+  const volume = createMockVolume();
   volume.mkdirSync("./data");
   copy(
     volume,
@@ -74,34 +78,49 @@ const loadVolumeV2 = (testFolder, version = "2.0") => {
   return volume;
 };
 
-const checkResult = (mockFs, realFs, testFolder, version = undefined) => {
-  let queue_real = JSON.parse(mockFs.readFileSync("./data/queue.json"));
+const checkResult = (
+  mockFs: typeof fs,
+  realFs: typeof fs,
+  testFolder: string,
+  version?: string
+) => {
+  const queue_real = JSON.parse(
+    mockFs.readFileSync("./data/queue.json", "utf-8")
+  );
   let queue_expect;
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/queue.json`)
+        path.resolve(__dirname, `data/${testFolder}/queue.json`),
+        "utf-8"
       )
     );
   } else {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`)
+        path.resolve(__dirname, `data/${testFolder}/queue-v${version}.json`),
+        "utf-8"
       )
     );
   }
   expect(queue_real).toEqual(queue_expect);
 };
 
-const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
-  let queue_real = JSON.parse(
-    mockFs.readFileSync("./data/extensions/customcode.json")
+const checkCustomCodes = (
+  mockFs: typeof fs,
+  realFs: typeof fs,
+  testFolder: string,
+  version?: string
+) => {
+  const queue_real = JSON.parse(
+    mockFs.readFileSync("./data/extensions/customcode.json", "utf-8")
   );
   let queue_expect;
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
-        path.resolve(__dirname, `data/${testFolder}/customcode.json`)
+        path.resolve(__dirname, `data/${testFolder}/customcode.json`),
+        "utf-8"
       )
     );
   } else {
@@ -110,7 +129,8 @@ const checkCustomCodes = (mockFs, realFs, testFolder, version = undefined) => {
         path.resolve(
           __dirname,
           `data/${testFolder}/customcode-v${version}.json`
-        )
+        ),
+        "utf-8"
       )
     );
   }
@@ -290,8 +310,7 @@ test("conversion-test-5", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
 
-const expectErrorMessage = (promise) => {
-  console.log("promise???", promise);
+const expectErrorMessage = (promise: Promise<unknown>) => {
   return expect(
     promise.then(
       (value) => value,
@@ -308,21 +327,51 @@ const expectErrorMessage = (promise) => {
   ).rejects;
 };
 
-test("conversion-test-corrupt-1", async () => {
-  const test = "test-corrupt-1";
-  const volume = loadVolume(test);
-  let mockFs;
+// FIXME: do this better, e.g. by making `simRequireIndex` not throw but the result could be a function that throws + partial properties
+// or make a `saveSimRequireIndex` that is like simRequireIndex but it does not throw
+function getFsFromError(err: unknown): typeof fs {
+  if (
+    err != null &&
+    typeof err === "object" &&
+    "simIndex" in err &&
+    typeof (err as { simIndex: unknown }).simIndex === "object" &&
+    "fs" in (err as { simIndex: object }).simIndex &&
+    typeof ((err as { simIndex: object }).simIndex as { fs: unknown }).fs ===
+      "object"
+  ) {
+    return ((err as { simIndex: object }).simIndex as { fs: unknown })
+      .fs as typeof fs;
+  }
+  throw new Error(`Could not find file system in error ${err}`);
+}
+
+async function throwingIndex(
+  volume: InstanceType<typeof Volume>
+): Promise<typeof fs> {
+  let mockFs: typeof fs | undefined;
 
   const index = async () => {
     try {
       await simRequireIndex(volume);
     } catch (err) {
-      mockFs = err.simIndex.fs;
+      mockFs = getFsFromError(err);
       throw err;
     }
   };
   // should error!
   await expectErrorMessage(index()).toMatch(/.*/); // TODO regex of expected error message
+
+  if (mockFs === undefined) {
+    throw new Error("expected error thrown containing file system");
+  }
+
+  return mockFs;
+}
+
+test("conversion-test-corrupt-1", async () => {
+  const test = "test-corrupt-1";
+  const volume = loadVolume(test);
+  const mockFs = await throwingIndex(volume);
   // check file system -> old file still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./queso.save")).toBe(true);
 });
@@ -330,18 +379,7 @@ test("conversion-test-corrupt-1", async () => {
 test("conversion-test-corrupt-2", async () => {
   const test = "test-corrupt-2";
   const volume = loadVolume(test);
-  let mockFs;
-
-  const index = async () => {
-    try {
-      await simRequireIndex(volume);
-    } catch (err) {
-      mockFs = err.simIndex.fs;
-      throw err;
-    }
-  };
-  // should error!
-  await expectErrorMessage(index()).toMatch(/.*/); // TODO regex of expected error message
+  const mockFs = await throwingIndex(volume);
   // check file system -> old files still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./queso.save")).toBe(true);
   expect(mockFs.existsSync("./userWaitTime.txt")).toBe(true);
@@ -351,18 +389,7 @@ test("conversion-test-corrupt-2", async () => {
 test("conversion-test-corrupt-3", async () => {
   const test = "test-corrupt-3";
   const volume = loadVolume(test);
-  let mockFs;
-
-  const index = async () => {
-    try {
-      await simRequireIndex(volume);
-    } catch (err) {
-      mockFs = err.simIndex.fs;
-      throw err;
-    }
-  };
-  // should error!
-  await expectErrorMessage(index()).toMatch(/.*/); // TODO regex of expected error message
+  const mockFs = await throwingIndex(volume);
   // check file system -> old files still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./queso.save")).toBe(true);
   expect(mockFs.existsSync("./userWaitTime.txt")).toBe(true);
@@ -372,18 +399,7 @@ test("conversion-test-corrupt-3", async () => {
 test("conversion-test-corrupt-4", async () => {
   const test = "test-corrupt-4";
   const volume = loadVolume(test);
-  let mockFs;
-
-  const index = async () => {
-    try {
-      await simRequireIndex(volume);
-    } catch (err) {
-      mockFs = err.simIndex.fs;
-      throw err;
-    }
-  };
-  // should error!
-  await expectErrorMessage(index()).toMatch(/.*/); // TODO regex of expected error message
+  const mockFs = await throwingIndex(volume);
   // check file system -> old files still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./queso.save")).toBe(true);
   expect(mockFs.existsSync("./userWaitTime.txt")).toBe(false); // this file is actually missing on purpose

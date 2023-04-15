@@ -1,10 +1,20 @@
-"use strict";
-
 // imports
-const jestChance = require("jest-chance");
-const { Volume, createFsFromVolume } = require("memfs");
-const path = require("path");
-const fs = require("fs");
+import * as jestChance from "jest-chance";
+import { Volume, createFsFromVolume } from "memfs";
+import path from "path";
+import fs from "fs";
+import { ChatChatter } from "../src/twitch-api";
+import {
+  SetIntervalAsyncHandler,
+  SetIntervalAsyncTimer,
+} from "set-interval-async";
+import { Settings } from "../src/settings";
+import { Chatter, Responder } from "../src/extensions-api/command";
+import { helper } from "../src/chatbot";
+import { z } from "zod";
+import { QueueSubmitter } from "../src/extensions-api/queue-entry";
+import { Queue } from "../src/queue";
+import { Twitch } from "../src/twitch";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -23,6 +33,14 @@ const DEFAULT_TEST_SETTINGS = {
     "modrandom",
   ],
   message_cooldown: 5,
+};
+/**
+ * @deprecated
+ */
+type LegacyChatChatters = {
+  _links: unknown;
+  chatter_count: number;
+  chatters: Record<string, string[]>;
 };
 // constants
 const EMPTY_CHATTERS = {
@@ -44,9 +62,9 @@ const AsyncFunction = (async () => {
 }).constructor;
 
 // mock variables
-var mockChatters = [];
+let mockChatters: ChatChatter[] = [];
 
-var clearAllTimersIntern = null;
+let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
 const mockModules = () => {
   // mocks
@@ -58,31 +76,33 @@ const mockModules = () => {
     // using fixed timers instead of dynamic timers
     // TODO: why do these work with tests? why are dynamic timers not working?
     const timers = jest.requireActual("set-interval-async/fixed");
+    const asyncTimers: SetIntervalAsyncTimer<unknown[]>[] = [];
     const result = {
-      setIntervalAsync: (handler, interval, ...args) => {
-        if (this.asyncTimers === undefined) {
-          this.asyncTimers = [];
-        }
-        const timer = timers.setIntervalAsync(handler, interval, ...args);
-        this.asyncTimers.push(timer);
+      setIntervalAsync<HandlerArgs extends unknown[]>(
+        handler: SetIntervalAsyncHandler<HandlerArgs>,
+        intervalMs: number,
+        ...handlerArgs: HandlerArgs
+      ): SetIntervalAsyncTimer<HandlerArgs> {
+        const timer = timers.setIntervalAsync(
+          handler,
+          intervalMs,
+          ...handlerArgs
+        );
+        asyncTimers.push(timer);
         return timer;
       },
-      clearIntervalAsync: async (timer) => {
-        if (this.asyncTimers === undefined) {
-          this.asyncTimers = [];
-        }
-        const index = this.asyncTimers.findIndex((t) => t === timer);
+      async clearIntervalAsync<HandlerArgs extends unknown[]>(
+        timer: SetIntervalAsyncTimer<HandlerArgs>
+      ): Promise<void> {
+        const index = asyncTimers.findIndex((t) => t === timer);
         if (index != -1) {
-          this.asyncTimers.splice(index, 1);
+          asyncTimers.splice(index, 1);
           await timers.clearIntervalAsync(timer);
         }
       },
       clearAllTimers: async () => {
-        if (this.asyncTimers === undefined) {
-          this.asyncTimers = [];
-        }
-        while (this.asyncTimers.length) {
-          const t = this.asyncTimers.pop();
+        while (asyncTimers.length) {
+          const t = asyncTimers.pop();
           await timers.clearIntervalAsync(t);
         }
       },
@@ -98,34 +118,26 @@ const mockModules = () => {
   twitchApi.getChatters.mockImplementation(() => Promise.resolve(mockChatters));
 };
 
-/**
- * @param {Object} newChatters chatters as returned by the chatters resource, see `../src/twitch.js`
- */
-const simSetChatters = (newChatters) => {
+const simSetChatters = (
+  newChatters: LegacyChatChatters | LegacyChatChatters["chatters"]
+) => {
+  let chatters: LegacyChatChatters["chatters"];
   // automatically create a correct chatters object
-  if (!Object.hasOwnProperty.call(newChatters, "chatters")) {
-    newChatters = {
-      _links: {},
-      chatter_count: Object.values(newChatters).flat().length,
-      chatters: newChatters,
-    };
+  if (!("chatters" in newChatters) || Array.isArray(newChatters["chatters"])) {
+    chatters = newChatters as LegacyChatChatters["chatters"];
+  } else {
+    chatters = newChatters["chatters"];
   }
-  [
-    "broadcaster",
-    "vips",
-    "moderators",
-    "staff",
-    "admins",
-    "global_mods",
-    "viewers",
-  ].forEach((key) => {
-    if (!Object.hasOwnProperty.call(newChatters.chatters, key)) {
-      newChatters.chatters[key] = [];
-    }
-  });
-  let users = [];
-  Object.keys(newChatters.chatters).forEach((y) =>
-    newChatters.chatters[y].forEach((z) => users.push({ userName: z }))
+  const users: ChatChatter[] = [];
+  Object.keys(chatters).forEach((y) =>
+    // FIXME: add user id
+    chatters[y].forEach((z) =>
+      users.push({
+        userId: `test/username/${z}`,
+        userName: z,
+        userDisplayName: z,
+      })
+    )
   );
   mockChatters = users;
   return mockChatters;
@@ -137,8 +149,11 @@ const simSetChatters = (newChatters) => {
  * @param {*} volume
  * @param {*} srcPath
  */
-const populateMockVolume = (volume, srcPath) => {
-  const result = {};
+const populateMockVolume = (
+  volume: InstanceType<typeof Volume>,
+  srcPath: string
+) => {
+  const result: Record<string, string> = {};
   const files = fs.readdirSync(path.resolve(__dirname, "..", srcPath));
   for (const file of files) {
     const srcFile = path.join(srcPath, file);
@@ -154,7 +169,9 @@ const populateMockVolume = (volume, srcPath) => {
   volume.fromJSON(result, path.resolve("."));
 };
 
-const createMockVolume = (settings = undefined) => {
+const createMockVolume = (
+  settings?: z.input<typeof Settings>
+): InstanceType<typeof Volume> => {
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
   populateMockVolume(volume, "./src");
@@ -168,48 +185,48 @@ const createMockVolume = (settings = undefined) => {
   return volume;
 };
 
-/**
- * TODO: Remove this type
- * @typedef { import("../src/settings").Settings } settings
- */
+type Index = {
+  fs: typeof fs;
+  volume: InstanceType<typeof Volume>;
+  settings: z.output<typeof Settings>;
+  chatbot: { helper: typeof helper };
+  chatbot_helper: ReturnType<typeof helper>;
+  random: jest.SpyInstance<number, []>;
+  quesoqueue: Queue;
+  handle_func: (message: string, sender: Chatter, respond: Responder) => void;
+  twitch: Twitch;
+};
 
-/**
- * @typedef index
- * @property {Object} fs file system
- * @property {Volume} volume mock volume
- * @property {settings} settings settings
- * @property {Object} chatbot the chatbot mock
- * @property {Object} chatbot_helper the chatbot instance that `index.js` is using
- * @property {function():number} random the Math.random mock
- * @property {Object} quesoqueue the queue instance that `index.js` is using
- * @property {function(string, {username: string; displayName: string; isSubscriber: boolean; isMod: boolean; isBroadcaster: boolean;}, function(string):void):void} handle_func the function of the chatbot that receives chat messages
- */
+function asMock<R, A extends unknown[]>(
+  fn: (...args: A) => R
+): jest.Mock<R, A> {
+  return <jest.Mock<R>>fn;
+}
 
 /**
  * load `index.js` and test it being setup correctly
- *
- * @param {Volume | undefined} mockFs This virtual file system will be copied over
- * @param {settings | undefined} mockSettings {@link settings} Settings to be used
- * @param {number | Date} mockTime
- * @returns {Promise<index>} {@link index}
  */
 const simRequireIndex = async (
-  volume = undefined,
-  mockSettings = undefined,
-  mockTime = undefined,
-  setupMocks = undefined
-) => {
-  let fs;
-  let settings;
-  let chatbot;
-  let chatbot_helper;
-  let random;
-  let quesoqueue;
-  let handle_func;
-  let twitch;
+  volume?: InstanceType<typeof Volume>,
+  mockSettings?: z.input<typeof Settings>,
+  mockTime?: number | Date,
+  setupMocks?: () => Promise<void> | void
+): Promise<Index> => {
+  let fs: Index["fs"] | undefined;
+  let settings: z.output<typeof Settings> | undefined;
+  let chatbot: { helper: typeof helper } | undefined;
+  let chatbot_helper: ReturnType<typeof helper> | undefined;
+  let random: jest.SpyInstance<number, []> | undefined;
+  let quesoqueue: Queue | undefined;
+  let handle_func:
+    | ((message: string, sender: Chatter, respond: Responder) => void)
+    | undefined;
+  let twitch: Twitch | undefined;
 
   try {
-    let main;
+    let main: () => Promise<void> = async () => {
+      // NO-OP
+    };
     await clearAllTimers();
     jest.resetModules();
     await mockModules();
@@ -242,11 +259,6 @@ const simRequireIndex = async (
         mockSettings = DEFAULT_TEST_SETTINGS;
       }
 
-      // remove fileName setting
-      if (mockSettings.fileName != null) {
-        mockSettings.fileName = undefined;
-      }
-
       // create virtual file system
       if (volume === undefined) {
         volume = createMockVolume(mockSettings);
@@ -275,15 +287,22 @@ const simRequireIndex = async (
       // const queue = require("../src/queue");
 
       // run index.js
-      let idx = require("../src/index");
+      const idx = require("../src/index");
       main = idx.main;
       quesoqueue = idx.quesoqueue;
     });
     await main();
+    if (chatbot === undefined) {
+      throw new Error("chatbot was not loaded correctly");
+    }
 
     // get hold of chatbot_helper
-    expect(chatbot.helper).toHaveBeenCalledTimes(1);
-    chatbot_helper = chatbot.helper.mock.results[0].value;
+    expect(asMock(chatbot.helper)).toHaveBeenCalledTimes(1);
+    chatbot_helper = asMock(chatbot.helper).mock.results[0].value;
+
+    if (chatbot_helper === undefined) {
+      throw new Error("chatbot_helper was not setup correctly");
+    }
 
     expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
     expect(chatbot_helper.setup).toHaveBeenCalledTimes(1);
@@ -291,22 +310,45 @@ const simRequireIndex = async (
 
     // get hold of the handle function
     // the first argument of setup has to be an AsyncFunction
-    expect(chatbot_helper.setup.mock.calls[0][0]).toBeInstanceOf(AsyncFunction);
-    handle_func = chatbot_helper.setup.mock.calls[0][0];
+    expect(asMock(chatbot_helper.setup).mock.calls[0][0]).toBeInstanceOf(
+      AsyncFunction
+    );
+    handle_func = asMock(chatbot_helper.setup).mock.calls[0][0];
   } catch (err) {
     console.warn(err);
-    err.simIndex = {
-      fs,
-      volume,
-      settings,
-      chatbot,
-      chatbot_helper,
-      random,
-      quesoqueue,
-      handle_func,
-      twitch,
-    };
+    if (err != null && typeof err === "object") {
+      (err as Record<string, unknown>).simIndex = {
+        fs,
+        volume,
+        settings,
+        chatbot,
+        chatbot_helper,
+        random,
+        quesoqueue,
+        handle_func,
+        twitch,
+      };
+    }
     throw err;
+  }
+
+  if (fs === undefined) {
+    throw new Error("fs was not loaded correctly");
+  }
+  if (volume === undefined) {
+    throw new Error("volume was not setup correctly");
+  }
+  if (settings === undefined) {
+    throw new Error("settings were not loaded correctly");
+  }
+  if (random === undefined) {
+    throw new Error("random was not setup correctly");
+  }
+  if (quesoqueue === undefined) {
+    throw new Error("queue was not loaded correctly");
+  }
+  if (twitch === undefined) {
+    throw new Error("twitch was not loaded correctly");
   }
 
   return {
@@ -342,7 +384,7 @@ const clearAllTimers = async () => {
  * @param {number} ms How many milliseconds to advance time
  * @param {number} accuracy How accurate timers are being simulated, in milliseconds
  */
-const simAdvanceTime = async (ms, accuracy = 0) => {
+const simAdvanceTime = async (ms: number, accuracy = 0) => {
   const currentTime = new Date();
   await flushPromises();
 
@@ -357,7 +399,7 @@ const simAdvanceTime = async (ms, accuracy = 0) => {
     jest.advanceTimersByTime(ms);
     await flushPromises();
   }
-  expect(new Date() - currentTime).toEqual(ms);
+  expect(new Date().getTime() - currentTime.getTime()).toEqual(ms);
 };
 
 /**
@@ -367,7 +409,7 @@ const simAdvanceTime = async (ms, accuracy = 0) => {
  * @param {string|Date} time Time in the format `HH:mm:ss` in UTC or a Date.
  * @param {number} accuracy How accurate timers are being simulated, in milliseconds
  */
-const simSetTime = async (time, accuracy = 0) => {
+const simSetTime = async (time: string | Date, accuracy = 0) => {
   const prevTime = new Date();
   let newTime;
   if (time instanceof Date) {
@@ -383,7 +425,7 @@ const simSetTime = async (time, accuracy = 0) => {
       newTime.setUTCDate(newTime.getUTCDate() + 1);
     }
   }
-  const diff = newTime - prevTime;
+  const diff = newTime.getTime() - prevTime.getTime();
   if (diff > 0) {
     await simAdvanceTime(diff, accuracy);
   } else if (diff < 0) {
@@ -395,14 +437,15 @@ const simSetTime = async (time, accuracy = 0) => {
 };
 
 const buildChatter = (
-  username,
-  displayName,
-  isSubscriber,
-  isMod,
-  isBroadcaster
-) => {
+  username: string,
+  displayName: string,
+  isSubscriber: boolean,
+  isMod: boolean,
+  isBroadcaster: boolean
+): Chatter => {
   return {
     // FIXME: user id
+    id: `test/username/${username}`,
     login: username,
     displayName,
     isSubscriber,
@@ -411,7 +454,7 @@ const buildChatter = (
     toString() {
       return this.displayName;
     },
-    equals(other) {
+    equals(other: Partial<QueueSubmitter>) {
       if (other.id !== undefined && this.id !== undefined) {
         return other.id == this.id;
       }
@@ -426,14 +469,18 @@ const buildChatter = (
   };
 };
 
-const replace = (settings, newSettings) => {
+const replace = (
+  settings: z.output<typeof Settings>,
+  newSettings: z.output<typeof Settings>
+) => {
   Object.keys(settings).forEach((key) => {
-    delete settings[key];
+    delete (settings as Record<string, unknown>)[key];
   });
   Object.assign(settings, newSettings);
 };
 
-module.exports = {
+export {
+  asMock,
   simRequireIndex,
   simAdvanceTime,
   simSetTime,

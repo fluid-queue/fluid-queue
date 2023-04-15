@@ -1,4 +1,9 @@
 {
   "extends": ["../tsconfig.json"],
-  "include": ["./**/*"]
+  "include": ["./**/*"],
+  "compilerOptions": {
+    "allowJs": false,
+    "rootDir": "..",
+    "strict": true
+  }
 }

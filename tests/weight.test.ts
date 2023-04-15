@@ -1,5 +1,5 @@
 // imports
-const {
+import {
   simAdvanceTime,
   simRequireIndex,
   buildChatter,
@@ -8,7 +8,7 @@ const {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-} = require("./simulation.js");
+} from "./simulation";
 import { Queue } from "../src/queue";
 
 // console checks
