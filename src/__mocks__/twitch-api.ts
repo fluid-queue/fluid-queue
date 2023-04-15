@@ -1,4 +1,4 @@
-import { HelixChatChatter } from "@twurple/api/lib";
+import { HelixChatChatter } from "@twurple/api";
 
 class TwitchApiMock {
   async setup() {

@@ -1,16 +1,16 @@
-import settings from "./settings";
-import { twitch } from "./twitch";
+import settings from "./settings.js";
+import { twitch } from "./twitch.js";
 import { setIntervalAsync } from "set-interval-async/dynamic";
-import * as persistence from "./persistence";
-import Waiting from "./waiting";
-import { Extensions } from "./extensions";
+import * as persistence from "./persistence.js";
+import Waiting from "./waiting.js";
+import { Extensions } from "./extensions.js";
 import {
   PersistedQueueEntry,
   QueueEntry,
   QueueSubmitter,
   isQueueSubmitter,
-} from "./extensions-api/queue-entry";
-import { Chatter, Responder } from "./extensions-api/command";
+} from "./extensions-api/queue-entry.js";
+import { Chatter, Responder } from "./extensions-api/command.js";
 
 const extensions = new Extensions();
 

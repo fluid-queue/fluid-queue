@@ -1,13 +1,12 @@
-import { ApiClient, UserIdResolvable } from "@twurple/api";
+import { ApiClient, HelixUser, UserIdResolvable } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import * as tmi from "@twurple/auth-tmi";
-import { settings, fileName as settingsFile } from "./settings";
-import * as fs from "fs";
-import * as gracefulFs from "graceful-fs";
+import { settings, fileName as settingsFile } from "./settings.js";
+import fs from "fs";
 import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
-import { HelixUser } from "@twurple/api/lib";
-import { SingleValueCache } from "./cache";
+import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
+import { sync as writeFileAtomicSync } from "write-file-atomic";
 
 const tokensFileName = "./settings/tokens.json";
 
@@ -96,7 +95,7 @@ class TwitchApi {
       clientId: settings.clientId,
       clientSecret: settings.clientSecret,
       onRefresh: (userId, newTokenData) =>
-        gracefulFs.writeFileSync(
+        writeFileAtomicSync(
           tokensFileName,
           JSON.stringify(newTokenData, null, 4),
           "utf-8"

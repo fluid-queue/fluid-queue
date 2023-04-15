@@ -1,8 +1,8 @@
-import { ChatChatter, twitchApi } from "../src/twitch-api";
-import { asMock, buildChatter, replace } from "./simulation";
-import { HelixChatChatter } from "@twurple/api/lib";
-import { twitch } from "../src/twitch";
-import settings, { Settings } from "../src/settings";
+import { jest } from "@jest/globals";
+import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
+import { HelixChatChatter } from "@twurple/api";
+import { ChatChatter } from "../src/twitch-api.js";
+import { Settings } from "../src/settings.js";
 
 // constants
 const defaultTestChatters: HelixChatChatter[] = [];
@@ -26,14 +26,6 @@ const defaultTestSettings = {
 // mock variables
 let mockChatters: ChatChatter[] = [];
 
-// mocks
-jest.mock("../src/twitch-api");
-
-// mock chatters
-asMock(twitchApi.getChatters).mockImplementation(() =>
-  Promise.resolve(mockChatters)
-);
-
 // fake timers
 jest.useFakeTimers();
 
@@ -50,6 +42,17 @@ beforeEach(() => {
 });
 
 test("online users", async () => {
+  jest.resetModules();
+  // mocks
+  const twitchApi = (await mockTwitchApi()).twitchApi;
+
+  const twitch = (await import("../src/twitch.js")).twitch;
+  const settings = (await import("../src/settings.js")).default;
+
+  // mock chatters
+  asMock(twitchApi.getChatters).mockImplementation(() =>
+    Promise.resolve(mockChatters)
+  );
   jest.mock("../src/settings", () => {
     return { default: {} };
   });

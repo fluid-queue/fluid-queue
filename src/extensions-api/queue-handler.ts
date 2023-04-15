@@ -1,4 +1,4 @@
-import { QueueEntry } from "./queue-entry";
+import { QueueEntry } from "./queue-entry.js";
 
 export interface QueueHandler {
   check?(allEntried: QueueEntry[]): boolean;

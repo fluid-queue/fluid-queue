@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Chatbot } from "../chatbot";
+import { Chatbot } from "../chatbot.js";
 
 const chatbot_helper = jest.fn((): Chatbot => {
   return {

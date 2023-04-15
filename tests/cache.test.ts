@@ -1,5 +1,6 @@
-import { ConcurrentLoader, SingleValueCache } from "../src/cache";
-import { BroadcastOnce } from "../src/sync";
+import { jest } from "@jest/globals";
+import { ConcurrentLoader, SingleValueCache } from "../src/cache.js";
+import { BroadcastOnce } from "../src/sync.js";
 import { Duration } from "@js-joda/core";
 
 const expectErrorMessage = (promise: Promise<unknown>) => {

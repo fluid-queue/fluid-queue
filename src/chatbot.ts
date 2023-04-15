@@ -1,6 +1,9 @@
-import { Chatter } from "./extensions-api/command";
-import { QueueSubmitter, isQueueSubmitter } from "./extensions-api/queue-entry";
-import { twitchApi } from "./twitch-api";
+import { Chatter } from "./extensions-api/command.js";
+import {
+  QueueSubmitter,
+  isQueueSubmitter,
+} from "./extensions-api/queue-entry.js";
+import { twitchApi } from "./twitch-api.js";
 import { ChatUserstate, Client } from "tmi.js";
 
 const build_chatter = function (

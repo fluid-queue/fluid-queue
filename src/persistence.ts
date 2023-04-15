@@ -1,10 +1,10 @@
-import settings from "./settings";
+import settings from "./settings.js";
 import fs from "fs";
-import * as gracefulFs from "graceful-fs";
+import gracefulFs from "graceful-fs";
 import writeFileAtomic, {
   sync as writeFileAtomicSync,
 } from "write-file-atomic";
-import { Waiting, WaitingSchemeV2, WaitingV2 } from "./waiting";
+import { Waiting, WaitingSchemeV2, WaitingV2 } from "./waiting.js";
 import path from "path";
 import { z } from "zod";
 

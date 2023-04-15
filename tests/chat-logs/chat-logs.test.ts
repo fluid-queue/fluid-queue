@@ -1,6 +1,6 @@
-"use strict";
-
 // imports
+import { MethodLikeKeys } from "jest-mock";
+import { jest } from "@jest/globals";
 import * as jestChance from "jest-chance";
 import readline from "readline";
 import path from "path";
@@ -17,8 +17,12 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   asMock,
-} from "../simulation";
-import { Settings } from "../../src/settings";
+  setPath,
+} from "../simulation.js";
+setPath("../");
+import { Settings } from "../../src/settings.js";
+import { fileURLToPath } from "url";
+import * as uuidModule from "uuid";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -35,11 +39,11 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
-let uuid: { v4: jest.Mock<string, [], unknown> } | null = null;
+let uuid: { v4: jest.Mock<() => string> } | null = null;
 
-const mocks = () => {
+const mocks = async () => {
   jest.mock("uuid", () => {
-    const originalModule = jest.requireActual("uuid");
+    const originalModule = jest.requireActual<typeof uuidModule>("uuid");
     return {
       __esModule: true,
       ...originalModule,
@@ -49,7 +53,7 @@ const mocks = () => {
       }),
     };
   });
-  uuid = require("uuid");
+  uuid = jest.requireMock<typeof uuid>("uuid");
 };
 
 test("setup", async () => {
@@ -199,7 +203,10 @@ const chatLogTest = (fileName: string) => {
             const memberIdx = command.indexOf("/");
             let jsonData = JSON.parse(
               test.fs.readFileSync(
-                path.resolve(__dirname, "../../data/queue.json"),
+                path.resolve(
+                  path.dirname(fileURLToPath(import.meta.url)),
+                  "../../data/queue.json"
+                ),
                 "utf-8"
               )
             );
@@ -222,7 +229,7 @@ const chatLogTest = (fileName: string) => {
             let jsonData = JSON.parse(
               test.fs.readFileSync(
                 path.resolve(
-                  __dirname,
+                  path.dirname(fileURLToPath(import.meta.url)),
                   `../../data/extensions/${args[1]}.json`
                 ),
                 "utf-8"
@@ -242,7 +249,11 @@ const chatLogTest = (fileName: string) => {
         } else if (command.startsWith("save")) {
           const fileName = command.substring(command.indexOf(":") + 1);
           test.fs.writeFileSync(
-            path.resolve(__dirname, "../..", fileName),
+            path.resolve(
+              path.dirname(fileURLToPath(import.meta.url)),
+              "../..",
+              fileName
+            ),
             rest
           );
         } else if (command == "seed") {
@@ -270,8 +281,14 @@ const chatLogTest = (fileName: string) => {
               `The function ${rest} is not part of the file system!`
             );
           }
-          const key: keyof jest.FunctionProperties<typeof test.fs> =
-            rest as keyof jest.FunctionProperties<typeof test.fs>;
+          const key: MethodLikeKeys<typeof test.fs> = rest as MethodLikeKeys<
+            typeof test.fs
+          >;
+          jest
+            .spyOn(jest.requireMock("fs") as any, key)
+            .mockImplementationOnce(() => {
+              throw new Error("fail on purpose in test");
+            });
           jest.spyOn(test.fs, key).mockImplementationOnce(() => {
             throw new Error("fail on purpose in test");
           });
@@ -348,10 +365,15 @@ const chatLogTest = (fileName: string) => {
 };
 
 const testFiles = fs
-  .readdirSync(path.resolve(__dirname, "chat"))
+  .readdirSync(
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
+  )
   .filter((file: string) => file.endsWith(".test.log"));
 
 for (const file of testFiles) {
-  const fileName = path.relative(".", path.resolve(__dirname, `chat/${file}`));
+  const fileName = path.relative(
+    ".",
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
+  );
   test(fileName, chatLogTest(fileName));
 }

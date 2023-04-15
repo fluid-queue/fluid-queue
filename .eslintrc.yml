@@ -3,9 +3,9 @@ plugins:
   - "@typescript-eslint"
 env:
   browser: true
-  commonjs: true
+  commonjs: false
   es2021: true
-  jest/globals: true
+  jest/globals: false
   node: true
 extends:
   - eslint:recommended

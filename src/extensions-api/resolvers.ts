@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { Deserialize, EmptyObject, Result, Serialize } from "./helpers";
+import { Deserialize, EmptyObject, Result, Serialize } from "./helpers.js";
 import {
   Entry,
   PersistedEntry,
   PersistedQueueEntry,
   QueueEntry,
   QueueSubmitter,
-} from "./queue-entry";
+} from "./queue-entry.js";
 
 const defaultActivated: string[] = [
   "smm2",

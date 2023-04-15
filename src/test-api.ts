@@ -1,4 +1,4 @@
-import { twitchApi } from "./twitch-api";
+import { twitchApi } from "./twitch-api.js";
 
 (async () => {
   await twitchApi.setup();

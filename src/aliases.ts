@@ -1,6 +1,6 @@
 import fs from "fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
-import settings from "./settings";
+import settings from "./settings.js";
 
 const ALIASES_FILE = {
   directory: "./settings",
@@ -65,7 +65,7 @@ const Aliases = {
       if (!fs.existsSync(ALIASES_FILE.directory)) {
         fs.mkdirSync(ALIASES_FILE.directory, { recursive: true });
       }
-      writeFileAtomicSync(ALIASES_FILE.fileName, defaults);
+      writeFileAtomicSync(ALIASES_FILE.fileName, defaults, "utf-8");
       aliases = defaultAliases;
     }
     if (!create && !fs.existsSync(ALIASES_FILE.fileName)) {
