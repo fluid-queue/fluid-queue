@@ -1,7 +1,6 @@
 import fs from "fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import settings from "./settings";
-import { AlternativeServiceOptions } from "http2";
 
 const ALIASES_FILE = {
   directory: "./settings",
