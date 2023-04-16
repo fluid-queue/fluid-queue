@@ -784,7 +784,7 @@ async function HandleMessage(message, sender, respond) {
         respond(level_list_message(sender.displayName, current, list));
       }
       if (list_weight) {
-        const weightedList = await quesoqueue.weightedList(true, list);
+        const weightedList = quesoqueue.weightedList(list, true);
         respond(
           level_weighted_list_message(sender.displayName, current, weightedList)
         );

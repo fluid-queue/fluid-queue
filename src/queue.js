@@ -218,7 +218,9 @@ const queue = {
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
   weightedPosition: async (username, list = undefined) => {
-    const weightedList = await queue.weightedList(true, list);
+    if (list === undefined) {
+      list = await queue.list();
+    }
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -228,6 +230,8 @@ const queue = {
     if (twitch.checkLurk(username)) {
       return -2;
     }
+
+    const weightedList = queue.weightedList(list, true);
     const index = weightedList.entries.findIndex(
       (x) => x.level.username == username
     );
@@ -251,7 +255,7 @@ const queue = {
   },
 
   weightedchance: async (displayName, username) => {
-    const weightedList = await queue.weightedList(false);
+    const list = await queue.list();
     if (current_level != undefined && current_level.submitter == displayName) {
       return 0;
     }
@@ -261,6 +265,8 @@ const queue = {
     if (twitch.checkLurk(username)) {
       return -2;
     }
+
+    const weightedList = queue.weightedList(list, false);
 
     if (weightedList.entries.length == 0) {
       return -1;
@@ -414,9 +420,12 @@ const queue = {
   },
 
   weightedrandom: async (list = undefined) => {
-    const weightedList = await queue.weightedList(false, list, {
-      forceRefresh: true,
-    });
+    if (list === undefined) {
+      list = queue.list({
+        forceRefresh: true,
+      });
+    }
+    const weightedList = queue.weightedList(list, false);
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -474,11 +483,8 @@ const queue = {
     return { ...current_level, selectionChance };
   },
 
-  /** @type {(sorted?: boolean, list?: onlineOfflineList) => Promise<weightedList>} */
-  weightedList: async (sorted = undefined, list = undefined, options = {}) => {
-    if (list === undefined) {
-      list = await queue.list(options);
-    }
+  /** @type {(list: onlineOfflineList, sorted?: boolean) => weightedList} */
+  weightedList: (list, sorted) => {
     const online_users = list.online;
     if (online_users.length == 0 || Object.keys(waiting).length == 0) {
       return {
@@ -541,9 +547,12 @@ const queue = {
   },
 
   weightednext: async (list = undefined) => {
-    const weightedList = await queue.weightedList(true, list, {
-      forceRefresh: true,
-    });
+    if (list === undefined) {
+      list = await queue.list({
+        forceRefresh: true,
+      });
+    }
+    const weightedList = queue.weightedList(list, true);
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
