@@ -4,7 +4,7 @@ const jestConfig: JestConfigWithTsJest = {
   globalSetup: "jest-chance",
   modulePathIgnorePatterns: ["<rootDir>/build"],
   moduleNameMapper: {
-    "^\\.\\./src/(.*)\\.js$": "<rootDir>/src/$1",
+    "^\\.\\./src/(.*)\\.js$": "<rootDir>/src/$1", // workaround of mocking the /src/twitch-api.js, and /src/chatbot.js modules
     "^((\\.){1,2}/.*)\\.js$": "$1",
   },
   extensionsToTreatAsEsm: [".ts"],
@@ -13,12 +13,12 @@ const jestConfig: JestConfigWithTsJest = {
       "ts-jest",
       {
         useESM: true,
+        tsconfig: "<rootDir>/tests/tsconfig.json",
       },
     ],
   },
-  rootDir: ".",
-  roots: ["<rootDir>/src/", "<rootDir>/tests/", "<rootDir>"],
-  moduleDirectories: ["node_modules", "<rootDir>/src", "<rootDir>/tests"],
+  rootDir: "..",
+  roots: ["<rootDir>/src/", "<rootDir>/tests/"],
 };
 
 export default jestConfig;
