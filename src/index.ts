@@ -1,10 +1,6 @@
 (await import("./banner.js")).printBanner();
 (await import("./persistence.js")).setup();
-import {
-  OnlineOfflineList,
-  WeightedList,
-  quesoqueue as queue,
-} from "./queue.js";
+import { quesoqueue as queue } from "./queue.js";
 import { twitch } from "./twitch.js";
 import { timer, Timer } from "./timer.js";
 import * as aliasManagement from "./aliases.js";
@@ -39,72 +35,6 @@ function get_remainder(x: string) {
 }
 
 let can_list = true;
-function level_list_message(
-  current: QueueEntry | undefined,
-  levels: OnlineOfflineList
-) {
-  if (
-    current === undefined &&
-    levels.online.length === 0 &&
-    levels.offline.length === 0
-  ) {
-    return "There are no levels in the queue.";
-  }
-  let result =
-    levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
-  result +=
-    current !== undefined
-      ? current.submitter + " (current)"
-      : "(no current level)";
-
-  result += levels.online
-    .slice(0, 5)
-    .reduce((acc, x) => acc + ", " + x.submitter, "");
-  result +=
-    "..." +
-    (levels.online.length > 5 ? "etc." : "") +
-    " (" +
-    levels.offline.length +
-    " offline)";
-  return result;
-}
-
-function level_weighted_list_message(
-  current: QueueEntry | undefined,
-  weightedList: WeightedList
-) {
-  if (
-    current === undefined &&
-    weightedList.entries.length === 0 &&
-    weightedList.offlineLength === 0
-  ) {
-    return "There are no levels in the queue.";
-  }
-  //console.log(weightedList);
-  let result =
-    weightedList.entries.length + (current !== undefined ? 1 : 0) + " online: ";
-  result +=
-    current !== undefined
-      ? current.submitter + " (current)"
-      : "(no current level)";
-
-  result += weightedList.entries
-    .slice(0, 5)
-    .reduce(
-      (acc, x) =>
-        acc +
-        ", " +
-        x.level.submitter +
-        " (" +
-        quesoqueue.percent(x.weight(), weightedList.totalWeight) +
-        "%)",
-      ""
-    );
-  result += "...";
-  result += weightedList.entries.length > 5 ? "etc." : "";
-  result += " (" + weightedList.offlineLength + " offline)";
-  return result;
-}
 
 function next_level_message(level: QueueEntry | undefined) {
   if (level === undefined) {
@@ -757,14 +687,11 @@ async function HandleMessage(
       do_list = true;
     }
     if (do_list) {
-      const list = await quesoqueue.list();
-      const current = quesoqueue.current();
       if (list_position) {
-        respond(level_list_message(current, list));
+        respond(await quesoqueue.level_list_message());
       }
       if (list_weight) {
-        const weightedList = await quesoqueue.weightedList(true, list);
-        respond(level_weighted_list_message(current, weightedList));
+        respond(await quesoqueue.level_weighted_list_message());
       }
     }
   } else if (aliases.isAlias("position", message)) {

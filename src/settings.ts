@@ -99,10 +99,14 @@ export const Settings = z
       .describe(
         "true if and only if the save files in ./data/**.json should be formatted"
       )
-      .default(
-        () =>
+      .default(() => {
+        if (!process || !process.env) {
+          return false;
+        }
+        return (
           process.env.NODE_ENV != "production" && process.env.NODE_ENV != "test"
-      ),
+        );
+      }),
     subscriberWeightMultiplier: z
       .number()
       .finite()
