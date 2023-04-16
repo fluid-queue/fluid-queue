@@ -182,13 +182,17 @@ const queue = {
     }
   },
 
-  /** @type {(username: string, list: onlineOfflineList) => number} */
-  positionAction: (username, list) => {
+  /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
+  position: async (username, list = undefined) => {
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
     if (levels.length == 0) {
       return -1;
+    }
+
+    if (list === undefined) {
+      list = await queue.list();
     }
     var both = list.online.concat(list.offline);
     var index = both.findIndex((x) => x.username == username);
@@ -198,12 +202,8 @@ const queue = {
     return -1;
   },
 
-  position: async (username) => {
-    return queue.withList((list) => queue.positionAction(username, list));
-  },
-
   /** @type {(username: string) => Promise<number>} */
-  absolutePosition: (username) => {
+  absolutePosition: async (username) => {
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -218,7 +218,7 @@ const queue = {
   },
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
-  weightedPositionAction: (username, list) => {
+  weightedPosition: async (username, list = undefined) => {
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -228,8 +228,7 @@ const queue = {
     if (twitch.checkLurk(username)) {
       return -2;
     }
-
-    const weightedList = queue.weightedList(list, true);
+    const weightedList = await queue.weightedList(true, list);
     const index = weightedList.entries.findIndex(
       (x) => x.level.username == username
     );
@@ -240,67 +239,62 @@ const queue = {
   },
 
   submittedlevel: async (username) => {
-    return await queue.withList((list) => {
-      if (current_level != undefined && current_level.username == username) {
-        return 0;
-      }
-      var both = list.online.concat(list.offline);
-      var index = both.findIndex((x) => x.username == username);
-      if (index != -1) {
-        return both[index];
-      }
-      return -1;
-    });
+    if (current_level != undefined && current_level.username == username) {
+      return 0;
+    }
+
+    var list = await queue.list();
+    var both = list.online.concat(list.offline);
+    var index = both.findIndex((x) => x.username == username);
+    if (index != -1) {
+      return both[index];
+    }
+    return -1;
   },
 
   weightedchance: async (displayName, username) => {
-    return await queue.withList((list) => {
-      if (
-        current_level != undefined &&
-        current_level.submitter == displayName
-      ) {
-        return 0;
-      }
-      if (levels.length == 0) {
-        return -1;
-      }
-      if (twitch.checkLurk(username)) {
-        return -2;
-      }
-
-      const weightedList = queue.weightedList(list, false);
-
-      if (weightedList.entries.length == 0) {
-        return -1;
-      }
-
-      const index = weightedList.entries.findIndex(
-        (entry) => entry.level.username == username
-      );
-
-      if (index != -1) {
-        console.log(
-          "Elegible users: " +
-            weightedList.entries
-              .map((entry) => entry.level.username)
-              .reduce((a, b) => a + ", " + b)
-        );
-        console.log(
-          "Elegible users time: " +
-            weightedList.entries.map((entry) => entry.weight())
-        );
-        const weight = weightedList.entries[index].weight();
-        const totalWeight = weightedList.totalWeight;
-        console.log(
-          `${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`
-        );
-        return queue.percent(weight, totalWeight);
-      }
+    if (current_level != undefined && current_level.submitter == displayName) {
+      return 0;
+    }
+    if (levels.length == 0) {
       return -1;
-    });
+    }
+    if (twitch.checkLurk(username)) {
+      return -2;
+    }
+
+    const weightedList = await queue.weightedList(false);
+
+    if (weightedList.entries.length == 0) {
+      return -1;
+    }
+
+    const index = weightedList.entries.findIndex(
+      (entry) => entry.level.username == username
+    );
+
+    if (index != -1) {
+      console.log(
+        "Elegible users: " +
+          weightedList.entries
+            .map((entry) => entry.level.username)
+            .reduce((a, b) => a + ", " + b)
+      );
+      console.log(
+        "Elegible users time: " +
+          weightedList.entries.map((entry) => entry.weight())
+      );
+      const weight = weightedList.entries[index].weight();
+      const totalWeight = weightedList.totalWeight;
+      console.log(
+        `${displayName}'s weight is ${weight} with totalWeight ${totalWeight}`
+      );
+      return queue.percent(weight, totalWeight);
+    }
+    return -1;
   },
 
-  punt: () => {
+  punt: async () => {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be punted.";
     }
@@ -311,7 +305,7 @@ const queue = {
     return "Ok, adding the current level back into the queue.";
   },
 
-  dismiss: () => {
+  dismiss: async () => {
     if (current_level === undefined) {
       return "The nothing you aren't playing cannot be dismissed.";
     }
@@ -328,7 +322,10 @@ const queue = {
     return response;
   },
 
-  nextAction: (list) => {
+  next: async (list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list({ forceRefresh: true });
+    }
     const both = list.online.concat(list.offline);
     const removedLevels = current_level === undefined ? [] : [current_level];
     if (both.length === 0) {
@@ -347,22 +344,14 @@ const queue = {
     return current_level;
   },
 
-  next: async () => {
-    return await queue.withList(queue.nextAction.bind(queue), {
-      forceRefresh: true,
-    });
-  },
-
   subnext: async () => {
-    return await queue.withSubList(queue.nextAction.bind(queue), {
-      forceRefresh: true,
-    });
+    const list = await queue.sublist({ forceRefresh: true });
+    return await queue.next(list);
   },
 
   modnext: async () => {
-    return await queue.withModList(queue.nextAction.bind(queue), {
-      forceRefresh: true,
-    });
+    const list = await queue.modlist({ forceRefresh: true });
+    return await queue.next(list);
   },
 
   dip: (usernameArgument) => {
@@ -389,7 +378,10 @@ const queue = {
     return current_level;
   },
 
-  randomAction: (list) => {
+  random: async (list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list({ forceRefresh: true });
+    }
     const removedLevels = current_level === undefined ? [] : [current_level];
     let eligible_levels = list.online;
     if (eligible_levels.length == 0) {
@@ -414,26 +406,20 @@ const queue = {
     return current_level;
   },
 
-  random: async () => {
-    return await queue.withList(queue.randomAction.bind(queue), {
-      forceRefresh: true,
-    });
-  },
-
   subrandom: async () => {
-    return await queue.withSubList(queue.randomAction.bind(queue), {
-      forceRefresh: true,
-    });
+    const list = await queue.sublist({ forceRefresh: true });
+    return await queue.random(list);
   },
 
   modrandom: async () => {
-    return await queue.withModList(queue.randomAction.bind(queue), {
-      forceRefresh: true,
-    });
+    const list = await queue.modlist({ forceRefresh: true });
+    return await queue.random(list);
   },
 
-  weightedrandomAction: (list) => {
-    const weightedList = queue.weightedList(list, false);
+  weightedrandom: async (list = undefined) => {
+    const weightedList = await queue.weightedList(false, list, {
+      forceRefresh: true,
+    });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -491,8 +477,11 @@ const queue = {
     return { ...current_level, selectionChance };
   },
 
-  /** @type {(list: onlineOfflineList, sorted?: boolean) => weightedList} */
-  weightedList: (list, sorted) => {
+  /** @type {(sorted?: boolean, list?: onlineOfflineList) => Promise<weightedList>} */
+  weightedList: async (sorted = undefined, list = undefined, options = {}) => {
+    if (list === undefined) {
+      list = await queue.list(options);
+    }
     const online_users = list.online;
     if (online_users.length == 0 || Object.keys(waiting).length == 0) {
       return {
@@ -554,8 +543,10 @@ const queue = {
     return 1.0;
   },
 
-  weightednextAction: (list) => {
-    const weightedList = queue.weightedList(list, true);
+  weightednext: async (list = undefined) => {
+    const weightedList = await queue.weightedList(true, list, {
+      forceRefresh: true,
+    });
     const removedLevels = current_level === undefined ? [] : [current_level];
 
     if (weightedList.entries.length == 0) {
@@ -583,79 +574,48 @@ const queue = {
     return { ...current_level, selectionChance };
   },
 
-  weightedrandom: async () => {
-    return await queue.withList(queue.weightedrandomAction.bind(queue), {
-      forceRefresh: true,
-    });
-  },
-
   weightedsubrandom: async () => {
-    return await queue.withSubList(queue.weightedrandomAction.bind(queue), {
-      forceRefresh: true,
-    });
-  },
-
-  weightednext: async () => {
-    return await queue.withList(queue.weightednextAction.bind(queue), {
-      forceRefresh: true,
-    });
+    const list = await queue.sublist({ forceRefresh: true });
+    return await queue.weightedrandom(list);
   },
 
   weightedsubnext: async () => {
-    return await queue.withSubList(queue.weightednextAction.bind(queue), {
-      forceRefresh: true,
+    const list = await queue.sublist({ forceRefresh: true });
+    return await queue.weightednext(list);
+  },
+
+  /** @type {() => Promise<onlineOfflineList> } */
+  list: async (options = {}) => {
+    let online = [];
+    let offline = [];
+    await twitch.getOnlineUsers(options).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
     });
+    return { online, offline };
   },
 
-  /**
-   * This function is used to create a list of online and offline users that is consistend with the current queue state.
-   * The function f is called immediatly after calculating the list without any awaits inbetween.
-   *
-   * @template T
-   * @param {(list: onlineOfflineList) => T} f Function to be called with the list.
-   * @param {?unknown} options Options for getOnlineUsers.
-   * @returns {Promise<T>} Promise to the result of the function f.
-   */
-  withList: async (f, options = {}) => {
-    const onlineUsers = await twitch.getOnlineUsers(options);
-    const [online, offline] = partition(levels, (x) =>
-      onlineUsers.has(x.username)
-    );
-    return f({ online, offline });
+  sublist: async (options = {}) => {
+    let online = [];
+    let offline = [];
+    await twitch.getOnlineSubscribers(options).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
+    });
+    return { online, offline };
   },
 
-  /**
-   * This function is used to create a list of online and offline subscribers that is consistend with the current queue state.
-   * The function f is called immediatly after calculating the list without any awaits inbetween.
-   *
-   * @template T
-   * @param {(list: onlineOfflineList) => T} f Function to be called with the list.
-   * @param {?unknown} options Options for getOnlineUsers.
-   * @returns {Promise<T>} Promise to the result of the function f.
-   */
-  withSubList: async (f, options = {}) => {
-    const onlineUsers = await twitch.getOnlineSubscribers(options);
-    const [online, offline] = partition(levels, (x) =>
-      onlineUsers.has(x.username)
-    );
-    return f({ online, offline });
-  },
-
-  /**
-   * This function is used to create a list of online and offline subscribers that is consistend with the current queue state.
-   * The function f is called immediatly after calculating the list without any awaits inbetween.
-   *
-   * @template T
-   * @param {(list: onlineOfflineList) => T} f Function to be called with the list.
-   * @param {?unknown} options Options for getOnlineUsers.
-   * @returns {Promise<T>} Promise to the result of the function f.
-   */
-  withModList: async (f, options = {}) => {
-    const onlineUsers = await twitch.getOnlineSubscribers(options);
-    const [online, offline] = partition(levels, (x) =>
-      onlineUsers.has(x.username)
-    );
-    return f({ online, offline });
+  modlist: async (options = {}) => {
+    let online = [];
+    let offline = [];
+    await twitch.getOnlineMods(options).then((online_users) => {
+      [online, offline] = partition(levels, (x) =>
+        online_users.has(x.username)
+      );
+    });
+    return { online, offline };
   },
 
   matchUsername: (usernameArgument) => {
@@ -785,22 +745,20 @@ const queue = {
   },
 
   waitingTimerTick: async () => {
-    await queue.withList((list) => {
-      const now = new Date().toISOString();
-      list.online
-        .map((v) => v.username)
-        .forEach((username) => {
-          if (Object.prototype.hasOwnProperty.call(waiting, username)) {
-            waiting[username].addOneMinute(queue.multiplier(username), now);
-          } else {
-            waiting[username] = Waiting.create(now);
-          }
-        });
-      queue.save();
-
-      // TODO: use this instead? (see comment of queue.saveAsync)
-      // await queue.saveAsync();
-    });
+    var list = await queue.list();
+    const now = new Date().toISOString();
+    list.online
+      .map((v) => v.username)
+      .forEach((username) => {
+        if (Object.prototype.hasOwnProperty.call(waiting, username)) {
+          waiting[username].addOneMinute(queue.multiplier(username), now);
+        } else {
+          waiting[username] = Waiting.create(now);
+        }
+      });
+    queue.save();
+    // TODO: use this instead? (see comment of queue.saveAsync)
+    // await queue.saveAsync();
   },
 
   clear: () => {
