@@ -16,7 +16,6 @@ import { z } from "zod";
 import { QueueSubmitter } from "../src/extensions-api/queue-entry.js";
 import { Queue } from "../src/queue.js";
 import { Twitch } from "../src/twitch.js";
-import * as setIntervalAsyncFixed from "set-interval-async/fixed";
 import * as timers from "timers";
 import { fileURLToPath } from "url";
 import { HelixChatChatter } from "@twurple/api";
@@ -71,14 +70,9 @@ let mockChatters: twitchApiModule.ChatChatter[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
-let addPath = "./";
-export function setPath(newPath: string) {
-  addPath = newPath;
-}
-
 const mockModules = async () => {
   // mocks
-  await mockTwitchApi();
+  const twitchApi = (await mockTwitchApi()).twitchApi;
   jest.unstable_mockModule("../src/chatbot.js", () => {
     const chatbot_helper = jest.fn((): Chatbot => {
       return {
@@ -95,12 +89,10 @@ const mockModules = async () => {
   });
   jest.mock("node-fetch", () => jest.fn());
 
-  jest.mock("set-interval-async/dynamic", () => {
+  jest.unstable_mockModule("set-interval-async/dynamic", async () => {
     // using fixed timers instead of dynamic timers
     // TODO: why do these work with tests? why are dynamic timers not working?
-    const timers = jest.requireActual<typeof setIntervalAsyncFixed>(
-      "set-interval-async/fixed"
-    );
+    const timers = await import("set-interval-async/fixed");
     const asyncTimers: SetIntervalAsyncTimer<unknown[]>[] = [];
     const result = {
       setIntervalAsync<HandlerArgs extends unknown[]>(
@@ -142,10 +134,7 @@ const mockModules = async () => {
     };
   });
 
-  // only import after mocking!
-  const { twitchApi } = jest.requireMock<typeof twitchApiModule>(
-    "../src/twitch-api.js"
-  );
+  await import("set-interval-async/dynamic");
 
   // mock chatters
   asMock(twitchApi.getChatters).mockImplementation(() =>

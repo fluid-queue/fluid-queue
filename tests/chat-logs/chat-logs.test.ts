@@ -17,9 +17,7 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   asMock,
-  setPath,
 } from "../simulation.js";
-setPath("../");
 import { Settings } from "../../src/settings.js";
 import { fileURLToPath } from "url";
 import * as uuidModule from "uuid";
@@ -285,7 +283,7 @@ const chatLogTest = (fileName: string) => {
             typeof test.fs
           >;
           jest
-            .spyOn(jest.requireMock("fs") as any, key)
+            .spyOn(jest.requireMock<typeof fs>("fs"), key)
             .mockImplementationOnce(() => {
               throw new Error("fail on purpose in test");
             });

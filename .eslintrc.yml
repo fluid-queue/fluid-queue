@@ -2,7 +2,7 @@ plugins:
   - jest
   - "@typescript-eslint"
 env:
-  browser: true
+  browser: false
   commonjs: false
   es2021: true
   jest/globals: false

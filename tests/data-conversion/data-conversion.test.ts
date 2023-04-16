@@ -10,9 +10,7 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-  setPath,
 } from "../simulation.js";
-setPath("../");
 import { fileURLToPath } from "url";
 
 // fake timers

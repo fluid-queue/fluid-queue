@@ -26,8 +26,8 @@
     "zod": "^3.21.4"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose",
-    "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --ci",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --verbose",
+    "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --ci",
     "start": "node ./build/index.js",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
     "build": "npx tsc --build",
