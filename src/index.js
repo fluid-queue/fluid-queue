@@ -212,12 +212,7 @@ const hasWeightList = () => {
   );
 };
 
-const position_message = async (
-  position,
-  weightedPosition,
-  sender,
-  username
-) => {
+const position_message = (position, weightedPosition, sender, username) => {
   if (position == -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
@@ -249,7 +244,7 @@ const position_message = async (
     );
   }
   if (settings.enable_absolute_position) {
-    let absPosition = await quesoqueue.absolutePosition(username);
+    let absPosition = quesoqueue.absolutePosition(username);
     if (weightedPosition > 0) {
       return (
         sender +
@@ -292,7 +287,7 @@ const position_message = async (
   }
 };
 
-const weightedchance_message = async (chance, multiplier, sender) => {
+const weightedchance_message = (chance, multiplier, sender) => {
   if (chance == -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
@@ -314,7 +309,7 @@ const weightedchance_message = async (chance, multiplier, sender) => {
   );
 };
 
-const submitted_message = async (level, sender) => {
+const submitted_message = (level, sender) => {
   if (level === -1) {
     return (
       sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
@@ -732,13 +727,13 @@ async function HandleMessage(message, sender, respond) {
       level_timer.restart();
       level_timer.pause();
     }
-    respond(await quesoqueue.punt());
+    respond(quesoqueue.punt());
   } else if (aliases.isAlias("dismiss", message) && sender.isBroadcaster) {
     if (settings.level_timeout) {
       level_timer.restart();
       level_timer.pause();
     }
-    respond(await quesoqueue.dismiss());
+    respond(quesoqueue.dismiss());
   } else if (aliases.isAlias("select", message) && sender.isBroadcaster) {
     var username = get_remainder(message);
     if (settings.level_timeout) {
@@ -778,33 +773,39 @@ async function HandleMessage(message, sender, respond) {
       do_list = true;
     }
     if (do_list) {
-      const list = await quesoqueue.list();
-      const current = quesoqueue.current();
-      if (list_position) {
-        respond(level_list_message(sender.displayName, current, list));
-      }
-      if (list_weight) {
-        const weightedList = quesoqueue.weightedList(list, true);
-        respond(
-          level_weighted_list_message(sender.displayName, current, weightedList)
-        );
-      }
+      await quesoqueue.withList((list) => {
+        const current = quesoqueue.current();
+        if (list_position) {
+          respond(level_list_message(sender.displayName, current, list));
+        }
+        if (list_weight) {
+          const weightedList = quesoqueue.weightedList(list, true);
+          respond(
+            level_weighted_list_message(
+              sender.displayName,
+              current,
+              weightedList
+            )
+          );
+        }
+      });
     }
   } else if (aliases.isAlias("position", message)) {
-    const list = await quesoqueue.list();
-    respond(
-      await position_message(
-        hasPosition() ? await quesoqueue.position(sender.username, list) : -3,
-        hasWeightedPosition()
-          ? await quesoqueue.weightedPosition(sender.username, list)
-          : -3,
-        sender.displayName,
-        sender.username
-      )
-    );
+    await quesoqueue.withList((list) => {
+      respond(
+        position_message(
+          hasPosition() ? quesoqueue.positionAction(sender.username, list) : -3,
+          hasWeightedPosition()
+            ? quesoqueue.weightedPositionAction(sender.username, list)
+            : -3,
+          sender.displayName,
+          sender.username
+        )
+      );
+    });
   } else if (aliases.isAlias("weightedchance", message)) {
     respond(
-      await weightedchance_message(
+      weightedchance_message(
         await quesoqueue.weightedchance(sender.displayName, sender.username),
         quesoqueue.multiplier(sender.username),
         sender.displayName
@@ -812,8 +813,8 @@ async function HandleMessage(message, sender, respond) {
     );
   } else if (aliases.isAlias("submitted", message)) {
     respond(
-      await submitted_message(
-        await quesoqueue.submittedlevel(sender.username),
+      submitted_message(
+        quesoqueue.submittedlevel(sender.username),
         sender.displayName
       )
     );
