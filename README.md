@@ -88,7 +88,7 @@ Then you can pull the updated container:
 
 And now you can run the container again.
 
-### Run NodeJs locally
+### Build sources and run NodeJs locally
 
 First, you must clone the project. Either download the source or run the following command:
 
@@ -110,6 +110,12 @@ cp settings/settings.example.json settings/settings.json
 # now edit settings.json with your favorite text editor
 ```
 
+Now you need to compile the sources with:
+
+```bash
+  npm run build
+```
+
 Finally, run the following command to start the bot:
 
 ```bash
@@ -119,6 +125,24 @@ Finally, run the following command to start the bot:
 To close the queue press `CTRL + C` inside the terminal.
 
 The command `npm run start` is the only command you will need to the next time you want to start the bot.
+
+#### Update the queue
+
+Updating the queue can be done in the following way:
+
+```bash
+  git pull
+  NODE_ENV=production npm install
+  npm run build
+```
+
+Make sure to read [the changelog](CHANGELOG.md) for any further actions required.
+
+Finally, you can run the queue again with:
+
+```bash
+  npm run start
+```
 
 ## What does the settings.json contain?
 
