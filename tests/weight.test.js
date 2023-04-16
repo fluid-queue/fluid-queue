@@ -41,7 +41,7 @@ test("weight test", async () => {
   const twitch = index.twitch;
 
   let list;
-  list = await queue.weightedList();
+  list = queue.weightedList(await queue.list());
   expect(list.totalWeight).toBe(0);
   expect(list.offlineLength).toBe(0);
   expect(list.entries).toHaveLength(0);
@@ -63,7 +63,7 @@ test("weight test", async () => {
   expect(added).toContain("has been added to the queue");
 
   // no one is online yet!
-  list = await queue.weightedList();
+  list = queue.weightedList(await queue.list());
   expect(list.totalWeight).toBe(0);
   expect(list.offlineLength).toBe(3);
   expect(list.entries).toHaveLength(0);
@@ -71,7 +71,7 @@ test("weight test", async () => {
   // user 2 is now online
   twitch.noticeChatter(testUser2);
 
-  list = await queue.weightedList();
+  list = queue.weightedList(await queue.list());
   expect(list.totalWeight).toBe(1);
   expect(list.offlineLength).toBe(2);
   expect(list.entries).toHaveLength(1);
@@ -91,7 +91,7 @@ test("weight test", async () => {
   // now user 1 is online too
   twitch.noticeChatter(testUser1);
 
-  list = await queue.weightedList();
+  list = queue.weightedList(await queue.list());
   expect(list.totalWeight).toBe(12); // total weight is now 12
   expect(list.offlineLength).toBe(1);
   expect(list.entries).toHaveLength(2);
