@@ -2,7 +2,7 @@ import { jest } from "@jest/globals";
 import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
 import { HelixChatChatter } from "@twurple/api";
 import { ChatChatter } from "../src/twitch-api.js";
-import { Settings } from "../src/settings.js";
+import { Settings } from "../src/settings-type.js";
 
 // constants
 const defaultTestChatters: HelixChatChatter[] = [];
@@ -47,15 +47,15 @@ test("online users", async () => {
   const twitchApi = (await mockTwitchApi()).twitchApi;
 
   const twitch = (await import("../src/twitch.js")).twitch;
-  const settings = (await import("../src/settings.js")).default;
 
   // mock chatters
   asMock(twitchApi.getChatters).mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
-  jest.mock("../src/settings", () => {
+  jest.unstable_mockModule("../src/settings", () => {
     return { default: {} };
   });
+  const settings = (await import("../src/settings.js")).default;
   replace(settings, Settings.parse(defaultTestSettings));
 
   if (settings === undefined || twitch === undefined) {

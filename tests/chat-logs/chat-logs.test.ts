@@ -18,7 +18,7 @@ import {
   EMPTY_CHATTERS,
   asMock,
 } from "../simulation.js";
-import { Settings } from "../../src/settings.js";
+import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import * as uuidModule from "uuid";
 

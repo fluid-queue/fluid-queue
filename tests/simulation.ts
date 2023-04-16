@@ -9,7 +9,7 @@ import {
   SetIntervalAsyncHandler,
   SetIntervalAsyncTimer,
 } from "set-interval-async";
-import { Settings } from "../src/settings.js";
+import { Settings } from "../src/settings-type.js";
 import { Chatter, Responder } from "../src/extensions-api/command.js";
 import { Chatbot, helper } from "../src/chatbot.js";
 import { z } from "zod";
