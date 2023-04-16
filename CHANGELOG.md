@@ -1,3 +1,16 @@
+# [unreleased]
+
+## Breaking changes
+
+- The queue is now written in TypeScript and using ECMAScript modules.
+  This requires a build step before running the queue: `npm run build`.
+
+# [2.0.0-beta.2]
+
+## Bug fixes
+
+- Fix race condition that leads to crash when using the `!chance` command (#63)
+
 # [2.0.0-beta.1]
 
 ## Breaking changes
