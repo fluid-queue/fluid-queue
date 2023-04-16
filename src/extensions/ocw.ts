@@ -66,7 +66,7 @@ const codeSuffix = (levelCode: string) => {
 };
 
 function display(code: string) {
-  return code + codeSuffix(code);
+  return code.replaceAll("-", "") + codeSuffix(code);
 }
 
 function resolver(args: string) {
