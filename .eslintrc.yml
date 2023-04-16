@@ -16,5 +16,6 @@ overrides: []
 parserOptions:
   ecmaVersion: latest
   sourceType: module
+ignorePatterns: ["build/**/*"]
 rules:
   curly: "error"
