@@ -1,4 +1,5 @@
 (await import("./banner.js")).printBanner();
+(await import("./persistence.js")).setup();
 import {
   OnlineOfflineList,
   WeightedList,
@@ -6,7 +7,6 @@ import {
 } from "./queue.js";
 import { twitch } from "./twitch.js";
 import { timer, Timer } from "./timer.js";
-import { patchGlobalFs, createDataDirectory } from "./persistence.js";
 import * as aliasManagement from "./aliases.js";
 import { twitchApi } from "./twitch-api.js";
 import settings from "./settings.js";
@@ -16,10 +16,6 @@ import { Chatter, Responder } from "./extensions-api/command.js";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
-
-// patch fs to use the graceful-fs, to retry a file rename under windows
-patchGlobalFs();
-createDataDirectory();
 aliases.loadAliases();
 
 let queue_open = settings.start_open;

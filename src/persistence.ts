@@ -542,3 +542,8 @@ export const createDataDirectory = () => {
     fs.mkdirSync(extensionsDir, { recursive: true });
   }
 };
+
+export function setup() {
+  patchGlobalFs();
+  createDataDirectory();
+}
