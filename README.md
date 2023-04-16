@@ -88,15 +88,9 @@ Then you can pull the updated container:
 
 And now you can run the container again.
 
-### Run NodeJs locally
+### Run a release with NodeJS locally
 
-First, you must clone the project. Either download the source or run the following command:
-
-```bash
-  git clone https://github.com/fluid-queue/fluid-queue.git
-```
-
-Next, install the dependencies for the project using the following command:
+Download the compiled version of an release of your choosing here: <https://github.com/fluid-queue/fluid-queue/releases>
 
 ```bash
   NODE_ENV=production npm install
@@ -113,12 +107,68 @@ cp settings/settings.example.json settings/settings.json
 Finally, run the following command to start the bot:
 
 ```bash
-  npm run start
+  NODE_ENV=production npm run start
 ```
 
 To close the queue press `CTRL + C` inside the terminal.
 
 The command `npm run start` is the only command you will need to the next time you want to start the bot.
+
+### Build sources and run NodeJs locally
+
+First, you must clone the project. Either download the source or run the following command:
+
+```bash
+  git clone https://github.com/fluid-queue/fluid-queue.git
+```
+
+Next, install the dependencies for the project using the following command:
+
+```bash
+  NODE_ENV=development npm install
+```
+
+After that, copy (detailed below) and configure the `settings.json` file with your favorite text editor. Do not forget to set your `clientId` and `clientSecret`.
+
+```bash
+cp settings/settings.example.json settings/settings.json
+
+# now edit settings.json with your favorite text editor
+```
+
+Now you need to compile the sources with:
+
+```bash
+  npm run build
+```
+
+Finally, run the following command to start the bot:
+
+```bash
+  NODE_ENV=production npm run start
+```
+
+To close the queue press `CTRL + C` inside the terminal.
+
+The command `npm run start` is the only command you will need to the next time you want to start the bot.
+
+#### Update the queue
+
+Updating the queue can be done in the following way:
+
+```bash
+  git pull
+  NODE_ENV=development npm install
+  npm run build
+```
+
+Make sure to read [the changelog](CHANGELOG.md) for any further actions required.
+
+Finally, you can run the queue again with:
+
+```bash
+  NODE_ENV=production npm run start
+```
 
 ## What does the settings.json contain?
 

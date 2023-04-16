@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../build-tests",
+    "rootDir": "..",
+    "rootDirs": ["../src", "../tests"]
+  },
+  "ts-node": {
+    "esm": false
+  },
+  "include": ["../src/**/*", "../tests/**/*"],
+  "exclude": []
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/node18/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "allowJs": false,
+    "strict": true,
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "target": "ES2021",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2021"]
+  },
+  "include": ["src/**/*"],
+  "exclude": []
+}
