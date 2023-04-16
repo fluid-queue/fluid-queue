@@ -184,15 +184,14 @@ const queue = {
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
   position: async (username, list = undefined) => {
+    if (list === undefined) {
+      list = await queue.list();
+    }
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
     if (levels.length == 0) {
       return -1;
-    }
-
-    if (list === undefined) {
-      list = await queue.list();
     }
     var both = list.online.concat(list.offline);
     var index = both.findIndex((x) => x.username == username);
@@ -219,6 +218,7 @@ const queue = {
 
   /** @type {(username: string, list?: onlineOfflineList) => Promise<number>} */
   weightedPosition: async (username, list = undefined) => {
+    const weightedList = await queue.weightedList(true, list);
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
@@ -228,7 +228,6 @@ const queue = {
     if (twitch.checkLurk(username)) {
       return -2;
     }
-    const weightedList = await queue.weightedList(true, list);
     const index = weightedList.entries.findIndex(
       (x) => x.level.username == username
     );
@@ -239,11 +238,10 @@ const queue = {
   },
 
   submittedlevel: async (username) => {
+    var list = await queue.list();
     if (current_level != undefined && current_level.username == username) {
       return 0;
     }
-
-    var list = await queue.list();
     var both = list.online.concat(list.offline);
     var index = both.findIndex((x) => x.username == username);
     if (index != -1) {
@@ -253,6 +251,7 @@ const queue = {
   },
 
   weightedchance: async (displayName, username) => {
+    const weightedList = await queue.weightedList(false);
     if (current_level != undefined && current_level.submitter == displayName) {
       return 0;
     }
@@ -262,8 +261,6 @@ const queue = {
     if (twitch.checkLurk(username)) {
       return -2;
     }
-
-    const weightedList = await queue.weightedList(false);
 
     if (weightedList.entries.length == 0) {
       return -1;
