@@ -1,3 +1,9 @@
+# [2.0.0-beta.2]
+
+## Bug fixes
+
+- Fix race condition that leads to crash when using the `!chance` command (#63)
+
 # [2.0.0-beta.1]
 
 ## Breaking changes
