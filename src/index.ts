@@ -1,5 +1,4 @@
-import { printBanner } from "./banner.js";
-printBanner();
+(await import("./banner.js")).printBanner();
 import {
   OnlineOfflineList,
   WeightedList,
