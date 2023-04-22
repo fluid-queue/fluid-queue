@@ -7,6 +7,12 @@
   Also make sure you have the dev dependencies installed before building the queue `NODE_ENV=development npm install`.
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
 
+# [2.0.0-beta.3]
+
+## Bug fixes
+
+- Fix a bug where the `!submitted` command was not working (#67)
+
 # [2.0.0-beta.2]
 
 ## Bug fixes
