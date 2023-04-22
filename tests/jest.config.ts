@@ -2,6 +2,7 @@ import type { JestConfigWithTsJest } from "ts-jest";
 
 const jestConfig: JestConfigWithTsJest = {
   globalSetup: "jest-chance",
+  testEnvironment: "node",
   modulePathIgnorePatterns: ["<rootDir>/build"],
   moduleNameMapper: {
     "^\\.\\./src/(.*)\\.js$": "<rootDir>/src/$1", // workaround of mocking the ../src/twitch-api.js, and ../src/chatbot.js modules

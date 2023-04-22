@@ -60,8 +60,25 @@ test("setup", async () => {
 
 const parseMessage = (line: string) => {
   const idx = line.indexOf(":");
-  let user = line.substring(0, idx).trim();
+  const user = line.substring(0, idx).trim();
   let message = line.substring(idx + 1);
+  const sender = parseChatter(user);
+  let column = message.length;
+  message = message.trimStart();
+  column -= message.length;
+  let trimLen = message.length;
+  message = message.trimEnd();
+  trimLen -= message.length;
+  return {
+    message: message.trim(),
+    sender,
+    column: idx + 2 + column,
+    trimLen: trimLen,
+  };
+};
+
+const parseChatter = (chatter: string) => {
+  let user = chatter.trim();
   let isBroadcaster = false;
   let isMod = false;
   let isSubscriber = false;
@@ -105,24 +122,13 @@ const parseMessage = (line: string) => {
   }
   expect(username).toBeDefined();
   expect(displayName).toBeDefined();
-  let column = message.length;
-  message = message.trimStart();
-  column -= message.length;
-  let trimLen = message.length;
-  message = message.trimEnd();
-  trimLen -= message.length;
-  return {
-    message: message.trim(),
-    sender: buildChatter(
-      username,
-      displayName,
-      isSubscriber,
-      isMod,
-      isBroadcaster
-    ),
-    column: idx + 2 + column,
-    trimLen: trimLen,
-  };
+  return buildChatter(
+    username,
+    displayName,
+    isSubscriber,
+    isMod,
+    isBroadcaster
+  );
 };
 
 const chatLogTest = (fileName: string) => {
@@ -195,7 +201,13 @@ const chatLogTest = (fileName: string) => {
 
           console.log("set settings to: " + JSON.stringify(test.settings));
         } else if (command == "chatters") {
-          simSetChatters(JSON.parse(rest));
+          const users = rest.split(",");
+          simSetChatters(
+            users
+              .map((user) => user.trim())
+              .filter((user) => user !== "")
+              .map((user) => parseChatter(user))
+          );
         } else if (command.startsWith("queue.json")) {
           try {
             const memberIdx = command.indexOf("/");
@@ -217,7 +229,10 @@ const chatLogTest = (fileName: string) => {
             expect(jsonData).toEqual(JSON.parse(rest));
           } catch (error: unknown) {
             if (error instanceof Error) {
-              error.message += errorMessage(position);
+              throw {
+                ...error,
+                message: error.message + errorMessage(position),
+              };
             }
             throw error;
           }
@@ -240,7 +255,10 @@ const chatLogTest = (fileName: string) => {
             expect(jsonData).toEqual(JSON.parse(rest));
           } catch (error: unknown) {
             if (error instanceof Error) {
-              error.message += errorMessage(position);
+              throw {
+                ...error,
+                message: error.message + errorMessage(position),
+              };
             }
             throw error;
           }
@@ -300,7 +318,7 @@ const chatLogTest = (fileName: string) => {
           };
           // console.log(`${time}`, chat.sender, 'sends', chat.message);
           // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
-          if (chatbot != null && chat.sender.login == chatbot.toLowerCase()) {
+          if (chatbot != null && chat.sender.name == chatbot.toLowerCase()) {
             // this is a message by the chat bot, check replyMessageQueue
             const shift = replyMessageQueue.shift();
             if (shift === undefined) {
@@ -308,7 +326,10 @@ const chatLogTest = (fileName: string) => {
                 expect(replyMessageQueue).toContain(chat.message);
               } catch (error: unknown) {
                 if (error instanceof Error) {
-                  error.message += errorMessage(position);
+                  throw {
+                    ...error,
+                    message: error.message + errorMessage(position),
+                  };
                 }
                 throw error;
               }
@@ -333,7 +354,10 @@ const chatLogTest = (fileName: string) => {
               );
             } catch (error: unknown) {
               if (error instanceof Error) {
-                error.message += errorMessage(position);
+                throw {
+                  ...error,
+                  message: error.message + errorMessage(position),
+                };
               }
               throw error;
             }

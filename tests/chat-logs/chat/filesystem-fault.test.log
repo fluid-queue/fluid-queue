@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -18,8 +18,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [02:21:24] @^FurretWalkBot: !list
 [02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot... (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 
 
@@ -32,12 +32,12 @@ fs-fail writeSync
 [02:39:13] @^helperblock: liquidnya, MY2-H2M-DSG has been added to the queue.
 
 # was not updated, but at least it did not crash or cause corrupted files!
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 # now wait 2 minutes
 [02:41:13] ~%?liquidnya: OwO
 
 # save file was updated this time due to the waiting timer!
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}, {"code":"MY2-H2M-DSG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}, {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]

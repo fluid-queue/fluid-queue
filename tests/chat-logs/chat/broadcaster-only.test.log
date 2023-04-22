@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":["next", "random"],"message_cooldown":5,"showMakerCode":false}
 # chatters
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -49,8 +49,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [19:41:02] @^FurretWalkBot: !restart
 [19:41:06] @^FurretWalkBot: !clear
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [19:41:48] ~%?liquidnya: !open
 [19:41:49] @^helperblock: The queue is now open!
@@ -61,8 +61,8 @@ queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","u
 [19:42:03] ~%?liquidnya: !remove liquidnya
 [19:42:03] @^helperblock: liquidnya's level has been removed from the queue.
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [19:42:12] ~%?liquidnya: !level
 [19:42:14] @^helperblock: (next) The queue is empty.

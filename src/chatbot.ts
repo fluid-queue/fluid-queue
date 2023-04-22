@@ -7,6 +7,7 @@ import { twitchApi } from "./twitch-api.js";
 import { ChatUserstate, Client } from "tmi.js";
 
 const build_chatter = function (
+  userId: string,
   username: string,
   displayName: string,
   isSubscriber: boolean,
@@ -20,8 +21,8 @@ const build_chatter = function (
     equals(other: Partial<QueueSubmitter>) {
       return isQueueSubmitter(this, other);
     },
-    // FIXME: id
-    login: username,
+    id: userId,
+    name: username,
     displayName: displayName,
     isSubscriber: isSubscriber,
     isMod: isMod,
@@ -82,13 +83,14 @@ const chatbot_helper = function (channel: string): Chatbot {
             client.say(channel, response_text);
           };
           let chatter;
-          if (!tags.username || !tags["display-name"]) {
+          if (!tags.username || !tags["display-name"] || !tags["user-id"]) {
             throw new Error(
-              "Encountered a user with no username or no display name"
+              "Encountered a user with no user id, username or no display name"
             );
           }
           if (tags.badges == null) {
             chatter = build_chatter(
+              tags["user-id"],
               tags.username,
               tags["display-name"],
               false,
@@ -97,6 +99,7 @@ const chatbot_helper = function (channel: string): Chatbot {
             );
           } else {
             chatter = build_chatter(
+              tags["user-id"],
               tags.username,
               tags["display-name"],
               tags.badges.subscriber != undefined ||

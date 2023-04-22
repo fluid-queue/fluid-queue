@@ -59,7 +59,10 @@ class CustomCodes {
   }
   toObject(): persistence.CustomCodesV2 {
     return Object.fromEntries(
-      [...this.map.values()].map((e) => [e.customCode, e.entry.serialize()])
+      [...this.map.values()].map((e) => [
+        e.customCode,
+        e.entry.serializePersistedEntry(),
+      ])
     );
   }
 }

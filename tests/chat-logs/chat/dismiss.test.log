@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":["next", "random"],"message_cooldown":5,"showMakerCode":false}
 # chatters
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -16,8 +16,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [20:06:00] ~%?liquidnya: !clear
 [20:06:02] @^helperblock: The queue has been cleared!
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [20:06:02] ~%?liquidnya: !open
 [20:06:03] @^helperblock: The queue is now open!
@@ -26,30 +26,30 @@ queue.json/queue []
 [20:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [20:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"},{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [20:08:35] ~%?liquidnya: !next
 [20:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [20:08:40] ~%?liquidnya: !list
 [20:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [20:08:46] ~%?liquidnya: !dismiss
 [20:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [20:08:50] ~%?liquidnya: !list
 [20:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [20:09:12] ~%?liquidnya: !dismiss
 [20:09:12] @^helperblock: The nothing you aren't playing cannot be dismissed.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 ##########################
 ###       !skip        ###
@@ -58,8 +58,8 @@ queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","u
 [21:06:00] ~%?liquidnya: !clear
 [21:06:02] @^helperblock: The queue has been cleared!
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [21:06:02] ~%?liquidnya: !open
 [21:06:03] @^helperblock: The queue is now open!
@@ -68,30 +68,30 @@ queue.json/queue []
 [21:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [21:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"},{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [21:08:35] ~%?liquidnya: !next
 [21:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [21:08:40] ~%?liquidnya: !list
 [21:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [21:08:46] ~%?liquidnya: !skip
 [21:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [21:08:50] ~%?liquidnya: !list
 [21:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [21:09:12] ~%?liquidnya: !skip
 [21:09:12] @^helperblock: The nothing you aren't playing cannot be dismissed.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 ##########################
 ###     !complete      ###
@@ -100,8 +100,8 @@ queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","u
 [22:06:00] ~%?liquidnya: !clear
 [22:06:02] @^helperblock: The queue has been cleared!
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [22:06:02] ~%?liquidnya: !open
 [22:06:03] @^helperblock: The queue is now open!
@@ -110,30 +110,30 @@ queue.json/queue []
 [22:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [22:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"},{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [22:08:35] ~%?liquidnya: !next
 [22:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [22:08:40] ~%?liquidnya: !list
 [22:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [22:08:46] ~%?liquidnya: !complete
 [22:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [22:08:50] ~%?liquidnya: !list
 [22:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [22:09:12] ~%?liquidnya: !complete
 [22:09:12] @^helperblock: The nothing you aren't playing cannot be dismissed.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 ##########################
 ###     !completed     ###
@@ -142,8 +142,8 @@ queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","u
 [23:06:00] ~%?liquidnya: !clear
 [23:06:02] @^helperblock: The queue has been cleared!
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [23:06:02] ~%?liquidnya: !open
 [23:06:03] @^helperblock: The queue is now open!
@@ -152,27 +152,27 @@ queue.json/queue []
 [23:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [23:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"},{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [23:08:35] ~%?liquidnya: !next
 [23:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [23:08:40] ~%?liquidnya: !list
 [23:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [23:08:46] ~%?liquidnya: !completed
 [23:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [23:08:50] ~%?liquidnya: !list
 [23:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 [23:09:12] ~%?liquidnya: !completed
 [23:09:12] @^helperblock: The nothing you aren't playing cannot be dismissed.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]

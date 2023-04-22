@@ -10,82 +10,70 @@ const timeOrNow = (time: string | Date | undefined): string => {
   }
 };
 
-export const WaitingSchemeV2 = z
-  .object({
-    waitTime: z.number().nonnegative().describe("wait time in minutes"),
-    weightMin: z
-      .number()
-      .nonnegative()
-      .describe("the weighted time for weighted random in minutes")
-      .optional(),
-    weightMsec: z
-      .number()
-      .gte(0)
-      .lt(60000)
-      .describe(
-        "the milliseconds part of the weight time, between 0 (inclusive) and 59999 (inclusive)"
-      )
-      .optional(),
-    lastOnlineTime: z
-      .string()
-      .datetime()
-      .describe(
-        "the time someone was last online in the queue as ISO 8601 timestamp"
-      ),
-  })
-  .transform((waiting) => {
-    const weightMin = waiting.weightMin ?? waiting.waitTime;
-    const weightMsec = waiting.weightMsec ?? 0;
-    return { ...waiting, weightMin, weightMsec };
-  });
-export type WaitingV2 = z.infer<typeof WaitingSchemeV2>;
+export const WaitingSchemeV3 = z.object({
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+    displayName: z.string(),
+  }),
+  waiting: z.object({ minutes: z.number().nonnegative() }),
+  weight: z.object({
+    minutes: z.number().nonnegative(),
+    milliseconds: z.number().gte(0).lt(60000),
+  }),
+  lastOnline: z.string().datetime(),
+});
+
+export type WaitingV3 = z.output<typeof WaitingSchemeV3>;
+
+export type WaitingUserV3 = WaitingV3["user"];
 
 // Waiting prototype
 export class Waiting {
+  private user: WaitingUserV3;
   private waitTime: number;
   private weightMin: number;
   private weightMsec: number;
   private lastOnlineTime: string;
 
-  private constructor(waiting: WaitingV2) {
-    this.waitTime = waiting.waitTime;
-    this.weightMin = waiting.weightMin;
-    this.weightMsec = waiting.weightMsec;
-    this.lastOnlineTime = waiting.lastOnlineTime;
+  private constructor(waiting: WaitingV3) {
+    this.user = waiting.user;
+    this.waitTime = waiting.waiting.minutes;
+    this.weightMin = waiting.weight.minutes;
+    this.weightMsec = waiting.weight.milliseconds;
+    this.lastOnlineTime = waiting.lastOnline;
   }
-  static create(now?: string | Date): Waiting {
+  static create(user: WaitingUserV3, now?: string | Date): Waiting {
     return new Waiting({
-      waitTime: 1,
-      weightMin: 1,
-      weightMsec: 0,
-      lastOnlineTime: timeOrNow(now),
+      user,
+      waiting: { minutes: 1 },
+      weight: { minutes: 1, milliseconds: 0 },
+      lastOnline: timeOrNow(now),
     });
   }
-  static from(waiting: WaitingV2): Waiting {
+  static from(waiting: WaitingV3): Waiting {
     return new Waiting(waiting);
   }
-  static fromRecord(
-    waiting: Record<string, WaitingV2>
-  ): Record<string, Waiting> {
+  static fromList(waiting: WaitingV3[]): Record<string, Waiting> {
     return Object.fromEntries(
-      Object.entries(waiting).map(([key, value]) => {
-        return [key, Waiting.from(value)];
+      waiting.map((value) => {
+        return [value.user.id, Waiting.from(value)];
       })
     );
   }
-  static recordToJson(
-    waiting: Record<string, Waiting>
-  ): Record<string, WaitingV2> {
-    return Object.fromEntries(
-      Object.entries(waiting).map(([k, v]) => [k, v.toJson()])
-    );
+  static recordToJson(waiting: Record<string, Waiting>): WaitingV3[] {
+    return Object.values(waiting).map((v) => v.toJson());
   }
-  toJson(): WaitingV2 {
+  toJson(): WaitingV3 {
     return {
-      waitTime: this.waitTime,
-      weightMin: this.weightMin,
-      weightMsec: this.weightMsec,
-      lastOnlineTime: this.lastOnlineTime,
+      user: {
+        id: this.user.id,
+        name: this.user.name,
+        displayName: this.user.displayName,
+      },
+      waiting: { minutes: this.waitTime },
+      weight: { minutes: this.weightMin, milliseconds: this.weightMsec },
+      lastOnline: this.lastOnlineTime,
     };
   }
   addOneMinute(multiplier: number, now?: string | Date): void {

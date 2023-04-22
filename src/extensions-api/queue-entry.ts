@@ -1,24 +1,27 @@
+export interface User {
+  /**
+   * The user id of this submitter.
+   */
+  id: string;
+  /**
+   * `username`, `login` name of this submitter.
+   */
+  name: string;
+  /**
+   * The display name of this submitter.
+   *
+   * Lowercasing the `displayName` does not give you the `name`/`username` if the display name is a localized display name!
+   * @see https://blog.twitch.tv/en/2016/08/22/localized-display-names-e00ee8d3250a/
+   */
+  displayName: string;
+}
+
 /**
  * Represents the submitter of a level.
  *
  * To display the submitter in chat please use `toString()` explicitly or implicitly.
  */
-export interface QueueSubmitter {
-  /**
-   * The user id of this submitter.
-   */
-  id?: string;
-  /**
-   * `username`, `login` name of this submitter.
-   */
-  login: string;
-  /**
-   * The display name of this submitter.
-   *
-   * Lowercasing the `displayName` does not give you the `login`/`username` if the display name is a localized display name!
-   * @see https://blog.twitch.tv/en/2016/08/22/localized-display-names-e00ee8d3250a/
-   */
-  displayName: string;
+export interface QueueSubmitter extends User {
   /**
    * @returns The display name of the submitter.
    */
@@ -26,10 +29,10 @@ export interface QueueSubmitter {
   /**
    * Note: This method compares the first 2 present properties of both submitters in this order:
    * - `id`
-   * - `login`
+   * - `name`
    * - `displayName`
    *
-   * This means that if both objects have `login` set, then `displayName` is not compared at all.
+   * This means that if both objects have `name` set, then `displayName` is not compared at all.
    *
    * @param other A different submitter/user/chatter.
    * @returns true if and only if `this` and `other` are equal.
@@ -67,19 +70,22 @@ export interface Entry {
   /**
    * @returns An object to be able to save it to a JSON file.
    */
-  serialize(): PersistedEntry;
+  serializePersistedEntry(): PersistedEntry;
 }
 
 export interface PersistedQueueEntry extends PersistedEntry {
-  submitter: string;
-  username: string;
+  submitter: {
+    id: string;
+    name: string;
+    displayName: string;
+  };
 }
 
 export interface QueueEntry extends Entry {
   /**
    * @returns An object to be able to save it to a JSON file.
    */
-  serialize(): PersistedQueueEntry;
+  serializePersistedQueueEntry(): PersistedQueueEntry;
   /**
    * The submitter of this queue entry.
    */
@@ -92,9 +98,7 @@ export interface QueueEntry extends Entry {
  */
 export function queueSubmitter(entry: PersistedQueueEntry): QueueSubmitter {
   return {
-    // TODO: user id
-    login: entry.username,
-    displayName: entry.submitter,
+    ...entry.submitter,
     toString() {
       return this.displayName;
     },
@@ -111,8 +115,8 @@ export function isQueueSubmitter(
   if (other.id !== undefined && submitter.id !== undefined) {
     return other.id == submitter.id;
   }
-  if (other.login !== undefined) {
-    return other.login == submitter.login;
+  if (other.name !== undefined) {
+    return other.name == submitter.name;
   }
   if (other.displayName !== undefined) {
     return other.displayName == submitter.displayName;

@@ -1,11 +1,11 @@
 import { jest } from "@jest/globals";
 import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
-import { HelixChatChatter } from "@twurple/api";
-import { ChatChatter } from "../src/twitch-api.js";
 import { Settings } from "../src/settings-type.js";
+import { User } from "./extensions-api/queue-entry.js";
+import * as timers from "timers";
 
 // constants
-const defaultTestChatters: HelixChatChatter[] = [];
+const defaultTestChatters: User[] = [];
 const defaultTestSettings = {
   channel: "queso_queue_test_channel",
   clientId: "",
@@ -24,12 +24,12 @@ const defaultTestSettings = {
 };
 
 // mock variables
-let mockChatters: ChatChatter[] = [];
+let mockChatters: User[] = [];
 
 // fake timers
 jest.useFakeTimers();
 
-const setChatters = (newChatters: ChatChatter[]) => {
+const setChatters = (newChatters: User[]) => {
   mockChatters = newChatters;
 };
 
@@ -43,6 +43,19 @@ beforeEach(() => {
 
 test("online users", async () => {
   jest.resetModules();
+
+  // mock needed for ttlcache
+  jest.spyOn(global.performance, "now").mockImplementation(() => {
+    let result;
+    if (typeof global.performance.timeOrigin === "number") {
+      const origin = Math.floor(global.performance.timeOrigin);
+      result = Math.max(new Date().getTime() - origin, 0);
+    } else {
+      result = new Date().getTime();
+    }
+    return result;
+  });
+
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
 
@@ -70,28 +83,33 @@ test("online users", async () => {
   let onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set());
-  expect(onlineUsers.login).toEqual(new Set());
+  expect(onlineUsers.name).toEqual(new Set());
   expect(onlineUsers.hasSubmitter({})).toBe(false);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(false);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(false);
 
   // change chatters mock and compare with result
   setChatters([
-    { userId: "test/1", userName: "liquidnya", userDisplayName: "liquidnya" },
     {
-      userId: "test/2",
-      userName: "furretwalkbot",
-      userDisplayName: "FurretWalkBot",
+      id: '${user("liquidnya").id}',
+      name: "liquidnya",
+      displayName: "liquidnya",
+    },
+    {
+      id: '${user("furretwalkbot").id}',
+      name: "furretwalkbot",
+      displayName: "FurretWalkBot",
     },
   ]);
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.login).toEqual(new Set(["liquidnya", "furretwalkbot"]));
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(false);
+  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
 
   jest.setSystemTime(new Date("2022-04-21T00:00:00Z"));
+  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   // notice chatter
   twitch.noticeChatter(
     buildChatter("helperblock", "helperblock", false, true, false)
@@ -99,34 +117,36 @@ test("online users", async () => {
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"])); // no id for helperblock yet
-  expect(onlineUsers.login).toEqual(
+  expect(onlineUsers.name).toEqual(
     new Set(["liquidnya", "furretwalkbot", "helperblock"])
   );
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(true);
 
   // after 4 minutes still online!
   jest.setSystemTime(new Date("2022-04-21T00:04:00Z"));
+  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"])); // no id for helperblock yet
-  expect(onlineUsers.login).toEqual(
+  expect(onlineUsers.name).toEqual(
     new Set(["liquidnya", "furretwalkbot", "helperblock"])
   );
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(true);
 
   // after 5 minutes not online any longer
   jest.setSystemTime(new Date("2022-04-21T00:05:00Z"));
+  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.login).toEqual(new Set(["liquidnya", "furretwalkbot"]));
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(false);
+  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
 
   // test the lurking feature
   twitch.setToLurk(
@@ -135,10 +155,10 @@ test("online users", async () => {
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1"]));
-  expect(onlineUsers.login).toEqual(new Set(["liquidnya"]));
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(false);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(false);
+  expect(onlineUsers.name).toEqual(new Set(["liquidnya"]));
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
   // even when they still chat, they are not online
   twitch.noticeChatter(
     buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
@@ -146,20 +166,20 @@ test("online users", async () => {
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1"]));
-  expect(onlineUsers.login).toEqual(new Set(["liquidnya"]));
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(false);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(false);
+  expect(onlineUsers.name).toEqual(new Set(["liquidnya"]));
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
 
   // unlurk makes them online again!
   twitch.notLurkingAnymore("furretwalkbot");
   onlineUsers = await twitch.getOnlineUsers();
   expect(onlineUsers.submitters).not.toEqual([]);
   // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.login).toEqual(new Set(["liquidnya", "furretwalkbot"]));
-  expect(onlineUsers.hasSubmitter({ login: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ login: "helperblock" })).toBe(false);
+  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
 
   // the twitch api has been called 8 times
   expect(asMock(twitchApi.getChatters).mock.calls.length).toBe(8);

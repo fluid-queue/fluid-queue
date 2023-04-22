@@ -1,4 +1,9 @@
-import { ApiClient, HelixUser, UserIdResolvable } from "@twurple/api";
+import {
+  ApiClient,
+  HelixChatChatter,
+  HelixUser,
+  UserIdResolvable,
+} from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import * as tmi from "@twurple/auth-tmi";
 import { settings, fileName as settingsFile } from "./settings.js";
@@ -7,22 +12,16 @@ import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
 import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
+import { User } from "./extensions-api/queue-entry.js";
 
 const tokensFileName = "./settings/tokens.json";
-
-// use this interface to only return those getters and not much more!
-export interface ChatChatter {
-  get userId(): string;
-  get userName(): string;
-  get userDisplayName(): string;
-}
 
 class TwitchApi {
   #authProvider: RefreshingAuthProvider | null = null;
   #botUserId: string | null = null;
   #apiClient: ApiClient | null = null;
   #broadcasterUser: HelixUser | null = null;
-  #chattersCache: SingleValueCache<ChatChatter[]>;
+  #chattersCache: SingleValueCache<User[]>;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -98,7 +97,7 @@ class TwitchApi {
         writeFileAtomicSync(
           tokensFileName,
           JSON.stringify(newTokenData, null, 4),
-          "utf-8"
+          { encoding: "utf-8" }
         ),
     });
     // register refresh and access token of the bot and get the user id of the bot
@@ -140,19 +139,24 @@ class TwitchApi {
   }
 
   async #loadChatters() {
+    const mapUser = (user: HelixChatChatter) => ({
+      id: user.userId,
+      name: user.userName,
+      displayName: user.userDisplayName,
+    });
     return await this.apiClient.asIntent(["chatters"], async (ctx) => {
-      const result: ChatChatter[] = [];
+      const result: User[] = [];
       // request the maximum of 1000 to reduce number of requests
       let page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
         limit: 1000,
       });
-      result.push(...page.data);
+      result.push(...page.data.map(mapUser));
       while (page.cursor != null) {
         page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
           after: page.cursor,
           limit: 1000,
         });
-        result.push(...page.data);
+        result.push(...page.data.map(mapUser));
       }
       // console.log(`Fetched ${result.length} chatters`);
       return result;
@@ -182,7 +186,7 @@ class TwitchApi {
    * @param forceRefresh If set to true this always reloads chatters from the api.
    * @returns chatters
    */
-  async getChatters(forceRefresh: boolean): Promise<ChatChatter[]> {
+  async getChatters(forceRefresh: boolean): Promise<User[]> {
     if (forceRefresh) {
       // console.log("Force refresh");
       return await this.#chattersCache.fetch({
@@ -195,6 +199,16 @@ class TwitchApi {
       return this.#chattersCache.get();
     }
     return await this.#chattersCache.fetch();
+  }
+
+  get maxUsers() {
+    return 100;
+  }
+
+  async getUsers(userNames: string[]): Promise<User[]> {
+    return this.apiClient.asIntent(["user-by-name"], (ctx) => {
+      return ctx.users.getUsersByNames(userNames);
+    });
   }
 }
 

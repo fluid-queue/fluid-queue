@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -15,10 +15,10 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [01:37:59] ~%?liquidnya: !list
 [01:38:00] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
 # check the contents of the save file
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 # clear the queue and check file contents
 [02:15:35] ~%?liquidnya: !clear
 [02:15:35] @^helperblock: The queue has been cleared!
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []

@@ -2,28 +2,34 @@
   "version": "3.0",
   "extensions": {
     "customlevel": {
-      "data": {},
+      "data": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
+          "enabled": false
+        }
+      },
       "version": "1.0"
     }
   },
   "entries": {
     "current": {
-      "code": "QWF-3K9-84G",
-      "type": "smm2",
+      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "type": "customlevel",
       "submitter": {
-        "id": "${user(\"furretwalkbot\").id}",
-        "name": "furretwalkbot",
-        "displayName": "${user(\"furretwalkbot\").displayName}"
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
       }
     },
     "queue": [
       {
-        "code": "BW2-G2R-CMG",
+        "code": "QWF-3K9-84G",
         "type": "smm2",
         "submitter": {
-          "id": "${user(\"liquidnya\").id}",
-          "name": "liquidnya",
-          "displayName": "${user(\"liquidnya\").displayName}"
+          "id": "${user(\"furretwalkbot\").id}",
+          "name": "furretwalkbot",
+          "displayName": "${user(\"furretwalkbot\").displayName}"
         }
       },
       {
@@ -40,15 +46,15 @@
   "waiting": [
     {
       "user": {
-        "id": "${user(\"liquidnya\").id}",
-        "name": "liquidnya",
-        "displayName": "${user(\"liquidnya\").displayName}"
+        "id": "${user(\"furretwalkbot\").id}",
+        "name": "furretwalkbot",
+        "displayName": "${user(\"furretwalkbot\").displayName}"
       },
       "waiting": {
-        "minutes": 10
+        "minutes": 1
       },
       "weight": {
-        "minutes": 10,
+        "minutes": 1,
         "milliseconds": 0
       },
       "lastOnline": "2022-04-21T00:00:00.000Z"
