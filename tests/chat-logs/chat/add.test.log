@@ -76,3 +76,22 @@ queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot
 # lowercase level codes without dashes work
 [02:24:35] ~%?liquidnya: !add nb01mdslg
 [02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+# test !submitted command
+[02:24:45] ~%?liquidnya: !submitted
+[02:24:45] @^helperblock: liquidnya, you have submitted NB0-1MD-SLG to the queue.
+
+[02:24:45] ~%?liquidnya: !remove liquidnya
+[02:24:45] @^helperblock: liquidnya's level has been removed from the queue.
+
+[02:24:45] ~%?liquidnya: !submitted
+[02:24:45] @^helperblock: liquidnya, looks like you're not in the queue. Try !add XXX-XXX-XXX.
+
+[02:25:13] @^FurretWalkBot: !add MY2-H2M-DSG
+[02:25:13] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+
+[02:25:29] ~%?liquidnya: !next
+[02:25:31] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
+
+[02:25:34] @^FurretWalkBot: !submitted
+[02:25:34] @^helperblock: Your level is being played right now!

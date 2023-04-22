@@ -814,7 +814,7 @@ async function HandleMessage(message, sender, respond) {
   } else if (aliases.isAlias("submitted", message)) {
     respond(
       submitted_message(
-        quesoqueue.submittedlevel(sender.username),
+        await quesoqueue.submittedlevel(sender.username),
         sender.displayName
       )
     );
