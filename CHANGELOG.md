@@ -1,3 +1,9 @@
+# [2.0.0-beta.3]
+
+## Bug fixes
+
+- Fix a bug where the `!submitted` command was not working (#67)
+
 # [2.0.0-beta.2]
 
 ## Bug fixes
