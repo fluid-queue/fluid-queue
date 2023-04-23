@@ -6,6 +6,7 @@
 !/package-lock.json
 !/src
 !/tsconfig.json
+!/build.js
 
 # Allow the tests, so they can run automatically
 # It would be better if we didn't have to build them in, but they're small, it's fine

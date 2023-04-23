@@ -36,6 +36,8 @@ $ npm run build
 $ npm run clean # If you need to clean up the build directory
 ```
 
+We use `esbuild` to build and bundle the code, so you'll end up with a single `index.js` file in your `build` directory, as well as the compiled contents of the `src/extensions` directory. The extensions are dynamically loaded, so they can't be bundled with the rest of the code, but they are bundled individually and minified. This also means that any custom extensions you write in Typescript and build with the bot will be bundled and minified, without needing to add them to the build script!
+
 ### Testing
 
 To run tests:

@@ -15,7 +15,7 @@ RUN npm ci
 # Copy the application itself
 COPY . /build
 
-RUN sh -c "npm run build && NODE_ENV=production npm prune && cp -R /build/node_modules /build/package.json /build/build /home/node"
+RUN sh -c "npm run build && cp -R /build/package.json /build/build /home/node"
 
 FROM node:19-alpine AS app
 
