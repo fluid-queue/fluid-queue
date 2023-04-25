@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0 # This restricts it to security updates only
+    target-branch: "develop" # If it's an urgent update, we can hotfix on main directly
+    pull-request-branch-name:
+      separator: "/"
+    reviewers: # Might as well drag us in if there's a security update
+      - "demize"
+      - "liquidnya"
+    versioning-strategy: "increase-if-necessary"
