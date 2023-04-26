@@ -28,5 +28,10 @@
     "smm2-lenient",
     "ocw-lenient",
     "customlevel-name"
-  ]
+  ],
+  "resolverOptions": {
+    "ocw": {
+      "removeDashes": "true"
+    }
+  }
 }

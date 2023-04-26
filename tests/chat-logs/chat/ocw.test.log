@@ -23,7 +23,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [20:29:54] @^helperblock: liquidnya, that is an invalid level code.
 
 # configure ocw
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"resolverOptions":{"ocw":{"removeDashes": "true"}}}
 # restart to reload settings
 restart
 
@@ -41,7 +41,7 @@ restart
 # [20:36:21] @^helperblock: liquidnya, RHCD08CC8 (OCW) has been added to the queue.
 
 # showMakerCode
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"]}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"resolverOptions":{"ocw":{"removeDashes": "true"}}}
 # restart to reload settings
 restart
 
@@ -49,3 +49,13 @@ restart
 [20:32:16] @^helperblock: liquidnya, N41Q4WHD5 (OCW level code) has been added to the queue.
 [20:32:21] ~%?liquidnya: !add RHC-D08-CC8
 [20:32:21] @^helperblock: liquidnya, RHCD08CC8 (OCW maker code) has been added to the queue.
+
+# removeDashes off
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"resolverOptions":{"ocw":{"removeDashes": "false"}}}
+# restart to reload settings
+restart
+
+[20:32:15] ~%?liquidnya: !add N41-Q4W-HD5
+[20:32:16] @^helperblock: liquidnya, N41-Q4W-HD5 (OCW level code) has been added to the queue.
+[20:32:21] ~%?liquidnya: !add RHC-D08-CC8
+[20:32:21] @^helperblock: liquidnya, RHC-D08-CC8 (OCW maker code) has been added to the queue.
