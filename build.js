@@ -24,5 +24,5 @@ await esbuild.build({
     `,
   },
   minify: true,
-  sourcemap: true,
+  sourcemap: "linked",
 });
