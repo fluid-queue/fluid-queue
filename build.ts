@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S ts-node --esm
 import * as esbuild from "esbuild";
 import { glob } from "glob";
 

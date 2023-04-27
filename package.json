@@ -31,7 +31,7 @@
     "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --ci",
     "start": "node --enable-source-maps ./build/index.js",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
-    "build": "./build.js",
+    "build": "ts-node --esm ./build.ts",
     "clean": "rimraf build/"
   },
   "devDependencies": {
