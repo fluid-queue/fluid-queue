@@ -161,16 +161,25 @@ const checkCustomCodes = (
 };
 
 test("conversion-test-empty", async () => {
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "1");
   const test = "test-empty";
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "2");
   const volume = loadVolume(test);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "3");
   // empty file system
   const index = await simRequireIndex(volume);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "4");
   const mockFs = index.fs;
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "5");
   // should load without errors!
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "6");
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "7");
   checkResult(mockFs, fs, test);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "8");
   expect(mockFs.existsSync("./data/extensions/customcode.json")).toBe(false);
+  console.log(`[${new Date(jest.getRealSystemTime()).toISOString()}] ` + "9");
 });
 
 test("conversion-test-empty-custom-codes-enabled", async () => {
