@@ -11,7 +11,7 @@ await esbuild.build({
   bundle: true,
   outdir: "build/",
   format: "esm",
-  target: "esnext",
+  target: "node16.14.0",
   platform: "node",
   banner: {
     js: `
@@ -24,4 +24,5 @@ await esbuild.build({
     `,
   },
   minify: true,
+  sourcemap: true,
 });
