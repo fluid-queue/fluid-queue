@@ -141,5 +141,10 @@ export const Settings = z
       )
       .nullable()
       .default(null),
+    extensionOptions: z
+      .record(z.string(), z.record(z.string(), z.string()))
+      .describe("any options for your enabled resolvers")
+      .nullable()
+      .default(null),
   })
   .strict();

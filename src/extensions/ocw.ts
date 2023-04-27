@@ -66,7 +66,16 @@ const codeSuffix = (levelCode: string) => {
 };
 
 function display(code: string) {
-  return code + codeSuffix(code);
+  let codeDisplay = code;
+  if (
+    settings.extensionOptions &&
+    settings.extensionOptions.ocw &&
+    (settings.extensionOptions.ocw.removeDashes == "true" ||
+      settings.extensionOptions.ocw.removeDashes == "yes")
+  ) {
+    codeDisplay = code.replaceAll("-", "");
+  }
+  return codeDisplay + codeSuffix(code);
 }
 
 function resolver(args: string) {

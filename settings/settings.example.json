@@ -28,5 +28,10 @@
     "smm2-lenient",
     "ocw-lenient",
     "customlevel-name"
-  ]
+  ],
+  "extensionOptions": {
+    "ocw": {
+      "removeDashes": "true"
+    }
+  }
 }
