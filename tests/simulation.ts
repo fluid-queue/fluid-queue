@@ -268,79 +268,73 @@ const simRequireIndex = async (
       await setupMocks();
     }
     jest.useFakeTimers();
-    await jest.isolateModulesAsync(async () => {
-      await mockModules();
-      if (setupMocks !== undefined) {
-        await setupMocks();
-      }
-      // remove timers
-      jest.clearAllTimers();
+    // remove timers
+    jest.clearAllTimers();
 
-      // setup time
-      jest.useFakeTimers();
+    // setup time
+    jest.useFakeTimers();
 
-      if (mockTime !== undefined) {
-        jest.setSystemTime(mockTime);
-      } else {
-        jest.setSystemTime(START_TIME);
-      }
+    if (mockTime !== undefined) {
+      jest.setSystemTime(mockTime);
+    } else {
+      jest.setSystemTime(START_TIME);
+    }
 
-      // setup random mock
-      const chance = jestChance.getChance();
-      random = jest.spyOn(global.Math, "random").mockImplementation(() => {
-        return chance.random();
-      });
-
-      // prepare settings
-      if (mockSettings === undefined) {
-        mockSettings = DEFAULT_TEST_SETTINGS;
-      }
-
-      // create virtual file system
-      if (volume === undefined) {
-        volume = createMockVolume(mockSettings);
-      } else {
-        // copy files
-        const files = volume.toJSON();
-        volume = new Volume();
-        volume.fromJSON(files);
-        volume.fromJSON(
-          { "./settings/settings.json": JSON.stringify(mockSettings) },
-          path.resolve(".")
-        );
-      }
-
-      // setup virtual file system
-      const mockFs = createFsFromVolume(volume);
-      jest.mock("fs", () => ({
-        __esModule: true, // Use it when dealing with esModules
-        ...mockFs,
-        default: mockFs,
-        toString() {
-          return "fs mock";
-        },
-      }));
-      jest.unstable_mockModule("fs", () => ({
-        ...mockFs,
-        default: mockFs,
-        toString() {
-          return "fs module mock";
-        },
-      }));
-      fs = (await import("fs")).default;
-
-      // import settings
-      settings = (await import("../src/settings.js")).default;
-
-      // import libraries
-      chatbot = await import("../src/chatbot.js");
-      twitch = (await import("../src/twitch.js")).twitch;
-      const queue = await import("../src/queue.js");
-      quesoqueue = queue.quesoqueue();
-
-      // run index.js
-      await import("../src/index.js");
+    // setup random mock
+    const chance = jestChance.getChance();
+    random = jest.spyOn(global.Math, "random").mockImplementation(() => {
+      return chance.random();
     });
+
+    // prepare settings
+    if (mockSettings === undefined) {
+      mockSettings = DEFAULT_TEST_SETTINGS;
+    }
+
+    // create virtual file system
+    if (volume === undefined) {
+      volume = createMockVolume(mockSettings);
+    } else {
+      // copy files
+      const files = volume.toJSON();
+      volume = new Volume();
+      volume.fromJSON(files);
+      volume.fromJSON(
+        { "./settings/settings.json": JSON.stringify(mockSettings) },
+        path.resolve(".")
+      );
+    }
+
+    // setup virtual file system
+    const mockFs = createFsFromVolume(volume);
+    jest.mock("fs", () => ({
+      __esModule: true, // Use it when dealing with esModules
+      ...mockFs,
+      default: mockFs,
+      toString() {
+        return "fs mock";
+      },
+    }));
+    jest.unstable_mockModule("fs", () => ({
+      ...mockFs,
+      default: mockFs,
+      toString() {
+        return "fs module mock";
+      },
+    }));
+    fs = (await import("fs")).default;
+
+    // import settings
+    settings = (await import("../src/settings.js")).default;
+
+    // import libraries
+    chatbot = await import("../src/chatbot.js");
+    twitch = (await import("../src/twitch.js")).twitch;
+    const queue = await import("../src/queue.js");
+    quesoqueue = queue.quesoqueue();
+
+    // run index.js
+    await import("../src/index.js");
     if (chatbot === undefined) {
       throw new Error("chatbot was not loaded correctly");
     }
