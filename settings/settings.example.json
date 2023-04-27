@@ -29,7 +29,7 @@
     "ocw-lenient",
     "customlevel-name"
   ],
-  "resolverOptions": {
+  "extensionOptions": {
     "ocw": {
       "removeDashes": "true"
     }

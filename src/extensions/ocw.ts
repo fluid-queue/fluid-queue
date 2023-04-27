@@ -68,10 +68,10 @@ const codeSuffix = (levelCode: string) => {
 function display(code: string) {
   let codeDisplay = code;
   if (
-    settings.resolverOptions &&
-    settings.resolverOptions.ocw &&
-    (settings.resolverOptions.ocw.removeDashes == "true" ||
-      settings.resolverOptions.ocw.removeDashes == "yes")
+    settings.extensionOptions &&
+    settings.extensionOptions.ocw &&
+    (settings.extensionOptions.ocw.removeDashes == "true" ||
+      settings.extensionOptions.ocw.removeDashes == "yes")
   ) {
     codeDisplay = code.replaceAll("-", "");
   }
