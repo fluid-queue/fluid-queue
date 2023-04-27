@@ -27,6 +27,7 @@ jobs:
       - run: npm install --only=dev
       - run: ./node_modules/.bin/eslint src/
       - run: npx prettier --check .
+      - run: npx tsc --noemit
 
   build:
     runs-on: ubuntu-latest
