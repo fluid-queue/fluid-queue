@@ -10,13 +10,7 @@ const jestConfig: JestConfigWithTsJest = {
   },
   extensionsToTreatAsEsm: [".ts"],
   transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        useESM: true,
-        tsconfig: "<rootDir>/tests/tsconfig.json",
-      },
-    ],
+    "^.+\\.(t|j)sx?$": "@swc/jest",
   },
   rootDir: "..",
   roots: ["<rootDir>/src/", "<rootDir>/tests/"],
