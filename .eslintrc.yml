@@ -16,10 +16,9 @@ extends:
   - prettier
 overrides: []
 parserOptions:
-  ecmaVersion: latest
-  sourceType: module
   project: "tsconfig.eslint.json"
-ignorePatterns: ["build/**/*"]
+ignorePatterns:
+  - "build/**/*"
 rules:
   curly: "error"
   "@typescript-eslint/no-floating-promises": "error"
