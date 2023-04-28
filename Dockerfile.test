@@ -19,10 +19,10 @@ ENV NODE_ENV=development
 COPY --chown=node:node package.json package-lock.json ./
 
 # Install the dependencies
-RUN npm ci
+RUN npm ci --include=optional
 
 # Copy the application itself
 COPY --chown=node:node . /home/node
 
-# Run the bot, no need for an entrypoint script
-CMD [ "npm", "run", "start"]
+# Run the tests, this Dockerfile is useless for anything else
+CMD [ "npm", "run", "test"]
