@@ -125,7 +125,11 @@ const loadExtensionModules = async (
 
   const importModules: Promise<{ name: string; module: object }>[] =
     moduleFiles.map(async ({ name, fileName }) => {
-      const importName = "file:\\\\" + path.join(directory, fileName);
+      let prefix = "";
+      if (process.platform === "win32") {
+        prefix = "file://";
+      }
+      const importName = prefix + path.join(directory, fileName);
       const module = await import(importName);
       return { name, module };
     });
