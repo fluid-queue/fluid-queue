@@ -453,7 +453,7 @@ const emptyCustomCodes = (): ExtensionDataV2<CustomCodesV2> => {
   };
 };
 
-class UpgradeEngine<T> {
+export class UpgradeEngine<T> {
   private loader: () => Promise<LoadResult<T> | null>;
   private newestLoader: () => Promise<T | null>;
 
@@ -473,7 +473,7 @@ class UpgradeEngine<T> {
       }
       return {
         data: result,
-        upgrade: false,
+        save: false,
         upgradeHooks: [],
       };
     }, load);
@@ -508,7 +508,7 @@ class UpgradeEngine<T> {
             const upgradeResult2 = await load.upgradeAll(upgradeResult1.data);
             return {
               data: upgradeResult2.data,
-              upgrade: true,
+              save: true,
               upgradeHooks: [
                 ...previousResult.upgradeHooks,
                 ...upgradeResult1.upgradeHooks,
@@ -529,7 +529,7 @@ class UpgradeEngine<T> {
     return new UpgradeEngine(async () => {
       const result = await Promise.resolve(load());
       if (result != null) {
-        return { data: result, upgrade: false, upgradeHooks: [] };
+        return { data: result, save: false, upgradeHooks: [] };
       }
       const previousResult = await this.loader();
       if (previousResult != null) {
@@ -538,7 +538,7 @@ class UpgradeEngine<T> {
         );
         return {
           data: upgradeResult.data,
-          upgrade: true,
+          save: true,
           upgradeHooks: [
             ...previousResult.upgradeHooks,
             ...upgradeResult.upgradeHooks,
@@ -556,21 +556,24 @@ class UpgradeEngine<T> {
     }
     const createResult = await Promise.resolve(create());
     return {
-      // FIXME rename to save
-      upgrade: true,
+      save: true,
       data: createResult,
       upgradeHooks: [],
     };
   }
+
+  async loadNewest(): Promise<T | null> {
+    return await this.newestLoader();
+  }
 }
 
-async function loadResultActions<T>(
+export async function loadResultActions<T>(
   result: LoadResult<T>,
   save: (value: T) => PromiseLike<void> | void,
   verify: () => PromiseLike<T | null> | T | null,
   options = { save: true }
 ): Promise<T> {
-  if (result.upgrade || result.upgradeHooks.length > 0) {
+  if (result.save || result.upgradeHooks.length > 0) {
     // upgrade happened
     if (options.save === false) {
       // this means that the queue is loaded while persistence is turned off
@@ -601,18 +604,18 @@ async function loadResultActions<T>(
   return result.data;
 }
 
-type LoadResult<T> = {
-  upgrade: boolean;
+export type LoadResult<T> = {
+  save: boolean;
   data: T;
   upgradeHooks: (() => Promise<void> | void)[];
 };
 
-type UpgradeResult<T> = {
+export type UpgradeResult<T> = {
   data: T;
   upgradeHooks: (() => Promise<void> | void)[];
 };
 
-class VersionedFile<T, P = T> {
+export class VersionedFile<T, P = T> {
   private loader: (
     fileMajorVersion: number,
     object: object,
@@ -654,11 +657,11 @@ class VersionedFile<T, P = T> {
         const result = await Promise.resolve(load(object));
         return {
           data: result,
-          upgrade: false,
+          save: false,
           upgradeHooks: [],
         };
       },
-      async (value) => ({ data: value, upgrade: false, upgradeHooks: [] }),
+      async (value) => ({ data: value, save: false, upgradeHooks: [] }),
       load,
       majorVersion
     );
@@ -679,7 +682,7 @@ class VersionedFile<T, P = T> {
           const upgradeResult = await Promise.resolve(upgrade(result.data));
           return {
             data: upgradeResult.data,
-            upgrade: true,
+            save: true,
             upgradeHooks: [
               ...result.upgradeHooks,
               ...upgradeResult.upgradeHooks,
@@ -689,7 +692,7 @@ class VersionedFile<T, P = T> {
         const result = await Promise.resolve(load(object));
         return {
           data: result,
-          upgrade: false,
+          save: false,
           upgradeHooks: [],
         };
       },
@@ -698,7 +701,7 @@ class VersionedFile<T, P = T> {
         const upgradeResult = await Promise.resolve(upgrade(result.data));
         return {
           data: upgradeResult.data,
-          upgrade: true,
+          save: true,
           upgradeHooks: [...result.upgradeHooks, ...upgradeResult.upgradeHooks],
         };
       },
