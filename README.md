@@ -31,7 +31,7 @@ Since we develop in Typescript, in order to run the bot, you need to build the b
 $ git clone https://github.com/fluid-queue/fluid-queue.git
 $ cd fluid-queue
 $ git checkout develop # Only necessary if you're working on the develop branch
-$ npm install
+$ npm install --omit=optional # Optional dependencies are for tests; do --include=optional if you plan on running the tests
 $ npm run build
 $ npm run clean # If you need to clean up the build directory
 ```
@@ -39,6 +39,8 @@ $ npm run clean # If you need to clean up the build directory
 We use `esbuild` to build and bundle the code, so you'll end up with a single `index.js` file in your `build` directory, as well as the compiled contents of the `src/extensions` directory. The extensions are dynamically loaded, so they can't be bundled with the rest of the code, but they are bundled individually and minified. This also means that any custom extensions you write in Typescript and build with the bot will be bundled and minified, without needing to add them to the build script!
 
 ### Testing
+
+Make sure you installed the optional dependencies, or the tests won't be abel to run!
 
 To run tests:
 
