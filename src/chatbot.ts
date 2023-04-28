@@ -80,7 +80,7 @@ const chatbot_helper = function (channel: string): Chatbot {
           // Remove whitespace from chat message
           const command = message.trim();
           const respond = (response_text: string) => {
-            client.say(channel, response_text);
+            void client.say(channel, response_text);
           };
           let chatter;
           if (!tags.username || !tags["display-name"] || !tags["user-id"]) {
@@ -129,7 +129,7 @@ const chatbot_helper = function (channel: string): Chatbot {
       if (this.client == null) {
         throw new Error("Trying to send message with null client");
       }
-      this.client.say("#" + channel, message);
+      void this.client.say("#" + channel, message);
     },
   };
 };

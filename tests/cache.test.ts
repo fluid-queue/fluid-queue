@@ -89,9 +89,9 @@ test("BroadcastOnce:Promise:reject", async () => {
   // sending a promise with an rejection
   channel.send(Promise.reject(value));
   // will make every subscriber reject!
-  expect(recv1).rejects.toBe(value);
-  expect(recv2).rejects.toBe(value);
-  expect(recv3).rejects.toBe(value);
+  await expect(recv1).rejects.toBe(value);
+  await expect(recv2).rejects.toBe(value);
+  await expect(recv3).rejects.toBe(value);
 });
 
 test("ConcurrentLoader:fetch-concurrently", async () => {
