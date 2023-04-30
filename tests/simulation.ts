@@ -133,6 +133,23 @@ const mockModules = async () => {
   });
 };
 
+const expectErrorMessage = (promise: Promise<unknown>) => {
+  return expect(
+    promise.then(
+      (value) => value,
+      (reason) => {
+        console.log(reason);
+        if (reason.constructor === Error) {
+          expect(reason.constructor).toBe(Error);
+        } else {
+          expect(Object.getPrototypeOf(reason.constructor)).toBe(Error);
+        }
+        return Promise.reject(reason.message);
+      }
+    )
+  ).rejects;
+};
+
 const simSetChatters = (newChatters: User[]) => {
   mockChatters = newChatters;
 };
@@ -535,6 +552,7 @@ export {
   replace,
   flushPromises,
   clearAllTimers,
+  expectErrorMessage,
   START_TIME,
   DEFAULT_TEST_SETTINGS,
   EMPTY_CHATTERS,

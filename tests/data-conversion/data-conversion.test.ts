@@ -10,6 +10,7 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
+  expectErrorMessage,
 } from "../simulation.js";
 import { fileURLToPath } from "url";
 
@@ -338,23 +339,6 @@ test("conversion-test-5", async () => {
   expect(mockFs.existsSync("./userWaitTime.txt")).toBe(false);
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
-
-const expectErrorMessage = (promise: Promise<unknown>) => {
-  return expect(
-    promise.then(
-      (value) => value,
-      (reason) => {
-        console.log(reason);
-        if (reason.constructor === Error) {
-          expect(reason.constructor).toBe(Error);
-        } else {
-          expect(Object.getPrototypeOf(reason.constructor)).toBe(Error);
-        }
-        return Promise.reject(reason.message);
-      }
-    )
-  ).rejects;
-};
 
 // FIXME: do this better, e.g. by making `simRequireIndex` not throw but the result could be a function that throws + partial properties
 // or make a `saveSimRequireIndex` that is like simRequireIndex but it does not throw
