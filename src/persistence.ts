@@ -189,11 +189,13 @@ function ExtensionDataV3<ItemType extends z.ZodTypeAny>(itemSchema: ItemType) {
   return ExtensionDataV2(itemSchema);
 }
 
-const VersionedObject = z
+const VersionedObjectScheme = z
   .object({
     version: z.string(),
   })
   .passthrough();
+
+type VersionedObject = z.output<typeof VersionedObjectScheme>;
 
 export const QueueV3 = z.object({
   version: z
@@ -618,21 +620,21 @@ export type UpgradeResult<T> = {
 export class VersionedFile<T, P = T> {
   private loader: (
     fileMajorVersion: number,
-    object: object,
+    object: VersionedObject,
     versions: number[]
   ) => Promise<LoadResult<T>>;
   readonly upgradeAll: (value: P) => Promise<LoadResult<T>>;
-  private newestLoader: (object: object) => PromiseLike<T> | T;
+  private newestLoader: (object: VersionedObject) => PromiseLike<T> | T;
   private newestMajorVersion: number;
 
   private constructor(
     load: (
       fileMajorVersion: number,
-      object: object,
+      object: VersionedObject,
       versions: number[]
     ) => Promise<LoadResult<T>>,
     upgradeAll: (value: P) => Promise<LoadResult<T>>,
-    newestLoader: (object: object) => PromiseLike<T> | T,
+    newestLoader: (object: VersionedObject) => PromiseLike<T> | T,
     newestMajorVersion: number
   ) {
     this.loader = load;
@@ -643,10 +645,14 @@ export class VersionedFile<T, P = T> {
 
   static from<T>(
     majorVersion: number,
-    load: (object: object) => PromiseLike<T> | T
+    load: (object: VersionedObject) => PromiseLike<T> | T
   ): VersionedFile<T> {
     return new VersionedFile(
-      async (fileMajorVersion: number, object: object, versions: number[]) => {
+      async (
+        fileMajorVersion: number,
+        object: VersionedObject,
+        versions: number[]
+      ) => {
         if (fileMajorVersion != majorVersion) {
           throw new Error(
             `Save file version ${fileMajorVersion} is incompatible with version${
@@ -670,10 +676,14 @@ export class VersionedFile<T, P = T> {
   upgrade<U>(
     upgrade: (value: T) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
     majorVersion: number,
-    load: (object: object) => PromiseLike<U> | U
+    load: (object: VersionedObject) => PromiseLike<U> | U
   ): VersionedFile<U, P> {
     return new VersionedFile(
-      async (fileMajorVersion: number, object: object, versions: number[]) => {
+      async (
+        fileMajorVersion: number,
+        object: VersionedObject,
+        versions: number[]
+      ) => {
         if (fileMajorVersion != majorVersion) {
           const result = await this.loader(fileMajorVersion, object, [
             majorVersion,
@@ -712,7 +722,7 @@ export class VersionedFile<T, P = T> {
 
   private async loadFile(fileName: string): Promise<{
     majorVersion: number;
-    object: z.output<typeof VersionedObject>;
+    object: VersionedObject;
   } | null> {
     try {
       await fs.promises.stat(fileName);
@@ -733,7 +743,9 @@ export class VersionedFile<T, P = T> {
     const fileContents = await fs.promises.readFile(fileName, {
       encoding: "utf-8",
     });
-    const object = await VersionedObject.parseAsync(JSON.parse(fileContents));
+    const object = await VersionedObjectScheme.parseAsync(
+      JSON.parse(fileContents)
+    );
     const majorVersionString = object.version.split(".")[0];
     const majorVersion = z.coerce.number().int().safeParse(majorVersionString);
     if (!majorVersion.success) {

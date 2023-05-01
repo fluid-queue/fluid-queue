@@ -8,12 +8,15 @@ import {
 } from "./simulation.js";
 import { User } from "../src/extensions-api/queue-entry.js";
 import { Volume, createFsFromVolume } from "memfs";
+import path from "path";
 
 const mockChatters: User[] = [];
+const TEST_FILE_NAME = "./data/tests/versioned-file.json";
 
 async function setupMocks(
   volume?: InstanceType<typeof Volume>
 ): Promise<typeof fs> {
+  jest.resetModules();
   const { twitchApi } = await mockTwitchApi();
   asMock(twitchApi.getChatters).mockImplementation(() =>
     Promise.resolve(mockChatters)
@@ -335,5 +338,307 @@ test("loadResultActions:save-and-verify-save-off", async () => {
   expect(verify).toBeCalledTimes(0);
   expect(consoleWarnMock).toHaveBeenCalledWith(
     "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
+  );
+});
+
+test("VersionedFile:no-file", async () => {
+  await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  });
+  const result = await versionedFile.load(TEST_FILE_NAME);
+  expect(result).toBeNull();
+  const newestResult = await versionedFile.loadNewest(TEST_FILE_NAME);
+  expect(newestResult).toBeNull();
+  const upgradeData = "no need to upgrade";
+  const upgradeAll = await versionedFile.upgradeAll(upgradeData);
+  expect(upgradeAll.data).toBe(upgradeData);
+  expect(upgradeAll.save).toEqual(false);
+  expect(upgradeAll.upgradeHooks).toEqual([]);
+});
+
+test("VersionedFile:version-one", async () => {
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  });
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "1.0.0", test: [1, "A"] }),
+    { encoding: "utf-8" }
+  );
+  const result = await versionedFile.load(TEST_FILE_NAME);
+  expect(result).not.toBeNull();
+  if (result == null) {
+    throw new Error("unreachable");
+  }
+  expect(result.data).toEqual(`loaded({"version":"1.0.0","test":[1,"A"]})`);
+  expect(result.save).toEqual(false);
+  expect(result.upgradeHooks).toEqual([]);
+  const newestResult = await versionedFile.loadNewest(TEST_FILE_NAME);
+  expect(newestResult).toEqual(result.data);
+  const upgradeData = "no need to upgrade";
+  const upgradeAll = await versionedFile.upgradeAll(upgradeData);
+  expect(upgradeAll.data).toBe(upgradeData);
+  expect(upgradeAll.save).toEqual(false);
+  expect(upgradeAll.upgradeHooks).toEqual([]);
+});
+
+test("VersionedFile:version-three", async () => {
+  const hookCalls: number[] = [];
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  })
+    .upgrade(
+      (value) => ({
+        data: `upgradedV2(${value})`,
+        upgradeHooks: [() => void hookCalls.push(1)],
+      }),
+      2,
+      (object) => {
+        return `loadedV2(${JSON.stringify(object)})`;
+      }
+    )
+    .upgrade(
+      (value) => ({
+        data: `upgradedV3(${value})`,
+        upgradeHooks: [() => void hookCalls.push(2)],
+      }),
+      3,
+      (object) => {
+        return `loadedV3(${JSON.stringify(object)})`;
+      }
+    );
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "3.9.12", cat: "=^.^=" }),
+    { encoding: "utf-8" }
+  );
+  const result = await versionedFile.load(TEST_FILE_NAME);
+  expect(result).not.toBeNull();
+  if (result == null) {
+    throw new Error("unreachable");
+  }
+  expect(result.data).toEqual(`loadedV3({"version":"3.9.12","cat":"=^.^="})`);
+  expect(result.save).toEqual(false);
+  expect(result.upgradeHooks).toEqual([]);
+  const newestResult = await versionedFile.loadNewest(TEST_FILE_NAME);
+  expect(newestResult).toEqual(result.data);
+  const upgradeData = "data";
+  const upgradeAll = await versionedFile.upgradeAll(upgradeData);
+  expect(upgradeAll.data).toEqual(`upgradedV3(upgradedV2(data))`);
+  expect(upgradeAll.save).toEqual(true);
+  expect(upgradeAll.upgradeHooks.length).toEqual(2);
+  await runHooks(upgradeAll.upgradeHooks);
+  expect(hookCalls).toEqual([1, 2]);
+});
+
+test("VersionedFile:version-two-upgrade-to-three", async () => {
+  let hookCalls: number[] = [];
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  })
+    .upgrade(
+      (value) => ({
+        data: `upgradedV2(${value})`,
+        upgradeHooks: [() => void hookCalls.push(1)],
+      }),
+      2,
+      (object) => {
+        return `loadedV2(${JSON.stringify(object)})`;
+      }
+    )
+    .upgrade(
+      (value) => ({
+        data: `upgradedV3(${value})`,
+        upgradeHooks: [() => void hookCalls.push(2)],
+      }),
+      3,
+      (object) => {
+        return `loadedV3(${JSON.stringify(object)})`;
+      }
+    );
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "2.11.2", data: { value: 42 } }),
+    { encoding: "utf-8" }
+  );
+  const result = await versionedFile.load(TEST_FILE_NAME);
+  expect(result).not.toBeNull();
+  if (result == null) {
+    throw new Error("unreachable");
+  }
+  expect(result.data).toEqual(
+    `upgradedV3(loadedV2({"version":"2.11.2","data":{"value":42}}))`
+  );
+  expect(result.save).toEqual(true);
+  expect(result.upgradeHooks.length).toEqual(1);
+  await runHooks(result.upgradeHooks);
+  expect(hookCalls).toEqual([2]);
+  hookCalls = [];
+  const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
+  await expectErrorMessage(newestResult).toMatch(
+    /Save file version 2 is incompatible with version 3./
+  );
+  const upgradeData = "data";
+  const upgradeAll = await versionedFile.upgradeAll(upgradeData);
+  expect(upgradeAll.data).toEqual(`upgradedV3(upgradedV2(data))`);
+  expect(upgradeAll.save).toEqual(true);
+  expect(upgradeAll.upgradeHooks.length).toEqual(2);
+  await runHooks(upgradeAll.upgradeHooks);
+  expect(hookCalls).toEqual([1, 2]);
+});
+
+test("VersionedFile:version-one-upgrade-to-three", async () => {
+  let hookCalls: number[] = [];
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  })
+    .upgrade(
+      (value) => ({
+        data: `upgradedV2(${value})`,
+        upgradeHooks: [() => void hookCalls.push(1)],
+      }),
+      2,
+      (object) => {
+        return `loadedV2(${JSON.stringify(object)})`;
+      }
+    )
+    .upgrade(
+      (value) => ({
+        data: `upgradedV3(${value})`,
+        upgradeHooks: [() => void hookCalls.push(2)],
+      }),
+      3,
+      (object) => {
+        return `loadedV3(${JSON.stringify(object)})`;
+      }
+    );
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "1" }),
+    { encoding: "utf-8" }
+  );
+  const result = await versionedFile.load(TEST_FILE_NAME);
+  expect(result).not.toBeNull();
+  if (result == null) {
+    throw new Error("unreachable");
+  }
+  expect(result.data).toEqual(
+    `upgradedV3(upgradedV2(loaded({"version":"1"})))`
+  );
+  expect(result.save).toEqual(true);
+  expect(result.upgradeHooks.length).toEqual(2);
+  await runHooks(result.upgradeHooks);
+  expect(hookCalls).toEqual([1, 2]);
+  hookCalls = [];
+  const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
+  await expectErrorMessage(newestResult).toMatch(
+    /Save file version 1 is incompatible with version 3./
+  );
+  const upgradeData = "data";
+  const upgradeAll = await versionedFile.upgradeAll(upgradeData);
+  expect(upgradeAll.data).toEqual(`upgradedV3(upgradedV2(data))`);
+  expect(upgradeAll.save).toEqual(true);
+  expect(upgradeAll.upgradeHooks.length).toEqual(2);
+  await runHooks(upgradeAll.upgradeHooks);
+  expect(hookCalls).toEqual([1, 2]);
+});
+
+test("VersionedFile:version-too-big", async () => {
+  const hookCalls: number[] = [];
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  })
+    .upgrade(
+      (value) => ({
+        data: `upgradedV2(${value})`,
+        upgradeHooks: [() => void hookCalls.push(1)],
+      }),
+      2,
+      (object) => {
+        return `loadedV2(${JSON.stringify(object)})`;
+      }
+    )
+    .upgrade(
+      (value) => ({
+        data: `upgradedV3(${value})`,
+        upgradeHooks: [() => void hookCalls.push(2)],
+      }),
+      3,
+      (object) => {
+        return `loadedV3(${JSON.stringify(object)})`;
+      }
+    );
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "10" }),
+    { encoding: "utf-8" }
+  );
+  const result = versionedFile.load(TEST_FILE_NAME);
+  await expectErrorMessage(result).toMatch(
+    /Save file version 10 is incompatible with versions 1, 2, 3./
+  );
+  const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
+  await expectErrorMessage(newestResult).toMatch(
+    /Save file version 10 is incompatible with version 3./
+  );
+});
+
+test("VersionedFile:version-too-small", async () => {
+  const hookCalls: number[] = [];
+  const fs = await setupMocks();
+  const { VersionedFile } = await import("../src/persistence.js");
+  const versionedFile = VersionedFile.from(1, (object) => {
+    return `loaded(${JSON.stringify(object)})`;
+  })
+    .upgrade(
+      (value) => ({
+        data: `upgradedV2(${value})`,
+        upgradeHooks: [() => void hookCalls.push(1)],
+      }),
+      2,
+      (object) => {
+        return `loadedV2(${JSON.stringify(object)})`;
+      }
+    )
+    .upgrade(
+      (value) => ({
+        data: `upgradedV3(${value})`,
+        upgradeHooks: [() => void hookCalls.push(2)],
+      }),
+      3,
+      (object) => {
+        return `loadedV3(${JSON.stringify(object)})`;
+      }
+    );
+  await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
+  await fs.promises.writeFile(
+    TEST_FILE_NAME,
+    JSON.stringify({ version: "0" }),
+    { encoding: "utf-8" }
+  );
+  const result = versionedFile.load(TEST_FILE_NAME);
+  await expectErrorMessage(result).toMatch(
+    /Save file version 0 is incompatible with versions 1, 2, 3./
+  );
+  const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
+  await expectErrorMessage(newestResult).toMatch(
+    /Save file version 0 is incompatible with version 3./
   );
 });
