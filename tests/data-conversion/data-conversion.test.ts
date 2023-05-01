@@ -552,3 +552,23 @@ test("test-incompatible-v4.9.9.9", async () => {
     "future-version-incompatible": true,
   });
 });
+
+test("test-compatible-v3.99999", async () => {
+  const test = "test-compatible";
+  const volume = loadVolumeV2(test, "3.99999");
+  const index = await simRequireIndex(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will not be saved immediately!
+  checkResult(mockFs, fs, test, "3.99999");
+  if (index.quesoqueue.testAccess == null) {
+    throw new Error("testAccess is nullish");
+  }
+  index.quesoqueue.testAccess((accessor) => {
+    accessor.saveNow();
+  });
+  // queue will be downgraded now (information is lost)
+  checkResult(mockFs, fs, test, "3.0");
+});
