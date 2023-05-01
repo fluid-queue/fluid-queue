@@ -5,9 +5,9 @@ import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
 
 const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
-const LURKERS_TTL = Duration.parse("P1D").toMillis();
-const SUBSCRIBERS_TTL = Duration.parse("P1D").toMillis();
-const MODS_TTL = Duration.parse("P1D").toMillis();
+const LURKERS_TTL = Duration.parse("PT12H").toMillis();
+const SUBSCRIBERS_TTL = Duration.parse("PT12H").toMillis();
+const MODS_TTL = Duration.parse("PT12H").toMillis();
 
 const recentChatters = new TTLCache<string, Chatter>({
   ttl: RECENT_CHATTERS_TTL,
