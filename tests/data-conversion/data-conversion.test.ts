@@ -537,3 +537,18 @@ test("custom-levels-v2.2-to-v3.0", async () => {
   // queue will be saved immediately
   checkResult(mockFs, fs, test, "3.0");
 });
+
+test("test-incompatible-v4.9.9.9", async () => {
+  const test = "test-incompatible";
+  const volume = loadVolumeV2(test, "4.9.9.9");
+  const mockFs = await throwingIndex(volume);
+  // check file system -> old file still exists -> no loss of data on conversion error!
+  expect(mockFs.existsSync("./data/queue.json")).toBe(true);
+  const data = JSON.parse(
+    mockFs.readFileSync("./data/queue.json", { encoding: "utf-8" })
+  );
+  expect(data).toEqual({
+    version: "4.9.9.9",
+    "future-version-incompatible": true,
+  });
+});
