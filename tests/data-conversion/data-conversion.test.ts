@@ -127,6 +127,25 @@ const checkResult = (
   expect(queue_real).toEqual(queue_expect);
 };
 
+const checkLostLevels = (
+  mockFs: typeof fs,
+  realFs: typeof fs,
+  testFolder: string,
+  fileName: string
+) => {
+  const lostLevelsReal = JSON.parse(mockFs.readFileSync(fileName, "utf-8"));
+  const lostLevelsExpect = JSON.parse(
+    realFs.readFileSync(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        `data/${testFolder}/${path.basename(fileName)}`
+      ),
+      "utf-8"
+    )
+  );
+  expect(lostLevelsReal).toEqual(lostLevelsExpect);
+};
+
 const checkCustomCodes = (
   mockFs: typeof fs,
   realFs: typeof fs,
@@ -571,4 +590,26 @@ test("test-compatible-v3.99999", async () => {
   });
   // queue will be downgraded now (information is lost)
   checkResult(mockFs, fs, test, "3.0");
+});
+
+test("test-renamed-or-deleted", async () => {
+  const test = "test-renamed-or-deleted";
+  const volume = loadVolumeV2(test, "2.2");
+  const index = await simRequireIndex(volume, undefined, 1683058095000);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  const fileName = `data/lost-levels-${
+    new Date().toISOString().replaceAll(":", "").split(".")[0]
+  }Z.json`;
+  expect(consoleWarnMock).toHaveBeenCalledTimes(4);
+  expect(consoleWarnMock).toHaveBeenCalledWith(
+    "4 users in your queue could not be found!"
+  );
+  expect(consoleWarnMock).toHaveBeenCalledWith(
+    `The data that could not be converted can be found here: ${fileName}`
+  );
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "3.0");
+  checkLostLevels(mockFs, fs, test, fileName);
 });

@@ -241,11 +241,15 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
       });
 
       getUsers = jest.fn(async (users: string[]): Promise<User[]> => {
-        return users.map((user) => ({
-          id: `\${user(${JSON.stringify(user)}).id}`,
-          name: user,
-          displayName: `\${user(${JSON.stringify(user)}).displayName}`,
-        }));
+        return users
+          .filter((user) => {
+            return !user.match(/^\${(deleted|renamed)\(.*\)(\.name)?}$/);
+          })
+          .map((user) => ({
+            id: `\${user(${JSON.stringify(user)}).id}`,
+            name: user,
+            displayName: `\${user(${JSON.stringify(user)}).displayName}`,
+          }));
       });
     }
     return {

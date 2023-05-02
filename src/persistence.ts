@@ -860,7 +860,7 @@ async function upgradeQueueV2ToV3(
   value: QueueV2
 ): Promise<UpgradeResult<z.output<typeof QueueV3>>> {
   const lostLevels: SubmittedEntryV2[] = [];
-  const lostWaiting: (WaitingV2 & { userName: string })[] = [];
+  const lostWaiting: (WaitingV2 & { username: string })[] = [];
   let current: z.output<typeof SubmittedEntryV3> | null = null;
   const queue: z.output<typeof QueueV3>["entries"]["queue"] = [];
   const waiting: z.output<typeof QueueV3>["waiting"] = [];
@@ -898,7 +898,7 @@ async function upgradeQueueV2ToV3(
   const addWaitingUpgrade = (userName: string, waitingEntry: WaitingV2) => {
     addUpgrade(userName, (user) => {
       if (user == null) {
-        lostWaiting.push({ ...waitingEntry, userName });
+        lostWaiting.push({ ...waitingEntry, username: userName });
       } else {
         waiting.push({
           user: {

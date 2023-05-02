@@ -1,0 +1,64 @@
+{
+  "version": "3.0",
+  "extensions": {
+    "customlevel": {
+      "data": {},
+      "version": "1.0"
+    }
+  },
+  "entries": {
+    "current": null,
+    "queue": [
+      {
+        "code": "BW2-G2R-CMG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"liquidnya\").id}",
+          "name": "liquidnya",
+          "displayName": "${user(\"liquidnya\").displayName}"
+        }
+      },
+      {
+        "code": "BRL-F70-CLG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"helperblock\").id}",
+          "name": "helperblock",
+          "displayName": "${user(\"helperblock\").displayName}"
+        }
+      }
+    ]
+  },
+  "waiting": [
+    {
+      "user": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
+      },
+      "waiting": {
+        "minutes": 10
+      },
+      "weight": {
+        "minutes": 10,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    },
+    {
+      "user": {
+        "id": "${user(\"helperblock\").id}",
+        "name": "helperblock",
+        "displayName": "${user(\"helperblock\").displayName}"
+      },
+      "waiting": {
+        "minutes": 3
+      },
+      "weight": {
+        "minutes": 3,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    }
+  ]
+}
