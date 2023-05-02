@@ -456,7 +456,26 @@ const queue = {
     });
   },
 
-  submittedlevel: async (submitter: QueueSubmitter) => {
+  submittedlevel: async (submitter: QueueSubmitter | string) => {
+    if (typeof submitter === "string") {
+      if (submitter == "") {
+        return -2;
+      }
+      return data.access((data) => {
+        if (
+          data.current_level != undefined &&
+          queue.matchUsernameArgument(submitter)(data.current_level)
+        ) {
+          return 0;
+        }
+        const level = data.levels.find(queue.matchUsernameArgument(submitter));
+        if (level !== undefined) {
+          return level;
+        } else {
+          return -1;
+        }
+      });
+    }
     const getList = await queue.list();
     return data.access((data) => {
       if (

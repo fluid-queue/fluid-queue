@@ -237,6 +237,20 @@ const submitted_message = async (
   return sender + ", you have submitted " + level + " to the queue.";
 };
 
+const submitted_mod_message = async (
+  level: QueueEntry | number,
+  usernameArgument: string
+) => {
+  if (level === 0) {
+    return `${usernameArgument}'s level is being played right now!`;
+  } else if (level === -1) {
+    return `${usernameArgument} is not in the queue.`;
+  } else if (typeof level === "number") {
+    return "You can use !submitted <username> to view someones entry.";
+  }
+  return level.submitter + " has submitted " + level + " to the queue.";
+};
+
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
 // of the person that sent the message.
@@ -714,9 +728,19 @@ async function HandleMessage(
       )
     );
   } else if (aliases.isAlias("submitted", message)) {
-    respond(
-      await submitted_message(await quesoqueue.submittedlevel(sender), sender)
-    );
+    if (sender.isMod || sender.isBroadcaster) {
+      const usernameArgument = get_remainder(message);
+      respond(
+        await submitted_mod_message(
+          await quesoqueue.submittedlevel(usernameArgument),
+          usernameArgument
+        )
+      );
+    } else {
+      respond(
+        await submitted_message(await quesoqueue.submittedlevel(sender), sender)
+      );
+    }
   } else if (
     settings.level_timeout &&
     level_timer != null &&
