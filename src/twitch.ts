@@ -109,6 +109,19 @@ const twitch = {
     }
   },
 
+  getRecentChatter: (usernameOrSubmitter: string): Chatter | null => {
+    // do not purge stale entries on purpose
+    for (const value of recentChatters.values()) {
+      if (
+        value.name === usernameOrSubmitter ||
+        value.displayName === usernameOrSubmitter
+      ) {
+        return value;
+      }
+    }
+    return null;
+  },
+
   setToLurk: (submitter: Chatter) => {
     lurkers.set(submitter.id, submitter);
   },

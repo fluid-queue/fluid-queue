@@ -28,6 +28,7 @@ const defaultAliases: Record<string, string[]> = {
   punt: ["!punt"],
   random: ["!random"],
   remove: ["!remove", "!leave"],
+  rename: ["!rename"],
   replace: ["!replace", "!change", "!swap"],
   restart: ["!restart"],
   resume: ["!resume"],
