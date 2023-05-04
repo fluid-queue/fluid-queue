@@ -72,10 +72,6 @@ const twitch = {
   async getOnlineUsers(forceRefresh = false): Promise<OnlineUsers> {
     const chatters = await twitchApi.getChatters(forceRefresh);
     recentChatters.purgeStale(); // manually calling this because we are calling values()
-    // console.log(JSON.stringify([...recentChatters.keys()].map(key => ({ key, ttl: recentChatters.getRemainingTTL(key) }))));
-    // console.log("recent chatters: " + (new Date()).toISOString() + " " + JSON.stringify([...recentChatters.values()]));
-    // console.log("lurkers: " + (new Date()).toISOString() + " " + JSON.stringify([...lurkers.values()]));
-    // console.log("chatters: " + (new Date()).toISOString() + " " + JSON.stringify([...chatters]));
     return createOnlineUsers(
       [...recentChatters.values(), ...chatters],
       (user) => !lurkers.has(user.id)
