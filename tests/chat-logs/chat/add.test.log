@@ -98,3 +98,31 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 
 [02:25:34] @^FurretWalkBot: !submitted @furretwalkbot
 [02:25:34] @^helperblock: FurretWalkBot's level is being played right now!
+
+# !entry argument is needed as a moderator
+
+[02:26:34] @^FurretWalkBot: !submitted
+[02:26:34] @^helperblock: You can use !submitted <username> to view someones entry.
+
+# unmodded FurretWalkBot
+
+[02:27:34] ^FurretWalkBot: !submitted
+[02:27:34] @^helperblock: Your level is being played right now!
+
+[02:28:45] ~%?liquidnya: !dismiss
+[02:28:45] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
+
+[02:29:34] ^FurretWalkBot: !submitted
+[02:29:34] @^helperblock: FurretWalkBot, looks like you're not in the queue. Try !add XXX-XXX-XXX.
+
+[02:30:45] ~%?liquidnya: !submitted @FurretWalkBot
+[02:30:45] @^helperblock: @FurretWalkBot is not in the queue.
+
+[03:25:13] ^FurretWalkBot: !add 3H7-B19-7RF
+[03:25:13] @^helperblock: FurretWalkBot, 3H7-B19-7RF has been added to the queue.
+
+[03:29:34] ^FurretWalkBot: !submitted
+[03:29:34] @^helperblock: FurretWalkBot, you have submitted 3H7-B19-7RF to the queue.
+
+[03:30:45] ~%?liquidnya: !submitted furretwalkbot
+[03:30:45] @^helperblock: FurretWalkBot has submitted 3H7-B19-7RF to the queue.
