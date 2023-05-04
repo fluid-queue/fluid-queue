@@ -139,7 +139,7 @@ const twitch = {
       } else if (usernameOrSubmitter.displayName != null) {
         displayName = usernameOrSubmitter.displayName;
       } else {
-        // can not remove anyone with only `id` or no information
+        // can not remove anyone with no `id`, `name`, nor `displayName`
         return false;
       }
     }
