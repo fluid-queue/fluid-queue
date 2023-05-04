@@ -67,6 +67,7 @@ const WaitingUsersV1 = z.string().describe("waiting username").array();
 type WaitingUsersV1 = z.infer<typeof WaitingUsersV1>;
 const UserWaitTimeV1 = z
   .number()
+  .int()
   .nonnegative()
   .describe("wait time in minutes")
   .array();
@@ -115,14 +116,16 @@ function ExtensionDataV2<ItemType extends z.ZodTypeAny>(itemSchema: ItemType) {
 
 export const WaitingSchemeV2 = z
   .object({
-    waitTime: z.number().nonnegative().describe("wait time in minutes"),
+    waitTime: z.number().int().nonnegative().describe("wait time in minutes"),
     weightMin: z
       .number()
+      .int()
       .nonnegative()
       .describe("the weighted time for weighted random in minutes")
       .optional(),
     weightMsec: z
       .number()
+      .int()
       .gte(0)
       .lt(60000)
       .describe(

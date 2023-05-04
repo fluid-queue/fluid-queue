@@ -16,10 +16,10 @@ export const WaitingSchemeV3 = z.object({
     name: z.string(),
     displayName: z.string(),
   }),
-  waiting: z.object({ minutes: z.number().nonnegative() }),
+  waiting: z.object({ minutes: z.number().int().nonnegative() }),
   weight: z.object({
-    minutes: z.number().nonnegative(),
-    milliseconds: z.number().gte(0).lt(60000),
+    minutes: z.number().int().nonnegative(),
+    milliseconds: z.number().int().gte(0).lt(60000),
   }),
   lastOnline: z.string().datetime(),
 });
