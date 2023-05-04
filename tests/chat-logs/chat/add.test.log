@@ -126,3 +126,8 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 
 [03:30:45] ~%?liquidnya: !submitted furretwalkbot
 [03:30:45] @^helperblock: FurretWalkBot has submitted 3H7-B19-7RF to the queue.
+
+# if you are not a mod (or broadcaster) you can not query other peoples levels
+
+[03:29:34] ^FurretWalkBot: !submitted liquidnya
+[03:29:34] @^helperblock: FurretWalkBot, you have submitted 3H7-B19-7RF to the queue.
