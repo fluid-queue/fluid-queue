@@ -1,5 +1,5 @@
 import settings from "./settings.js";
-import { twitch } from "./twitch.js";
+import { OnlineUsers, twitch } from "./twitch.js";
 import { setIntervalAsync } from "set-interval-async/dynamic";
 import * as persistence from "./persistence.js";
 import Waiting from "./waiting.js";
@@ -910,40 +910,44 @@ const queue = {
     return await queue.weightednext(list);
   },
 
+  renameAndPartition: (
+    onlineUsers: OnlineUsers
+  ): QueueDataMap<OnlineOfflineList> => {
+    return (data: QueueDataAccessor) => {
+      const [online, offline] = partition(data.levels, (level) => {
+        const user = onlineUsers.getUser(level.submitter);
+        if (user == null) {
+          // offline
+          return false;
+        }
+        // automatically rename on name change
+        level.rename(user);
+        // online
+        return true;
+      });
+      return { online, offline };
+    };
+  },
+
   list: async (
     forceRefresh = false
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
-    return (data: QueueDataAccessor) => {
-      const [online, offline] = partition(data.levels, (level) =>
-        onlineUsers.hasSubmitter(level.submitter)
-      );
-      return { online, offline };
-    };
+    return queue.renameAndPartition(onlineUsers);
   },
 
   sublist: async (
     forceRefresh = false
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineSubscribers(forceRefresh);
-    return (data: QueueDataAccessor) => {
-      const [online, offline] = partition(data.levels, (level) =>
-        onlineUsers.hasSubmitter(level.submitter)
-      );
-      return { online, offline };
-    };
+    return queue.renameAndPartition(onlineUsers);
   },
 
   modlist: async (
     forceRefresh = false
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineMods(forceRefresh);
-    return (data: QueueDataAccessor) => {
-      const [online, offline] = partition(data.levels, (level) =>
-        onlineUsers.hasSubmitter(level.submitter)
-      );
-      return { online, offline };
-    };
+    return queue.renameAndPartition(onlineUsers);
   },
 
   rename: (user: QueueSubmitter | string): string | void => {
@@ -1076,10 +1080,10 @@ const queue = {
               submitter.id
             )
           ) {
-            data.waitingByUserId[submitter.id].addOneMinute(
-              queue.multiplier(submitter),
-              now
-            );
+            const waiting = data.waitingByUserId[submitter.id];
+            waiting.addOneMinute(queue.multiplier(submitter), now);
+            // try to automatically rename user if the name changes
+            waiting.rename(submitter);
           } else {
             data.waitingByUserId[submitter.id] = Waiting.create(submitter, now);
           }

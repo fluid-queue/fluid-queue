@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { QueueSubmitter } from "./extensions-api/queue-entry.js";
+import { User } from "./extensions-api/queue-entry.js";
 
 const timeOrNow = (time: string | Date | undefined): string => {
   if (time === undefined) {
@@ -94,7 +94,7 @@ export class Waiting {
     // round to nearest minute
     return this.weightMin + (this.weightMsec >= 30000 ? 1 : 0);
   }
-  rename(user: QueueSubmitter): boolean {
+  rename(user: User): boolean {
     if (this.user.id == user.id) {
       const rename =
         this.user.name != user.name ||

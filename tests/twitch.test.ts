@@ -1,7 +1,7 @@
 import { jest } from "@jest/globals";
 import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
 import { Settings } from "../src/settings-type.js";
-import { User } from "./extensions-api/queue-entry.js";
+import { User } from "../src/extensions-api/queue-entry.js";
 import * as timers from "timers";
 
 // constants
@@ -81,9 +81,9 @@ test("online users", async () => {
 
   // online users should be empty
   let onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set());
-  expect(onlineUsers.name).toEqual(new Set());
+  expect([...onlineUsers.users.keys()]).toEqual([]);
+  expect([...onlineUsers.names.keys()]).toEqual([]);
+  expect([...onlineUsers.displayNames.keys()]).toEqual([]);
   expect(onlineUsers.hasSubmitter({})).toBe(false);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(false);
 
@@ -101,9 +101,15 @@ test("online users", async () => {
     },
   ]);
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot"].sort()
+  );
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
@@ -115,10 +121,18 @@ test("online users", async () => {
     buildChatter("helperblock", "helperblock", false, true, false)
   );
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"])); // no id for helperblock yet
-  expect(onlineUsers.name).toEqual(
-    new Set(["liquidnya", "furretwalkbot", "helperblock"])
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    [
+      '${user("liquidnya").id}',
+      '${user("furretwalkbot").id}',
+      '${user("helperblock").id}',
+    ].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot", "helperblock"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot", "helperblock"].sort()
   );
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
@@ -128,10 +142,18 @@ test("online users", async () => {
   jest.setSystemTime(new Date("2022-04-21T00:04:00Z"));
   await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"])); // no id for helperblock yet
-  expect(onlineUsers.name).toEqual(
-    new Set(["liquidnya", "furretwalkbot", "helperblock"])
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    [
+      '${user("liquidnya").id}',
+      '${user("furretwalkbot").id}',
+      '${user("helperblock").id}',
+    ].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot", "helperblock"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot", "helperblock"].sort()
   );
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
@@ -141,9 +163,15 @@ test("online users", async () => {
   jest.setSystemTime(new Date("2022-04-21T00:05:00Z"));
   await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot"].sort()
+  );
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
@@ -153,9 +181,9 @@ test("online users", async () => {
     buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
   );
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1"]));
-  expect(onlineUsers.name).toEqual(new Set(["liquidnya"]));
+  expect([...onlineUsers.users.keys()]).toEqual(['${user("liquidnya").id}']);
+  expect([...onlineUsers.names.keys()]).toEqual(["liquidnya"]);
+  expect([...onlineUsers.displayNames.keys()]).toEqual(["liquidnya"]);
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
@@ -164,9 +192,9 @@ test("online users", async () => {
     buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
   );
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1"]));
-  expect(onlineUsers.name).toEqual(new Set(["liquidnya"]));
+  expect([...onlineUsers.users.keys()]).toEqual(['${user("liquidnya").id}']);
+  expect([...onlineUsers.names.keys()]).toEqual(["liquidnya"]);
+  expect([...onlineUsers.displayNames.keys()]).toEqual(["liquidnya"]);
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
@@ -174,9 +202,15 @@ test("online users", async () => {
   // unlurk makes them online again!
   twitch.notLurkingAnymore("furretwalkbot");
   onlineUsers = await twitch.getOnlineUsers();
-  expect(onlineUsers.submitters).not.toEqual([]);
-  // expect(onlineUsers.id).toEqual(new Set(["test/1", "test/2"]));
-  expect(onlineUsers.name).toEqual(new Set(["liquidnya", "furretwalkbot"]));
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot"].sort()
+  );
   expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);

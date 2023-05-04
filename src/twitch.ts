@@ -17,53 +17,62 @@ const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
 const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
 
 export interface OnlineUsers {
-  submitters: User[];
-  id: Set<string>;
-  name: Set<string>;
-  displayName: Set<string>;
+  users: Map<string, User>;
+  names: Map<string, string>; // from name to id
+  displayNames: Map<string, string>; // from displayName to id
   hasSubmitter(submitter: Partial<User>): boolean;
+  getUser(submitter: Partial<User>): User | null;
 }
 
 function createOnlineUsers(
-  userNamesSet: User[] | OnlineUsers,
+  usersArgument: User[] | OnlineUsers,
   filter?: (submitter: User) => boolean
 ): OnlineUsers {
-  const users = (
-    Array.isArray(userNamesSet) ? userNamesSet : userNamesSet.submitters
-  ).filter(filter ?? (() => true));
-  const id: Set<string> = new Set();
-  const name: Set<string> = new Set();
-  const displayName: Set<string> = new Set();
-  for (const user of users) {
-    if (user.id !== undefined) {
-      id.add(user.id);
+  if (!Array.isArray(usersArgument)) {
+    if (filter != null) {
+      for (const [key, value] of usersArgument.users.entries()) {
+        if (!filter(value)) {
+          usersArgument.names.delete(value.name);
+          usersArgument.displayNames.delete(value.displayName);
+          usersArgument.users.delete(key);
+        }
+      }
     }
-    if (user.name !== undefined) {
-      name.add(user.name);
-    }
-    if (user.displayName !== undefined) {
-      displayName.add(user.displayName);
-    }
+    return usersArgument;
   }
+  const usersList = usersArgument.filter(filter ?? (() => true));
+  const users = new Map(usersList.map((user) => [user.id, user]));
+  const names = new Map(usersList.map((user) => [user.name, user.id]));
+  const displayNames = new Map(
+    usersList.map((user) => [user.displayName, user.id])
+  );
+
   return {
-    id,
-    name,
-    displayName,
-    submitters: users,
+    users,
+    names,
+    displayNames,
     hasSubmitter(submitter) {
-      if (submitter.id !== undefined && id.has(submitter.id)) {
-        return true;
+      return this.getUser(submitter) != null;
+    },
+    getUser(submitter) {
+      if (submitter.id !== undefined) {
+        return this.users.get(submitter.id) ?? null;
       }
-      if (submitter.name !== undefined && name.has(submitter.name)) {
-        return true;
+      if (submitter.name !== undefined) {
+        const id = this.names.get(submitter.name);
+        if (id === undefined) {
+          return null;
+        }
+        return this.users.get(id) ?? null;
       }
-      if (
-        submitter.displayName !== undefined &&
-        displayName.has(submitter.displayName)
-      ) {
-        return true;
+      if (submitter.displayName !== undefined) {
+        const id = this.displayNames.get(submitter.displayName);
+        if (id === undefined) {
+          return null;
+        }
+        return this.users.get(id) ?? null;
       }
-      return false;
+      return null;
     },
   };
 }
