@@ -456,26 +456,31 @@ const queue = {
     });
   },
 
-  submittedlevel: async (submitter: QueueSubmitter | string) => {
-    if (typeof submitter === "string") {
-      if (submitter == "") {
-        return -2;
-      }
-      return data.access((data) => {
-        if (
-          data.current_level != undefined &&
-          queue.matchUsernameArgument(submitter)(data.current_level)
-        ) {
-          return 0;
-        }
-        const level = data.levels.find(queue.matchUsernameArgument(submitter));
-        if (level !== undefined) {
-          return level;
-        } else {
-          return -1;
-        }
-      });
+  modSubmittedLevel: (
+    submitter: string
+  ):
+    | { result: "no-submitter" | "not-found" }
+    | { result: "current" | "level"; level: QueueEntry } => {
+    if (submitter == "") {
+      return { result: "no-submitter" };
     }
+    return data.access((data) => {
+      if (
+        data.current_level != undefined &&
+        queue.matchUsernameArgument(submitter)(data.current_level)
+      ) {
+        return { result: "current", level: data.current_level };
+      }
+      const level = data.levels.find(queue.matchUsernameArgument(submitter));
+      if (level !== undefined) {
+        return { result: "level", level };
+      } else {
+        return { result: "not-found" };
+      }
+    });
+  },
+
+  submittedlevel: async (submitter: QueueSubmitter) => {
     const getList = await queue.list();
     return data.access((data) => {
       if (

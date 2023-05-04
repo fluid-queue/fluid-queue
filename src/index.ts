@@ -238,17 +238,25 @@ const submitted_message = async (
 };
 
 const submitted_mod_message = async (
-  level: QueueEntry | number,
+  submitted:
+    | { result: "no-submitter" | "not-found" }
+    | { result: "current" | "level"; level: QueueEntry },
   usernameArgument: string
 ) => {
-  if (level === 0) {
-    return `${usernameArgument}'s level is being played right now!`;
-  } else if (level === -1) {
+  if (submitted.result == "current") {
+    return `${submitted.level.submitter}'s level is being played right now!`;
+  } else if (submitted.result == "not-found") {
     return `${usernameArgument} is not in the queue.`;
-  } else if (typeof level === "number") {
-    return "You can use !submitted <username> to view someones entry.";
+  } else if (submitted.result == "level") {
+    return (
+      submitted.level.submitter +
+      " has submitted " +
+      submitted.level +
+      " to the queue."
+    );
   }
-  return level.submitter + " has submitted " + level + " to the queue.";
+
+  return "You can use !submitted <username> to view someones entry.";
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -732,7 +740,7 @@ async function HandleMessage(
       const usernameArgument = get_remainder(message);
       respond(
         await submitted_mod_message(
-          await quesoqueue.submittedlevel(usernameArgument),
+          quesoqueue.modSubmittedLevel(usernameArgument),
           usernameArgument
         )
       );
