@@ -2,18 +2,7 @@ import { jest } from "@jest/globals";
 import { ConcurrentLoader, SingleValueCache } from "../src/cache.js";
 import { BroadcastOnce } from "../src/sync.js";
 import { Duration } from "@js-joda/core";
-
-const expectErrorMessage = (promise: Promise<unknown>) => {
-  return expect(
-    promise.then(
-      (value) => value,
-      (reason) => {
-        expect(reason.constructor).toBe(Error);
-        return Promise.reject(reason.message);
-      }
-    )
-  ).rejects;
-};
+import { expectErrorMessage } from "./simulation.js";
 
 test("BroadcastOnce:value", async () => {
   jest.useRealTimers();
@@ -89,9 +78,9 @@ test("BroadcastOnce:Promise:reject", async () => {
   // sending a promise with an rejection
   channel.send(Promise.reject(value));
   // will make every subscriber reject!
-  expect(recv1).rejects.toBe(value);
-  expect(recv2).rejects.toBe(value);
-  expect(recv3).rejects.toBe(value);
+  await expect(recv1).rejects.toBe(value);
+  await expect(recv2).rejects.toBe(value);
+  await expect(recv3).rejects.toBe(value);
 });
 
 test("ConcurrentLoader:fetch-concurrently", async () => {

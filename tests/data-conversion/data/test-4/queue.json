@@ -1,43 +1,72 @@
 {
-  "version": "2.2",
-  "currentLevel": {
-    "code": "QWF-3K9-84G",
-    "type": "smm2",
-    "submitter": "FurretWalkBot",
-    "username": "furretwalkbot"
-  },
+  "version": "3.0",
   "extensions": {
     "customlevel": {
       "data": {},
       "version": "1.0"
     }
   },
-  "queue": [
-    {
-      "code": "BW2-G2R-CMG",
+  "entries": {
+    "current": {
+      "code": "QWF-3K9-84G",
       "type": "smm2",
-      "submitter": "liquidnya",
-      "username": "liquidnya"
+      "submitter": {
+        "id": "${user(\"furretwalkbot\").id}",
+        "name": "furretwalkbot",
+        "displayName": "${user(\"furretwalkbot\").displayName}"
+      }
+    },
+    "queue": [
+      {
+        "code": "BW2-G2R-CMG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"liquidnya\").id}",
+          "name": "liquidnya",
+          "displayName": "${user(\"liquidnya\").displayName}"
+        }
+      },
+      {
+        "code": "BRL-F70-CLG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"helperblock\").id}",
+          "name": "helperblock",
+          "displayName": "${user(\"helperblock\").displayName}"
+        }
+      }
+    ]
+  },
+  "waiting": [
+    {
+      "user": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
+      },
+      "waiting": {
+        "minutes": 10
+      },
+      "weight": {
+        "minutes": 10,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
     },
     {
-      "code": "BRL-F70-CLG",
-      "type": "smm2",
-      "submitter": "helperblock",
-      "username": "helperblock"
+      "user": {
+        "id": "${user(\"helperblock\").id}",
+        "name": "helperblock",
+        "displayName": "${user(\"helperblock\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
     }
-  ],
-  "waiting": {
-    "liquidnya": {
-      "waitTime": 10,
-      "weightMin": 10,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-    },
-    "helperblock": {
-      "waitTime": 1,
-      "weightMin": 1,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-    }
-  }
+  ]
 }

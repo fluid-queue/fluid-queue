@@ -152,7 +152,7 @@ const loadExtensionModules = async (
 function isPersistedQueueEntry(
   entry: PersistedEntry | PersistedQueueEntry
 ): entry is PersistedQueueEntry {
-  return "submitter" in entry && "username" in entry;
+  return "submitter" in entry;
 }
 
 export class Extensions {
@@ -291,8 +291,15 @@ export class Extensions {
         toString() {
           return displayFallback(entry);
         },
-        serialize() {
+        serializePersistedQueueEntry() {
           return entry;
+        },
+        serializePersistedEntry() {
+          return {
+            type: entry.type,
+            code: entry.code,
+            data: entry.data,
+          };
         },
         get submitter() {
           return queueSubmitter(entry);
@@ -303,7 +310,7 @@ export class Extensions {
       toString() {
         return displayFallback(entry);
       },
-      serialize() {
+      serializePersistedEntry() {
         return entry;
       },
     };

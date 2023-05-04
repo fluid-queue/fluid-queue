@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator

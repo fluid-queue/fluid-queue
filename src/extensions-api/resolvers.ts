@@ -454,7 +454,7 @@ function createGenericResolversApi<T extends object>(
         toString() {
           return display(value);
         },
-        serialize() {
+        serializePersistedEntry() {
           const { code, data } = serialize(value);
           return {
             type: type,
@@ -468,12 +468,23 @@ function createGenericResolversApi<T extends object>(
       toString() {
         return display(value);
       },
-      serialize() {
+      serializePersistedQueueEntry() {
         const { code, data } = serialize(value);
         return {
-          submitter: submitter.displayName,
+          submitter: {
+            id: submitter.id,
+            name: submitter.name,
+            displayName: submitter.displayName,
+          },
           type: type,
-          username: submitter.login,
+          code,
+          data,
+        };
+      },
+      serializePersistedEntry() {
+        const { code, data } = serialize(value);
+        return {
+          type: type,
           code,
           data,
         };
@@ -569,15 +580,21 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
           success: true,
           entry: {
             ...resolved,
-            serialize(): PersistedQueueEntry {
-              const resolvedSerialized = resolved.serialize();
+            serializePersistedQueueEntry(): PersistedQueueEntry {
+              const resolvedSerialized = resolved.serializePersistedEntry();
               return {
-                submitter: submitter.displayName,
+                submitter: {
+                  id: submitter.id,
+                  name: submitter.name,
+                  displayName: submitter.displayName,
+                },
                 type: resolvedSerialized.type,
-                username: submitter.login,
                 code: resolvedSerialized.code,
                 data: resolvedSerialized.data,
               };
+            },
+            serializePersistedEntry() {
+              return resolved.serializePersistedEntry();
             },
             get submitter() {
               return submitter;

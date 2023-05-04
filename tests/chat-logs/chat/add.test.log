@@ -2,8 +2,8 @@
 chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -60,8 +60,8 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"le
 [02:25:49] @^FurretWalkBot: !list
 [02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
 
-queue.json/currentLevel {"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [02:19:13] ~%?liquidnya: !clear
 [02:19:14] @^helperblock: The queue has been cleared!

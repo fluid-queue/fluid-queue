@@ -52,7 +52,8 @@ const Aliases = {
     }
     writeFileAtomicSync(
       ALIASES_FILE.fileName,
-      JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0)
+      JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0),
+      "utf-8"
     );
   },
   loadAliases: (create = false) => {

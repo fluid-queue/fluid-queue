@@ -13,12 +13,11 @@ import { Settings } from "../src/settings-type.js";
 import { Chatter, Responder } from "../src/extensions-api/command.js";
 import { Chatbot, helper } from "../src/chatbot.js";
 import { z } from "zod";
-import { QueueSubmitter } from "../src/extensions-api/queue-entry.js";
+import { QueueSubmitter, User } from "../src/extensions-api/queue-entry.js";
 import { Queue } from "../src/queue.js";
 import { Twitch } from "../src/twitch.js";
 import * as timers from "timers";
 import { fileURLToPath } from "url";
-import { HelixChatChatter } from "@twurple/api";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -38,35 +37,15 @@ const DEFAULT_TEST_SETTINGS = {
   ],
   message_cooldown: 5,
 };
-/**
- * @deprecated
- */
-type LegacyChatChatters = {
-  _links: unknown;
-  chatter_count: number;
-  chatters: Record<string, string[]>;
-};
 // constants
-const EMPTY_CHATTERS = {
-  _links: {},
-  chatter_count: 0,
-  chatters: {
-    broadcaster: [],
-    vips: [],
-    moderators: [],
-    staff: [],
-    admins: [],
-    global_mods: [],
-    viewers: [],
-  },
-};
+const EMPTY_CHATTERS: User[] = [];
 // async function type
 const AsyncFunction = (async () => {
   /* used for type information */
 }).constructor;
 
 // mock variables
-let mockChatters: twitchApiModule.ChatChatter[] = [];
+let mockChatters: User[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -140,31 +119,39 @@ const mockModules = async () => {
   asMock(twitchApi.getChatters).mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
+
+  // mock needed for ttlcache
+  jest.spyOn(global.performance, "now").mockImplementation(() => {
+    let result;
+    if (typeof global.performance.timeOrigin === "number") {
+      const origin = Math.floor(global.performance.timeOrigin);
+      result = Math.max(new Date().getTime() - origin, 0);
+    } else {
+      result = new Date().getTime();
+    }
+    return result;
+  });
 };
 
-const simSetChatters = (
-  newChatters: LegacyChatChatters | LegacyChatChatters["chatters"]
-) => {
-  let chatters: LegacyChatChatters["chatters"];
-  // automatically create a correct chatters object
-  if (!("chatters" in newChatters) || Array.isArray(newChatters["chatters"])) {
-    chatters = newChatters as LegacyChatChatters["chatters"];
-  } else {
-    chatters = newChatters["chatters"];
-  }
-  const users: twitchApiModule.ChatChatter[] = [];
-  Object.keys(chatters).forEach((y) =>
-    // FIXME: add user id
-    chatters[y].forEach((z) =>
-      users.push({
-        userId: `test/username/${z}`,
-        userName: z,
-        userDisplayName: z,
-      })
+const expectErrorMessage = (promise: Promise<unknown>) => {
+  return expect(
+    promise.then(
+      (value) => value,
+      (reason) => {
+        console.log(reason);
+        if (reason.constructor === Error) {
+          expect(reason.constructor).toBe(Error);
+        } else {
+          expect(Object.getPrototypeOf(reason.constructor)).toBe(Error);
+        }
+        return Promise.reject(reason.message);
+      }
     )
-  );
-  mockChatters = users;
-  return mockChatters;
+  ).rejects;
+};
+
+const simSetChatters = (newChatters: User[]) => {
+  mockChatters = newChatters;
 };
 
 /**
@@ -249,8 +236,20 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
           "This should never be called from tests -> Use the chatbot.js mock instead!"
         );
       }
-      getChatters = jest.fn(async (): Promise<HelixChatChatter[]> => {
+      getChatters = jest.fn(async (): Promise<User[]> => {
         return [];
+      });
+
+      getUsers = jest.fn(async (users: string[]): Promise<User[]> => {
+        return users
+          .filter((user) => {
+            return !user.match(/^\${(deleted|renamed)\(.*\)(\.name)?}$/);
+          })
+          .map((user) => ({
+            id: `\${user(${JSON.stringify(user)}).id}`,
+            name: user,
+            displayName: `\${user(${JSON.stringify(user)}).displayName}`,
+          }));
       });
     }
     return {
@@ -290,79 +289,73 @@ const simRequireIndex = async (
       await setupMocks();
     }
     jest.useFakeTimers();
-    await jest.isolateModulesAsync(async () => {
-      await mockModules();
-      if (setupMocks !== undefined) {
-        await setupMocks();
-      }
-      // remove timers
-      jest.clearAllTimers();
+    // remove timers
+    jest.clearAllTimers();
 
-      // setup time
-      jest.useFakeTimers();
+    // setup time
+    jest.useFakeTimers();
 
-      if (mockTime !== undefined) {
-        jest.setSystemTime(mockTime);
-      } else {
-        jest.setSystemTime(START_TIME);
-      }
+    if (mockTime !== undefined) {
+      jest.setSystemTime(mockTime);
+    } else {
+      jest.setSystemTime(START_TIME);
+    }
 
-      // setup random mock
-      const chance = jestChance.getChance();
-      random = jest.spyOn(global.Math, "random").mockImplementation(() => {
-        return chance.random();
-      });
-
-      // prepare settings
-      if (mockSettings === undefined) {
-        mockSettings = DEFAULT_TEST_SETTINGS;
-      }
-
-      // create virtual file system
-      if (volume === undefined) {
-        volume = createMockVolume(mockSettings);
-      } else {
-        // copy files
-        const files = volume.toJSON();
-        volume = new Volume();
-        volume.fromJSON(files);
-        volume.fromJSON(
-          { "./settings/settings.json": JSON.stringify(mockSettings) },
-          path.resolve(".")
-        );
-      }
-
-      // setup virtual file system
-      const mockFs = createFsFromVolume(volume);
-      jest.mock("fs", () => ({
-        __esModule: true, // Use it when dealing with esModules
-        ...mockFs,
-        default: mockFs,
-        toString() {
-          return "fs mock";
-        },
-      }));
-      jest.unstable_mockModule("fs", () => ({
-        ...mockFs,
-        default: mockFs,
-        toString() {
-          return "fs module mock";
-        },
-      }));
-      fs = (await import("fs")).default;
-
-      // import settings
-      settings = (await import("../src/settings.js")).default;
-
-      // import libraries
-      chatbot = await import("../src/chatbot.js");
-      twitch = (await import("../src/twitch.js")).twitch;
-      const queue = await import("../src/queue.js");
-      quesoqueue = queue.quesoqueue();
-
-      // run index.js
-      await import("../src/index.js");
+    // setup random mock
+    const chance = jestChance.getChance();
+    random = jest.spyOn(global.Math, "random").mockImplementation(() => {
+      return chance.random();
     });
+
+    // prepare settings
+    if (mockSettings === undefined) {
+      mockSettings = DEFAULT_TEST_SETTINGS;
+    }
+
+    // create virtual file system
+    if (volume === undefined) {
+      volume = createMockVolume(mockSettings);
+    } else {
+      // copy files
+      const files = volume.toJSON();
+      volume = new Volume();
+      volume.fromJSON(files);
+      volume.fromJSON(
+        { "./settings/settings.json": JSON.stringify(mockSettings) },
+        path.resolve(".")
+      );
+    }
+
+    // setup virtual file system
+    const mockFs = createFsFromVolume(volume);
+    jest.mock("fs", () => ({
+      __esModule: true, // Use it when dealing with esModules
+      ...mockFs,
+      default: mockFs,
+      toString() {
+        return "fs mock";
+      },
+    }));
+    jest.unstable_mockModule("fs", () => ({
+      ...mockFs,
+      default: mockFs,
+      toString() {
+        return "fs module mock";
+      },
+    }));
+    fs = (await import("fs")).default;
+
+    // import settings
+    settings = (await import("../src/settings.js")).default;
+
+    // import libraries
+    chatbot = await import("../src/chatbot.js");
+    twitch = (await import("../src/twitch.js")).twitch;
+    const queue = await import("../src/queue.js");
+    quesoqueue = queue.quesoqueue();
+
+    // run index.js
+    await import("../src/index.js");
     if (chatbot === undefined) {
       throw new Error("chatbot was not loaded correctly");
     }
@@ -518,9 +511,8 @@ const buildChatter = (
   isBroadcaster: boolean
 ): Chatter => {
   return {
-    // FIXME: user id
-    id: `test/username/${username}`,
-    login: username,
+    id: `\${user(${JSON.stringify(username)}).id}`,
+    name: username,
     displayName,
     isSubscriber,
     isMod,
@@ -532,8 +524,8 @@ const buildChatter = (
       if (other.id !== undefined && this.id !== undefined) {
         return other.id == this.id;
       }
-      if (other.login !== undefined) {
-        return other.login == this.login;
+      if (other.name !== undefined) {
+        return other.name == this.name;
       }
       if (other.displayName !== undefined) {
         return other.displayName == this.displayName;
@@ -564,6 +556,7 @@ export {
   replace,
   flushPromises,
   clearAllTimers,
+  expectErrorMessage,
   START_TIME,
   DEFAULT_TEST_SETTINGS,
   EMPTY_CHATTERS,

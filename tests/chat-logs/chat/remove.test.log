@@ -3,7 +3,7 @@ chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -14,8 +14,8 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [16:27:48] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:27:48] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [16:27:52] @^FurretWalkBot: !pos
 # !pos also works
@@ -25,20 +25,20 @@ queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot
 [16:28:23] @^FurretWalkBot: !remove
 [16:28:23] @^helperblock: FurretWalkBot, your level has been removed from the queue.
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [16:28:31] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:28:31] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [16:28:33] @^FurretWalkBot: !leave
 [16:28:33] @^helperblock: FurretWalkBot, your level has been removed from the queue.
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 [16:28:37] @^FurretWalkBot: !position
 [16:28:37] @^helperblock: FurretWalkBot, looks like you're not in the queue. Try !add XXX-XXX-XXX.

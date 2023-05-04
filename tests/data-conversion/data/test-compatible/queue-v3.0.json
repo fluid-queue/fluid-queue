@@ -1,0 +1,72 @@
+{
+  "version": "3.0",
+  "extensions": {
+    "customlevel": {
+      "data": {},
+      "version": "1.0"
+    }
+  },
+  "entries": {
+    "current": {
+      "code": "QWF-3K9-84G",
+      "type": "smm2",
+      "submitter": {
+        "id": "${user(\"furretwalkbot\").id}",
+        "name": "furretwalkbot",
+        "displayName": "FurretWalkBot"
+      }
+    },
+    "queue": [
+      {
+        "code": "BW2-G2R-CMG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"liquidnya\").id}",
+          "name": "liquidnya",
+          "displayName": "liquidnya"
+        }
+      },
+      {
+        "code": "BRL-F70-CLG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"helperblock\").id}",
+          "name": "helperblock",
+          "displayName": "helperblock"
+        }
+      }
+    ]
+  },
+  "waiting": [
+    {
+      "user": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "liquidnya"
+      },
+      "waiting": {
+        "minutes": 10
+      },
+      "weight": {
+        "minutes": 10,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    },
+    {
+      "user": {
+        "id": "${user(\"helperblock\").id}",
+        "name": "helperblock",
+        "displayName": "helperblock"
+      },
+      "waiting": {
+        "minutes": 3
+      },
+      "weight": {
+        "minutes": 3,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    }
+  ]
+}

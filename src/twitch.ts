@@ -1,53 +1,66 @@
+import { Duration } from "@js-joda/core";
 import { Chatter } from "./extensions-api/command.js";
-import { QueueSubmitter } from "./extensions-api/queue-entry.js";
+import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
+import TTLCache from "@isaacs/ttlcache";
 
-const recent_chatters: Record<string, number> = {};
-const subscribers = new Set();
-const mods = new Set();
-const lurkers = new Set<string>();
+const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
+const LURKERS_TTL = Duration.parse("PT12H").toMillis();
+const SUBSCRIBERS_TTL = Duration.parse("PT12H").toMillis();
+const MODS_TTL = Duration.parse("PT12H").toMillis();
+
+const recentChatters = new TTLCache<string, Chatter>({
+  ttl: RECENT_CHATTERS_TTL,
+});
+const lurkers = new TTLCache<string, Chatter>({ ttl: LURKERS_TTL });
+const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
+const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
 
 export interface OnlineUsers {
-  submitters: Partial<QueueSubmitter>[];
+  submitters: User[];
   id: Set<string>;
-  login: Set<string>;
-  hasSubmitter(submitter: Partial<QueueSubmitter>): boolean;
+  name: Set<string>;
+  displayName: Set<string>;
+  hasSubmitter(submitter: Partial<User>): boolean;
 }
 
 function createOnlineUsers(
-  userNamesSet: Set<string> | OnlineUsers,
-  filter?: (submitter: Partial<QueueSubmitter>) => boolean
+  userNamesSet: User[] | OnlineUsers,
+  filter?: (submitter: User) => boolean
 ): OnlineUsers {
   const users = (
-    userNamesSet instanceof Set ? [...userNamesSet] : userNamesSet.submitters
-  )
-    .flatMap((userName) => {
-      if (typeof userName === "string") {
-        return { login: userName };
-      } else {
-        return userName;
-      }
-    })
-    .filter(filter ?? (() => true));
+    Array.isArray(userNamesSet) ? userNamesSet : userNamesSet.submitters
+  ).filter(filter ?? (() => true));
   const id: Set<string> = new Set();
-  const login: Set<string> = new Set();
+  const name: Set<string> = new Set();
+  const displayName: Set<string> = new Set();
   for (const user of users) {
     if (user.id !== undefined) {
       id.add(user.id);
     }
-    if (user.login !== undefined) {
-      login.add(user.login);
+    if (user.name !== undefined) {
+      name.add(user.name);
+    }
+    if (user.displayName !== undefined) {
+      displayName.add(user.displayName);
     }
   }
   return {
     id,
-    login,
+    name,
+    displayName,
     submitters: users,
     hasSubmitter(submitter) {
       if (submitter.id !== undefined && id.has(submitter.id)) {
         return true;
       }
-      if (submitter.login !== undefined && login.has(submitter.login)) {
+      if (submitter.name !== undefined && name.has(submitter.name)) {
+        return true;
+      }
+      if (
+        submitter.displayName !== undefined &&
+        displayName.has(submitter.displayName)
+      ) {
         return true;
       }
       return false;
@@ -57,17 +70,11 @@ function createOnlineUsers(
 
 const twitch = {
   async getOnlineUsers(forceRefresh = false): Promise<OnlineUsers> {
-    const online_users = new Set<string>();
     const chatters = await twitchApi.getChatters(forceRefresh);
-    chatters.forEach((chatter) => online_users.add(chatter.userName));
-    const current_time = Date.now();
-    Object.keys(recent_chatters)
-      .filter(
-        (x) => current_time - recent_chatters[x] < Math.floor(1000 * 60 * 5)
-      )
-      .forEach((x) => online_users.add(x));
+    recentChatters.purgeStale(); // manually calling this because we are calling values()
     return createOnlineUsers(
-      new Set<string>([...online_users].filter((x) => !lurkers.has(x)))
+      [...recentChatters.values(), ...chatters],
+      (user) => !lurkers.has(user.id)
     );
   },
 
@@ -75,55 +82,39 @@ const twitch = {
     if (typeof submitter === "string") {
       return subscribers.has(submitter);
     }
-    return subscribers.has(submitter.login);
+    return subscribers.has(submitter.id);
   },
 
   async getOnlineSubscribers(forceRefresh = false): Promise<OnlineUsers> {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
     return createOnlineUsers(onlineUsers, (submitter) =>
-      subscribers.has(submitter.login)
+      subscribers.has(submitter.id)
     );
   },
 
   async getOnlineMods(forceRefresh = false): Promise<OnlineUsers> {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
     return createOnlineUsers(onlineUsers, (submitter) =>
-      mods.has(submitter.login)
+      mods.has(submitter.id)
     );
   },
 
-  noticeChatter: (submitter: Chatter) => {
-    const current_time = Date.now();
-    recent_chatters[submitter.login] = current_time;
-    if (submitter.isSubscriber) {
-      subscribers.add(submitter.login);
+  noticeChatter: (chatter: Chatter) => {
+    recentChatters.set(chatter.id, chatter, { noUpdateTTL: false });
+    if (chatter.isSubscriber) {
+      subscribers.set(chatter.id, chatter, { noUpdateTTL: false });
     }
-    if (submitter.isMod) {
-      mods.add(submitter.login);
+    if (chatter.isMod) {
+      mods.set(chatter.id, chatter, { noUpdateTTL: false });
     }
   },
 
-  setToLurk: (submitter: QueueSubmitter) => {
-    lurkers.add(submitter.login);
+  setToLurk: (submitter: Chatter) => {
+    lurkers.set(submitter.id, submitter);
   },
 
-  checkLurk: (usernameOrSubmitter: string | Partial<QueueSubmitter>) => {
-    let username: string;
-    if (typeof usernameOrSubmitter === "string") {
-      username = usernameOrSubmitter;
-    } else {
-      if (usernameOrSubmitter.login != null) {
-        username = usernameOrSubmitter.login;
-      } else if (usernameOrSubmitter.displayName != null) {
-        // best effort for now!
-        username = usernameOrSubmitter.displayName.toLowerCase();
-      } else {
-        // can not remove anyone with only `id` or no information
-        return false;
-      }
-    }
-
-    if (lurkers.has(username)) {
+  checkLurk: (submitter: QueueSubmitter) => {
+    if (lurkers.has(submitter.id)) {
       return true;
     } else {
       return false;
@@ -133,26 +124,40 @@ const twitch = {
   notLurkingAnymore(
     usernameOrSubmitter: string | Partial<QueueSubmitter>
   ): boolean {
-    let username: string;
+    lurkers.purgeStale(); // manually calling this because we are calling entries()
+    let username: string | undefined;
+    let displayName: string | undefined;
     if (typeof usernameOrSubmitter === "string") {
       username = usernameOrSubmitter;
+      displayName = usernameOrSubmitter;
     } else {
-      if (usernameOrSubmitter.login != null) {
-        username = usernameOrSubmitter.login;
+      if (usernameOrSubmitter.id != null) {
+        return lurkers.delete(usernameOrSubmitter.id);
+      }
+      if (usernameOrSubmitter.name != null) {
+        username = usernameOrSubmitter.name;
       } else if (usernameOrSubmitter.displayName != null) {
-        // best effort for now!
-        username = usernameOrSubmitter.displayName.toLowerCase();
+        displayName = usernameOrSubmitter.displayName;
       } else {
-        // can not remove anyone with only `id` or no information
+        // can not remove anyone with no `id`, `name`, nor `displayName`
         return false;
       }
     }
-
-    if (lurkers.has(username)) {
-      lurkers.delete(username);
-      return true;
+    // linear search username or displayName
+    let removed = false;
+    const removeKeys = [];
+    for (const [key, value] of lurkers.entries()) {
+      if (value.name === username || value.displayName === displayName) {
+        removeKeys.push(key);
+        // note that there might be multiple lurkers with the same username or displayName if someone renamed themselves
+        // therefore we continue the loop until the end
+      }
     }
-    return false;
+    // delete outside of the iterator
+    removeKeys.forEach((key) => {
+      removed = lurkers.delete(key) || removed;
+    });
+    return removed;
   },
 
   clearLurkers: () => {

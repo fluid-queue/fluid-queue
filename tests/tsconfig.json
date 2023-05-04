@@ -6,7 +6,7 @@
     "rootDirs": ["../src", "../tests"]
   },
   "ts-node": {
-    "esm": false
+    "esm": true
   },
   "include": ["../src/**/*", "../tests/**/*"],
   "exclude": []

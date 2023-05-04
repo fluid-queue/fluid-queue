@@ -11,12 +11,13 @@ import {
   isQueueSubmitter,
 } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
+import { z } from "zod";
 
 const extensions = new Extensions();
 
 function isChannel(submitter: QueueSubmitter): boolean {
   const channelSubmitter: Partial<QueueSubmitter> = {
-    login: settings.channel,
+    name: settings.channel,
   };
   return isQueueSubmitter(submitter, channelSubmitter);
 }
@@ -46,8 +47,8 @@ interface QueueDataAccessor {
   set current_level(value: QueueEntry | undefined);
   get levels(): QueueEntry[];
   set levels(value: QueueEntry[]);
-  get waiting(): Record<string, Waiting>;
-  set waiting(value: Record<string, Waiting>);
+  get waitingByUserId(): Record<string, Waiting>;
+  set waitingByUserId(value: Record<string, Waiting>);
 
   /**
    * Saves at the end of the critical section
@@ -63,14 +64,11 @@ interface QueueDataAccessor {
   saveNow(options?: { force?: boolean }): boolean;
 
   /**
-   * Load the queue data from disk and override this state.
-   */
-  load(): void;
-
-  /**
    * Remove the waiting entry of the `current_level` now.
    */
   removeWaiting(): void;
+
+  override(state: z.output<typeof persistence.QueueV3>): void;
 
   /**
    * This method has to be called with every level that is removed from the queue!
@@ -83,7 +81,7 @@ export type QueueDataMap<T> = (data: QueueDataAccessor) => T;
 class QueueData {
   private currentLevel: QueueEntry | null = null;
   private levels: QueueEntry[] = [];
-  private waiting: Record<string, Waiting> = {};
+  private waitingByUserId: Record<string, Waiting> = {};
   private currentAccessor:
     | (QueueDataAccessor & { save: false | { force: boolean } })
     | null = null;
@@ -105,14 +103,14 @@ class QueueData {
       set levels(value) {
         data.levels = value;
       },
-      get waiting() {
-        if (data.waiting == null) {
+      get waitingByUserId() {
+        if (data.waitingByUserId == null) {
           throw new Error("waiting is not initialized");
         }
-        return data.waiting;
+        return data.waitingByUserId;
       },
-      set waiting(value) {
-        data.waiting = value;
+      set waitingByUserId(value) {
+        data.waitingByUserId = value;
       },
       saveLater(options) {
         const force = options?.force ?? false;
@@ -125,11 +123,15 @@ class QueueData {
       saveNow(options: { force: boolean } = { force: false }) {
         if (persist || options.force === true) {
           const serializedCurrentLevel: PersistedQueueEntry | null =
-            this.current_level?.serialize() ?? null;
+            this.current_level?.serializePersistedQueueEntry() ?? null;
           return persistence.saveQueueSync({
-            currentLevel: serializedCurrentLevel,
-            queue: this.levels.map((level) => level.serialize()),
-            waiting: Waiting.recordToJson(this.waiting),
+            entries: {
+              current: serializedCurrentLevel,
+              queue: this.levels.map((level) =>
+                level.serializePersistedQueueEntry()
+              ),
+            },
+            waiting: Waiting.recordToJson(this.waitingByUserId),
             // TODO: add test case to check that only data and version are persisted
             extensions: extensions.persistedQueueBindings(),
           });
@@ -137,31 +139,30 @@ class QueueData {
           return false;
         }
       },
-      load() {
+
+      override(state: z.output<typeof persistence.QueueV3>) {
         let save = false;
-
-        // load queue state
-        const state = persistence.loadQueueSync();
-
         // override queue bindings
         extensions.overrideQueueBindings(state.extensions);
 
         // upgrade levels that do not have their type set
         const allPersistedEntries = (
-          state.currentLevel == null ? [] : [state.currentLevel]
-        ).concat(state.queue);
+          state.entries.current == null ? [] : [state.entries.current]
+        ).concat(state.entries.queue);
         save = extensions.upgradeEntries(allPersistedEntries) || save;
 
         // deserialize all entries
-        if (state.currentLevel == null) {
+        if (state.entries.current == null) {
           this.current_level = undefined;
         } else {
-          this.current_level = extensions.deserialize(state.currentLevel);
+          this.current_level = extensions.deserialize(state.entries.current);
         }
-        this.levels = state.queue.map((level) => extensions.deserialize(level));
+        this.levels = state.entries.queue.map((level) =>
+          extensions.deserialize(level)
+        );
 
         // split waiting map into lists
-        this.waiting = Waiting.fromRecord(state.waiting);
+        this.waitingByUserId = Waiting.fromList(state.waiting);
 
         // extensions can now check their entries
         const allEntries = (
@@ -183,6 +184,7 @@ class QueueData {
           this.saveLater();
         }
       },
+
       removeWaiting() {
         if (this.current_level == undefined) {
           console.warn("removeWaiting called with no current level");
@@ -190,11 +192,11 @@ class QueueData {
         }
         if (
           Object.prototype.hasOwnProperty.call(
-            data.waiting,
-            this.current_level.submitter.login
+            data.waitingByUserId,
+            this.current_level.submitter.id
           )
         ) {
-          delete this.waiting[this.current_level.submitter.login];
+          delete this.waitingByUserId[this.current_level.submitter.id];
         }
       },
 
@@ -220,6 +222,11 @@ class QueueData {
     fn: (accessor: QueueDataAccessor, ...args: Args) => T,
     ...args: Args
   ): T {
+    if (this.currentAccessor != null) {
+      throw new Error(
+        "Accessing queue state while it is already being accessed"
+      );
+    }
     const accessor = this.accessor();
     this.currentAccessor = accessor;
     const result = fn(accessor, ...args);
@@ -228,6 +235,14 @@ class QueueData {
     }
     this.currentAccessor = null;
     return result;
+  }
+
+  async load() {
+    // load queue state
+    const state = await persistence.loadQueue({ save: persist });
+    this.access((data) => {
+      data.override(state);
+    });
   }
 }
 
@@ -276,8 +291,8 @@ const queue = {
       if (result == undefined || isChannel(submitter)) {
         data.levels.push(level);
         // add wait time of 1 and add last online time of now
-        if (!(submitter.login in data.waiting)) {
-          data.waiting[submitter.login] = Waiting.create();
+        if (!(submitter.id in data.waitingByUserId)) {
+          data.waitingByUserId[submitter.id] = Waiting.create(submitter);
         }
         data.saveLater();
         return `${level.submitter}, ${level} has been added to the queue.`;
@@ -300,8 +315,8 @@ const queue = {
         const usernameOrDisplayName = usernameArgument.trim().replace(/^@/, "");
         // If the user isn't in the queue, unlurk them anyway
         // It's unlikely they'll be on BRB and not in queue, but it's an edge case worth covering
-        // `notLurkingAnymore` is called twice, because using both `login` and `displayName` would only match on `login` and not both
-        twitch.notLurkingAnymore({ login: usernameOrDisplayName });
+        // `notLurkingAnymore` is called twice, because using both `name` and `displayName` would only match on `name` and not both
+        twitch.notLurkingAnymore({ name: usernameOrDisplayName });
         twitch.notLurkingAnymore({ displayName: usernameOrDisplayName });
         return `No levels from ${usernameArgument} were found in the queue.`;
       }
@@ -518,9 +533,12 @@ const queue = {
       data.current_level = undefined;
       data.levels.push(top);
       if (
-        !Object.prototype.hasOwnProperty.call(data.waiting, top.submitter.login)
+        !Object.prototype.hasOwnProperty.call(
+          data.waitingByUserId,
+          top.submitter.id
+        )
       ) {
-        data.waiting[top.submitter.login] = Waiting.create();
+        data.waitingByUserId[top.submitter.id] = Waiting.create(top.submitter);
       }
       data.saveLater();
       return "Ok, adding the current level back into the queue.";
@@ -745,7 +763,10 @@ const queue = {
     return (data) => {
       const list = getList(data);
       const online_users = list.online;
-      if (online_users.length == 0 || Object.keys(data.waiting).length == 0) {
+      if (
+        online_users.length == 0 ||
+        Object.keys(data.waitingByUserId).length == 0
+      ) {
         return {
           totalWeight: 0,
           entries: [],
@@ -756,13 +777,13 @@ const queue = {
       let entries = online_users
         .filter((level) =>
           Object.prototype.hasOwnProperty.call(
-            data.waiting,
-            level.submitter.login
+            data.waitingByUserId,
+            level.submitter.id
           )
         )
         .map((level, position) => {
           return {
-            weight: () => data.waiting[level.submitter.login].weight(),
+            weight: () => data.waitingByUserId[level.submitter.id].weight(),
             position: position,
             level: level,
           };
@@ -805,7 +826,7 @@ const queue = {
     return percentString;
   },
 
-  multiplier: (username: QueueSubmitter | string) => {
+  multiplier: (username: QueueSubmitter) => {
     if (settings.subscriberWeightMultiplier && twitch.isSubscriber(username)) {
       return settings.subscriberWeightMultiplier;
     }
@@ -906,9 +927,9 @@ const queue = {
     usernameArgument = usernameArgument.trim().replace(/^@/, "");
     return (level: QueueEntry) => {
       // display name (submitter) or user name (username) matches
-      // `isSubmitter` has to be called twice here, since only `login` is checked if both `login` and `displayName` are set
+      // `isSubmitter` has to be called twice here, since only `name` is checked if both `name` and `displayName` are set
       return (
-        level.submitter.equals({ login: usernameArgument }) ||
+        level.submitter.equals({ name: usernameArgument }) ||
         level.submitter.equals({ displayName: usernameArgument })
       );
     };
@@ -935,7 +956,7 @@ const queue = {
       subCommand == "restore"
     ) {
       // load queue state
-      data.access((data) => data.load());
+      await data.load();
       return "Reloaded queue state from disk.";
     } else {
       return "Invalid arguments. The correct syntax is !persistence {on/off/save/load}.";
@@ -957,7 +978,7 @@ const queue = {
   load: async () => {
     if (loaded) {
       // only reload queue state
-      data.access((data) => data.load());
+      await data.load();
       // do not setup the timer again or reload custom codes
       return;
     }
@@ -966,7 +987,7 @@ const queue = {
     await extensions.load();
 
     // load queue state
-    data.access((data) => data.load());
+    await data.load();
 
     // Start the waiting time timer
     setIntervalAsync(queue.waitingTimerTick, 60000);
@@ -977,17 +998,22 @@ const queue = {
   waitingTimerTick: async () => {
     const list = await queue.list();
     data.access((data) => {
-      const now = new Date().toISOString();
+      const now = new Date();
       list(data)
-        .online.map((v) => v.submitter.login)
-        .forEach((username) => {
-          if (Object.prototype.hasOwnProperty.call(data.waiting, username)) {
-            data.waiting[username].addOneMinute(
-              queue.multiplier(username),
+        .online.map((v) => v.submitter)
+        .forEach((submitter) => {
+          if (
+            Object.prototype.hasOwnProperty.call(
+              data.waitingByUserId,
+              submitter.id
+            )
+          ) {
+            data.waitingByUserId[submitter.id].addOneMinute(
+              queue.multiplier(submitter),
               now
             );
           } else {
-            data.waiting[username] = Waiting.create(now);
+            data.waitingByUserId[submitter.id] = Waiting.create(submitter, now);
           }
         });
       data.saveLater();

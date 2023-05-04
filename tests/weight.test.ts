@@ -89,9 +89,12 @@ test("weight test", async () => {
     expect(list.offlineLength).toBe(2);
     expect(list.entries).toHaveLength(1);
     const entry = list.entries[0];
-    expect(entry.level.serialize()).toEqual({
-      submitter: testUser2.displayName,
-      username: testUser2.login,
+    expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      submitter: {
+        id: testUser2.id,
+        name: testUser2.name,
+        displayName: testUser2.displayName,
+      },
       type: "smm2",
       code: level2,
       data: undefined,
@@ -102,7 +105,7 @@ test("weight test", async () => {
   });
 
   // keep user 2 online
-  simSetChatters({ viewers: [testUser2.login] });
+  simSetChatters([testUser2]);
 
   // let time pass! 10 minutes
   await simAdvanceTime(10 * 60 * 1000, 60 * 1000);
@@ -117,9 +120,12 @@ test("weight test", async () => {
     expect(list.offlineLength).toBe(1);
     expect(list.entries).toHaveLength(2);
     let entry = list.entries[0];
-    expect(entry.level.serialize()).toEqual({
-      submitter: testUser2.displayName,
-      username: testUser2.login,
+    expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      submitter: {
+        id: testUser2.id,
+        name: testUser2.name,
+        displayName: testUser2.displayName,
+      },
       type: "smm2",
       code: level2,
       data: undefined,
@@ -127,9 +133,12 @@ test("weight test", async () => {
     expect(entry.position).toBe(1); // level 1 was submitted before level 2
     expect(entry.weight()).toBe(11); // gained +10 weight
     entry = list.entries[1];
-    expect(entry.level.serialize()).toEqual({
-      submitter: testUser1.displayName,
-      username: testUser1.login,
+    expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      submitter: {
+        id: testUser1.id,
+        name: testUser1.name,
+        displayName: testUser1.displayName,
+      },
       type: "smm2",
       code: level1,
       data: undefined,

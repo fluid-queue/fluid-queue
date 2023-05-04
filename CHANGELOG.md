@@ -2,10 +2,22 @@
 
 ## Breaking changes
 
+- New queue save file version 3.0 that can not be read by previous versions of the queue.
+  All old save file versions are converted automatically and require the twitch api.
+  The location of the save file stays the same: `data/queue.json`.
+  If there are users in your queue who renamed themselves or deleted their account then their level and waiting time will be removed from the queue.
+  You can find those removed levels and waiting times in the file `data/lost-levels-YYYY-MM-DDThhmmssZ.json` where `YYYY-MM-DDThhmmssZ` will be replaced with the current time in UTC.
 - The queue is now written in TypeScript and using ECMAScript modules.
   This requires a build step before running the queue: `npm run build`.
   Also make sure you have the dev dependencies installed before building the queue `NODE_ENV=development npm install`.
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
+- Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
+
+## New features
+
+- Usage of user ids instead of usernames for the queue save file as well as internal state of the queue.
+  This means that if someone renames themselves that they will still keep their queue entry as well as their waiting time,
+  however the queue will still use the previous display name whenever the level is displayed in chat.
 
 # [2.0.0-beta.3]
 

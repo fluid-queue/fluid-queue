@@ -5,7 +5,7 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"l
 # restart to start queue open (reload settings)
 restart
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -17,7 +17,7 @@ accuracy 60000
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
 
-save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"}],"waiting":{"liquidnya":{"lastOnlineTime":"2022-04-21T16:31:48.000Z","waitTime":6,"weightMin":6,"weightMsec":12000}}}
+save:data/queue.json {"version":"3.0","entries":{"current":null,"queue":[{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]},"waiting":[{"lastOnline":"2022-04-21T16:31:48.000Z","waiting":{"minutes":6},"weight":{"minutes":6,"milliseconds":12000},"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]}
 
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
@@ -28,4 +28,4 @@ save:data/queue.json {"version":"2.0","currentLevel":null,"queue":[{"code":"BW2-
 [12:24:28] ~%?liquidnya: !persistence save
 [12:24:28] @^helperblock: @liquidnya Successfully persisted the queue state.
 
-queue.json/waiting {"liquidnya":{"waitTime":14,"weightMin":14,"weightMsec":12000,"lastOnlineTime":"2022-04-21T12:24:28.000Z"}}
+queue.json/waiting [{"lastOnline":"2022-04-21T12:24:28.000Z","waiting":{"minutes":14},"weight":{"minutes":14,"milliseconds":12000},"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]

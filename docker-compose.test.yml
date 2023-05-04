@@ -4,7 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile.test
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=test
       - DOCKER_TAG
       - SOURCE_COMMIT
-    command: sh -c 'npm install && NODE_ENV=test npm run test-ci'

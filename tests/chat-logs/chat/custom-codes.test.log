@@ -5,7 +5,7 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"l
 # restart to test with custom_codes_enabled set to true from the very beginning
 restart
 # chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator

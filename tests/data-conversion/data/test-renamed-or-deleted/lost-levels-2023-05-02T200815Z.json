@@ -1,0 +1,45 @@
+{
+  "lostLevels": [
+    {
+      "code": "QWF-3K9-84G",
+      "type": "smm2",
+      "submitter": "${deleted(0).displayName}",
+      "username": "${deleted(0).name}"
+    },
+    {
+      "code": "3H7-B19-7RF",
+      "type": "smm2",
+      "submitter": "${deleted(1).displayName}",
+      "username": "${deleted(1).name}"
+    },
+    {
+      "code": "VCY-MQY-PSF",
+      "type": "smm2",
+      "submitter": "${renamed(0).displayName}",
+      "username": "${renamed(0).name}"
+    }
+  ],
+  "lostWaiting": [
+    {
+      "username": "${deleted(1).name}",
+      "waitTime": 12,
+      "weightMin": 12,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    },
+    {
+      "username": "${renamed(0).name}",
+      "waitTime": 10,
+      "weightMin": 10,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
+    },
+    {
+      "username": "${renamed(1).name}",
+      "waitTime": 40,
+      "weightMin": 40,
+      "weightMsec": 0,
+      "lastOnlineTime": "2022-04-10T00:00:00.000Z"
+    }
+  ]
+}

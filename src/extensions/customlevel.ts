@@ -34,13 +34,13 @@ const unclearedLevel = () => {
 
 const isRomHackLevel = (entry: QueueEntry): boolean => {
   // FIXME: this is not ideal -> rewrite queueHandler.check
-  const raw = entry.serialize();
+  const raw = entry.serializePersistedQueueEntry();
   return raw.type == "customlevel" && raw.code == ROMHACK_UUID;
 };
 
 const isUnclearedLevel = (entry: QueueEntry): boolean => {
   // FIXME: this is not ideal -> rewrite queueHandler.check
-  const raw = entry.serialize();
+  const raw = entry.serializePersistedQueueEntry();
   return raw.type == "customlevel" && raw.code == UNCLEARED_UUID;
 };
 

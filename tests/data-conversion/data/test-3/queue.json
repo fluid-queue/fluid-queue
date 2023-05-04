@@ -1,43 +1,72 @@
 {
-  "version": "2.2",
-  "currentLevel": {
-    "code": "BW2-G2R-CMG",
-    "type": "smm2",
-    "submitter": "liquidnya",
-    "username": "liquidnya"
-  },
+  "version": "3.0",
   "extensions": {
     "customlevel": {
       "data": {},
       "version": "1.0"
     }
   },
-  "queue": [
-    {
-      "code": "QWF-3K9-84G",
+  "entries": {
+    "current": {
+      "code": "BW2-G2R-CMG",
       "type": "smm2",
-      "submitter": "FurretWalkBot",
-      "username": "furretwalkbot"
+      "submitter": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
+      }
+    },
+    "queue": [
+      {
+        "code": "QWF-3K9-84G",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"furretwalkbot\").id}",
+          "name": "furretwalkbot",
+          "displayName": "${user(\"furretwalkbot\").displayName}"
+        }
+      },
+      {
+        "code": "BRL-F70-CLG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"helperblock\").id}",
+          "name": "helperblock",
+          "displayName": "${user(\"helperblock\").displayName}"
+        }
+      }
+    ]
+  },
+  "waiting": [
+    {
+      "user": {
+        "id": "${user(\"furretwalkbot\").id}",
+        "name": "furretwalkbot",
+        "displayName": "${user(\"furretwalkbot\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
     },
     {
-      "code": "BRL-F70-CLG",
-      "type": "smm2",
-      "submitter": "helperblock",
-      "username": "helperblock"
+      "user": {
+        "id": "${user(\"helperblock\").id}",
+        "name": "helperblock",
+        "displayName": "${user(\"helperblock\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
     }
-  ],
-  "waiting": {
-    "furretwalkbot": {
-      "waitTime": 1,
-      "weightMin": 1,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-    },
-    "helperblock": {
-      "waitTime": 1,
-      "weightMin": 1,
-      "weightMsec": 0,
-      "lastOnlineTime": "2022-04-21T00:00:00.000Z"
-    }
-  }
+  ]
 }
