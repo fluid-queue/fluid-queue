@@ -99,10 +99,10 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [02:25:34] @^FurretWalkBot: !submitted @furretwalkbot
 [02:25:34] @^helperblock: FurretWalkBot's level is being played right now!
 
-# !entry argument is needed as a moderator
+# !entry argument is not needed as a moderator
 
 [02:26:34] @^FurretWalkBot: !submitted
-[02:26:34] @^helperblock: You can use !submitted <username> to view someones entry.
+[02:26:34] @^helperblock: Your level is being played right now!
 
 # unmodded FurretWalkBot
 
@@ -131,3 +131,17 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 
 [03:29:34] ^FurretWalkBot: !submitted liquidnya
 [03:29:34] @^helperblock: FurretWalkBot, you have submitted 3H7-B19-7RF to the queue.
+
+[03:30:13] ~%?liquidnya: !clear
+[03:30:14] @^helperblock: The queue has been cleared!
+
+# !remove/!leave can be used without an argument as the broadcaster
+
+[04:25:29] ~%?liquidnya: !leave
+[04:25:31] @^helperblock: liquidnya, looks like you're not in the queue. Try !add XXX-XXX-XXX.
+
+[04:26:35] ~%?liquidnya: !add nb01mdslg
+[04:26:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
+
+[04:27:29] ~%?liquidnya: !leave
+[04:27:31] @^helperblock: liquidnya, your level has been removed from the queue.

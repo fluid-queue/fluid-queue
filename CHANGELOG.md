@@ -20,6 +20,14 @@
   however the queue will still use the previous display name whenever the level is displayed in chat.
 - Moderators and the broadcaster can now use the moderator `!entry <username>` command to show the queue entry of someone else.
 
+## Bug fixes
+
+- You no longer get the message `your level has been removed from the queue` when you use `!leave` and do not have a level in the queue.
+
+## Other changes
+
+- The broadcaster can now use `!leave` and `!remove` without an argument to remove their own levels.
+
 # [2.0.0-beta.3]
 
 ## Bug fixes

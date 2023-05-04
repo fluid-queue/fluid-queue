@@ -345,6 +345,9 @@ const queue = {
         data.levels,
         queue.matchSubmitter(submitter)
       );
+      if (removedLevels.length === 0) {
+        return `${submitter}, looks like you're not in the queue. Try !add XXX-XXX-XXX.`;
+      }
       data.onRemove(removedLevels);
       data.saveLater();
       return `${submitter}, your level has been removed from the queue.`;

@@ -31,7 +31,7 @@ function get_remainder(x: string) {
   if (index == -1) {
     return "";
   }
-  return x.substring(index + 1);
+  return x.substring(index + 1).trim();
 }
 
 let can_list = true;
@@ -489,8 +489,8 @@ async function HandleMessage(
       respond("Sorry, the queue is closed right now.");
     }
   } else if (aliases.isAlias("remove", message)) {
-    if (sender.isBroadcaster) {
-      const to_remove = get_remainder(message);
+    const to_remove = get_remainder(message);
+    if (sender.isBroadcaster && to_remove != "") {
       respond(quesoqueue.modRemove(to_remove));
     } else {
       // if they're leaving, they're not lurking
@@ -736,8 +736,8 @@ async function HandleMessage(
       )
     );
   } else if (aliases.isAlias("submitted", message)) {
-    if (sender.isMod || sender.isBroadcaster) {
-      const usernameArgument = get_remainder(message);
+    const usernameArgument = get_remainder(message);
+    if ((sender.isMod || sender.isBroadcaster) && usernameArgument != "") {
       respond(
         await submitted_mod_message(
           quesoqueue.modSubmittedLevel(usernameArgument),
