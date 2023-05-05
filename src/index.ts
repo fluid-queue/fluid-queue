@@ -811,17 +811,6 @@ async function HandleMessage(
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond("Next level order: " + order.reduce((acc, x) => acc + ", " + x));
     }
-  } else if (aliases.isAlias("rename", message)) {
-    let response;
-    if (sender.isMod || sender.isBroadcaster) {
-      const toRename = get_remainder(message);
-      response = quesoqueue.rename(toRename);
-    } else {
-      response = quesoqueue.rename(sender);
-    }
-    if (response != null) {
-      respond(response);
-    }
   } else {
     return await quesoqueue.handleCommands(message, sender, respond);
   }

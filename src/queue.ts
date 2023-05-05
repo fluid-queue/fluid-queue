@@ -950,47 +950,6 @@ const queue = {
     return queue.renameAndPartition(onlineUsers);
   },
 
-  rename: (user: QueueSubmitter | string): string | void => {
-    if (typeof user === "string") {
-      const usernameArgument = user.trim().replace(/^@/, "");
-      if (usernameArgument == "") {
-        return "You can use !rename <newUsername> to update someones name.";
-      }
-      const chatter = twitch.getRecentChatter(usernameArgument);
-      if (chatter == null) {
-        return `The user ${user} has not been chatting recently.`;
-      }
-      return queue.rename(chatter);
-    }
-    let renamed = false;
-    data.access((data) => {
-      if (
-        data.current_level !== undefined &&
-        data.current_level.submitter.equals(user)
-      ) {
-        if (data.current_level.rename(user)) {
-          data.saveLater();
-          renamed = true;
-        }
-      }
-      data.levels.filter(queue.matchSubmitter(user)).forEach((level) => {
-        if (level.rename(user)) {
-          data.saveLater();
-          renamed = true;
-        }
-      });
-      if (user.id in data.waitingByUserId) {
-        if (data.waitingByUserId[user.id].rename(user)) {
-          data.saveLater();
-          renamed = true;
-        }
-      }
-    });
-    if (renamed) {
-      return `The name of ${user} has been updated.`;
-    }
-  },
-
   matchSubmitter: (submitter: QueueSubmitter) => {
     return (level: QueueEntry) => level.submitter.equals(submitter);
   },
