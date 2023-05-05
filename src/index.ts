@@ -31,7 +31,7 @@ function get_remainder(x: string) {
   if (index == -1) {
     return "";
   }
-  return x.substring(index + 1);
+  return x.substring(index + 1).trim();
 }
 
 let can_list = true;
@@ -235,6 +235,28 @@ const submitted_message = async (
     );
   }
   return sender + ", you have submitted " + level + " to the queue.";
+};
+
+const submitted_mod_message = async (
+  submitted:
+    | { result: "no-submitter" | "not-found" }
+    | { result: "current" | "level"; level: QueueEntry },
+  usernameArgument: string
+) => {
+  if (submitted.result == "current") {
+    return `${submitted.level.submitter}'s level is being played right now!`;
+  } else if (submitted.result == "not-found") {
+    return `${usernameArgument} is not in the queue.`;
+  } else if (submitted.result == "level") {
+    return (
+      submitted.level.submitter +
+      " has submitted " +
+      submitted.level +
+      " to the queue."
+    );
+  }
+
+  return "You can use !submitted <username> to view someones entry.";
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -467,8 +489,8 @@ async function HandleMessage(
       respond("Sorry, the queue is closed right now.");
     }
   } else if (aliases.isAlias("remove", message)) {
-    if (sender.isBroadcaster) {
-      const to_remove = get_remainder(message);
+    const to_remove = get_remainder(message);
+    if (sender.isBroadcaster && to_remove != "") {
       respond(quesoqueue.modRemove(to_remove));
     } else {
       // if they're leaving, they're not lurking
@@ -714,9 +736,19 @@ async function HandleMessage(
       )
     );
   } else if (aliases.isAlias("submitted", message)) {
-    respond(
-      await submitted_message(await quesoqueue.submittedlevel(sender), sender)
-    );
+    const usernameArgument = get_remainder(message);
+    if ((sender.isMod || sender.isBroadcaster) && usernameArgument != "") {
+      respond(
+        await submitted_mod_message(
+          quesoqueue.modSubmittedLevel(usernameArgument),
+          usernameArgument
+        )
+      );
+    } else {
+      respond(
+        await submitted_message(await quesoqueue.submittedlevel(sender), sender)
+      );
+    }
   } else if (
     settings.level_timeout &&
     level_timer != null &&

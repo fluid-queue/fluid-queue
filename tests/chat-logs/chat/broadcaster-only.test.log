@@ -19,14 +19,11 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # `!remove <username>` behaves like `!remove`
 
 [19:38:05] @^FurretWalkBot: !remove liquidnya
-[19:38:05] @^helperblock: FurretWalkBot, your level has been removed from the queue.
+[19:38:05] @^helperblock: FurretWalkBot, looks like you're not in the queue. Try !add XXX-XXX-XXX.
 [19:38:14] @^FurretWalkBot: !remove liquidnya
-[19:38:15] @^helperblock: FurretWalkBot, your level has been removed from the queue.
+[19:38:15] @^helperblock: FurretWalkBot, looks like you're not in the queue. Try !add XXX-XXX-XXX.
 [19:38:21] @^FurretWalkBot: !remove liquidnya
-[19:38:21] @^helperblock: FurretWalkBot, your level has been removed from the queue.
-
-# you can remove yourself even though you are not in the queue
-# TODO: is this a bug?
+[19:38:21] @^helperblock: FurretWalkBot, looks like you're not in the queue. Try !add XXX-XXX-XXX.
 
 [19:39:03] @^FurretWalkBot: !list
 [19:39:03] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)

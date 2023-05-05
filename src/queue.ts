@@ -345,6 +345,9 @@ const queue = {
         data.levels,
         queue.matchSubmitter(submitter)
       );
+      if (removedLevels.length === 0) {
+        return `${submitter}, looks like you're not in the queue. Try !add XXX-XXX-XXX.`;
+      }
       data.onRemove(removedLevels);
       data.saveLater();
       return `${submitter}, your level has been removed from the queue.`;
@@ -453,6 +456,30 @@ const queue = {
         return index + 1 + (data.current_level != undefined ? 1 : 0);
       }
       return -1;
+    });
+  },
+
+  modSubmittedLevel: (
+    submitter: string
+  ):
+    | { result: "no-submitter" | "not-found" }
+    | { result: "current" | "level"; level: QueueEntry } => {
+    if (submitter == "") {
+      return { result: "no-submitter" };
+    }
+    return data.access((data) => {
+      if (
+        data.current_level != undefined &&
+        queue.matchUsernameArgument(submitter)(data.current_level)
+      ) {
+        return { result: "current", level: data.current_level };
+      }
+      const level = data.levels.find(queue.matchUsernameArgument(submitter));
+      if (level !== undefined) {
+        return { result: "level", level };
+      } else {
+        return { result: "not-found" };
+      }
     });
   },
 
