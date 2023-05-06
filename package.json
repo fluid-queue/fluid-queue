@@ -21,6 +21,8 @@
     "@twurple/auth-tmi": "^6.1.0",
     "esbuild": "0.17.18",
     "graceful-fs": "^4.2.11",
+    "i18next": "^22.4.15",
+    "i18next-fs-backend": "^2.1.1",
     "set-interval-async": "^3.0.3",
     "uuid": "^9.0.0",
     "write-file-atomic": "^5.0.0",

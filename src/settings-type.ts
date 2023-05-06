@@ -22,6 +22,14 @@ const list_options: readonly [string, ...string[]] = [
 
 export const Settings = z
   .object({
+    language: z
+      .string()
+      .toLowerCase()
+      .refine((language) => /^[a-z]{2}$/.test(language), {
+        message: "language must be a supported two-character abbreviation",
+      })
+      .default("en")
+      .describe("the language to run the bot in"),
     channel: z
       .string()
       .describe("channel for bot to run in")

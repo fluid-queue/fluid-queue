@@ -9,6 +9,8 @@ import settings from "./settings.js";
 import { helper } from "./chatbot.js";
 import { QueueEntry } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
+import "./i18n.js";
+import i18next from "i18next";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -282,9 +284,7 @@ async function HandleMessage(
 
   if (message.toLowerCase().startsWith("!addalias") && sender.isBroadcaster) {
     if (message.split(" ").length !== 3) {
-      respond(
-        "The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op"
-      );
+      respond(i18next.t("addAliasSyntax"));
     } else {
       const splitMessage = message.split(" ");
       if (

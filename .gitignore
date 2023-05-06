@@ -130,3 +130,6 @@ dist
 # like *.test.log even if *.log is ignored
 # replay test log files (/tests/chat-logs/chat/*.test.log)
 !*.test.log
+
+# Ignore the missing localization files; they're useful for development but don't need to be checked in
+locales/**/*.missing.json

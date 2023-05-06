@@ -1,0 +1,10 @@
+{
+  "addAliasSyntax": "The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op",
+  "chatbotConnected": "* Connected to {{addr}}:{{port}}",
+  "extensionsList": "Extensions: {{extensions}}",
+  "alreadyInQueue": "Sorry, {{submitter}}, you may only submit one level at a time.",
+  "addedToQueue": "{{level.submitter}}, {{level}} has been added to the queue.",
+  "queueFull": "Sorry, the level queue is full!",
+  "invalidCode": "{{submitter}}, that is an invalid level code.",
+  "pleaseWaitQueue": "Please wait for your level to be completed before you submit again."
+}

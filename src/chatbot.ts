@@ -1,3 +1,4 @@
+import i18next from "i18next";
 import { Chatter } from "./extensions-api/command.js";
 import {
   QueueSubmitter,
@@ -64,7 +65,7 @@ const chatbot_helper = function (channel: string): Chatbot {
       if (this.handle_func != null) {
         // Called every time the bot connects to Twitch chat
         const onConnectedHandler = (addr: string, port: number) => {
-          console.log(`* Connected to ${addr}:${port}`);
+          console.log(i18next.t("chatbotConnected", { addr, port }));
         };
 
         // Called every time a message comes in

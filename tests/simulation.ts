@@ -155,14 +155,17 @@ const simSetChatters = (newChatters: User[]) => {
 };
 
 /**
- * This is neccessary, such that .js files can be found in folders
+ * This is neccessary, such that .js files can be found in folders.
+ * This is also necessary to load localization data so the correct output is observed.
  *
  * @param {*} volume
  * @param {*} srcPath
+ * @param {boolean} emptyFiles
  */
 const populateMockVolume = (
   volume: InstanceType<typeof Volume>,
-  srcPath: string
+  srcPath: string,
+  emptyFiles = true
 ) => {
   const result: Record<string, string> = {};
   const files = fs.readdirSync(
@@ -182,10 +185,14 @@ const populateMockVolume = (
         )
         .isDirectory()
     ) {
-      populateMockVolume(volume, srcFile);
+      populateMockVolume(volume, srcFile, emptyFiles);
     } else {
-      // files are just empty files in the mock volume
-      result[srcFile] = "";
+      if (emptyFiles) {
+        // files are just empty files in the mock volume
+        result[srcFile] = "";
+      } else {
+        result[srcFile] = fs.readFileSync(srcFile).toString();
+      }
     }
   }
   volume.fromJSON(result, path.resolve("."));
@@ -197,6 +204,7 @@ const createMockVolume = (
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
   populateMockVolume(volume, "./src");
+  populateMockVolume(volume, "./locales", false);
   if (settings !== undefined) {
     console.log("./settings/settings.json: " + JSON.stringify(settings));
     volume.fromJSON(
@@ -328,6 +336,7 @@ const simRequireIndex = async (
         { "./settings/settings.json": JSON.stringify(mockSettings) },
         path.resolve(".")
       );
+      populateMockVolume(volume, "./locales", false);
     }
 
     // setup virtual file system
@@ -565,4 +574,5 @@ export {
   START_TIME,
   DEFAULT_TEST_SETTINGS,
   EMPTY_CHATTERS,
+  populateMockVolume,
 };

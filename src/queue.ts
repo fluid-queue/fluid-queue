@@ -12,6 +12,7 @@ import {
 } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
 import { z } from "zod";
+import i18next from "i18next";
 
 const extensions = new Extensions();
 
@@ -270,12 +271,12 @@ const queue = {
   add: (levelCode: string, submitter: QueueSubmitter) => {
     return data.access((data) => {
       if (settings.max_size && data.levels.length >= settings.max_size) {
-        return "Sorry, the level queue is full!";
+        return i18next.t("queueFull");
       }
       const resolved = extensions.resolve(levelCode, submitter);
       if (!resolved.success) {
         // TODO: maybe display all the code types that are not valid
-        return `${submitter}, that is an invalid level code.`;
+        return i18next.t("invalidCode", { submitter });
       }
 
       const level = resolved.entry;
@@ -284,7 +285,7 @@ const queue = {
         data.current_level.submitter.equals(submitter) &&
         !isChannel(submitter)
       ) {
-        return "Please wait for your level to be completed before you submit again.";
+        return i18next.t("pleaseWaitQueue");
       }
 
       const result = data.levels.find((x) => x.submitter.equals(submitter));
@@ -295,9 +296,9 @@ const queue = {
           data.waitingByUserId[submitter.id] = Waiting.create(submitter);
         }
         data.saveLater();
-        return `${level.submitter}, ${level} has been added to the queue.`;
+        return i18next.t("addedToQueue", { level });
       } else {
-        return `Sorry, ${submitter}, you may only submit one level at a time.`;
+        return i18next.t("alreadyInQueue", { submitter });
       }
     });
   },
