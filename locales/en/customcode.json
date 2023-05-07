@@ -1,0 +1,14 @@
+{
+  "noCodes": "There are no custom codes set.",
+  "currentCodes": "The current custom codes are: {{codes}}.",
+  "invalidCode": "That is an invalid level code.",
+  "alreadyExists": "The custom code {{customName}} already exists.",
+  "codeAdded": "Your custom code {{customName}} for {{code}} has been added.",
+  "notFound": "The custom code {{customName}} could not be found.",
+  "addError": "An error occurred while trying to add your custom code.",
+  "removeError": "An error occurred while trying to remove that custom code.",
+  "codeNotRemoved": "The custom code {{deletedName}} for {{deletedEntry}} could not be deleted.",
+  "codeRemoved": "The custom code {{deletedName}} for {{deletedEntry}} has been removed.",
+  "codesReloaded": "Reloaded custom codes from disk.",
+  "syntax": "Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}."
+}

@@ -69,7 +69,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
 
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
-[12:19:29] @^helperblock: The custom code 🏳️ already exists
+[12:19:29] @^helperblock: The custom code 🏳️ already exists.
 
 # you can also remove custom level type aliases
 [12:19:29] ~%?liquidnya: !customcode remove 🏳️
