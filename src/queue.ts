@@ -306,7 +306,7 @@ const queue = {
   modRemove: (usernameArgument: string) => {
     return data.access((data) => {
       if (usernameArgument == "") {
-        return "You can use !remove <username> to kick out someone else's level.";
+        return i18next.t("modRemoveNoArgument");
       }
 
       const level = data.levels.find(
@@ -319,7 +319,7 @@ const queue = {
         // `notLurkingAnymore` is called twice, because using both `name` and `displayName` would only match on `name` and not both
         twitch.notLurkingAnymore({ name: usernameOrDisplayName });
         twitch.notLurkingAnymore({ displayName: usernameOrDisplayName });
-        return `No levels from ${usernameArgument} were found in the queue.`;
+        return i18next.t("modRemoveNotFound", { usernameArgument });
       }
       const submitter = level.submitter;
       let removedLevels;
@@ -329,7 +329,7 @@ const queue = {
       );
       data.onRemove(removedLevels);
       data.saveLater();
-      return `${usernameArgument}'s level has been removed from the queue.`;
+      return i18next.t("modRemoveRemoved", { usernameArgument });
     });
   },
 
@@ -339,7 +339,7 @@ const queue = {
         data.current_level != undefined &&
         data.current_level.submitter.equals(submitter)
       ) {
-        return "Sorry, we're playing that level right now!";
+        return i18next.t("removeCurrentLevel");
       }
       let removedLevels;
       [removedLevels, data.levels] = partition(
@@ -347,11 +347,11 @@ const queue = {
         queue.matchSubmitter(submitter)
       );
       if (removedLevels.length === 0) {
-        return `${submitter}, looks like you're not in the queue. Try !add XXX-XXX-XXX.`;
+        return i18next.t("submitterNotFound", { submitter });
       }
       data.onRemove(removedLevels);
       data.saveLater();
-      return `${submitter}, your level has been removed from the queue.`;
+      return i18next.t("removeRemoved", { submitter });
     });
   },
 
@@ -360,23 +360,23 @@ const queue = {
       const resolved = extensions.resolve(levelCode, submitter);
       if (!resolved.success) {
         // TODO: maybe display all the code types that are not valid
-        return `${submitter}, that level code is invalid.`;
+        return i18next.t("invalidCode", { submitter });
       }
       const level = resolved.entry;
       const levelIndex = data.levels.findIndex(queue.matchSubmitter(submitter));
       if (levelIndex != -1) {
         data.levels[levelIndex] = level;
         data.saveLater();
-        return `${level.submitter}, your level in the queue has been replaced with ${level}.`;
+        return i18next.t("replaceReplaced", { level });
       } else if (
         data.current_level != undefined &&
         data.current_level.submitter.equals(submitter)
       ) {
         data.current_level = level;
         data.saveLater();
-        return `${level.submitter}, your level in the queue has been replaced with ${level}.`;
+        return i18next.t("replaceReplaced", { level });
       } else {
-        return `${submitter}, you were not found in the queue. Use !add to add a level.`;
+        return i18next.t("submitterNotFound");
       }
     });
   },
@@ -532,19 +532,21 @@ const queue = {
 
       if (index != -1) {
         console.log(
-          "Elegible users: " +
-            weightedList.entries
+          i18next.t("eligibleUsers", {
+            list: weightedList.entries
               .map((entry) => entry.level.submitter.toString())
-              .reduce((a, b) => a + ", " + b)
+              .reduce((a, b) => a + ", " + b),
+          })
         );
         console.log(
-          "Elegible users time: " +
-            weightedList.entries.map((entry) => entry.weight())
+          i18next.t("eligibleUsersTime", {
+            list: weightedList.entries.map((entry) => entry.weight()),
+          })
         );
         const weight = weightedList.entries[index].weight();
         const totalWeight = weightedList.totalWeight;
         console.log(
-          `${submitter}'s weight is ${weight} with totalWeight ${totalWeight}`
+          i18next.t("consolePrintWeight", { submitter, weight, totalWeight })
         );
         return queue.percent(weight, totalWeight);
       }
@@ -555,7 +557,7 @@ const queue = {
   punt: async () => {
     return data.access((data) => {
       if (data.current_level === undefined) {
-        return "The nothing you aren't playing cannot be punted.";
+        return i18next.t("puntNoLevel");
       }
       const top = data.current_level;
       data.current_level = undefined;
@@ -569,16 +571,16 @@ const queue = {
         data.waitingByUserId[top.submitter.id] = Waiting.create(top.submitter);
       }
       data.saveLater();
-      return "Ok, adding the current level back into the queue.";
+      return i18next.t("puntPunted");
     });
   },
 
   dismiss: async () => {
     return data.access((data) => {
       if (data.current_level === undefined) {
-        return "The nothing you aren't playing cannot be dismissed.";
+        return i18next.t("dismissNoLevel");
       }
-      const response = `Dismissed ${data.current_level} submitted by ${data.current_level.submitter}.`;
+      const response = i18next.t("dismissDismissed", { data });
       const removedLevels =
         data.current_level === undefined ? [] : [data.current_level];
       data.current_level = undefined;
@@ -729,30 +731,31 @@ const queue = {
       let gettingThereSomeday = weightedList.entries[0].weight();
 
       console.log(
-        "Elegible users: " +
-          weightedList.entries
+        i18next.t("eligibleUsers", {
+          list: weightedList.entries
             .map((entry) => entry.level.submitter.toString())
-            .reduce((a, b) => a + ", " + b)
+            .reduce((a, b) => a + ", " + b),
+        })
       );
       console.log(
-        "Elegible users time: " +
-          weightedList.entries.map((entry) => entry.weight())
+        i18next.t("eligibleUsersTime", {
+          list: weightedList.entries.map((entry) => entry.weight()),
+        })
       );
 
-      console.log("Random number: " + randomNumber);
-      console.log("Current cumulative time: " + gettingThereSomeday);
+      console.log(i18next.t("randomNumber", { randomNumber }));
+      console.log(i18next.t("currentCumulativeTime", { gettingThereSomeday }));
       while (gettingThereSomeday < randomNumber) {
         levelIndex++;
         gettingThereSomeday =
           gettingThereSomeday + weightedList.entries[levelIndex].weight();
-        console.log("Current cumulative time: " + gettingThereSomeday);
+        console.log(
+          i18next.t("currentCumulativeTime", { gettingThereSomeday })
+        );
       }
 
       console.log(
-        "Chosen index was " +
-          levelIndex +
-          " after a cumulative time of " +
-          gettingThereSomeday
+        i18next.t("consoleIndexChosen", { levelIndex, gettingThereSomeday })
       );
       data.current_level = weightedList.entries[levelIndex].level;
 
@@ -967,17 +970,17 @@ const queue = {
   persistenceManagement: async (subCommand: string) => {
     if (subCommand == "on") {
       persist = true;
-      return "Activated automatic queue persistence.";
+      return i18next.t("persistenceActivated");
     } else if (subCommand == "off") {
       persist = false;
-      return "Deactivated automatic queue persistence.";
+      return i18next.t("persistenceDeactivated");
     } else if (subCommand == "save") {
       // force save
       const success = data.access((data) => data.saveNow({ force: true }));
       if (success) {
-        return "Successfully persisted the queue state.";
+        return i18next.t("persistenceSaved");
       } else {
-        return "Error while persisting queue state, see logs.";
+        return i18next.t("persistenceError");
       }
     } else if (
       subCommand == "load" ||
@@ -986,9 +989,9 @@ const queue = {
     ) {
       // load queue state
       await data.load();
-      return "Reloaded queue state from disk.";
+      return i18next.t("persistenceReloaded");
     } else {
-      return "Invalid arguments. The correct syntax is !persistence {on/off/save/load}.";
+      return i18next.t("persistenceInvalid");
     }
   },
 
@@ -1069,25 +1072,34 @@ const queue = {
         levels.online.length === 0 &&
         levels.offline.length === 0
       ) {
-        return "There are no levels in the queue.";
+        return i18next.t("queueEmpty");
       }
-      let result =
-        levels.online.length + (current !== undefined ? 1 : 0) + " online: ";
-      result +=
-        current !== undefined
-          ? current.submitter + " (current)"
-          : "(no current level)";
 
-      result += levels.online
+      let onlineList = levels.online
         .slice(0, 5)
         .reduce((acc: string, x: QueueEntry) => acc + ", " + x.submitter, "");
-      result +=
-        "..." +
-        (levels.online.length > 5 ? "etc." : "") +
-        " (" +
-        levels.offline.length +
-        " offline)";
-      return result;
+
+      if (levels.online.length > 5) {
+        onlineList += "etc.";
+      }
+
+      let onlineLength = levels.online.length;
+
+      if (current !== undefined) {
+        onlineLength += 1;
+        return i18next.t("queueListCurrent", {
+          onlineLength,
+          levels,
+          current,
+          onlineList,
+        });
+      } else {
+        return i18next.t("queueListNoCurrent", {
+          onlineLength,
+          levels,
+          onlineList,
+        });
+      }
     });
   },
 
@@ -1101,19 +1113,10 @@ const queue = {
         weightedList.entries.length === 0 &&
         weightedList.offlineLength === 0
       ) {
-        return "There are no levels in the queue.";
+        return i18next.t("queueEmpty");
       }
-      //console.log(weightedList);
-      let result =
-        weightedList.entries.length +
-        (current !== undefined ? 1 : 0) +
-        " online: ";
-      result +=
-        current !== undefined
-          ? current.submitter + " (current)"
-          : "(no current level)";
 
-      result += weightedList.entries
+      let onlineList = weightedList.entries
         .slice(0, 5)
         .reduce(
           (acc, x) =>
@@ -1125,10 +1128,28 @@ const queue = {
             "%)",
           ""
         );
-      result += "...";
-      result += weightedList.entries.length > 5 ? "etc." : "";
-      result += " (" + weightedList.offlineLength + " offline)";
-      return result;
+
+      if (weightedList.entries.length > 5) {
+        onlineList += "etc.";
+      }
+
+      let onlineLength = weightedList.entries.length;
+
+      if (current !== undefined) {
+        onlineLength += 1;
+        return i18next.t("weightedListCurrent", {
+          onlineLength,
+          weightedList,
+          current,
+          onlineList,
+        });
+      } else {
+        return i18next.t("weightedListNoCurrent", {
+          onlineLength,
+          weightedList,
+          onlineList,
+        });
+      }
     });
   },
 

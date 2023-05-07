@@ -13,11 +13,11 @@ const backendOptions: FsBackendOptions = {
   addPath: join(dirname, "../locales/{{lng}}/{{ns}}.missing.json"),
 };
 
-console.log("Initializing i18next...");
-await i18next.use(FsBackend).init<FsBackendOptions>({
+export const options: i18next.InitOptions<FsBackendOptions> = {
   debug: true,
   initImmediate: false,
   lng: settings.language,
+  fallbackLng: "en",
   ns: "fluid-queue",
   defaultNS: "fluid-queue",
   preload: readdirSync(join(dirname, "../locales")).filter((fileName) => {
@@ -27,4 +27,7 @@ await i18next.use(FsBackend).init<FsBackendOptions>({
   }),
   backend: backendOptions,
   saveMissing: true,
-});
+};
+
+console.log("Initializing i18next...");
+await i18next.use(FsBackend).init<FsBackendOptions>(options);

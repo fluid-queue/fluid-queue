@@ -5,6 +5,12 @@ import {
   CodeTypes,
 } from "./helpers/codeparsing.js";
 
+import i18next from "i18next";
+if (process && process.env && process.env.NODE_ENV != "test") {
+  await import("./helpers/i18n.js");
+}
+await i18next.loadNamespaces("smm2");
+
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different
 const delim = "[-. ]?";
@@ -58,9 +64,9 @@ const codeSuffix = (levelCode: string) => {
   if (settings.showMakerCode !== false) {
     const makerCode = extractValidCode(levelCode).makerCode;
     if (makerCode) {
-      return " (OCW maker code)";
+      return " (OCW " + i18next.t("makerCode", { ns: "smm2" }) + ")";
     }
-    return " (OCW level code)";
+    return " (OCW " + i18next.t("levelCode", { ns: "smm2" }) + ")";
   }
   return " (OCW)";
 };
