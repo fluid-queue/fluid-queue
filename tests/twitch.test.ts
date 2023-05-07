@@ -3,6 +3,7 @@ import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
 import { Settings } from "../src/settings-type.js";
 import { User } from "../src/extensions-api/queue-entry.js";
 import * as timers from "timers";
+import { createOnlineUsers } from "../src/twitch.js";
 
 // constants
 const defaultTestChatters: User[] = [];
@@ -239,4 +240,213 @@ test("online users", async () => {
 
   // the twitch api has been called 8 times
   expect(asMock(twitchApi.getChatters).mock.calls.length).toBe(8);
+});
+
+test("createOnlineUsers:empty", async () => {
+  const users: User[] = [];
+  const result = createOnlineUsers(users);
+  expect(result.users).toEqual(new Map());
+  expect(result.names).toEqual(new Map());
+  expect(result.displayNames).toEqual(new Map());
+  expect(result.getOnlineUser({})).toEqual({ online: false });
+  expect(result.getOnlineUser({ id: "0" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ name: "a" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ displayName: "A" })).toEqual({ online: false });
+  expect(result.isOnline({})).toBe(false);
+  expect(result.isOnline({ id: "0" })).toBe(false);
+  expect(result.isOnline({ name: "a" })).toBe(false);
+  expect(result.isOnline({ displayName: "A" })).toBe(false);
+});
+
+function createUser(i: number): User {
+  return {
+    id: i.toString(),
+    name: String.fromCharCode("a".charCodeAt(0) + i),
+    displayName: String.fromCharCode("A".charCodeAt(0) + i),
+  };
+}
+
+test("createOnlineUsers:users", async () => {
+  const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
+  const result = createOnlineUsers(users);
+  expect(result.users).toEqual(
+    new Map(users.map((user) => [user.id, { user, online: true }]))
+  );
+  expect(result.names).toEqual(
+    new Map(users.map((user) => [user.name, user.id]))
+  );
+  expect(result.displayNames).toEqual(
+    new Map(users.map((user) => [user.displayName, user.id]))
+  );
+  expect(result.getOnlineUser({})).toEqual({ online: false });
+  expect(result.getOnlineUser({ id: "0" })).toEqual({
+    online: true,
+    user: createUser(0),
+  });
+  expect(result.getOnlineUser({ name: "a" })).toEqual({
+    online: true,
+    user: createUser(0),
+  });
+  expect(result.getOnlineUser({ displayName: "A" })).toEqual({
+    online: true,
+    user: createUser(0),
+  });
+  expect(result.isOnline({})).toBe(false);
+  expect(result.isOnline({ id: "0" })).toBe(true);
+  expect(result.isOnline({ name: "a" })).toBe(true);
+  expect(result.isOnline({ displayName: "A" })).toBe(true);
+  expect(result.isOnline({ id: "24" })).toBe(true);
+  expect(result.isOnline({ name: "y" })).toBe(true);
+  expect(result.isOnline({ displayName: "Y" })).toBe(true);
+  expect(result.isOnline({ id: "25" })).toBe(false);
+  expect(result.isOnline({ name: "z" })).toBe(false);
+  expect(result.isOnline({ displayName: "Z" })).toBe(false);
+  expect(result.getOnlineUser({ id: "25" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ name: "z" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ displayName: "Z" })).toEqual({ online: false });
+});
+
+test("createOnlineUsers:users-with-lurkers", async () => {
+  const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
+  const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
+  const filter = (user: User) => !lurkers(user);
+  const result = createOnlineUsers(users, filter);
+  expect(result.users).toEqual(
+    new Map(users.map((user) => [user.id, { user, online: filter(user) }]))
+  );
+  expect(result.names).toEqual(
+    new Map(users.map((user) => [user.name, user.id]))
+  );
+  expect(result.displayNames).toEqual(
+    new Map(users.map((user) => [user.displayName, user.id]))
+  );
+  expect(result.getOnlineUser({})).toEqual({ online: false });
+  expect(result.getOnlineUser({ id: "0" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result.getOnlineUser({ name: "a" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result.getOnlineUser({ displayName: "A" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result.getOnlineUser({ id: "1" })).toEqual({
+    online: true,
+    user: createUser(1),
+  });
+  expect(result.getOnlineUser({ name: "b" })).toEqual({
+    online: true,
+    user: createUser(1),
+  });
+  expect(result.getOnlineUser({ displayName: "B" })).toEqual({
+    online: true,
+    user: createUser(1),
+  });
+  expect(result.isOnline({})).toBe(false);
+  expect(result.isOnline({ id: "0" })).toBe(false);
+  expect(result.isOnline({ name: "a" })).toBe(false);
+  expect(result.isOnline({ displayName: "A" })).toBe(false);
+  expect(result.isOnline({ id: "1" })).toBe(true);
+  expect(result.isOnline({ name: "b" })).toBe(true);
+  expect(result.isOnline({ displayName: "B" })).toBe(true);
+  expect(result.isOnline({ id: "23" })).toBe(true);
+  expect(result.isOnline({ name: "x" })).toBe(true);
+  expect(result.isOnline({ displayName: "X" })).toBe(true);
+  expect(result.isOnline({ id: "24" })).toBe(false);
+  expect(result.isOnline({ name: "y" })).toBe(false);
+  expect(result.isOnline({ displayName: "Y" })).toBe(false);
+  expect(result.isOnline({ id: "25" })).toBe(false);
+  expect(result.isOnline({ name: "z" })).toBe(false);
+  expect(result.isOnline({ displayName: "Z" })).toBe(false);
+  expect(result.getOnlineUser({ id: "25" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ name: "z" })).toEqual({ online: false });
+  expect(result.getOnlineUser({ displayName: "Z" })).toEqual({ online: false });
+});
+
+test("createOnlineUsers:users-with-lurkers-and-subscribers", async () => {
+  const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
+  const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
+  const filter0 = (user: User) => !lurkers(user);
+  const result0 = createOnlineUsers(users, filter0);
+  const subscriber = (user: User) => parseInt(user.id) % 2 == 0;
+  const filter1 = subscriber;
+  const result1 = createOnlineUsers(result0, filter1);
+  expect(result1.users).toEqual(
+    new Map(
+      users.map((user) => [
+        user.id,
+        { user, online: filter0(user) && filter1(user) },
+      ])
+    )
+  );
+  expect(result1.names).toEqual(
+    new Map(users.map((user) => [user.name, user.id]))
+  );
+  expect(result1.displayNames).toEqual(
+    new Map(users.map((user) => [user.displayName, user.id]))
+  );
+  expect(result1.getOnlineUser({})).toEqual({ online: false });
+  expect(result1.getOnlineUser({ id: "0" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result1.getOnlineUser({ name: "a" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result1.getOnlineUser({ displayName: "A" })).toEqual({
+    online: false,
+    user: createUser(0),
+  });
+  expect(result1.getOnlineUser({ id: "1" })).toEqual({
+    online: false,
+    user: createUser(1),
+  });
+  expect(result1.getOnlineUser({ name: "b" })).toEqual({
+    online: false,
+    user: createUser(1),
+  });
+  expect(result1.getOnlineUser({ displayName: "B" })).toEqual({
+    online: false,
+    user: createUser(1),
+  });
+  expect(result1.getOnlineUser({ id: "4" })).toEqual({
+    online: true,
+    user: createUser(4),
+  });
+  expect(result1.getOnlineUser({ name: "e" })).toEqual({
+    online: true,
+    user: createUser(4),
+  });
+  expect(result1.getOnlineUser({ displayName: "E" })).toEqual({
+    online: true,
+    user: createUser(4),
+  });
+  expect(result1.isOnline({})).toBe(false);
+  expect(result1.isOnline({ id: "0" })).toBe(false);
+  expect(result1.isOnline({ name: "a" })).toBe(false);
+  expect(result1.isOnline({ displayName: "A" })).toBe(false);
+  expect(result1.isOnline({ id: "4" })).toBe(true);
+  expect(result1.isOnline({ name: "e" })).toBe(true);
+  expect(result1.isOnline({ displayName: "E" })).toBe(true);
+  expect(result1.isOnline({ id: "22" })).toBe(true);
+  expect(result1.isOnline({ name: "w" })).toBe(true);
+  expect(result1.isOnline({ displayName: "W" })).toBe(true);
+  expect(result1.isOnline({ id: "23" })).toBe(false);
+  expect(result1.isOnline({ name: "x" })).toBe(false);
+  expect(result1.isOnline({ displayName: "X" })).toBe(false);
+  expect(result1.isOnline({ id: "24" })).toBe(false);
+  expect(result1.isOnline({ name: "y" })).toBe(false);
+  expect(result1.isOnline({ displayName: "Y" })).toBe(false);
+  expect(result1.isOnline({ id: "25" })).toBe(false);
+  expect(result1.isOnline({ name: "z" })).toBe(false);
+  expect(result1.isOnline({ displayName: "Z" })).toBe(false);
+  expect(result1.getOnlineUser({ id: "25" })).toEqual({ online: false });
+  expect(result1.getOnlineUser({ name: "z" })).toEqual({ online: false });
+  expect(result1.getOnlineUser({ displayName: "Z" })).toEqual({
+    online: false,
+  });
 });

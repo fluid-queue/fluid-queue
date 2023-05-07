@@ -26,7 +26,7 @@ export interface OnlineUsers {
   getOnlineUser(submitter: Partial<User>): OnlineUser;
 }
 
-function createOnlineUsers(
+export function createOnlineUsers(
   usersArgument: User[] | OnlineUsers,
   filter?: (submitter: User) => boolean
 ): OnlineUsers {
