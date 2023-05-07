@@ -915,15 +915,12 @@ const queue = {
   ): QueueDataMap<OnlineOfflineList> => {
     return (data: QueueDataAccessor) => {
       const [online, offline] = partition(data.levels, (level) => {
-        const user = onlineUsers.getUser(level.submitter);
-        if (user == null) {
-          // offline
-          return false;
+        const onlineUser = onlineUsers.getOnlineUser(level.submitter);
+        if ("user" in onlineUser) {
+          // automatically rename on name change
+          level.rename(onlineUser.user);
         }
-        // automatically rename on name change
-        level.rename(user);
-        // online
-        return true;
+        return onlineUser.online;
       });
       return { online, offline };
     };

@@ -84,8 +84,10 @@ test("online users", async () => {
   expect([...onlineUsers.users.keys()]).toEqual([]);
   expect([...onlineUsers.names.keys()]).toEqual([]);
   expect([...onlineUsers.displayNames.keys()]).toEqual([]);
-  expect(onlineUsers.hasSubmitter({})).toBe(false);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(false);
+  expect(onlineUsers.isOnline({})).toBe(false);
+  expect(onlineUsers.isOnline({ id: '${user("liquidnya").id}' })).toBe(false);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(false);
+  expect(onlineUsers.isOnline({ displayName: "liquidnya" })).toBe(false);
 
   // change chatters mock and compare with result
   setChatters([
@@ -110,9 +112,9 @@ test("online users", async () => {
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
     ["liquidnya", "FurretWalkBot"].sort()
   );
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   jest.setSystemTime(new Date("2022-04-21T00:00:00Z"));
   await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
@@ -134,9 +136,9 @@ test("online users", async () => {
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
     ["liquidnya", "FurretWalkBot", "helperblock"].sort()
   );
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(true);
 
   // after 4 minutes still online!
   jest.setSystemTime(new Date("2022-04-21T00:04:00Z"));
@@ -155,9 +157,9 @@ test("online users", async () => {
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
     ["liquidnya", "FurretWalkBot", "helperblock"].sort()
   );
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(true);
 
   // after 5 minutes not online any longer
   jest.setSystemTime(new Date("2022-04-21T00:05:00Z"));
@@ -172,32 +174,52 @@ test("online users", async () => {
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
     ["liquidnya", "FurretWalkBot"].sort()
   );
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // test the lurking feature
   twitch.setToLurk(
     buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
   );
   onlineUsers = await twitch.getOnlineUsers();
-  expect([...onlineUsers.users.keys()]).toEqual(['${user("liquidnya").id}']);
-  expect([...onlineUsers.names.keys()]).toEqual(["liquidnya"]);
-  expect([...onlineUsers.displayNames.keys()]).toEqual(["liquidnya"]);
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
+  // note that FurretWalkBot is in the list, even though they are lurking
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot"].sort()
+  );
+  // ...but the online status of FurretWalkBot is offline!
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(false);
+  expect(onlineUsers.getOnlineUser({ name: "furretwalkbot" }).online).toBe(
+    false
+  );
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
   // even when they still chat, they are not online
   twitch.noticeChatter(
     buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
   );
   onlineUsers = await twitch.getOnlineUsers();
-  expect([...onlineUsers.users.keys()]).toEqual(['${user("liquidnya").id}']);
-  expect([...onlineUsers.names.keys()]).toEqual(["liquidnya"]);
-  expect([...onlineUsers.displayNames.keys()]).toEqual(["liquidnya"]);
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(false);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
+  expect([...onlineUsers.users.keys()].sort()).toEqual(
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+  );
+  expect([...onlineUsers.names.keys()].sort()).toEqual(
+    ["liquidnya", "furretwalkbot"].sort()
+  );
+  expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
+    ["liquidnya", "FurretWalkBot"].sort()
+  );
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(false);
+  expect(onlineUsers.getOnlineUser({ name: "furretwalkbot" }).online).toBe(
+    false
+  );
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // unlurk makes them online again!
   twitch.notLurkingAnymore("furretwalkbot");
@@ -211,9 +233,9 @@ test("online users", async () => {
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
     ["liquidnya", "FurretWalkBot"].sort()
   );
-  expect(onlineUsers.hasSubmitter({ name: "furretwalkbot" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "liquidnya" })).toBe(true);
-  expect(onlineUsers.hasSubmitter({ name: "helperblock" })).toBe(false);
+  expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
+  expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // the twitch api has been called 8 times
   expect(asMock(twitchApi.getChatters).mock.calls.length).toBe(8);

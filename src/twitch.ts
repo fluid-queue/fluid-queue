@@ -16,12 +16,14 @@ const lurkers = new TTLCache<string, Chatter>({ ttl: LURKERS_TTL });
 const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
 const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
 
+type OnlineUser = { online: boolean; user: User } | { online: false };
+
 export interface OnlineUsers {
-  users: Map<string, User>;
+  users: Map<string, OnlineUser>;
   names: Map<string, string>; // from name to id
   displayNames: Map<string, string>; // from displayName to id
-  hasSubmitter(submitter: Partial<User>): boolean;
-  getUser(submitter: Partial<User>): User | null;
+  isOnline(submitter: Partial<User>): boolean;
+  getOnlineUser(submitter: Partial<User>): OnlineUser;
 }
 
 function createOnlineUsers(
@@ -30,49 +32,55 @@ function createOnlineUsers(
 ): OnlineUsers {
   if (!Array.isArray(usersArgument)) {
     if (filter != null) {
-      for (const [key, value] of usersArgument.users.entries()) {
-        if (!filter(value)) {
-          usersArgument.names.delete(value.name);
-          usersArgument.displayNames.delete(value.displayName);
-          usersArgument.users.delete(key);
+      for (const value of usersArgument.users.values()) {
+        if (value.online && !filter(value.user)) {
+          value.online = false;
         }
       }
     }
     return usersArgument;
   }
-  const usersList = usersArgument.filter(filter ?? (() => true));
-  const users = new Map(usersList.map((user) => [user.id, user]));
-  const names = new Map(usersList.map((user) => [user.name, user.id]));
+  let users;
+  if (filter != null) {
+    users = new Map(
+      usersArgument.map((user) => [user.id, { user, online: filter(user) }])
+    );
+  } else {
+    users = new Map(
+      usersArgument.map((user) => [user.id, { user, online: true }])
+    );
+  }
+  const names = new Map(usersArgument.map((user) => [user.name, user.id]));
   const displayNames = new Map(
-    usersList.map((user) => [user.displayName, user.id])
+    usersArgument.map((user) => [user.displayName, user.id])
   );
 
   return {
     users,
     names,
     displayNames,
-    hasSubmitter(submitter) {
-      return this.getUser(submitter) != null;
+    isOnline(submitter) {
+      return this.getOnlineUser(submitter).online;
     },
-    getUser(submitter) {
+    getOnlineUser(submitter) {
       if (submitter.id !== undefined) {
-        return this.users.get(submitter.id) ?? null;
+        return this.users.get(submitter.id) ?? { online: false };
       }
       if (submitter.name !== undefined) {
         const id = this.names.get(submitter.name);
         if (id === undefined) {
-          return null;
+          return { online: false };
         }
-        return this.users.get(id) ?? null;
+        return this.users.get(id) ?? { online: false };
       }
       if (submitter.displayName !== undefined) {
         const id = this.displayNames.get(submitter.displayName);
         if (id === undefined) {
-          return null;
+          return { online: false };
         }
-        return this.users.get(id) ?? null;
+        return this.users.get(id) ?? { online: false };
       }
-      return null;
+      return { online: false };
     },
   };
 }
