@@ -15,7 +15,7 @@ RUN npm ci --omit=optional
 # Copy the application itself
 COPY . /build
 
-RUN sh -c "npm run build && cp -R /build/package.json /build/build /home/node"
+RUN sh -c "npm run build && cp -R /build/package.json /build/build /build/locales /home/node"
 
 FROM node:20-alpine AS app
 
