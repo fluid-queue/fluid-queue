@@ -7,7 +7,7 @@ import { options } from "./i18next-options.js";
 
 const dirname = pathDirname(fileURLToPath(import.meta.url));
 
-console.log("Initializing i18next for extensions...");
+console.log("Initializing i18next...");
 await i18next.use(FsBackend).init<FsBackendOptions>({
   ...options,
   backend: {

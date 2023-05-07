@@ -25,8 +25,8 @@ export const Settings = z
     language: z
       .string()
       .toLowerCase()
-      .refine((language) => /^[a-z]{2}$/.test(language), {
-        message: "language must be a supported two-character abbreviation",
+      .refine((language) => /^[a-z]{2,3}(-[a-z]{2,3})?$/.test(language), {
+        message: "language must be a supported language tag",
       })
       .default("en")
       .describe("the language to run the bot in"),
@@ -154,5 +154,9 @@ export const Settings = z
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),
+    i18next_debug: z
+      .boolean()
+      .default(false)
+      .describe("whether to enable i18next's debug mode"),
   })
   .strict();

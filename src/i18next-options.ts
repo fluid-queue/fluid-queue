@@ -4,7 +4,7 @@ import { FsBackendOptions } from "i18next-fs-backend";
 import settings from "./settings.js";
 
 export const options: i18next.InitOptions<FsBackendOptions> = {
-  debug: true,
+  debug: settings.i18next_debug,
   initImmediate: false,
   lng: settings.language,
   fallbackLng: "en",
