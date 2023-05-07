@@ -853,8 +853,8 @@ const queue = {
     return percentString;
   },
 
-  multiplier: (username: QueueSubmitter) => {
-    if (settings.subscriberWeightMultiplier && twitch.isSubscriber(username)) {
+  multiplier: (submitter: QueueSubmitter) => {
+    if (settings.subscriberWeightMultiplier && twitch.isSubscriber(submitter)) {
       return settings.subscriberWeightMultiplier;
     }
     return 1.0;

@@ -222,7 +222,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // unlurk makes them online again!
-  twitch.notLurkingAnymore("furretwalkbot");
+  twitch.notLurkingAnymore({ name: "furretwalkbot" });
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
     ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()

@@ -95,10 +95,7 @@ const twitch = {
     );
   },
 
-  isSubscriber: (submitter: QueueSubmitter | string) => {
-    if (typeof submitter === "string") {
-      return subscribers.has(submitter);
-    }
+  isSubscriber: (submitter: QueueSubmitter) => {
     return subscribers.has(submitter.id);
   },
 
@@ -126,19 +123,6 @@ const twitch = {
     }
   },
 
-  getRecentChatter: (usernameOrSubmitter: string): Chatter | null => {
-    // do not purge stale entries on purpose
-    for (const value of recentChatters.values()) {
-      if (
-        value.name === usernameOrSubmitter ||
-        value.displayName === usernameOrSubmitter
-      ) {
-        return value;
-      }
-    }
-    return null;
-  },
-
   setToLurk: (submitter: Chatter) => {
     lurkers.set(submitter.id, submitter);
   },
@@ -151,27 +135,20 @@ const twitch = {
     }
   },
 
-  notLurkingAnymore(
-    usernameOrSubmitter: string | Partial<QueueSubmitter>
-  ): boolean {
+  notLurkingAnymore(submitter: Partial<QueueSubmitter>): boolean {
     lurkers.purgeStale(); // manually calling this because we are calling entries()
     let username: string | undefined;
     let displayName: string | undefined;
-    if (typeof usernameOrSubmitter === "string") {
-      username = usernameOrSubmitter;
-      displayName = usernameOrSubmitter;
+    if (submitter.id != null) {
+      return lurkers.delete(submitter.id);
+    }
+    if (submitter.name != null) {
+      username = submitter.name;
+    } else if (submitter.displayName != null) {
+      displayName = submitter.displayName;
     } else {
-      if (usernameOrSubmitter.id != null) {
-        return lurkers.delete(usernameOrSubmitter.id);
-      }
-      if (usernameOrSubmitter.name != null) {
-        username = usernameOrSubmitter.name;
-      } else if (usernameOrSubmitter.displayName != null) {
-        displayName = usernameOrSubmitter.displayName;
-      } else {
-        // can not remove anyone with no `id`, `name`, nor `displayName`
-        return false;
-      }
+      // can not remove anyone with no `id`, `name`, nor `displayName`
+      return false;
     }
     // linear search username or displayName
     let removed = false;
