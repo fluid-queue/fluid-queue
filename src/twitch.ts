@@ -16,54 +16,71 @@ const lurkers = new TTLCache<string, Chatter>({ ttl: LURKERS_TTL });
 const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
 const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
 
+type OnlineUser = { online: boolean; user: User } | { online: false };
+
 export interface OnlineUsers {
-  submitters: User[];
-  id: Set<string>;
-  name: Set<string>;
-  displayName: Set<string>;
-  hasSubmitter(submitter: Partial<User>): boolean;
+  users: Map<string, OnlineUser>;
+  names: Map<string, string>; // from name to id
+  displayNames: Map<string, string>; // from displayName to id
+  isOnline(submitter: Partial<User>): boolean;
+  getOnlineUser(submitter: Partial<User>): OnlineUser;
 }
 
-function createOnlineUsers(
-  userNamesSet: User[] | OnlineUsers,
+export function createOnlineUsers(
+  usersArgument: User[] | OnlineUsers,
   filter?: (submitter: User) => boolean
 ): OnlineUsers {
-  const users = (
-    Array.isArray(userNamesSet) ? userNamesSet : userNamesSet.submitters
-  ).filter(filter ?? (() => true));
-  const id: Set<string> = new Set();
-  const name: Set<string> = new Set();
-  const displayName: Set<string> = new Set();
-  for (const user of users) {
-    if (user.id !== undefined) {
-      id.add(user.id);
+  if (!Array.isArray(usersArgument)) {
+    if (filter != null) {
+      for (const value of usersArgument.users.values()) {
+        if (value.online && !filter(value.user)) {
+          value.online = false;
+        }
+      }
     }
-    if (user.name !== undefined) {
-      name.add(user.name);
-    }
-    if (user.displayName !== undefined) {
-      displayName.add(user.displayName);
-    }
+    return usersArgument;
   }
+  let users;
+  if (filter != null) {
+    users = new Map(
+      usersArgument.map((user) => [user.id, { user, online: filter(user) }])
+    );
+  } else {
+    users = new Map(
+      usersArgument.map((user) => [user.id, { user, online: true }])
+    );
+  }
+  const names = new Map(usersArgument.map((user) => [user.name, user.id]));
+  const displayNames = new Map(
+    usersArgument.map((user) => [user.displayName, user.id])
+  );
+
   return {
-    id,
-    name,
-    displayName,
-    submitters: users,
-    hasSubmitter(submitter) {
-      if (submitter.id !== undefined && id.has(submitter.id)) {
-        return true;
+    users,
+    names,
+    displayNames,
+    isOnline(submitter) {
+      return this.getOnlineUser(submitter).online;
+    },
+    getOnlineUser(submitter) {
+      if (submitter.id !== undefined) {
+        return this.users.get(submitter.id) ?? { online: false };
       }
-      if (submitter.name !== undefined && name.has(submitter.name)) {
-        return true;
+      if (submitter.name !== undefined) {
+        const id = this.names.get(submitter.name);
+        if (id === undefined) {
+          return { online: false };
+        }
+        return this.users.get(id) ?? { online: false };
       }
-      if (
-        submitter.displayName !== undefined &&
-        displayName.has(submitter.displayName)
-      ) {
-        return true;
+      if (submitter.displayName !== undefined) {
+        const id = this.displayNames.get(submitter.displayName);
+        if (id === undefined) {
+          return { online: false };
+        }
+        return this.users.get(id) ?? { online: false };
       }
-      return false;
+      return { online: false };
     },
   };
 }
@@ -73,15 +90,12 @@ const twitch = {
     const chatters = await twitchApi.getChatters(forceRefresh);
     recentChatters.purgeStale(); // manually calling this because we are calling values()
     return createOnlineUsers(
-      [...recentChatters.values(), ...chatters],
+      [...chatters, ...recentChatters.values()], // prefer recent chatters over chatters (items appearing later in the list override earlier items)
       (user) => !lurkers.has(user.id)
     );
   },
 
-  isSubscriber: (submitter: QueueSubmitter | string) => {
-    if (typeof submitter === "string") {
-      return subscribers.has(submitter);
-    }
+  isSubscriber: (submitter: QueueSubmitter) => {
     return subscribers.has(submitter.id);
   },
 
@@ -121,27 +135,20 @@ const twitch = {
     }
   },
 
-  notLurkingAnymore(
-    usernameOrSubmitter: string | Partial<QueueSubmitter>
-  ): boolean {
+  notLurkingAnymore(submitter: Partial<QueueSubmitter>): boolean {
     lurkers.purgeStale(); // manually calling this because we are calling entries()
     let username: string | undefined;
     let displayName: string | undefined;
-    if (typeof usernameOrSubmitter === "string") {
-      username = usernameOrSubmitter;
-      displayName = usernameOrSubmitter;
+    if (submitter.id != null) {
+      return lurkers.delete(submitter.id);
+    }
+    if (submitter.name != null) {
+      username = submitter.name;
+    } else if (submitter.displayName != null) {
+      displayName = submitter.displayName;
     } else {
-      if (usernameOrSubmitter.id != null) {
-        return lurkers.delete(usernameOrSubmitter.id);
-      }
-      if (usernameOrSubmitter.name != null) {
-        username = usernameOrSubmitter.name;
-      } else if (usernameOrSubmitter.displayName != null) {
-        displayName = usernameOrSubmitter.displayName;
-      } else {
-        // can not remove anyone with no `id`, `name`, nor `displayName`
-        return false;
-      }
+      // can not remove anyone with no `id`, `name`, nor `displayName`
+      return false;
     }
     // linear search username or displayName
     let removed = false;

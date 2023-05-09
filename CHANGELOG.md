@@ -17,7 +17,7 @@
 
 - Usage of user ids instead of usernames for the queue save file as well as internal state of the queue.
   This means that if someone renames themselves that they will still keep their queue entry as well as their waiting time,
-  however the queue will still use the previous display name whenever the level is displayed in chat.
+  and the queue will still use the previous display name until the queue automatically detects someones name has changed.
 - Moderators and the broadcaster can now use the moderator `!entry <username>` command to show the queue entry of someone else.
 
 ## Bug fixes

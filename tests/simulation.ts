@@ -215,7 +215,11 @@ type Index = {
   chatbot_helper: ReturnType<typeof helper>;
   random: jest.Spied<() => number>;
   quesoqueue: Queue;
-  handle_func: (message: string, sender: Chatter, respond: Responder) => void;
+  handle_func: (
+    message: string,
+    sender: Chatter,
+    respond: Responder
+  ) => Promise<void>;
   twitch: Twitch;
 };
 
@@ -277,7 +281,7 @@ const simRequireIndex = async (
   let random: jest.Spied<() => number> | undefined;
   let quesoqueue: Queue | undefined;
   let handle_func:
-    | ((message: string, sender: Chatter, respond: Responder) => void)
+    | ((message: string, sender: Chatter, respond: Responder) => Promise<void>)
     | undefined;
   let twitch: Twitch | undefined;
 
@@ -508,10 +512,11 @@ const buildChatter = (
   displayName: string,
   isSubscriber: boolean,
   isMod: boolean,
-  isBroadcaster: boolean
+  isBroadcaster: boolean,
+  id?: string
 ): Chatter => {
   return {
-    id: `\${user(${JSON.stringify(username)}).id}`,
+    id: id ?? `\${user(${JSON.stringify(username)}).id}`,
     name: username,
     displayName,
     isSubscriber,

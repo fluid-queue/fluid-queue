@@ -464,7 +464,7 @@ function createGenericResolversApi<T extends object>(
         },
       };
     }
-    return {
+    const queueEntry: QueueEntry = {
       toString() {
         return display(value);
       },
@@ -492,7 +492,21 @@ function createGenericResolversApi<T extends object>(
       get submitter() {
         return submitter;
       },
+      rename: (newSubmitter: QueueSubmitter): boolean => {
+        if (submitter.id == newSubmitter.id) {
+          const rename =
+            submitter.name != newSubmitter.name ||
+            submitter.displayName != newSubmitter.displayName;
+          if (rename) {
+            submitter.name = newSubmitter.name;
+            submitter.displayName = newSubmitter.displayName;
+          }
+          return rename;
+        }
+        return false;
+      },
     };
+    return queueEntry;
   }
   registerDeserializer(
     type,
@@ -576,7 +590,7 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
       if (submitter === undefined) {
         return { success: true, entry: resolved };
       } else {
-        return {
+        const queueEntry: Result<{ entry: QueueEntry }> = {
           success: true,
           entry: {
             ...resolved,
@@ -599,8 +613,22 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
             get submitter() {
               return submitter;
             },
+            rename: (newSubmitter: QueueSubmitter): boolean => {
+              if (submitter.id == newSubmitter.id) {
+                const rename =
+                  submitter.name != newSubmitter.name ||
+                  submitter.displayName != newSubmitter.displayName;
+                if (rename) {
+                  submitter.name = newSubmitter.name;
+                  submitter.displayName = newSubmitter.displayName;
+                }
+                return rename;
+              }
+              return false;
+            },
           },
         };
+        return queueEntry;
       }
     } else {
       return { success: false };

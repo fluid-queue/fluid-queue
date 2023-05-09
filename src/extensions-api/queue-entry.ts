@@ -90,6 +90,11 @@ export interface QueueEntry extends Entry {
    * The submitter of this queue entry.
    */
   get submitter(): QueueSubmitter;
+  /**
+   * Rename the submitter.
+   * @returns true if the user name or display name changed.
+   */
+  rename(submitter: User): boolean;
 }
 
 /**

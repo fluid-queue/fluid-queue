@@ -287,7 +287,7 @@ export class Extensions {
     }
     const displayFallback = this.displayFallback.bind(this);
     if (isPersistedQueueEntry(entry)) {
-      return {
+      const queueEntry: QueueEntry = {
         toString() {
           return displayFallback(entry);
         },
@@ -304,7 +304,21 @@ export class Extensions {
         get submitter() {
           return queueSubmitter(entry);
         },
+        rename: (newSubmitter: QueueSubmitter): boolean => {
+          if (entry.submitter.id == newSubmitter.id) {
+            const rename =
+              entry.submitter.name != newSubmitter.name ||
+              entry.submitter.displayName != newSubmitter.displayName;
+            if (rename) {
+              entry.submitter.name = newSubmitter.name;
+              entry.submitter.displayName = newSubmitter.displayName;
+            }
+            return rename;
+          }
+          return false;
+        },
       };
+      return queueEntry;
     }
     return {
       toString() {

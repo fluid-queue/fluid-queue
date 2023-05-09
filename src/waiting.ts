@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { User } from "./extensions-api/queue-entry.js";
 
 const timeOrNow = (time: string | Date | undefined): string => {
   if (time === undefined) {
@@ -92,6 +93,19 @@ export class Waiting {
   weight(): number {
     // round to nearest minute
     return this.weightMin + (this.weightMsec >= 30000 ? 1 : 0);
+  }
+  rename(user: User): boolean {
+    if (this.user.id == user.id) {
+      const rename =
+        this.user.name != user.name ||
+        this.user.displayName != user.displayName;
+      if (rename) {
+        this.user.name = user.name;
+        this.user.displayName = user.displayName;
+      }
+      return rename;
+    }
+    return false;
   }
 }
 
