@@ -1,9 +1,15 @@
 import { jest } from "@jest/globals";
-import { asMock, buildChatter, replace, mockTwitchApi } from "./simulation.js";
+import {
+  asMock,
+  buildChatter,
+  replace,
+  mockTwitchApi,
+  createMockVolume,
+} from "./simulation.js";
 import { Settings } from "../src/settings-type.js";
 import { User } from "../src/extensions-api/queue-entry.js";
 import * as timers from "timers";
-import { createOnlineUsers } from "../src/twitch.js";
+import { createFsFromVolume } from "memfs";
 
 // constants
 const defaultTestChatters: User[] = [];
@@ -42,8 +48,27 @@ beforeEach(() => {
   jest.setSystemTime(new Date("2022-04-21T00:00:00Z"));
 });
 
-test("online users", async () => {
+async function setupMocks() {
   jest.resetModules();
+
+  const volume = createMockVolume();
+  const mockFs = createFsFromVolume(volume);
+  jest.mock("fs", () => ({
+    __esModule: true, // Use it when dealing with esModules
+    ...mockFs,
+    default: mockFs,
+    toString() {
+      return "fs mock";
+    },
+  }));
+  jest.unstable_mockModule("fs", () => ({
+    ...mockFs,
+    default: mockFs,
+    toString() {
+      return "fs module mock";
+    },
+  }));
+  (await import("fs")).default;
 
   // mock needed for ttlcache
   jest.spyOn(global.performance, "now").mockImplementation(() => {
@@ -71,6 +96,12 @@ test("online users", async () => {
   });
   const settings = (await import("../src/settings.js")).default;
   replace(settings, Settings.parse(defaultTestSettings));
+
+  return { settings, twitch, twitchApi };
+}
+
+test("online users", async () => {
+  const { settings, twitch, twitchApi } = await setupMocks();
 
   if (settings === undefined || twitch === undefined) {
     expect(settings).not.toBeUndefined();
@@ -243,6 +274,8 @@ test("online users", async () => {
 });
 
 test("createOnlineUsers:empty", async () => {
+  await setupMocks();
+  const { createOnlineUsers } = await import("../src/twitch.js");
   const users: User[] = [];
   const result = createOnlineUsers(users);
   expect(result.users).toEqual(new Map());
@@ -267,6 +300,8 @@ function createUser(i: number): User {
 }
 
 test("createOnlineUsers:users", async () => {
+  await setupMocks();
+  const { createOnlineUsers } = await import("../src/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const result = createOnlineUsers(users);
   expect(result.users).toEqual(
@@ -307,6 +342,8 @@ test("createOnlineUsers:users", async () => {
 });
 
 test("createOnlineUsers:users-with-lurkers", async () => {
+  await setupMocks();
+  const { createOnlineUsers } = await import("../src/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
   const filter = (user: User) => !lurkers(user);
@@ -367,6 +404,8 @@ test("createOnlineUsers:users-with-lurkers", async () => {
 });
 
 test("createOnlineUsers:users-with-lurkers-and-subscribers", async () => {
+  await setupMocks();
+  const { createOnlineUsers } = await import("../src/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
   const filter0 = (user: User) => !lurkers(user);
