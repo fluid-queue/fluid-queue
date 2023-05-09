@@ -34,7 +34,7 @@ type HandleFunc = (
   command: string,
   chatter: Chatter,
   respond: (response_text: string) => void
-) => void;
+) => Promise<void>;
 
 export type Chatbot = {
   client: Client | null;
@@ -111,7 +111,7 @@ const chatbot_helper = function (channel: string): Chatbot {
           if (!this.handle_func) {
             throw new Error("Handled a message before handler func set up");
           }
-          this.handle_func(command, chatter, respond);
+          void this.handle_func(command, chatter, respond);
         };
         // Register our event handlers (defined below)
         client.on("connected", onConnectedHandler);

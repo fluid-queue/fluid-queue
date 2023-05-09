@@ -90,7 +90,7 @@ const twitch = {
     const chatters = await twitchApi.getChatters(forceRefresh);
     recentChatters.purgeStale(); // manually calling this because we are calling values()
     return createOnlineUsers(
-      [...recentChatters.values(), ...chatters],
+      [...chatters, ...recentChatters.values()], // prefer recent chatters over chatters (items appearing later in the list override earlier items)
       (user) => !lurkers.has(user.id)
     );
   },
