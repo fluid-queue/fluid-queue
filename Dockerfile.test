@@ -25,4 +25,4 @@ RUN npm ci --include=optional
 COPY --chown=node:node . /home/node
 
 # Run the tests, this Dockerfile is useless for anything else
-CMD [ "npm", "run", "test"]
+CMD [ "npm", "run", "test-ci"]

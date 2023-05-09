@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --verbose",
-    "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --ci",
+    "test-ci": "NODE_OPTIONS=--experimental-vm-modules jest --config ./tests/jest.config.ts --ci --verbose --runInBand",
     "start": "node --enable-source-maps ./build/index.js",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
     "build": "node --loader @swc-node/register/esm ./build.ts",
