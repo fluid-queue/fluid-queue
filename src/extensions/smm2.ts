@@ -82,21 +82,15 @@ const extractValidCode = (levelCode: string, strict = true) => {
   };
 };
 
-const makerSuffix = (levelCode: string) => {
-  if (
-    settings.showMakerCode !== undefined &&
-    settings.showMakerCode !== false
-  ) {
-    const makerCode = extractValidCode(levelCode).makerCode;
-    if (makerCode) {
-      return " (" + i18next.t("makerCode", { ns: "smm2" }) + ")";
-    }
-  }
-  return "";
-};
-
 function display(code: string) {
-  return code + makerSuffix(code);
+  if (
+    settings.showMakerCode === false ||
+    extractValidCode(code).makerCode === false
+  ) {
+    return i18next.t("levelCodeNoSuffix", { ns: "smm2", code });
+  } else {
+    return i18next.t("makerCode", { ns: "smm2", code });
+  }
 }
 
 function strictResolve(args: string) {

@@ -1,4 +1,4 @@
 {
-  "makerCode": "maker code",
-  "levelCode": "level code"
+  "levelCodeNoSuffix": "{{code}}",
+  "makerCode": "{{code}} (maker code)"
 }

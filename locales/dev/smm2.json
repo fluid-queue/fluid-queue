@@ -1,4 +1,4 @@
 {
-  "makerCode": "‏‮!!! ɱåķéŕ çöðé !!!‬‏",
-  "levelCode": "‏‮!!! ļéṽéļ çöðé !!!‬‏"
+  "levelCodeNoSuffix": "‏‮!!! {{code}} !!!‬‏",
+  "makerCode": "‏‮!!! {{code}} (₥áƙèř çôδè) !!!‬‏"
 }
