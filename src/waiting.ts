@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { User } from "./extensions-api/queue-entry.js";
 
-const timeOrNow = (time: string | Date | undefined): Date => {
+const timeOrNow = (time: string | Date | undefined): string => {
   if (time === undefined) {
-    return new Date();
+    return new Date().toISOString();
   } else if (typeof time === "string") {
-    return new Date(Date.parse(time));
-  } else {
     return time;
+  } else {
+    return time.toISOString();
   }
 };
 
@@ -35,21 +35,21 @@ export class Waiting {
   private waitTime: number;
   private weightMin: number;
   private weightMsec: number;
-  private lastOnlineTime: number;
+  private lastOnlineTime: string;
 
   private constructor(waiting: WaitingV3) {
     this.user = waiting.user;
     this.waitTime = waiting.waiting.minutes;
     this.weightMin = waiting.weight.minutes;
     this.weightMsec = waiting.weight.milliseconds;
-    this.lastOnlineTime = Date.parse(waiting.lastOnline);
+    this.lastOnlineTime = waiting.lastOnline;
   }
   static create(user: WaitingUserV3, now?: string | Date): Waiting {
     return new Waiting({
       user,
       waiting: { minutes: 1 },
       weight: { minutes: 1, milliseconds: 0 },
-      lastOnline: timeOrNow(now).toISOString(),
+      lastOnline: timeOrNow(now),
     });
   }
   static from(waiting: WaitingV3): Waiting {
@@ -74,7 +74,7 @@ export class Waiting {
       },
       waiting: { minutes: this.waitTime },
       weight: { minutes: this.weightMin, milliseconds: this.weightMsec },
-      lastOnline: new Date(this.lastOnlineTime).toISOString(),
+      lastOnline: this.lastOnlineTime,
     };
   }
   addOneMinute(multiplier: number, now?: string | Date): void {
@@ -88,7 +88,7 @@ export class Waiting {
     }
     this.weightMin += addMin;
     this.waitTime += 1;
-    this.lastOnlineTime = timeOrNow(now).getTime();
+    this.lastOnlineTime = timeOrNow(now);
   }
   weight(): number {
     // round to nearest minute
@@ -106,9 +106,6 @@ export class Waiting {
       return rename;
     }
     return false;
-  }
-  isOlderThan(time: number): boolean {
-    return this.lastOnlineTime < time;
   }
 }
 
