@@ -35,14 +35,14 @@ import {
 } from "./extensions-api/resolvers.js";
 import { BroadcastOnce, SendOnce } from "./sync.js";
 import { fileURLToPath } from "url";
-import i18next, { i18n } from "i18next";
+import i18next from "i18next";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
 const fileEnding: string[] = [".js", ".ts"];
 
 // internal interface
 interface ExtensionModule<T = Promise<void> | void> {
-  setup(api: ExtensionsApi, i18next: i18n): T;
+  setup(api: ExtensionsApi): T;
 }
 
 export default interface ExtensionsApi
@@ -100,8 +100,8 @@ function mapAnyExtensionModule(
   module: ExtensionModule<unknown>
 ): ExtensionModule {
   return {
-    setup(api, i18next): Promise<void> | void {
-      const result = module.setup(api, i18next);
+    setup(api): Promise<void> | void {
+      const result = module.setup(api);
       if (result instanceof Promise) {
         return result;
       }
@@ -241,10 +241,7 @@ export class Extensions {
           },
         };
         // either setup function resolves or `complete()` was called inside the setup function
-        return Promise.any([
-          extension.setup(api, i18next.default),
-          extensionCompleted.recv(),
-        ]);
+        return Promise.any([extension.setup(api), extensionCompleted.recv()]);
       })
     );
 
