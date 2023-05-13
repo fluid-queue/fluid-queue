@@ -146,5 +146,13 @@ export const Settings = z
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),
+    clear: z
+      .string()
+      .describe(
+        'The default argument for !clear. Set this to "all" to clear all levels by default.'
+      )
+      .nonempty() // can not be empty -> use null instead
+      .nullable()
+      .default(null),
   })
   .strict();

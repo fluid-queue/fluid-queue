@@ -12,6 +12,7 @@
   Also make sure you have the dev dependencies installed before building the queue `NODE_ENV=development npm install`.
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
 - Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
+- `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.json` to `"all"` and then `!clear` clears all levels again.
 
 ## New features
 
@@ -19,6 +20,12 @@
   This means that if someone renames themselves that they will still keep their queue entry as well as their waiting time,
   and the queue will still use the previous display name until the queue automatically detects someones name has changed.
 - Moderators and the broadcaster can now use the moderator `!entry <username>` command to show the queue entry of someone else.
+- Levels of deleted users can be cleared by using `!clear deleted`; this will also rename all users in the queue.
+- Levels of users who were not online for a while can now be cleared with `!clear {duration}` where duration can be multiple numbers followed by a unit (`min`, `hours`, `months`, etc. for a full list see [the documentation of timestring](https://github.com/mike182uk/timestring/tree/7.0.0#keywords)). For example `!clear 6 months 12 hours` clears all levels from everywhone who was not last online 6 months and 12 hours ago.
+
+## New settings
+
+- There is a new setting `clear` which can be set to the default argument of `!clear`. For example setting `clear` to `"all"` will make it so `!clear` will call `!clear all` or setting it to `6 months` would call `!clear 6 months` by default. Setting this to `null` (or not setting the value) will result into a usage message of the `!clear` command when using `!clear`.
 
 ## Bug fixes
 

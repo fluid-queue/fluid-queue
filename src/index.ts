@@ -788,9 +788,9 @@ async function HandleMessage(
     console.log(response);
     respond(`@${sender.displayName} ${response}`);
   } else if (aliases.isAlias("clear", message) && sender.isBroadcaster) {
-    quesoqueue.clear();
-    twitch.clearLurkers();
-    respond("The queue has been cleared!");
+    const clearArgument = get_remainder(message);
+    const response = await quesoqueue.clear(clearArgument, respond);
+    respond(response);
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender);
     respond(

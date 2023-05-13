@@ -105,6 +105,7 @@ class TwitchApi {
     this.#botUserId = await this.#authProvider.addUserForToken(tokenData, [
       "chat",
       "user-by-name",
+      "user-by-id",
       "chatters",
     ]);
     // create the api client
@@ -205,9 +206,28 @@ class TwitchApi {
     return 100;
   }
 
+  private mapUser(user: HelixUser) {
+    // make id, name, and displayName writable
+    return {
+      id: user.id,
+      name: user.name,
+      displayName: user.displayName,
+    };
+  }
+
   async getUsers(userNames: string[]): Promise<User[]> {
-    return this.apiClient.asIntent(["user-by-name"], (ctx) => {
-      return ctx.users.getUsersByNames(userNames);
+    return await this.apiClient.asIntent(["user-by-name"], async (ctx) => {
+      return (await ctx.users.getUsersByNames(userNames)).map((user) =>
+        this.mapUser(user)
+      );
+    });
+  }
+
+  async getUsersById(userIds: string[]): Promise<User[]> {
+    return await this.apiClient.asIntent(["user-by-id"], async (ctx) => {
+      return (await ctx.users.getUsersByIds(userIds)).map((user) =>
+        this.mapUser(user)
+      );
     });
   }
 }
