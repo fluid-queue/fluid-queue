@@ -32,7 +32,7 @@ We test against the current LTS Node.JS version, and target the latest LTS versi
 $ git clone https://github.com/fluid-queue/fluid-queue.git
 $ cd fluid-queue
 $ git checkout develop # Only necessary if you're working on the develop branch
-$ npm install
+$ npm install --omit=optional # Optional dependencies are for tests; do --include=optional if you plan on running the tests
 $ npm run build
 $ npm run clean # If you need to clean up the build directory
 ```
