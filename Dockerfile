@@ -9,8 +9,8 @@ WORKDIR /build
 # Minimize number of layers by copying both files at once
 COPY package.json package-lock.json ./
 
-# Install the dependencies, but omit the optional ones (they're for testing)
-RUN npm ci --omit=optional
+# Install the dependencies (optional dependencies are needed for swc)
+RUN npm ci --include=optional
 
 # Copy the application itself
 COPY . /build
