@@ -7,6 +7,6 @@
     "moduleResolution": "nodenext",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "lib/**/*"],
   "exclude": []
 }
