@@ -1,7 +1,7 @@
 #!/usr/bin/env -S ts-node --esm
 import * as esbuild from "esbuild";
 import { glob } from "glob";
-import version from "./lib/version.js";
+import { version } from "./src/version.js";
 
 const extensions = await glob("src/extensions/**.ts");
 const buildVersion = version();

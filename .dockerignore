@@ -5,7 +5,6 @@
 !/package.json
 !/package-lock.json
 !/src
-!/lib
 !/tsconfig.json
 !/build.ts
 
