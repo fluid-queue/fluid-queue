@@ -3,8 +3,7 @@
   "compilerOptions": {
     "outDir": "./build",
     "allowJs": false,
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
