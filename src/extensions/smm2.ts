@@ -4,12 +4,9 @@ import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
 } from "./helpers/codeparsing.js";
-
 import i18next from "i18next";
-if (process && process.env && process.env.NODE_ENV != "test") {
-  await import("./helpers/i18n.js");
-}
-await i18next.loadNamespaces("smm2");
+
+await (await import("./helpers/i18n.js")).init("smm2");
 
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
