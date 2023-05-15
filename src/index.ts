@@ -261,8 +261,14 @@ async function HandleMessage(
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
-          const commands = aliases.getCommands().join(" ");
-          respond(i18next.t("commandInvalid", { commands }));
+          const commands = aliases.getCommands();
+          respond(
+            i18next.t("commandInvalid", {
+              commands,
+              style: "short",
+              type: "unit",
+            })
+          );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
           respond(
             i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
@@ -298,8 +304,14 @@ async function HandleMessage(
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
-          const commands = aliases.getCommands().join(" ");
-          respond(i18next.t("commandInvalid", { commands }));
+          const commands = aliases.getCommands();
+          respond(
+            i18next.t("commandInvalid", {
+              commands,
+              style: "short",
+              type: "unit",
+            })
+          );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
           respond(
             i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
@@ -342,8 +354,14 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
-            respond(i18next.t("commandInvalid", { commands }));
+            const commands = aliases.getCommands();
+            respond(
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
+            );
           } else {
             i18next.t("commandAlreadyEnabled", { command: splitMessage[1] });
           }
@@ -366,8 +384,14 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
-            respond(i18next.t("commandInvalid", { commands }));
+            const commands = aliases.getCommands();
+            respond(
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
+            );
           } else {
             respond(
               i18next.t("commandAlreadyDisabled", { command: splitMessage[1] })
@@ -392,8 +416,14 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
-            respond(i18next.t("commandInvalid", { commands }));
+            const commands = aliases.getCommands();
+            respond(
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
+            );
           }
         }
       }
@@ -403,8 +433,10 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     respond(i18next.t("aliasHelp"));
-    const commands = aliases.getCommands().join(" ");
-    respond(i18next.t("aliasesList", { commands }));
+    const commands = aliases.getCommands();
+    respond(
+      i18next.t("aliasesList", { commands, style: "short", type: "unit" })
+    );
   } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
     respond(i18next.t("queueOpen"));
@@ -736,7 +768,9 @@ async function HandleMessage(
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
       respond(
         i18next.t("orderList", {
-          list: order.reduce((acc, x) => acc + ", " + x),
+          order,
+          style: "short",
+          type: "unit",
         })
       );
     }

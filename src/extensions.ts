@@ -247,7 +247,9 @@ export class Extensions {
 
     console.log(
       i18next.t("extensionsList", {
-        extensions: Object.keys(this.extensions).join(", "),
+        extensions: Object.keys(this.extensions),
+        style: "short",
+        type: "unit",
       })
     );
     // load resolvers

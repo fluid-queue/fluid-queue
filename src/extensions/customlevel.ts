@@ -260,7 +260,9 @@ const customlevelCommand = (custom: CustomData) => {
                     ns: "customlevel",
                     code,
                     name: custom.get(fromCode).name,
-                    codes: custom.get(fromCode).codes.join(", "),
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
                 return;
@@ -276,7 +278,9 @@ const customlevelCommand = (custom: CustomData) => {
                     ns: "customlevel",
                     code,
                     name: value.name,
-                    codes: value.codes.join(", "),
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
                 return;
@@ -301,7 +305,9 @@ const customlevelCommand = (custom: CustomData) => {
                       ns: "customlevel",
                       code,
                       name: custom.get(fromCode).name,
-                      codes: custom.get(fromCode).codes.join(", "),
+                      codes: custom.get(fromCode).codes,
+                      style: "short",
+                      type: "unit",
                     })
                   );
                   return;
@@ -315,7 +321,9 @@ const customlevelCommand = (custom: CustomData) => {
                     ns: "customlevel",
                     code,
                     name: custom.get(fromCode).name,
-                    codes: custom.get(fromCode).codes.join(", "),
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
                 return;
@@ -347,7 +355,9 @@ const customlevelCommand = (custom: CustomData) => {
                   i18next.t("customlevelEnabled", {
                     ns: "customlevel",
                     name: value.name,
-                    codes: value.codes.join(", "),
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
               } else {
@@ -355,7 +365,9 @@ const customlevelCommand = (custom: CustomData) => {
                   i18next.t("customlevelDisabled", {
                     ns: "customlevel",
                     name: value.name,
-                    codes: value.codes.join(", "),
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
               }
@@ -379,7 +391,9 @@ const customlevelCommand = (custom: CustomData) => {
                 i18next.t("customlevelRemoved", {
                   ns: "customlevel",
                   name: value.name,
-                  codes: value.codes.join(", "),
+                  codes: value.codes,
+                  style: "short",
+                  type: "unit",
                 })
               );
               return;
@@ -417,7 +431,9 @@ const customlevelCommand = (custom: CustomData) => {
                 i18next.t("customlevelExists", {
                   ns: "customlevel",
                   name: custom.get(fromName).name,
-                  codes: custom.get(fromName).codes.join(", "),
+                  codes: custom.get(fromName).codes,
+                  style: "short",
+                  type: "unit",
                 })
               );
               return;
@@ -429,7 +445,9 @@ const customlevelCommand = (custom: CustomData) => {
                   ns: "customlevel",
                   code,
                   name: custom.get(fromCode).name,
-                  codes: custom.get(fromCode).codes.join(", "),
+                  codes: custom.get(fromCode).codes,
+                  style: "short",
+                  type: "unit",
                 })
               );
               return;
@@ -483,7 +501,9 @@ const customlevelCommand = (custom: CustomData) => {
                 i18next.t("customlevelExists", {
                   ns: "customlevel",
                   name: custom.get(fromName).name,
-                  codes: custom.get(fromName).codes.join(", "),
+                  codes: custom.get(fromName).codes,
+                  style: "short",
+                  type: "unit",
                 })
               );
               return;
@@ -501,7 +521,9 @@ const customlevelCommand = (custom: CustomData) => {
                     ns: "customlevel",
                     code,
                     name: custom.get(fromCode).name,
-                    codes: custom.get(fromCode).codes.join(", "),
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
                   })
                 );
                 return;
@@ -509,11 +531,13 @@ const customlevelCommand = (custom: CustomData) => {
             }
             if (custom.has(uuid)) {
               respond(
-                i18next.t("customlevelCodeExists", {
+                i18next.t("customlevelCodeExistsUUID", {
                   ns: "customlevel",
                   uuid,
                   name: custom.get(uuid).name,
-                  codes: custom.get(uuid).codes.join(", "),
+                  codes: custom.get(uuid).codes,
+                  style: "short",
+                  type: "unit",
                 })
               );
               return;
@@ -528,7 +552,9 @@ const customlevelCommand = (custom: CustomData) => {
               i18next.t("customlevelAddedCodes", {
                 ns: "customlevel",
                 levelName,
-                codes: codes.join(", "),
+                codes,
+                style: "short",
+                type: "unit",
               })
             );
             return;

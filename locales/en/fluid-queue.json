@@ -4,8 +4,8 @@
   "aliasHelp": "Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command",
   "addAliasSyntax": "The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op",
   "addAliasAdded": "Alias {{alias}} for command {{command}} has been added.",
-  "commandInvalid": "The command entered is invalid. Valid commands are: {{commands}}",
-  "aliasesList": "Available commands are: {{commands}}",
+  "commandInvalid": "The command entered is invalid. Valid commands are: {{commands, list}}",
+  "aliasesList": "Available commands are: {{commands, list}}",
   "aliasCommandDisabled": "The command {{command}} is currently disabled.",
   "addAliasDuplicate": "The alias {{alias}} has already been assigned.",
   "removeAliasSyntax": "The syntax for removing an alias is: !removealias command alias, for example: !removealias open op",
@@ -18,7 +18,7 @@
   "commandAlreadyDisabled": "The command {{command}} is already disabled.",
   "commandReset": "The command {{command}} has been successfully reset.",
   "chatbotConnected": "* Connected to {{addr}}:{{port}}",
-  "extensionsList": "Extensions: {{extensions}}",
+  "extensionsList": "Extensions: {{extensions, list}}",
   "alreadyInQueue": "Sorry, {{submitter}}, you may only submit one $t(level, {\"count\": 1}) at a time.",
   "addedToQueue": "{{level.submitter}}, {{level}} has been added to the queue.",
   "queueFull": "Sorry, the level queue is full!",
@@ -31,8 +31,8 @@
   "submitterNotFound": "{{submitter}}, looks like you're not in the queue. Try !add XXX-XXX-XXX.",
   "removeRemoved": "{{submitter}}, your level has been removed from the queue.",
   "replaceReplaced": "{{level.submitter}}, your level in the queue has been replaced with {{level}}.",
-  "eligibleUsers": "Eligible users: {{list}}",
-  "eligibleUsersTime": "Eligible users time: {{list}}",
+  "eligibleUsers": "Eligible users: {{users, list}}",
+  "eligibleUsersTime": "Eligible users time: {{weights, list}}",
   "consolePrintWeight": "{{submitter}}'s weight is {{weight}} with totalWeight {{totalWeight}}",
   "puntNoLevel": "The nothing you aren't playing cannot be punted.",
   "puntPunted": "Ok, adding the current level back into the queue.",
@@ -97,5 +97,5 @@
   "queueCleared": "The queue has been cleared!",
   "userLurk": "See you later, {{sender.displayName}}! Your level will not be played until you use the !back command.",
   "noOrder": "No order has been specified.",
-  "orderList": "Next level order: {{list}}"
+  "orderList": "Next level order: {{order, list}}"
 }

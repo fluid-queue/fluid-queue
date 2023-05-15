@@ -113,8 +113,12 @@ const commandHandler = (
       if (list.length == 0) {
         return i18next.t("noCodes", { ns: "customcode" });
       } else {
-        const codes = list.join(", ");
-        return i18next.t("currentCodes", { ns: "customcode", codes });
+        return i18next.t("currentCodes", {
+          ns: "customcode",
+          codes: list,
+          style: "short",
+          type: "unit",
+        });
       }
     },
     customCodeManagement(codeArguments: string) {

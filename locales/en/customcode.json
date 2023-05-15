@@ -1,6 +1,6 @@
 {
   "noCodes": "There are no custom codes set.",
-  "currentCodes": "The current custom codes are: {{codes}}.",
+  "currentCodes": "The current custom codes are: {{codes, list}}.",
   "invalidCode": "That is an invalid level code.",
   "alreadyExists": "The custom code {{customName}} already exists.",
   "codeAdded": "Your custom code {{customName}} for {{code}} has been added.",

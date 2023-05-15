@@ -533,14 +533,18 @@ const queue = {
       if (index != -1) {
         console.log(
           i18next.t("eligibleUsers", {
-            list: weightedList.entries
-              .map((entry) => entry.level.submitter.toString())
-              .reduce((a, b) => a + ", " + b),
+            users: weightedList.entries.map((entry) =>
+              entry.level.submitter.toString()
+            ),
+            style: "short",
+            type: "unit",
           })
         );
         console.log(
           i18next.t("eligibleUsersTime", {
-            list: weightedList.entries.map((entry) => entry.weight()),
+            weights: weightedList.entries.map((entry) => entry.weight()),
+            style: "short",
+            type: "unit",
           })
         );
         const weight = weightedList.entries[index].weight();
@@ -740,14 +744,18 @@ const queue = {
 
       console.log(
         i18next.t("eligibleUsers", {
-          list: weightedList.entries
-            .map((entry) => entry.level.submitter.toString())
-            .reduce((a, b) => a + ", " + b),
+          users: weightedList.entries.map((entry) =>
+            entry.level.submitter.toString()
+          ),
+          style: "short",
+          type: "unit",
         })
       );
       console.log(
         i18next.t("eligibleUsersTime", {
-          list: weightedList.entries.map((entry) => entry.weight()),
+          weights: weightedList.entries.map((entry) => entry.weight()),
+          style: "short",
+          type: "unit",
         })
       );
 
