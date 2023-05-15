@@ -1,5 +1,5 @@
 {
-  "globalSetup": "./node_modules/jest-chance/dist/esm/index.js",
+  "globalSetup": "jest-chance",
   "testEnvironment": "node",
   "modulePathIgnorePatterns": ["<rootDir>/build"],
   "moduleNameMapper": {
