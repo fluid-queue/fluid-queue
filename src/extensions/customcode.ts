@@ -5,12 +5,9 @@ import * as persistence from "../persistence.js";
 import { Entry, PersistedEntry } from "../extensions-api/queue-entry.js";
 import { Result } from "../extensions-api/helpers.js";
 import { Chatter } from "../extensions-api/command.js";
-
 import i18next from "i18next";
-if (process && process.env && process.env.NODE_ENV != "test") {
-  await import("./helpers/i18n.js");
-}
-await i18next.loadNamespaces("customcode");
+
+await (await import("./helpers/i18n.js")).init("customcode");
 
 class CustomCodes {
   map: Map<string, { customCode: string; entry: Entry }> = new Map<

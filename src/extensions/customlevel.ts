@@ -9,14 +9,9 @@ import settings from "../settings.js";
 import { checkVersion } from "./helpers/version.js";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
 import { z } from "zod";
-
 import i18next from "i18next";
-if (process && process.env && process.env.NODE_ENV != "test") {
-  // Tests are hecking weird, and don't need this, and break because of this
-  // This feels like a hack but it works
-  await import("./helpers/i18n.js");
-}
-await i18next.loadNamespaces("customlevel");
+
+await (await import("./helpers/i18n.js")).init("customlevel");
 
 const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 const ROMHACK_UUID = uuidv5("ROMhack", QUEUE_NAMESPACE);

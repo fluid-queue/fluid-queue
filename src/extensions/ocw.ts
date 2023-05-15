@@ -4,12 +4,9 @@ import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
 } from "./helpers/codeparsing.js";
-
 import i18next from "i18next";
-if (process && process.env && process.env.NODE_ENV != "test") {
-  await import("./helpers/i18n.js");
-}
-await i18next.loadNamespaces("ocw");
+
+await (await import("./helpers/i18n.js")).init("ocw");
 
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different
