@@ -11,4 +11,5 @@ export const options: i18next.InitOptions<FsBackendOptions> = {
   ns: "fluid-queue",
   defaultNS: "fluid-queue",
   saveMissing: true,
+  postProcess: ["pseudo"],
 };
