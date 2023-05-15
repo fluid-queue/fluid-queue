@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"list": "weight","message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true}
 # chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
@@ -31,9 +31,11 @@ queue.json/entries/current null
 queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}},{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [16:26:47] @^FurretWalkBot: !odds
-[16:26:48] @^helperblock: FurretWalkBot, you have a 0.1% chance of getting chosen in weighted random.
+[16:26:48] @^helperblock: FurretWalkBot, you have a 0.0693% chance of getting chosen in weighted random.
 [16:26:48] @^FurretWalkBot: !pos
 [16:26:48] @^helperblock: FurretWalkBot, you are currently in the online 2nd position and the offline 2nd position.
+[16:26:48] @^FurretWalkBot: !list
+[16:26:48] @^helperblock: 2 online: (no current level), liquidnya (99.9%), FurretWalkBot (0.0693%)... (0 offline)
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true,"position":"both"}
 restart
@@ -54,4 +56,4 @@ random 0.999
 
 [16:26:48] ~%?liquidnya: !odds
 
-[16:26:48] @^helperblock: liquidnya, you have a 100.0% chance of getting chosen in weighted random.
+[16:26:48] @^helperblock: liquidnya, you have a 100% chance of getting chosen in weighted random.

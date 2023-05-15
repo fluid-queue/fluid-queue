@@ -181,7 +181,9 @@ const weightedchance_message = async (
     return i18next.t("senderOddsMultiplier", {
       sender,
       chance,
-      multiplier: multiplier.toFixed(1),
+      multiplier,
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
     });
   } else {
     return i18next.t("senderOdds", { sender, chance });

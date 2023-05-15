@@ -548,7 +548,15 @@ const queue = {
         console.log(
           i18next.t("consolePrintWeight", { submitter, weight, totalWeight })
         );
-        return queue.percent(weight, totalWeight);
+        const percent = weight / totalWeight;
+        return i18next.t("genericPercentage", {
+          percent,
+          style: "percent",
+          maximumFractionDigits: 1,
+          maximumSignificantDigits: 3,
+          roundingPriority: "morePrecision",
+          roundingMode: "halfTrunc",
+        });
       }
       return -1;
     });
@@ -767,10 +775,15 @@ const queue = {
       }
       data.levels.splice(index, 1);
 
-      const selectionChance = queue.percent(
-        weightedList.entries[levelIndex].weight(),
-        totalWeight
-      );
+      const percent = weightedList.entries[levelIndex].weight() / totalWeight;
+      const selectionChance = i18next.t("genericPercentage", {
+        percent,
+        style: "percent",
+        maximumFractionDigits: 1,
+        maximumSignificantDigits: 3,
+        roundingPriority: "morePrecision",
+        roundingMode: "halfTrunc",
+      });
 
       data.removeWaiting();
       data.onRemove(removedLevels);
@@ -840,23 +853,6 @@ const queue = {
     };
   },
 
-  percent: (weight: number, totalWeight: number) => {
-    let percent = (weight / totalWeight) * 100.0;
-    if (percent > 100.0) {
-      percent = 100.0;
-    } else if (isNaN(percent) || percent < 0.0) {
-      percent = 0.0;
-    }
-    const percentString = percent.toFixed(1);
-    if (percentString === "100.0" && weight != totalWeight) {
-      return ">99.9";
-    }
-    if (percentString === "0.0" && weight != 0) {
-      return "<0.1";
-    }
-    return percentString;
-  },
-
   multiplier: (submitter: QueueSubmitter) => {
     if (settings.subscriberWeightMultiplier && twitch.isSubscriber(submitter)) {
       return settings.subscriberWeightMultiplier;
@@ -891,10 +887,16 @@ const queue = {
       }
       data.levels.splice(index, 1);
 
-      const selectionChance = queue.percent(
-        weightedList.entries[0].weight(),
-        weightedList.totalWeight
-      );
+      const percent =
+        weightedList.entries[0].weight() / weightedList.totalWeight;
+      const selectionChance = i18next.t("genericPercentage", {
+        percent,
+        style: "percent",
+        maximumFractionDigits: 1,
+        maximumSignificantDigits: 3,
+        roundingPriority: "morePrecision",
+        roundingMode: "halfTrunc",
+      });
 
       data.removeWaiting();
       data.onRemove(removedLevels);
@@ -1075,29 +1077,36 @@ const queue = {
         return i18next.t("queueEmpty");
       }
 
-      let onlineList = levels.online
+      const onlineList = levels.online
         .slice(0, 5)
-        .reduce((acc: string, x: QueueEntry) => acc + ", " + x.submitter, "");
-
-      if (levels.online.length > 5) {
-        onlineList += "etc.";
-      }
+        .map((entry) => entry.submitter.displayName);
 
       let onlineLength = levels.online.length;
 
       if (current !== undefined) {
         onlineLength += 1;
+        if (onlineLength == 1) {
+          return i18next.t("queueListCurrentOnly", {
+            onlineLength,
+            levels,
+            current,
+          });
+        }
         return i18next.t("queueListCurrent", {
           onlineLength,
           levels,
           current,
           onlineList,
+          style: "short",
+          type: "unit",
         });
       } else {
         return i18next.t("queueListNoCurrent", {
           onlineLength,
           levels,
           onlineList,
+          style: "short",
+          type: "unit",
         });
       }
     });
@@ -1116,38 +1125,45 @@ const queue = {
         return i18next.t("queueEmpty");
       }
 
-      let onlineList = weightedList.entries
-        .slice(0, 5)
-        .reduce(
-          (acc, x) =>
-            acc +
-            ", " +
-            x.level.submitter +
-            " (" +
-            queue.percent(x.weight(), weightedList.totalWeight) +
-            "%)",
-          ""
-        );
-
-      if (weightedList.entries.length > 5) {
-        onlineList += "etc.";
-      }
+      const onlineList = weightedList.entries.slice(0, 5).map((entry) => {
+        const percent = entry.weight() / weightedList.totalWeight;
+        return i18next.t("submitterPercentage", {
+          submitter: entry.level.submitter.displayName,
+          percent,
+          style: "percent",
+          maximumFractionDigits: 1,
+          maximumSignificantDigits: 3, // this combined with...
+          roundingPriority: "morePrecision", // ...this means that we'll have "0.0693%" instead of "0.01%". still readable and more accurate!
+          roundingMode: "halfTrunc", // And this will help avoid showing people 100% after rounding
+        });
+      });
 
       let onlineLength = weightedList.entries.length;
 
       if (current !== undefined) {
         onlineLength += 1;
+        if (onlineLength == 1) {
+          return i18next.t("weightedListCurrentOnly", {
+            onlineLength,
+            weightedList,
+            current,
+          });
+        }
         return i18next.t("weightedListCurrent", {
           onlineLength,
           weightedList,
           current,
           onlineList,
+          style: "short",
+          type: "unit",
         });
       } else {
         return i18next.t("weightedListNoCurrent", {
           onlineLength,
           weightedList,
           onlineList,
+          style: "short",
+          type: "unit",
         });
       }
     });

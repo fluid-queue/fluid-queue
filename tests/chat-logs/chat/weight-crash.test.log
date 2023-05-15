@@ -2,7 +2,7 @@
 chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
+# chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
@@ -31,12 +31,12 @@ queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":
 
 restart
 
-[16:28:48] @^helperblock: FurretWalkBot, you have a 50.0% chance of getting chosen in weighted random.
+[16:28:48] @^helperblock: FurretWalkBot, you have a 50% chance of getting chosen in weighted random.
 
 restart
 
 [16:31:48] ~%?liquidnya: !odds
-[16:31:48] @^helperblock: liquidnya, you have a 50.0% chance of getting chosen in weighted random.
+[16:31:48] @^helperblock: liquidnya, you have a 50% chance of getting chosen in weighted random.
 
 random 0.999
 
