@@ -4,7 +4,7 @@ chatbot helperblock
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true,"showMakerCode":false}
 # restart to start queue open (reload settings)
 restart
-# chatters 
+# chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
@@ -17,7 +17,7 @@ accuracy 60000
 [12:12:28] ~%?liquidnya: !add BW2-G2R-CMG
 [12:12:29] @^helperblock: liquidnya, BW2-G2R-CMG has been added to the queue.
 [12:12:33] ~%?liquidnya: !list
-[12:12:34] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[12:12:34] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
@@ -71,7 +71,7 @@ queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya"
 save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"},"queue":[],"waiting":{}}
 
 [12:15:40] ~%?liquidnya: !list
-[12:15:44] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[12:15:44] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 [12:15:44] ~%?liquidnya: !current
 [12:15:45] @^helperblock: We're not playing a level right now!
@@ -80,7 +80,7 @@ save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","subm
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 
 [12:15:50] ~%?liquidnya: !list
-[12:15:51] @^helperblock: 1 online: ${user("liquidnya").displayName} (current)... (0 offline)
+[12:15:51] @^helperblock: 1 online: ${user("liquidnya").displayName} (current) (0 offline)
 
 [12:19:17] ~%?liquidnya: !current
 [12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by ${user("liquidnya").displayName}.

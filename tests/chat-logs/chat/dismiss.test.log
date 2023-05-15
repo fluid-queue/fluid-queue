@@ -32,7 +32,7 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [20:08:35] ~%?liquidnya: !next
 [20:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [20:08:40] ~%?liquidnya: !list
-[20:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
+[20:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
 queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -40,7 +40,7 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [20:08:46] ~%?liquidnya: !dismiss
 [20:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [20:08:50] ~%?liquidnya: !list
-[20:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[20:08:53] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 queue.json/entries/current null
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -74,7 +74,7 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [21:08:35] ~%?liquidnya: !next
 [21:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [21:08:40] ~%?liquidnya: !list
-[21:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
+[21:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
 queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -82,7 +82,7 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [21:08:46] ~%?liquidnya: !skip
 [21:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [21:08:50] ~%?liquidnya: !list
-[21:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[21:08:53] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 queue.json/entries/current null
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -116,7 +116,7 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [22:08:35] ~%?liquidnya: !next
 [22:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [22:08:40] ~%?liquidnya: !list
-[22:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
+[22:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
 queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -124,7 +124,7 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [22:08:46] ~%?liquidnya: !complete
 [22:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [22:08:50] ~%?liquidnya: !list
-[22:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[22:08:53] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 queue.json/entries/current null
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -158,7 +158,7 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [23:08:35] ~%?liquidnya: !next
 [23:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [23:08:40] ~%?liquidnya: !list
-[23:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya... (0 offline)
+[23:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
 queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
@@ -166,7 +166,7 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [23:08:46] ~%?liquidnya: !completed
 [23:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
 [23:08:50] ~%?liquidnya: !list
-[23:08:53] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[23:08:53] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 queue.json/entries/current null
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]

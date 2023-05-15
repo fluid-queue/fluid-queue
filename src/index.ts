@@ -9,7 +9,7 @@ import settings from "./settings.js";
 import { helper } from "./chatbot.js";
 import { QueueEntry } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
-import "./i18n.js";
+await import("./i18n.js");
 import i18next from "i18next";
 
 const quesoqueue = queue();

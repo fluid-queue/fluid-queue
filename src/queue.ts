@@ -1082,6 +1082,13 @@ const queue = {
         .map((entry) => entry.submitter.displayName);
 
       let onlineLength = levels.online.length;
+      const ellipsis = (() => {
+        if (onlineLength > 5) {
+          return "$t(ellipsis)";
+        } else {
+          return "";
+        }
+      })();
 
       if (current !== undefined) {
         onlineLength += 1;
@@ -1097,6 +1104,7 @@ const queue = {
           levels,
           current,
           onlineList,
+          ellipsis,
           style: "short",
           type: "unit",
         });
@@ -1105,6 +1113,7 @@ const queue = {
           onlineLength,
           levels,
           onlineList,
+          ellipsis,
           style: "short",
           type: "unit",
         });
@@ -1139,6 +1148,13 @@ const queue = {
       });
 
       let onlineLength = weightedList.entries.length;
+      const ellipsis = (() => {
+        if (onlineLength > 5) {
+          return "$t(ellipsis)";
+        } else {
+          return "";
+        }
+      })();
 
       if (current !== undefined) {
         onlineLength += 1;
@@ -1154,6 +1170,7 @@ const queue = {
           weightedList,
           current,
           onlineList,
+          ellipsis,
           style: "short",
           type: "unit",
         });
@@ -1162,6 +1179,7 @@ const queue = {
           onlineLength,
           weightedList,
           onlineList,
+          ellipsis,
           style: "short",
           type: "unit",
         });

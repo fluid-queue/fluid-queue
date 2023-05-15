@@ -35,7 +35,7 @@ queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":
 [16:26:48] @^FurretWalkBot: !pos
 [16:26:48] @^helperblock: FurretWalkBot, you are currently in the online 2nd position and the offline 2nd position.
 [16:26:48] @^FurretWalkBot: !list
-[16:26:48] @^helperblock: 2 online: (no current level), liquidnya (99.9%), FurretWalkBot (0.0693%)... (0 offline)
+[16:26:48] @^helperblock: 2 online: (no current level), liquidnya (99.9%), FurretWalkBot (0.0693%) (0 offline)
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true,"position":"both"}
 restart

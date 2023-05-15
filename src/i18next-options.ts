@@ -12,4 +12,7 @@ export const options: i18next.InitOptions<FsBackendOptions> = {
   defaultNS: "fluid-queue",
   saveMissing: true,
   postProcess: ["pseudo"],
+  interpolation: {
+    skipOnVariables: false, // needed for ellipsis
+  },
 };

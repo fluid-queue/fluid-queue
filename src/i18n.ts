@@ -9,7 +9,6 @@ import Pseudo from "i18next-pseudo";
 const dirname = pathDirname(fileURLToPath(import.meta.url));
 
 console.log("Initializing i18next...");
-console.log(`Language: ${options.lng}`);
 await i18next
   .use(FsBackend)
   .use(
