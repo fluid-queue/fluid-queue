@@ -11,7 +11,7 @@ await esbuild.build({
   bundle: true,
   outdir: "build/",
   format: "esm",
-  target: "node16.14.0",
+  target: "node18.6.0",
   platform: "node",
   banner: {
     js: `

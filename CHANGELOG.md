@@ -13,6 +13,7 @@
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
 - Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
 - The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.json`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
+- The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
 
 ## New features
 

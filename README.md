@@ -25,7 +25,8 @@ Most of our contributing guidelines can be found in [CONTRIBUTING.md](https://gi
 
 ### Building the bot
 
-Since we develop in Typescript, in order to run the bot, you need to build the bot. You should be able to do this fairly easily, as long as you have `git` and Node.JS installed:
+Since we develop in Typescript, in order to run the bot, you need to build the bot. You should be able to do this fairly easily, as long as you have `git` and Node.JS installed.
+We test against the current LTS Node.JS version, and target the latest LTS version. Make sure to use a compatible version of node which can be found in the `package.json` file.
 
 ```sh
 $ git clone https://github.com/fluid-queue/fluid-queue.git
