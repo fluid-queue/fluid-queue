@@ -167,17 +167,12 @@ class QueueData {
           extensions.deserialize(level)
         );
 
-        // split waiting map into lists
+        // create object from waiting list
         this.waitingByUserId = Waiting.fromList(state.waiting);
 
-        // get all level entries including the current level
-        const allEntries = (
-          this.current_level === undefined ? [] : [this.current_level]
-        ).concat(this.levels);
-
-        // check for missing users in waitingByUserId
+        // check for missing users in waitingByUserId (current level does not have a waiting time!)
         const now = new Date();
-        allEntries
+        this.levels
           .filter((level) => !(level.submitter.id in this.waitingByUserId))
           .forEach((level) => {
             console.warn(`User ${level.submitter} didn't have a waiting time!`);
@@ -186,6 +181,11 @@ class QueueData {
               now
             );
           });
+
+        // get all level entries including the current level
+        const allEntries = (
+          this.current_level === undefined ? [] : [this.current_level]
+        ).concat(this.levels);
 
         // extensions can now check their entries
         save = extensions.checkEntries(allEntries) || save;
@@ -1123,14 +1123,9 @@ const queue = {
       return { result: "invalid", reason: "empty" };
     }
     const whatLowerCase = what.toLowerCase();
-    if (whatLowerCase == "all" || whatLowerCase == "a") {
+    if (["a", "all"].includes(whatLowerCase)) {
       return { result: "all" };
-    } else if (
-      whatLowerCase == "deleted" ||
-      whatLowerCase == "delete" ||
-      whatLowerCase == "del" ||
-      whatLowerCase == "d"
-    ) {
+    } else if (["d", "del", "delete", "deleted"].includes(whatLowerCase)) {
       return { result: "deleted" };
     }
     try {
@@ -1262,13 +1257,9 @@ const queue = {
         const removeLevel = (level: QueueEntry) =>
           data.waitingByUserId[level.submitter.id].isOlderThan(time);
         [removedLevels, data.levels] = partition(data.levels, removeLevel);
-        if (
-          data.current_level !== undefined &&
-          removeLevel(data.current_level)
-        ) {
-          removedLevels.push(data.current_level);
-          data.current_level = undefined;
-        }
+
+        // note: the current level does not have a waiting time so it is never removed!
+
         data.onRemove(removedLevels);
         data.saveLater();
         if (data.levels.length == 0 && data.current_level === undefined) {
