@@ -19,6 +19,7 @@
   "commandReset": "The command {{command}} has been successfully reset.",
   "chatbotConnected": "* Connected to {{addr}}:{{port}}",
   "extensionsList": "Extensions: {{extensions, list}}",
+  "resolversList": "Resolvers: {{activatedOrder, list}}",
   "alreadyInQueue": "Sorry, {{submitter}}, you may only submit one $t(level, {\"count\": 1}) at a time.",
   "addedToQueue": "{{level.submitter}}, {{level}} has been added to the queue.",
   "queueFull": "Sorry, the level queue is full!",

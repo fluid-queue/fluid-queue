@@ -155,11 +155,35 @@ class CustomData {
   list(admin: boolean): string[] {
     return Object.entries(this.data).flatMap(([, value]) => {
       // translate customLevels into custom code map
-      if (value.enabled || admin) {
-        return (
-          [value.name + " [" + value.codes.join(", ") + "]"] +
-          (admin ? " (" + (value.enabled ? "enabled" : "disabled") + ")" : "")
-        );
+      if (admin) {
+        if (value.enabled) {
+          return [
+            i18next.t("customlevelFormatEnabled", {
+              ns: "customlevel",
+              value,
+              style: "short",
+              type: "unit",
+            }),
+          ];
+        } else {
+          return [
+            i18next.t("customlevelFormatDisabled", {
+              ns: "customlevel",
+              value,
+              style: "short",
+              type: "unit",
+            }),
+          ];
+        }
+      } else if (value.enabled) {
+        return [
+          i18next.t("customlevelFormat", {
+            ns: "customlevel",
+            value,
+            style: "short",
+            type: "unit",
+          }),
+        ];
       } else {
         return [];
       }
@@ -566,31 +590,13 @@ const customlevelCommand = (custom: CustomData) => {
       const list = custom.list(admin);
       if (list.length == 0) {
         return i18next.t("noCustomLevels", { ns: "customlevel" });
-      } else if (list.length == 1) {
-        return i18next.t("customlevel", {
-          ns: "customlevel",
-          count: 1,
-          list: list[0],
-        });
       } else {
-        let listString;
-        if (list.length == 2) {
-          listString = i18next.t("twoLevelsString", {
-            ns: "customlevel",
-            first: list[0],
-            second: list[1],
-          });
-        } else {
-          listString = i18next.t("manyLevelsString", {
-            ns: "customlevel",
-            first: list.slice(0, -1),
-            last: list[-1],
-          });
-        }
-        return i18next.t("customlevel", {
+        return i18next.t("customlevelsList", {
           ns: "customlevel",
           count: list.length,
-          list: listString,
+          list,
+          style: "long",
+          type: "conjunction",
         });
       }
     },

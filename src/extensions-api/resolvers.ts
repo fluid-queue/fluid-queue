@@ -17,6 +17,8 @@ const defaultActivated: string[] = [
   "customlevel-name",
 ];
 
+import i18next from "i18next";
+
 export interface QueueEntryResolver {
   name: string;
   description: string | null;
@@ -366,7 +368,13 @@ export class ConfiguredResolvers implements Iterable<QueueEntryResolver> {
     this.activatedOrder.forEach((activated) =>
       this.activatedSet.add(activated)
     );
-    console.log(`Resolvers: [${this.activatedOrder.join(", ")}]`);
+    console.log(
+      i18next.t("resolversList", {
+        activatedOrder: this.activatedOrder,
+        style: "short",
+        type: "unit",
+      })
+    );
   }
 
   get(name: string): QueueEntryResolver | null {
