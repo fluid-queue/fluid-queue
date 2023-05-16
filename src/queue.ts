@@ -180,6 +180,7 @@ class QueueData {
               level.submitter,
               now
             );
+            save = true;
           });
 
         // get all level entries including the current level
