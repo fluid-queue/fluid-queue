@@ -1,10 +1,14 @@
 #!/usr/bin/env -S ts-node --esm
 import * as esbuild from "esbuild";
 import { glob } from "glob";
+import { version } from "./src/version.js";
 
 const extensions = await glob("src/extensions/**.ts");
+const buildVersion = version();
+const buildTag = "esbuild";
 
-console.log(`Compiling extensions: ${extensions}`);
+console.log(`Compiling version: ${buildVersion} (${buildTag})`);
+console.log(`Compiling extensions: ${extensions.join(", ")}`);
 
 await esbuild.build({
   entryPoints: ["src/index.ts"].concat(extensions),
@@ -21,6 +25,8 @@ await esbuild.build({
     const require = topLevelCreateRequire(import.meta.url);
     const __filename = topLevelFileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
+    globalThis.__build_version = ${JSON.stringify(buildVersion)};
+    globalThis.__build_tag = ${JSON.stringify(buildTag)};
     `,
   },
   minify: true,

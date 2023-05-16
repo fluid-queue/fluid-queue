@@ -1,0 +1,15 @@
+{
+  "globalSetup": "jest-chance",
+  "testEnvironment": "node",
+  "modulePathIgnorePatterns": ["<rootDir>/build"],
+  "moduleNameMapper": {
+    "^\\.{2}/src/(.*)\\.js$": "<rootDir>/src/$1",
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "extensionsToTreatAsEsm": [".ts"],
+  "transform": {
+    "^.+\\.(t|j)sx?$": "@swc/jest"
+  },
+  "rootDir": "..",
+  "roots": ["<rootDir>/src/", "<rootDir>/tests/"]
+}
