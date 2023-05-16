@@ -1278,7 +1278,7 @@ const queue = {
         } been cleared from the queue!`;
       });
     } else {
-      return 'Invalid arguments. Use "!clear all" to clear all levels, "!clear deleted" to clear levels of deleted users or use "!clear 6 months" to clear all levels older than 6 months.';
+      return 'Invalid arguments. Use "!clear all" to clear all levels, "!clear deleted" to clear levels of deleted users or use "!clear 6 months" to delete levels from users last online more than 6 months ago.';
     }
   },
 
