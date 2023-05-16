@@ -3,8 +3,8 @@
   "testEnvironment": "node",
   "modulePathIgnorePatterns": ["<rootDir>/build"],
   "moduleNameMapper": {
-    "^\\.\\./src/(.*)\\.js$": "<rootDir>/src/$1" /* workaround of mocking the ../src/twitch-api.js, and ../src/chatbot.js modules */,
-    "^((\\.){1,2}/.*)\\.js$": "$1"
+    "^\\.{2}/src/(.*)\\.js$": "<rootDir>/src/$1",
+    "^(\\.{1,2}/.*)\\.js$": "$1"
   },
   "extensionsToTreatAsEsm": [".ts"],
   "transform": {
