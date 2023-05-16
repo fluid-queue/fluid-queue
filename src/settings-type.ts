@@ -22,6 +22,14 @@ const list_options: readonly [string, ...string[]] = [
 
 export const Settings = z
   .object({
+    language: z
+      .string()
+      .toLowerCase()
+      .refine((language) => /^[a-z]{2,3}(-[a-z]{2,3})?$/.test(language), {
+        message: "language must be a supported language tag",
+      })
+      .default("en")
+      .describe("the language to run the bot in"),
     channel: z
       .string()
       .describe("channel for bot to run in")
@@ -146,5 +154,9 @@ export const Settings = z
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),
+    i18next_debug: z
+      .boolean()
+      .default(false)
+      .describe("whether to enable i18next's debug mode"),
   })
   .strict();

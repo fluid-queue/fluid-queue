@@ -2,7 +2,7 @@
 chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true}
-# chatters 
+# chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
@@ -23,7 +23,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [02:20:37] @^helperblock: Sorry, FurretWalkBot, you may only submit one level at a time.
 
 [02:21:24] @^FurretWalkBot: !list
-[02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot... (0 offline)
+[02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot (0 offline)
 
 [02:22:02] ~%?liquidnya: !next
 [02:22:03] @^helperblock: Now playing NB0-1MD-SLG (maker code) submitted by FurretWalkBot.
@@ -58,7 +58,7 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"le
 # TODO: is this a bug?
 
 [02:25:49] @^FurretWalkBot: !list
-[02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
+[02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
 queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
 queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]

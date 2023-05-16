@@ -1,0 +1,37 @@
+# this captures the chat messages of that user as the chatbot responses
+chatbot helperblock
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
+# chatty chat log
+# ~ broadcaster
+# @ moderator
+# % subscriber
+
+# open the queue
+[02:19:13] ~%?liquidnya: !open
+[02:19:14] @^helperblock: The queue is now open!
+
+# open the floodgates
+[02:19:42] @^Mod1: !add YNY-XXQ-76G
+[02:19:42] @^helperblock: Mod1, YNY-XXQ-76G has been added to the queue.
+[02:19:43] @^Mod2: !add L92-R7F-X5G
+[02:19:43] @^helperblock: Mod2, L92-R7F-X5G has been added to the queue.
+[02:19:44] @^Mod3: !add N6N-74W-VYF
+[02:19:44] @^helperblock: Mod3, N6N-74W-VYF has been added to the queue.
+[02:19:45] @^Mod4: !add D0R-M7X-SHF
+[02:19:45] @^helperblock: Mod4, D0R-M7X-SHF has been added to the queue.
+[02:19:46] @^Mod5: !add 34H-6YH-6VF
+[02:19:46] @^helperblock: Mod5, 34H-6YH-6VF has been added to the queue.
+
+# make sure we don't see it initially
+[02:19:47] ~%?liquidnya: !list
+[02:19:47] @^helperblock: 5 online: (no current level), Mod1, Mod2, Mod3, Mod4, Mod5 (0 offline)
+
+[02:19:48] @^Mod6: !add T5D-PNS-6VF
+[02:19:48] @^helperblock: Mod6, T5D-PNS-6VF has been added to the queue.
+
+# Actually test the ellipsis
+[02:22:20] ~%?liquidnya: !list
+[02:22:20] @^helperblock: 6 online: (no current level), Mod1, Mod2, Mod3, Mod4, Mod5... (0 offline)

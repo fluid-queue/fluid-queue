@@ -4,6 +4,9 @@ import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
 } from "./helpers/codeparsing.js";
+import i18next from "i18next";
+
+await (await import("./helpers/i18n.js")).init("smm2");
 
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
@@ -76,21 +79,15 @@ const extractValidCode = (levelCode: string, strict = true) => {
   };
 };
 
-const makerSuffix = (levelCode: string) => {
-  if (
-    settings.showMakerCode !== undefined &&
-    settings.showMakerCode !== false
-  ) {
-    const makerCode = extractValidCode(levelCode).makerCode;
-    if (makerCode) {
-      return " (maker code)";
-    }
-  }
-  return "";
-};
-
 function display(code: string) {
-  return code + makerSuffix(code);
+  if (
+    settings.showMakerCode === false ||
+    extractValidCode(code).makerCode === false
+  ) {
+    return i18next.t("levelCodeNoSuffix", { ns: "smm2", code });
+  } else {
+    return i18next.t("makerCode", { ns: "smm2", code });
+  }
 }
 
 function strictResolve(args: string) {

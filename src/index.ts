@@ -9,6 +9,8 @@ import settings from "./settings.js";
 import { helper } from "./chatbot.js";
 import { QueueEntry } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
+await import("./i18n.js");
+import i18next from "i18next";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -21,7 +23,7 @@ let level_timer: Timer | null = null;
 if (settings.level_timeout) {
   level_timer = timer(() => {
     chatbot_helper.say(
-      `@${settings.channel} the timer has expired for this level!`
+      i18next.t("timerExpired", { channel: settings.channel })
     );
   }, settings.level_timeout * 1000 * 60);
 }
@@ -38,10 +40,10 @@ let can_list = true;
 
 function next_level_message(level: QueueEntry | undefined) {
   if (level === undefined) {
-    return "The queue is empty.";
+    return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return `Now playing ${level} submitted by ${level.submitter}.`;
+  return i18next.t("nowPlayingBasic", { level });
 }
 
 function weightedrandom_level_message(
@@ -49,10 +51,10 @@ function weightedrandom_level_message(
   percentSuffix = ""
 ) {
   if (level === undefined) {
-    return "The queue is empty.";
+    return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return `Now playing ${level} submitted by ${level.submitter} with a ${level.selectionChance}%${percentSuffix} chance of selection.`;
+  return i18next.t("nowPlayingWeightedRandom", { level, percentSuffix });
 }
 
 function weightednext_level_message(
@@ -60,25 +62,17 @@ function weightednext_level_message(
   percentSuffix = ""
 ) {
   if (level === undefined) {
-    return "The queue is empty.";
+    return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return `Now playing ${level} submitted by ${level.submitter} with the highest wait time of ${level.selectionChance}%${percentSuffix}.`;
+  return i18next.t("nowPlayingWeightedNext", { level, percentSuffix });
 }
 
 function current_level_message(level: QueueEntry | undefined) {
   if (level === undefined) {
-    return "We're not playing a level right now!";
+    return i18next.t("noCurrent");
   }
-  return `Currently playing ${level} submitted by ${level.submitter}.`;
-}
-
-function get_ordinal(num: number): string {
-  const ends = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
-  if (num % 100 >= 11 && num % 100 <= 13) {
-    return num + "th";
-  }
-  return num + ends[num % 10];
+  return i18next.t("currentLevel", { level });
 }
 
 const hasPosition = () => {
@@ -124,75 +118,48 @@ const position_message = async (
   sender: Chatter
 ) => {
   if (position == -1) {
-    return (
-      sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
-    );
+    return i18next.t("submitterNotFound", { submitter: sender });
   } else if (position === 0) {
-    return "Your level is being played right now!";
+    return i18next.t("positionCurrent");
   } else if (position === -3) {
     // show only weighted position!
     if (weightedPosition == -1) {
-      return (
-        sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
-      );
+      return i18next.t("submitterNotFound", { submitter: sender });
     } else if (weightedPosition === 0) {
-      return "Your level is being played right now!";
+      return i18next.t("positionCurrent");
     } else if (weightedPosition == -2) {
-      return (
-        sender +
-        ", you are in a BRB state, so you cannot be selected in weighted next. Try using !back and then checking again."
-      );
+      return i18next.t("positionWeightedBRB", { sender });
     } else if (weightedPosition == -3) {
       // none
       return "";
     }
-    return (
-      sender +
-      ", you are currently in the weighted " +
-      get_ordinal(weightedPosition) +
-      " position."
-    );
+    return i18next.t("weightedPosition", { sender, weightedPosition });
   }
   if (settings.enable_absolute_position) {
     const absPosition = await quesoqueue.absolutePosition(sender);
     if (weightedPosition > 0) {
-      return (
-        sender +
-        ", you are currently in the online " +
-        get_ordinal(position) +
-        " position, the offline " +
-        get_ordinal(absPosition) +
-        " position, and the weighted " +
-        get_ordinal(weightedPosition) +
-        " position."
-      );
+      return i18next.t("absolutePosition", {
+        sender,
+        position,
+        absPosition,
+        weightedPosition,
+      });
     } else {
-      return (
-        sender +
-        ", you are currently in the online " +
-        get_ordinal(position) +
-        " position and the offline " +
-        get_ordinal(absPosition) +
-        " position."
-      );
+      return i18next.t("absolutePositionNoWeighted", {
+        sender,
+        position,
+        absPosition,
+      });
     }
   } else {
     if (weightedPosition > 0) {
-      return (
-        sender +
-        ", you are currently in the " +
-        get_ordinal(position) +
-        " position and the weighted " +
-        get_ordinal(weightedPosition) +
-        " position."
-      );
+      return i18next.t("positionAndWeighted", {
+        sender,
+        position,
+        weightedPosition,
+      });
     } else {
-      return (
-        sender +
-        ", you are currently in the " +
-        get_ordinal(position) +
-        " position."
-      );
+      return i18next.t("senderPosition", { sender, position });
     }
   }
 };
@@ -203,24 +170,24 @@ const weightedchance_message = async (
   sender: Chatter
 ) => {
   if (chance == -1) {
-    return (
-      sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
-    );
+    return i18next.t("submitterNotFound", { submitter: sender });
   } else if (chance == -2) {
-    return (
-      sender +
-      ", you are in a BRB state, so you cannot be selected in weighted random. Try using !back and then checking again."
-    );
+    return i18next.t("oddsBRB", { sender });
   } else if (chance === 0) {
-    return "Your level is being played right now!";
+    return i18next.t("positionCurrent");
   }
-  return (
-    sender +
-    ", you have a " +
-    chance +
-    "% chance of getting chosen in weighted random." +
-    (multiplier > 1.0 ? " (" + multiplier.toFixed(1) + " multiplier)" : "")
-  );
+
+  if (multiplier > 1.0) {
+    return i18next.t("senderOddsMultiplier", {
+      sender,
+      chance,
+      multiplier,
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
+    });
+  } else {
+    return i18next.t("senderOdds", { sender, chance });
+  }
 };
 
 const submitted_message = async (
@@ -228,13 +195,11 @@ const submitted_message = async (
   sender: Chatter
 ) => {
   if (level === 0) {
-    return "Your level is being played right now!";
+    return i18next.t("positionCurrent");
   } else if (typeof level === "number") {
-    return (
-      sender + ", looks like you're not in the queue. Try !add XXX-XXX-XXX."
-    );
+    return i18next.t("submitterNotFound", { submitter: sender });
   }
-  return sender + ", you have submitted " + level + " to the queue.";
+  return i18next.t("senderSubmitted", { sender, level });
 };
 
 const submitted_mod_message = async (
@@ -244,19 +209,14 @@ const submitted_mod_message = async (
   usernameArgument: string
 ) => {
   if (submitted.result == "current") {
-    return `${submitted.level.submitter}'s level is being played right now!`;
+    return i18next.t("modSubmittedCurrent", { submitted });
   } else if (submitted.result == "not-found") {
-    return `${usernameArgument} is not in the queue.`;
+    return i18next.t("modSubmittedNotFound", { usernameArgument });
   } else if (submitted.result == "level") {
-    return (
-      submitted.level.submitter +
-      " has submitted " +
-      submitted.level +
-      " to the queue."
-    );
+    return i18next.t("modSubmittedEntry", { submitted });
   }
 
-  return "You can use !submitted <username> to view someones entry.";
+  return i18next.t("modSubmittedNoArgument");
 };
 
 // What the bot should do when someone sends a message in chat.
@@ -282,9 +242,7 @@ async function HandleMessage(
 
   if (message.toLowerCase().startsWith("!addalias") && sender.isBroadcaster) {
     if (message.split(" ").length !== 3) {
-      respond(
-        "The syntax for adding an alias is: !addAlias command alias, for example: !addAlias open op"
-      );
+      respond(i18next.t("addAliasSyntax"));
     } else {
       const splitMessage = message.split(" ");
       if (
@@ -296,24 +254,27 @@ async function HandleMessage(
         )
       ) {
         respond(
-          "Alias " +
-            splitMessage[2] +
-            " for command " +
-            splitMessage[1] +
-            " has been added."
+          i18next.t("addAliasAdded", {
+            alias: splitMessage[2],
+            command: splitMessage[1],
+          })
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
-          const commands = aliases.getCommands().join(" ");
+          const commands = aliases.getCommands();
           respond(
-            "The command entered is invalid. Valid commands are: " + commands
+            i18next.t("commandInvalid", {
+              commands,
+              style: "short",
+              type: "unit",
+            })
           );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
-          respond("The command " + splitMessage[1] + " is currently disabled.");
-        } else {
           respond(
-            "The alias " + splitMessage[2] + " has already been assigned."
+            i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
           );
+        } else {
+          respond(i18next.t("addAliasDuplicate", { alias: splitMessage[2] }));
         }
       }
     }
@@ -322,9 +283,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     if (message.split(" ").length !== 3) {
-      respond(
-        "The syntax for removing an alias is: !removealias command alias, for example: !removealias open op"
-      );
+      respond(i18next.t("removeAliasSyntax"));
     } else {
       const splitMessage = message.split(" ");
       if (
@@ -338,27 +297,31 @@ async function HandleMessage(
         )
       ) {
         respond(
-          "Alias " +
-            splitMessage[2] +
-            " for command " +
-            splitMessage[1] +
-            " has been removed."
+          i18next.t("removeAliasRemoved", {
+            alias: splitMessage[2],
+            command: splitMessage[1],
+          })
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
-          const commands = aliases.getCommands().join(" ");
+          const commands = aliases.getCommands();
           respond(
-            "The command entered is invalid. Valid commands are: " + commands
+            i18next.t("commandInvalid", {
+              commands,
+              style: "short",
+              type: "unit",
+            })
           );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
-          respond("The command " + splitMessage[1] + " is currently disabled.");
+          respond(
+            i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
+          );
         } else {
           respond(
-            "The alias " +
-              splitMessage[2] +
-              " does not exist for command " +
-              splitMessage[1] +
-              "."
+            i18next.t("removeAliasNotFound", {
+              alias: splitMessage[2],
+              command: splitMessage[1],
+            })
           );
         }
       }
@@ -370,9 +333,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     if (message.split(" ").length !== 2) {
-      respond(
-        "The syntax for enabling, disabling and resetting commands is: !command botcommand, for example: !enablecmd open"
-      );
+      respond(i18next.t("enableSyntax"));
     } else {
       const splitMessage = message.split(" ");
       if (splitMessage[0].toLowerCase() === "!enablecmd") {
@@ -384,9 +345,7 @@ async function HandleMessage(
           )
         ) {
           // if the command starts with "!" - remove the "!".
-          respond(
-            "The command " + splitMessage[1] + " has been successfully enabled."
-          );
+          respond(i18next.t("commandEnabled", { command: splitMessage[1] }));
         } else {
           if (
             !aliases.isCommand(
@@ -395,12 +354,16 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
+            const commands = aliases.getCommands();
             respond(
-              "The command entered is invalid. Valid commands are: " + commands
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
             );
           } else {
-            respond("The command " + splitMessage[1] + " is already enabled.");
+            i18next.t("commandAlreadyEnabled", { command: splitMessage[1] });
           }
         }
       } else if (splitMessage[0].toLowerCase() === "!disablecmd") {
@@ -412,11 +375,7 @@ async function HandleMessage(
           )
         ) {
           // if the command starts with "!" - remove the "!".
-          respond(
-            "The command " +
-              splitMessage[1] +
-              " has been successfully disabled."
-          );
+          respond(i18next.t("commandDisabled", { command: splitMessage[1] }));
         } else {
           if (
             !aliases.isCommand(
@@ -425,12 +384,18 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
+            const commands = aliases.getCommands();
             respond(
-              "The command entered is invalid. Valid commands are: " + commands
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
             );
           } else {
-            respond("The command " + splitMessage[1] + " is already disabled.");
+            respond(
+              i18next.t("commandAlreadyDisabled", { command: splitMessage[1] })
+            );
           }
         }
       } else if (splitMessage[0] === "!resetcmd") {
@@ -442,9 +407,7 @@ async function HandleMessage(
           )
         ) {
           // if the command starts with "!" - remove the "!".
-          respond(
-            "The command " + splitMessage[1] + " has been successfully reset."
-          );
+          respond(i18next.t("commandReset", { command: splitMessage[1] }));
         } else {
           if (
             !aliases.isCommand(
@@ -453,9 +416,13 @@ async function HandleMessage(
                 : splitMessage[1].toLowerCase()
             )
           ) {
-            const commands = aliases.getCommands().join(" ");
+            const commands = aliases.getCommands();
             respond(
-              "The command entered is invalid. Valid commands are: " + commands
+              i18next.t("commandInvalid", {
+                commands,
+                style: "short",
+                type: "unit",
+              })
             );
           }
         }
@@ -465,28 +432,28 @@ async function HandleMessage(
     message.toLowerCase().startsWith("!aliases") &&
     sender.isBroadcaster
   ) {
+    respond(i18next.t("aliasHelp"));
+    const commands = aliases.getCommands();
     respond(
-      "Availabe aliases commands are: !addAlias command alias - !enablecmd command - !disablecmd command - !resetcmd command"
+      i18next.t("aliasesList", { commands, style: "short", type: "unit" })
     );
-    const commands = aliases.getCommands().join(" ");
-    respond("Available commands are: " + commands);
   } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
-    respond("The queue is now open!");
+    respond(i18next.t("queueOpen"));
   } else if (aliases.isAlias("close", message) && sender.isBroadcaster) {
     queue_open = false;
-    respond("The queue is now closed!");
+    respond(i18next.t("queueClosed"));
   } else if (aliases.isAlias("add", message)) {
     if (queue_open || sender.isBroadcaster) {
       // If they just added their level, it's a safe bet they aren't lurking
       if (twitch.notLurkingAnymore(sender)) {
         // But to avoid confusion, we can welcome them back too
-        respond("Welcome back, " + sender.displayName + "!");
+        respond(i18next.t("welcomeBack", { sender }));
       }
       const level_code = get_remainder(message);
       respond(quesoqueue.add(level_code, sender));
     } else {
-      respond("Sorry, the queue is closed right now.");
+      respond(i18next.t("queueClosedSorry"));
     }
   } else if (aliases.isAlias("remove", message)) {
     const to_remove = get_remainder(message);
@@ -502,7 +469,7 @@ async function HandleMessage(
     // If they just added their level, it's a safe bet they aren't lurking
     if (twitch.notLurkingAnymore(sender)) {
       // But to avoid confusion, we can welcome them back too
-      respond("Welcome back, " + sender.displayName + "!");
+      respond(i18next.t("welcomeBack", { sender }));
     }
     respond(quesoqueue.replace(sender, level_code));
   } else if (aliases.isAlias("level", message) && sender.isBroadcaster) {
@@ -679,15 +646,9 @@ async function HandleMessage(
     const dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
       twitch.notLurkingAnymore(dip_level.submitter);
-      respond(
-        "Now playing " +
-          dip_level +
-          " submitted by " +
-          dip_level.submitter +
-          "."
-      );
+      respond(i18next.t("nowPlayingBasic", { level: dip_level }));
     } else {
-      respond("No levels in the queue were submitted by " + username + ".");
+      respond(i18next.t("selectNoLevel", { username }));
     }
   } else if (aliases.isAlias("current", message)) {
     respond(current_level_message(quesoqueue.current()));
@@ -703,7 +664,7 @@ async function HandleMessage(
         setTimeout(() => (can_list = true), settings.message_cooldown * 1000);
         do_list = true;
       } else {
-        respond("Scroll up to see the queue.");
+        respond(i18next.t("scrollUp"));
       }
     } else {
       do_list = true;
@@ -756,7 +717,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     level_timer.resume();
-    respond("Timer started! Get going!");
+    respond(i18next.t("timerStarted"));
   } else if (
     settings.level_timeout &&
     level_timer != null &&
@@ -764,7 +725,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     level_timer.resume();
-    respond("Timer unpaused! Get going!");
+    respond(i18next.t("timerUnpaused"));
   } else if (
     settings.level_timeout &&
     level_timer != null &&
@@ -772,7 +733,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     level_timer.pause();
-    respond("Timer paused");
+    respond(i18next.t("timerPaused"));
   } else if (
     settings.level_timeout &&
     level_timer != null &&
@@ -780,7 +741,7 @@ async function HandleMessage(
     sender.isBroadcaster
   ) {
     level_timer.restart();
-    respond("Starting the clock over! CP Hype!");
+    respond(i18next.t("timerReset"));
   } else if (aliases.isAlias("persistence", message) && sender.isBroadcaster) {
     const subCommand = get_remainder(message);
     const response = await quesoqueue.persistenceManagement(subCommand);
@@ -790,26 +751,28 @@ async function HandleMessage(
   } else if (aliases.isAlias("clear", message) && sender.isBroadcaster) {
     quesoqueue.clear();
     twitch.clearLurkers();
-    respond("The queue has been cleared!");
+    respond(i18next.t("queueCleared"));
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender);
-    respond(
-      "See you later, " +
-        sender.displayName +
-        "! Your level will not be played until you use the !back command."
-    );
+    respond(i18next.t("userLurk", { sender }));
   } else if (aliases.isAlias("back", message)) {
     if (twitch.notLurkingAnymore(sender)) {
-      respond("Welcome back, " + sender.displayName + "!");
+      respond(i18next.t("welcomeBack", { sender }));
     }
   } else if (aliases.isAlias("order", message)) {
     if (settings.level_selection.length === 0) {
-      respond("No order has been specified.");
+      respond(i18next.t("noOrder"));
     } else {
       const nextIndex = selection_iter % settings.level_selection.length;
       let order = [...settings.level_selection]; // copy array
       order = order.concat(order.splice(0, nextIndex)); // shift array to the left by nextIndex positions
-      respond("Next level order: " + order.reduce((acc, x) => acc + ", " + x));
+      respond(
+        i18next.t("orderList", {
+          order,
+          style: "short",
+          type: "unit",
+        })
+      );
     }
   } else {
     return await quesoqueue.handleCommands(message, sender, respond);

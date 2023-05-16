@@ -5,6 +5,9 @@ import * as persistence from "../persistence.js";
 import { Entry, PersistedEntry } from "../extensions-api/queue-entry.js";
 import { Result } from "../extensions-api/helpers.js";
 import { Chatter } from "../extensions-api/command.js";
+import i18next from "i18next";
+
+await (await import("./helpers/i18n.js")).init("customcode");
 
 class CustomCodes {
   map: Map<string, { customCode: string; entry: Entry }> = new Map<
@@ -105,10 +108,14 @@ const commandHandler = (
     customCodes() {
       const list = customCodes.listNames();
       if (list.length == 0) {
-        return "There are no custom codes set.";
+        return i18next.t("noCodes", { ns: "customcode" });
       } else {
-        const response = list.join(", ");
-        return "The current custom codes are: " + response + ".";
+        return i18next.t("currentCodes", {
+          ns: "customcode",
+          codes: list,
+          style: "short",
+          type: "unit",
+        });
       }
     },
     customCodeManagement(codeArguments: string) {
@@ -123,41 +130,56 @@ const commandHandler = (
         const [customName, ...realName] = rest;
         const resolved = resolveLevel(realName.join(" "));
         if (!resolved.success) {
-          return "That is an invalid level code.";
+          return i18next.t("invalidCode", { ns: "customcode" });
         }
 
         if (customCodes.has(customName)) {
           const existingName = customCodes.getName(customName);
-          return `The custom code ${existingName} already exists`;
+          return i18next.t("alreadyExists", {
+            ns: "customcode",
+            customName: existingName,
+          });
         }
         customCodes.set(customName, resolved.entry);
         save("An error occurred while trying to add your custom code.");
-        return `Your custom code ${customName} for ${resolved.entry} has been added.`;
+        return i18next.t("codeAdded", {
+          ns: "customcode",
+          customName,
+          code: resolved.entry,
+        });
       } else if (command == "remove" && rest.length == 1) {
         const [customName] = rest;
         if (!customCodes.has(customName)) {
-          return `The custom code ${customName} could not be found.`;
+          return i18next.t("notFound", { ns: "customcode", customName });
         }
         const deletedName = customCodes.getName(customName);
         const deletedEntry = customCodes.getEntry(customName);
         if (deletedEntry == null) {
-          return `The custom code ${customName} could not be found.`;
+          return i18next.t("notFound", { ns: "customcode", customName });
         }
 
         if (!customCodes.delete(customName)) {
-          save("An error occurred while trying to remove that custom code.");
-          return `The custom code ${deletedName} for ${deletedEntry} could not be deleted.`;
+          save(i18next.t("removeError", { ns: "customcode" }));
+          return i18next.t("codeNotRemoved", {
+            ns: "customcode",
+            deletedName,
+            deletedEntry,
+          });
         }
-        save("An error occurred while trying to remove that custom code.");
-        return `The custom code ${deletedName} for ${deletedEntry} has been removed.`;
+        save(i18next.t("removeError", { ns: "customcode" }));
+        return i18next.t("codeRemoved", {
+          ns: "customcode",
+          deletedName,
+          deletedEntry,
+        });
       } else if (
         (command == "load" || command == "reload" || command == "restore") &&
         rest.length == 0
       ) {
         this.loadCustomCodes();
-        return "Reloaded custom codes from disk.";
+        return i18next.t("codesReloaded", { ns: "customcode" });
       } else {
-        return "Invalid arguments. The correct syntax is !customcode {add/remove/load} {customCode} {ID}.";
+        return i18next.t("syntax", { ns: "customcode" });
       }
     },
     loadCustomCodes() {

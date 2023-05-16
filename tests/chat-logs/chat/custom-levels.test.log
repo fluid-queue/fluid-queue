@@ -4,7 +4,7 @@ chatbot helperblock
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true,"showMakerCode":false}
 # restart to test with custom_codes_enabled set to true from the very beginning
 restart
-# chatters 
+# chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
@@ -69,7 +69,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] @^helperblock: liquidnya, a white flag level has been added to the queue.
 
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ whiteflag
-[12:19:29] @^helperblock: The custom code 🏳️ already exists
+[12:19:29] @^helperblock: The custom code 🏳️ already exists.
 
 # you can also remove custom level type aliases
 [12:19:29] ~%?liquidnya: !customcode remove 🏳️
@@ -132,7 +132,7 @@ uuidv4 78debbb5-2c9c-402d-9df6-0ae1fe8f1729
 [18:50:56] @^helperblock: liquidnya, a team shell level has been added to the queue.
 
 [19:00:12] ~%?liquidnya (Fae/Faer): !customlevel code remove teamshell
-[19:00:13] @^helperblock (Any): Removed the code teamshell to the custom level with the name "a team shell level" and codes TS.
+[19:00:13] @^helperblock (Any): Removed the code teamshell from the custom level with the name "a team shell level" and codes TS.
 
 [19:30:33] ~%?liquidnya: !customlevel remove a team shell level
 [19:30:33] @^helperblock: Removed the custom level with the name "a team shell level" and codes TS.

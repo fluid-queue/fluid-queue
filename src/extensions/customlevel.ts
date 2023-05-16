@@ -9,6 +9,9 @@ import settings from "../settings.js";
 import { checkVersion } from "./helpers/version.js";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
 import { z } from "zod";
+import i18next from "i18next";
+
+await (await import("./helpers/i18n.js")).init("customlevel");
 
 const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 const ROMHACK_UUID = uuidv5("ROMhack", QUEUE_NAMESPACE);
@@ -152,11 +155,35 @@ class CustomData {
   list(admin: boolean): string[] {
     return Object.entries(this.data).flatMap(([, value]) => {
       // translate customLevels into custom code map
-      if (value.enabled || admin) {
-        return (
-          [value.name + " [" + value.codes.join(", ") + "]"] +
-          (admin ? " (" + (value.enabled ? "enabled" : "disabled") + ")" : "")
-        );
+      if (admin) {
+        if (value.enabled) {
+          return [
+            i18next.t("customlevelFormatEnabled", {
+              ns: "customlevel",
+              value,
+              style: "short",
+              type: "unit",
+            }),
+          ];
+        } else {
+          return [
+            i18next.t("customlevelFormatDisabled", {
+              ns: "customlevel",
+              value,
+              style: "short",
+              type: "unit",
+            }),
+          ];
+        }
+      } else if (value.enabled) {
+        return [
+          i18next.t("customlevelFormat", {
+            ns: "customlevel",
+            value,
+            style: "short",
+            type: "unit",
+          }),
+        ];
       } else {
         return [];
       }
@@ -232,8 +259,6 @@ const resolver = (custom: CustomData) => {
 const customlevelCommand = (custom: CustomData) => {
   return {
     aliases: ["!customlevel", "!customlevels"],
-    syntax:
-      "The correct syntax is !customlevel {remove/enable/disable/export} {code/levelName...}, !customlevel add {code} {levelName...}, !customlevel code add {code} {code/levelName...}, !customlevel code remove {code}, !customlevel import {json}.",
     async handle(message: string, sender: Chatter, respond: Responder) {
       if (sender.isBroadcaster) {
         if (message == "") {
@@ -250,9 +275,14 @@ const customlevelCommand = (custom: CustomData) => {
               const fromCode = custom.fromCode(code);
               if (fromCode != null) {
                 respond(
-                  `The custom level with the code ${code} already exists with the name "${
-                    custom.get(fromCode).name
-                  }" and codes ${custom.get(fromCode).codes.join(", ")}.`
+                  i18next.t("customlevelCodeExists", {
+                    ns: "customlevel",
+                    code,
+                    name: custom.get(fromCode).name,
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
+                  })
                 );
                 return;
               }
@@ -263,13 +293,23 @@ const customlevelCommand = (custom: CustomData) => {
                 custom.add(fromArguments, value);
                 custom.save();
                 respond(
-                  `Added the code ${code} to the custom level with the name "${
-                    value.name
-                  }" and codes ${value.codes.join(", ")}.`
+                  i18next.t("customlevelCodeAdded", {
+                    ns: "customlevel",
+                    code,
+                    name: value.name,
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
+                  })
                 );
                 return;
               }
-              respond(`Custom level "${codeOrName}" not found.`);
+              respond(
+                i18next.t("customlevelNotFound", {
+                  ns: "customlevel",
+                  codeOrName,
+                })
+              );
               return;
             } else if (subcommand == "remove") {
               const fromCode = custom.fromCode(code);
@@ -280,11 +320,14 @@ const customlevelCommand = (custom: CustomData) => {
                 );
                 if (newCodes.length == 0) {
                   respond(
-                    `Can not remove the code ${code} from the custom level with the name "${
-                      custom.get(fromCode).name
-                    }" and codes ${custom
-                      .get(fromCode)
-                      .codes.join(", ")}, since it is the only code left.`
+                    i18next.t("cannotRemove", {
+                      ns: "customlevel",
+                      code,
+                      name: custom.get(fromCode).name,
+                      codes: custom.get(fromCode).codes,
+                      style: "short",
+                      type: "unit",
+                    })
                   );
                   return;
                 }
@@ -293,16 +336,26 @@ const customlevelCommand = (custom: CustomData) => {
                 custom.add(fromCode, value);
                 custom.save();
                 respond(
-                  `Removed the code ${code} to the custom level with the name "${
-                    value.name
-                  }" and codes ${value.codes.join(", ")}.`
+                  i18next.t("customlevelCodeRemoved", {
+                    ns: "customlevel",
+                    code,
+                    name: custom.get(fromCode).name,
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
+                  })
                 );
                 return;
               }
-              respond(`Custom level with code "${code}" not found.`);
+              respond(
+                i18next.t("customlevelCodeNotFound", {
+                  ns: "customlevel",
+                  code,
+                })
+              );
               return;
             } else {
-              respond(`Invalid arguments. ${this.syntax}`);
+              respond(i18next.t("syntax", { ns: "customlevel" }));
               return;
             }
           } else if (
@@ -316,15 +369,35 @@ const customlevelCommand = (custom: CustomData) => {
               value.enabled = command == "enable";
               custom.add(fromArguments, value);
               custom.save();
-              respond(
-                (command == "enable" ? "Enabled" : "Disabled") +
-                  ` the custom level with the name "${
-                    value.name
-                  }" and codes ${value.codes.join(", ")}.`
-              );
+              if (command == "enable") {
+                respond(
+                  i18next.t("customlevelEnabled", {
+                    ns: "customlevel",
+                    name: value.name,
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
+                  })
+                );
+              } else {
+                respond(
+                  i18next.t("customlevelDisabled", {
+                    ns: "customlevel",
+                    name: value.name,
+                    codes: value.codes,
+                    style: "short",
+                    type: "unit",
+                  })
+                );
+              }
               return;
             }
-            respond(`Custom level "${codeOrName}" not found.`);
+            respond(
+              i18next.t("customlevelNotFound", {
+                ns: "customlevel",
+                codeOrName,
+              })
+            );
             return;
           } else if (command == "remove" && rest.length >= 1) {
             const codeOrName = rest.join(" ");
@@ -334,13 +407,22 @@ const customlevelCommand = (custom: CustomData) => {
               custom.remove(fromArguments);
               custom.save();
               respond(
-                `Removed the custom level with the name "${
-                  value.name
-                }" and codes ${value.codes.join(", ")}.`
+                i18next.t("customlevelRemoved", {
+                  ns: "customlevel",
+                  name: value.name,
+                  codes: value.codes,
+                  style: "short",
+                  type: "unit",
+                })
               );
               return;
             }
-            respond(`Custom level "${codeOrName}" not found.`);
+            respond(
+              i18next.t("customlevelNotFound", {
+                ns: "customlevel",
+                codeOrName,
+              })
+            );
             return;
           } else if (command == "export" && rest.length >= 1) {
             const codeOrName = rest.join(" ");
@@ -352,7 +434,12 @@ const customlevelCommand = (custom: CustomData) => {
               );
               return;
             }
-            respond(`Custom level "${codeOrName}" not found.`);
+            respond(
+              i18next.t("customlevelNotFound", {
+                ns: "customlevel",
+                codeOrName,
+              })
+            );
             return;
           } else if (command == "add" && rest.length >= 2) {
             const [code, ...levelNameRest] = rest;
@@ -360,20 +447,27 @@ const customlevelCommand = (custom: CustomData) => {
             const fromName = custom.fromArguments(levelName);
             if (fromName != null) {
               respond(
-                `The custom level with the name "${
-                  custom.get(fromName).name
-                }" already exists with codes ${custom
-                  .get(fromName)
-                  .codes.join(", ")}.`
+                i18next.t("customlevelExists", {
+                  ns: "customlevel",
+                  name: custom.get(fromName).name,
+                  codes: custom.get(fromName).codes,
+                  style: "short",
+                  type: "unit",
+                })
               );
               return;
             }
             const fromCode = custom.fromArguments(code);
             if (fromCode != null) {
               respond(
-                `The custom level with the code ${code} already exists with the name "${
-                  custom.get(fromCode).name
-                }" and codes ${custom.get(fromCode).codes.join(", ")}.`
+                i18next.t("customlevelCodeExists", {
+                  ns: "customlevel",
+                  code,
+                  name: custom.get(fromCode).name,
+                  codes: custom.get(fromCode).codes,
+                  style: "short",
+                  type: "unit",
+                })
               );
               return;
             }
@@ -382,7 +476,7 @@ const customlevelCommand = (custom: CustomData) => {
             if (custom.has(uuid)) {
               // very very unlikely
               respond(
-                "Internal error while creating the custom level. Please try again!"
+                i18next.t("customlevelInternalError", { ns: "customlevel" })
               );
               return;
             }
@@ -392,7 +486,13 @@ const customlevelCommand = (custom: CustomData) => {
               enabled: true,
             });
             custom.save();
-            respond(`Created custom level "${levelName}" with code ${code}.`);
+            respond(
+              i18next.t("customlevelAdded", {
+                ns: "customlevel",
+                levelName,
+                code,
+              })
+            );
             return;
           } else if (command == "import" && rest.length >= 1) {
             console.log(
@@ -410,42 +510,54 @@ const customlevelCommand = (custom: CustomData) => {
               !userData.every((data) => typeof data === "string") ||
               !uuidValidate(userData[0])
             ) {
-              respond(`Invalid data.`);
+              respond(i18next.t("invalidData", { ns: "customlevel" }));
               return;
             }
             const [uuid, levelName, ...codes] = userData;
             const fromName = custom.fromArguments(levelName);
             if (fromName != null) {
               respond(
-                `The custom level with the name "${
-                  custom.get(fromName).name
-                }" already exists with codes ${custom
-                  .get(fromName)
-                  .codes.join(", ")}.`
+                i18next.t("customlevelExists", {
+                  ns: "customlevel",
+                  name: custom.get(fromName).name,
+                  codes: custom.get(fromName).codes,
+                  style: "short",
+                  type: "unit",
+                })
               );
               return;
             }
             for (const code of codes) {
               if (code.indexOf(" ") != -1) {
                 // whitespace not allowed in codes!
-                respond(`Invalid data.`);
+                respond(i18next.t("invalidData", { ns: "customlevel" }));
                 return;
               }
               const fromCode = custom.fromArguments(code);
               if (fromCode != null) {
                 respond(
-                  `The custom level with the code ${code} already exists with the name "${
-                    custom.get(fromCode).name
-                  }" and codes ${custom.get(fromCode).codes.join(", ")}.`
+                  i18next.t("customlevelCodeExists", {
+                    ns: "customlevel",
+                    code,
+                    name: custom.get(fromCode).name,
+                    codes: custom.get(fromCode).codes,
+                    style: "short",
+                    type: "unit",
+                  })
                 );
                 return;
               }
             }
             if (custom.has(uuid)) {
               respond(
-                `The custom level with the uuid ${uuid} already exists with the name "${
-                  custom.get(uuid).name
-                }" and codes ${custom.get(uuid).codes.join(", ")}.`
+                i18next.t("customlevelCodeExistsUUID", {
+                  ns: "customlevel",
+                  uuid,
+                  name: custom.get(uuid).name,
+                  codes: custom.get(uuid).codes,
+                  style: "short",
+                  type: "unit",
+                })
               );
               return;
             }
@@ -456,13 +568,17 @@ const customlevelCommand = (custom: CustomData) => {
             });
             custom.save();
             respond(
-              `Created custom level "${levelName}" with codes ${codes.join(
-                ", "
-              )}.`
+              i18next.t("customlevelAddedCodes", {
+                ns: "customlevel",
+                levelName,
+                codes,
+                style: "short",
+                type: "unit",
+              })
             );
             return;
           } else {
-            respond(`Invalid arguments. ${this.syntax}`);
+            respond(i18next.t("syntax", { ns: "customlevel" }));
             return;
           }
         }
@@ -473,16 +589,15 @@ const customlevelCommand = (custom: CustomData) => {
     customLevels: (admin = false) => {
       const list = custom.list(admin);
       if (list.length == 0) {
-        return "There are no custom levels configured.";
-      } else if (list.length == 1) {
-        return "The current custom level is " + list[0] + ".";
-      } else if (list.length == 2) {
-        return (
-          "The current custom levels are " + list[0] + " and " + list[1] + "."
-        );
+        return i18next.t("noCustomLevels", { ns: "customlevel" });
       } else {
-        list[list.length - 1] = "and " + list[list.length - 1];
-        return "The current custom levels are " + list.join(", ") + ".";
+        return i18next.t("customlevelsList", {
+          ns: "customlevel",
+          count: list.length,
+          list,
+          style: "long",
+          type: "conjunction",
+        });
       }
     },
   };
@@ -515,12 +630,15 @@ const queueHandler = (custom: CustomData) => {
         allEntries.every((level) => !isRomHackLevel(level))
       ) {
         queueChanged = custom.removeRomHack() || queueChanged;
-        console.log(`ROMhack has been removed as a custom level.`);
+        console.log(i18next.t("romhackRemoved", { ns: "customlevel" }));
       } else {
         queueChanged =
           custom.addRomHack(!!settings.romhacks_enabled) || queueChanged;
         console.log(
-          `ROMhack has been added as a custom level (enabled=${!!settings.romhacks_enabled}).`
+          i18next.t("romhackAdded", {
+            ns: "customlevel",
+            enabled: !!settings.romhacks_enabled,
+          })
         );
       }
       if (
@@ -528,12 +646,15 @@ const queueHandler = (custom: CustomData) => {
         allEntries.every((level) => !isUnclearedLevel(level))
       ) {
         queueChanged = custom.removeUncleared() || queueChanged;
-        console.log(`Uncleared has been removed as a custom level.`);
+        console.log(i18next.t("unclearedRemoved", { ns: "customlevel" }));
       } else {
         queueChanged =
           custom.addUncleared(!!settings.uncleared_enabled) || queueChanged;
         console.log(
-          `Uncleared has been added as a custom level (enabled=${!!settings.uncleared_enabled}).`
+          i18next.t("unclearedAdded", {
+            ns: "customlevel",
+            enabled: !!settings.uncleared_enabled,
+          })
         );
       }
       return queueChanged;

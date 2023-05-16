@@ -2,7 +2,7 @@
 chatbot helperblock
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
+# chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
@@ -13,7 +13,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [01:37:56] ~%?liquidnya: !add NB0-1MD-SLG
 [01:37:57] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 [01:37:59] ~%?liquidnya: !list
-[01:38:00] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[01:38:00] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 # check the contents of the save file
 queue.json/entries/current null
 queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]

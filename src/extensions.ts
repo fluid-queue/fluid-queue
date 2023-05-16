@@ -35,6 +35,7 @@ import {
 } from "./extensions-api/resolvers.js";
 import { BroadcastOnce, SendOnce } from "./sync.js";
 import { fileURLToPath } from "url";
+import i18next from "i18next";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
 const fileEnding: string[] = [".js", ".ts"];
@@ -244,7 +245,13 @@ export class Extensions {
       })
     );
 
-    console.log(`Extensions: [${Object.keys(this.extensions).join(", ")}]`);
+    console.log(
+      i18next.t("extensionsList", {
+        extensions: Object.keys(this.extensions),
+        style: "short",
+        type: "unit",
+      })
+    );
     // load resolvers
     this.registeredResolvers.freeze();
     this.deserializers = this.registeredResolvers.getDeserializers();
@@ -260,7 +267,7 @@ export class Extensions {
     if (entry.code == null) {
       // can not display queue entry
       console.error("Can not display queue entry: %s", JSON.stringify(entry));
-      return "unknown entry";
+      return i18next.t("unknownEntry");
     }
     return entry.code;
   }

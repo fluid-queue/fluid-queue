@@ -4,6 +4,9 @@ import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
 } from "./helpers/codeparsing.js";
+import i18next from "i18next";
+
+await (await import("./helpers/i18n.js")).init("ocw");
 
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different
@@ -54,17 +57,6 @@ const extractValidCode = (levelCode: string, lenient = false) => {
   };
 };
 
-const codeSuffix = (levelCode: string) => {
-  if (settings.showMakerCode !== false) {
-    const makerCode = extractValidCode(levelCode).makerCode;
-    if (makerCode) {
-      return " (OCW maker code)";
-    }
-    return " (OCW level code)";
-  }
-  return " (OCW)";
-};
-
 function display(code: string) {
   let codeDisplay = code;
   if (
@@ -75,7 +67,13 @@ function display(code: string) {
   ) {
     codeDisplay = code.replaceAll("-", "");
   }
-  return codeDisplay + codeSuffix(code);
+  if (settings.showMakerCode === false) {
+    return i18next.t("levelCodeNoSuffix", { ns: "ocw", codeDisplay });
+  } else if (extractValidCode(code).makerCode) {
+    return i18next.t("makerCode", { ns: "ocw", codeDisplay });
+  } else {
+    return i18next.t("levelCode", { ns: "ocw", codeDisplay });
+  }
 }
 
 function resolver(args: string) {
