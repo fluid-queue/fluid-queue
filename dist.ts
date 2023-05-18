@@ -42,6 +42,17 @@ mkdtemp(join(tmpdir(), "fluidqueue-"), async (err, directory) => {
   copySync(join(srcDir, "CHANGELOG.md"), join(working, "CHANGELOG.md"));
   copySync(join(srcDir, "SECURITY.md"), join(working, "SECURITY.md"));
 
+  // Also the sample settings files
+  mkdirpSync(join(working, "settings"));
+  copySync(
+    join(srcDir, "settings/settings.example.json"),
+    join(working, "settings/settings.example.json")
+  );
+  copySync(
+    join(srcDir, "settings/tokens.example.json"),
+    join(working, "settings/tokens.example.json")
+  );
+
   // Copy the license and the attribution
   copySync(join(srcDir, "LICENSE"), join(working, "LICENSE"));
   mkdirpSync(join(working, "oss-attribution"));
