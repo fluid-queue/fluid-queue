@@ -1,7 +1,7 @@
 (await import("./banner.js")).printBanner();
 (await import("./persistence.js")).setup();
 import { quesoqueue as queue } from "./queue.js";
-import { OnlineUsers, twitch } from "./twitch.js";
+import { twitch } from "./twitch.js";
 import { timer, Timer } from "./timer.js";
 import * as aliasManagement from "./aliases.js";
 import { twitchApi } from "./twitch-api.js";
@@ -39,16 +39,15 @@ function get_remainder(x: string) {
 let can_list = true;
 
 function next_level_message(
-  level: QueueEntry | undefined,
-  online: OnlineUsers
+  level: (QueueEntry & { online: boolean }) | undefined
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
   const offline = (() => {
-    if (settings.offline_message && !online.isOnline(level.submitter)) {
-      return "$t(UserOffline)";
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
     } else {
       return "";
     }
@@ -57,8 +56,9 @@ function next_level_message(
 }
 
 function weightedrandom_level_message(
-  level: (QueueEntry & { selectionChance: string }) | undefined,
-  online: OnlineUsers,
+  level:
+    | (QueueEntry & { selectionChance: string; online: boolean })
+    | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
@@ -66,8 +66,8 @@ function weightedrandom_level_message(
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
   const offline = (() => {
-    if (settings.offline_message && !online.isOnline(level.submitter)) {
-      return "$t(UserOffline)";
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
     } else {
       return "";
     }
@@ -80,8 +80,9 @@ function weightedrandom_level_message(
 }
 
 function weightednext_level_message(
-  level: (QueueEntry & { selectionChance: string }) | undefined,
-  online: OnlineUsers,
+  level:
+    | (QueueEntry & { selectionChance: string; online: boolean })
+    | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
@@ -89,8 +90,8 @@ function weightednext_level_message(
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
   const offline = (() => {
-    if (settings.offline_message && !online.isOnline(level.submitter)) {
-      return "$t(UserOffline)";
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
     } else {
       return "";
     }
@@ -511,7 +512,6 @@ async function HandleMessage(
     if (selection_iter >= settings.level_selection.length) {
       selection_iter = 0;
     }
-    const onlineList = await twitch.getOnlineUsers();
     switch (selection_mode) {
       case "next":
         next_level = await quesoqueue.next();
@@ -534,19 +534,13 @@ async function HandleMessage(
       case "weightedrandom":
         next_level = await quesoqueue.weightedrandom();
         respond(
-          "(" +
-            selection_mode +
-            ") " +
-            weightedrandom_level_message(next_level, onlineList)
+          "(" + selection_mode + ") " + weightedrandom_level_message(next_level)
         );
         break;
       case "weightednext":
         next_level = await quesoqueue.weightednext();
         respond(
-          "(" +
-            selection_mode +
-            ") " +
-            weightednext_level_message(next_level, onlineList)
+          "(" + selection_mode + ") " + weightednext_level_message(next_level)
         );
         break;
       case "weightedsubrandom":
@@ -555,11 +549,7 @@ async function HandleMessage(
           "(" +
             selection_mode +
             ") " +
-            weightedrandom_level_message(
-              next_level,
-              onlineList,
-              " (subscriber)"
-            )
+            weightedrandom_level_message(next_level, " (subscriber)")
         );
         break;
       case "weightedsubnext":
@@ -568,7 +558,7 @@ async function HandleMessage(
           "(" +
             selection_mode +
             ") " +
-            weightednext_level_message(next_level, onlineList, " (subscriber)")
+            weightednext_level_message(next_level, " (subscriber)")
         );
         break;
       default:
@@ -585,9 +575,7 @@ async function HandleMessage(
       selection_mode != "weightedsubrandom" &&
       selection_mode != "weightedsubnext"
     ) {
-      respond(
-        "(" + selection_mode + ") " + next_level_message(next_level, onlineList)
-      );
+      respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
   } else if (aliases.isAlias("next", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
@@ -595,40 +583,35 @@ async function HandleMessage(
       level_timer.pause();
     }
     const next_level = await quesoqueue.next();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("subnext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.subnext();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("modnext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.modnext();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("random", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.random();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("weightednext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.weightednext();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(weightednext_level_message(next_level, onlineList));
+    respond(weightednext_level_message(next_level));
   } else if (
     aliases.isAlias("weightedrandom", message) &&
     sender.isBroadcaster
@@ -638,8 +621,7 @@ async function HandleMessage(
       level_timer.pause();
     }
     const next_level = await quesoqueue.weightedrandom();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(weightedrandom_level_message(next_level, onlineList));
+    respond(weightedrandom_level_message(next_level));
   } else if (
     aliases.isAlias("weightedsubnext", message) &&
     sender.isBroadcaster
@@ -649,10 +631,7 @@ async function HandleMessage(
       level_timer.pause();
     }
     const next_level = await quesoqueue.weightedsubnext();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(
-      weightednext_level_message(next_level, onlineList, " (subscriber)")
-    );
+    respond(weightednext_level_message(next_level, " (subscriber)"));
   } else if (
     aliases.isAlias("weightedsubrandom", message) &&
     sender.isBroadcaster
@@ -662,26 +641,21 @@ async function HandleMessage(
       level_timer.pause();
     }
     const next_level = await quesoqueue.weightedsubrandom();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(
-      weightedrandom_level_message(next_level, onlineList, " (subscriber)")
-    );
+    respond(weightedrandom_level_message(next_level, " (subscriber)"));
   } else if (aliases.isAlias("subrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.subrandom();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("modrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
       level_timer.pause();
     }
     const next_level = await quesoqueue.modrandom();
-    const onlineList = await twitch.getOnlineUsers();
-    respond(next_level_message(next_level, onlineList));
+    respond(next_level_message(next_level));
   } else if (aliases.isAlias("punt", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();

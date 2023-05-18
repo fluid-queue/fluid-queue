@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","offline_message":true,"max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 # chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
@@ -40,7 +40,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [02:23:35] @^FurretWalkBot: !add invalid level code
 [02:23:36] @^helperblock: FurretWalkBot, that is an invalid level code.
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","offline_message":true,"max_size":1,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
 
 [02:24:35] ~%?liquidnya: !add NB0-1MD-SLG
 [02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
@@ -145,3 +145,11 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 
 [04:27:29] ~%?liquidnya: !leave
 [04:27:31] @^helperblock: liquidnya, your level has been removed from the queue.
+
+# Test the offline message here as well
+
+[04:28:01] lurker: !add WVS-TQ5-2SG
+[04:28:02] @^helperblock: lurker, WVS-TQ5-2SG has been added to the queue.
+
+[04:42:13] ~%?liquidnya: !level
+[04:28:02] @^helperblock: (default) Now playing WVS-TQ5-2SG submitted by lurker. This user does not appear to be online.
