@@ -133,3 +133,5 @@ dist
 
 # Ignore the missing localization files; they're useful for development but don't need to be checked in
 locales/**/*.missing.json
+
+oss-attribution
