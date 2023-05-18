@@ -26,6 +26,7 @@
 ## Bug fixes
 
 - You no longer get the message `your level has been removed from the queue` when you use `!leave` and do not have a level in the queue.
+- Random chance weight is only increased whenever the stream is online.
 
 ## Other changes
 
