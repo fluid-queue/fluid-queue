@@ -263,6 +263,8 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
             displayName: `\${user(${JSON.stringify(user)}).displayName}`,
           }));
       });
+
+      isStreamOnline = jest.fn(async () => true);
     }
     return {
       TwitchApi,
