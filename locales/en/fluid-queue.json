@@ -98,5 +98,7 @@
   "queueCleared": "The queue has been cleared!",
   "userLurk": "See you later, {{sender.displayName}}! Your level will not be played until you use the !back command.",
   "noOrder": "No order has been specified.",
-  "orderList": "Next level order: {{order, list}}"
+  "orderList": "Next level order: {{order, list}}",
+  "streamIsOnline": "[{{time}}] Stream is online!",
+  "streamIsOffline": "[{{time}}] Stream is offline!"
 }

@@ -106,6 +106,7 @@ class TwitchApi {
       "chat",
       "user-by-name",
       "chatters",
+      "stream-online",
     ]);
     // create the api client
     this.#apiClient = new ApiClient({
@@ -208,6 +209,17 @@ class TwitchApi {
   async getUsers(userNames: string[]): Promise<User[]> {
     return this.apiClient.asIntent(["user-by-name"], (ctx) => {
       return ctx.users.getUsersByNames(userNames);
+    });
+  }
+
+  async isStreamOnline(): Promise<boolean> {
+    return await this.apiClient.asIntent(["stream-online"], async (ctx) => {
+      if (this.#broadcasterUser == null) {
+        throw new Error("#broadcasterUser null");
+      }
+      return (
+        (await ctx.streams.getStreamByUserId(this.#broadcasterUser)) != null
+      );
     });
   }
 }

@@ -13,6 +13,7 @@ import {
 import { Chatter, Responder } from "./extensions-api/command.js";
 import { z } from "zod";
 import i18next from "i18next";
+import { twitchApi } from "./twitch-api.js";
 
 const extensions = new Extensions();
 
@@ -42,6 +43,7 @@ export type WeightedList = {
 
 let loaded = false;
 let persist = true; // if false the queue will not save automatically
+let streamLastOnline: boolean | null = null;
 
 interface QueueDataAccessor {
   get current_level(): QueueEntry | undefined;
@@ -1038,6 +1040,21 @@ const queue = {
   },
 
   waitingTimerTick: async () => {
+    const streamOnline = await twitchApi.isStreamOnline();
+    if (streamLastOnline !== streamOnline) {
+      streamLastOnline = streamOnline;
+      const args = {
+        time: new Date().toISOString(), // printing the time as ISO instead of using the localized time representation
+      };
+      if (streamOnline) {
+        console.log(i18next.t("streamIsOnline", args));
+      } else {
+        console.log(i18next.t("streamIsOffline", args));
+      }
+    }
+    if (!streamOnline) {
+      return;
+    }
     const list = await queue.list();
     data.access((data) => {
       const now = new Date();
