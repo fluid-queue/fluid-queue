@@ -9,6 +9,15 @@ declare global {
 }
 
 export function buildVersion(): string | null {
+  if (
+    (process.env.DOCKER_TAG == "this" || process.env.DOCKER_TAG == "develop") &&
+    process.env.SOURCE_COMMIT
+  ) {
+    // If we're running in Docker on the develop branch,
+    // this needs to be the develop-abcdef version number.
+    // Otherwise users will always see an error.
+    return version();
+  }
   if (globalThis.__build_version != null && globalThis.__build_version != "") {
     return globalThis.__build_version;
   }
