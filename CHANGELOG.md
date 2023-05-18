@@ -22,6 +22,7 @@
   and the queue will still use the previous display name until the queue automatically detects someones name has changed.
 - Moderators and the broadcaster can now use the moderator `!entry <username>` command to show the queue entry of someone else.
 - The bot now uses `i18next` for internationalization, and supports arbitrary locales (in the formats `en`, `eng`, `en-us`, and `eng-usa`; two or three letters in each part, up to two parts) so long as a locale file is present. Only the `en` locale is supported currently.
+- The bot now optionally prints a message when a user whose level is next is offline.
 
 ## Bug fixes
 

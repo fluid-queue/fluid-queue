@@ -58,6 +58,12 @@ export const Settings = z
       .boolean()
       .describe("display position including offline levels")
       .default(false),
+    offline_message: z
+      .boolean()
+      .describe(
+        "whether to print a message when a level's submitter is offline"
+      )
+      .default(false),
     custom_codes_enabled: z
       .boolean()
       .describe("allow custom codes")
