@@ -613,6 +613,7 @@ const queue = {
     } else {
       getList = list;
     }
+    let online = true;
     return data.access((data) => {
       const list = getList(data);
       const both = list.online.concat(list.offline);
@@ -624,19 +625,24 @@ const queue = {
         data.saveLater();
         return data.current_level;
       } else {
+        if (both.length == list.offline.length) {
+          online = false;
+        }
         data.current_level = both.shift();
         data.removeWaiting();
       }
       const index = data.levels.findIndex(
         (level) => level === data.current_level
       );
-      if (index == -1) {
+      if (index == -1 || data.current_level == undefined) {
+        // data.current_level should never be undefined by this point
+        // and it should always be in the list of levels
         throw new Error("unreachable");
       }
       data.levels.splice(index, 1);
       data.onRemove(removedLevels);
       data.saveLater();
-      return data.current_level;
+      return { ...data.current_level, online };
     });
   },
 
@@ -682,6 +688,7 @@ const queue = {
     } else {
       getList = list;
     }
+    let online = true;
     return data.access((data) => {
       const list = getList(data);
       const removedLevels =
@@ -689,6 +696,7 @@ const queue = {
       let eligible_levels = list.online;
       if (eligible_levels.length == 0) {
         eligible_levels = list.offline;
+        online = false;
         if (eligible_levels.length == 0) {
           data.current_level = undefined;
           data.onRemove(removedLevels);
@@ -709,7 +717,7 @@ const queue = {
       data.levels.splice(index, 1);
       data.onRemove(removedLevels);
       data.saveLater();
-      return data.current_level;
+      return { online, ...data.current_level };
     });
   },
 
@@ -727,6 +735,7 @@ const queue = {
     list: QueueDataMap<OnlineOfflineList> | undefined = undefined
   ) => {
     const getWeightedList = await queue.weightedList(false, list, true);
+    const online = true; // Always true with the current setup
     return data.access((data) => {
       const weightedList = getWeightedList(data);
       const removedLevels =
@@ -799,7 +808,7 @@ const queue = {
       data.onRemove(removedLevels);
       data.saveLater();
 
-      return { ...data.current_level, selectionChance };
+      return { ...data.current_level, selectionChance, online };
     });
   },
 
@@ -872,8 +881,11 @@ const queue = {
 
   weightednext: async (
     list: QueueDataMap<OnlineOfflineList> | undefined = undefined
-  ): Promise<(QueueEntry & { selectionChance: string }) | undefined> => {
+  ): Promise<
+    (QueueEntry & { selectionChance: string; online: boolean }) | undefined
+  > => {
     const getWeightedList = await queue.weightedList(true, list, true);
+    const online = true; // Always true with the current setup
     return data.access((data) => {
       const weightedList = getWeightedList(data);
       const removedLevels =
@@ -912,7 +924,7 @@ const queue = {
       data.onRemove(removedLevels);
       data.saveLater();
 
-      return { ...data.current_level, selectionChance };
+      return { ...data.current_level, selectionChance, online };
     });
   },
 

@@ -38,34 +38,65 @@ function get_remainder(x: string) {
 
 let can_list = true;
 
-function next_level_message(level: QueueEntry | undefined) {
+function next_level_message(
+  level: (QueueEntry & { online: boolean }) | undefined
+) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return i18next.t("nowPlayingBasic", { level });
+  const offline = (() => {
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
+    } else {
+      return "";
+    }
+  })();
+  return i18next.t("nowPlayingBasic", { level, offline });
 }
 
 function weightedrandom_level_message(
-  level: (QueueEntry & { selectionChance: string }) | undefined,
+  level:
+    | (QueueEntry & { selectionChance: string; online: boolean })
+    | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return i18next.t("nowPlayingWeightedRandom", { level, percentSuffix });
+  const offline = (() => {
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
+    } else {
+      return "";
+    }
+  })();
+  return i18next.t("nowPlayingWeightedRandom", {
+    level,
+    percentSuffix,
+    offline,
+  });
 }
 
 function weightednext_level_message(
-  level: (QueueEntry & { selectionChance: string }) | undefined,
+  level:
+    | (QueueEntry & { selectionChance: string; online: boolean })
+    | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
   }
   twitch.notLurkingAnymore(level.submitter); // If we pull up a level, we should reset the lurking status
-  return i18next.t("nowPlayingWeightedNext", { level, percentSuffix });
+  const offline = (() => {
+    if (settings.offline_message && !level.online) {
+      return "$t(userOffline)";
+    } else {
+      return "";
+    }
+  })();
+  return i18next.t("nowPlayingWeightedNext", { level, percentSuffix, offline });
 }
 
 function current_level_message(level: QueueEntry | undefined) {
