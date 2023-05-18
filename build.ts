@@ -1,4 +1,4 @@
-#!/usr/bin/env -S ts-node --esm
+#!/usr/bin/env -S node --loader @swc-node/register/esm
 import * as esbuild from "esbuild";
 import { glob } from "glob";
 import { version } from "./src/version.js";
