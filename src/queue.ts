@@ -1237,8 +1237,8 @@ const queue = {
           }
         }
         data.saveLater();
-        if (data.levels.length == 0 && data.current_level === undefined) {
-          // all levels were cleared, lets clear all lurkers
+        if (data.levels.length == 0) {
+          // all levels were cleared, lets clear all lurkers (no need to check current level)
           twitch.clearLurkers();
         }
         const renamedUsersSize = renamedUsers.size;
@@ -1263,8 +1263,8 @@ const queue = {
 
         data.onRemove(removedLevels);
         data.saveLater();
-        if (data.levels.length == 0 && data.current_level === undefined) {
-          // all levels were cleared, lets clear all lurkers
+        if (data.levels.length == 0) {
+          // all levels were cleared, lets clear all lurkers (no need to check current level)
           twitch.clearLurkers();
         }
         return `${removedLevels.length} level${
