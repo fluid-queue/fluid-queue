@@ -14,5 +14,6 @@ export const options: i18next.InitOptions<FsBackendOptions> = {
   postProcess: ["pseudo"],
   interpolation: {
     skipOnVariables: false, // needed for ellipsis
+    escapeValue: false,
   },
 };
