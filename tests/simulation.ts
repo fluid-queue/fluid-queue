@@ -264,6 +264,21 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
           }));
       });
 
+      getUsersById = jest.fn(async (ids: string[]): Promise<User[]> => {
+        return ids
+          .filter((ids) => {
+            return !ids.match(/^\${(deleted|renamed)\(.*\)(\.id)?}$/);
+          })
+          .map((user) => {
+            const name = /^\${user\((.*)\)(\.id)?}$/.exec(user)?.[1];
+            return {
+              id: user,
+              name: `\${user(${name}).name}`,
+              displayName: `\${user(${name}).displayName}`,
+            };
+          });
+      });
+
       isStreamOnline = jest.fn(async () => true);
     }
     return {
