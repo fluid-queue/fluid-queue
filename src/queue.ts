@@ -1139,7 +1139,7 @@ const queue = {
     }
   },
 
-  clear: async (what?: string, respond?: Responder): Promise<string> => {
+  clear: async (what?: string, respond?: Responder): Promise<string | null> => {
     let clearResult = queue.parseClearArgument(what ?? null);
     if (clearResult.result == "invalid" && clearResult.reason == "empty") {
       clearResult = queue.parseClearArgument(settings.clear);
@@ -1153,7 +1153,7 @@ const queue = {
         data.levels = [];
         data.onRemove(removedLevels);
         data.saveLater();
-        return "The queue has been cleared!";
+        return i18next.t("queueCleared");
       });
     } else if (clearResult.result == "deleted") {
       // collect user ids first
@@ -1168,13 +1168,11 @@ const queue = {
       });
       const lookupIds: string[] = [...userIds];
       if (lookupIds.length == 0) {
-        return "No users in the queue!";
+        return i18next.t("queueClearDeletedNoUsers");
       }
       if (respond !== undefined) {
         respond(
-          `Checking ${lookupIds.length} user${
-            lookupIds.length == 1 ? "" : "s"
-          } for deletion... (This may take a while)`
+          i18next.t("queueClearDeletedInfo", { users: lookupIds.length })
         );
       }
       // create all requests
@@ -1242,11 +1240,10 @@ const queue = {
           twitch.clearLurkers();
         }
         const renamedUsersSize = renamedUsers.size;
-        return `${removedLevels.length} level${
-          removedLevels.length == 1 ? " has" : "s have"
-        } been cleared from the queue and ${renamedUsersSize} user${
-          renamedUsersSize == 1 ? " has" : "s have"
-        } been renamed!`;
+        return i18next.t("queueClearDeletedResult", {
+          removed: removedLevels.length,
+          renamed: renamedUsersSize,
+        });
       });
     } else if (clearResult.result == "duration") {
       // older than {duration}
@@ -1267,18 +1264,16 @@ const queue = {
           // all levels were cleared, lets clear all lurkers (no need to check current level)
           twitch.clearLurkers();
         }
-        return `${removedLevels.length} level${
-          removedLevels.length == 1 ? "" : "s"
-        } older than ${humanizeDuration(duration, {
-          language: "en",
-          fallbacks: ["en"],
-          delimiter: " ",
-        })} ${
-          removedLevels.length == 1 ? "has" : "have"
-        } been cleared from the queue!`;
+        return i18next.t("queueClearDurationResult", {
+          removed: removedLevels.length,
+          duration: humanizeDuration(duration, {
+            language: settings.language,
+            fallbacks: ["en"],
+          }),
+        });
       });
     } else {
-      return 'Invalid arguments. Use "!clear all" to clear all levels, "!clear deleted" to clear levels of deleted users or use "!clear 6 months" to delete levels from users last online more than 6 months ago.';
+      return i18next.t("queueClearUsage");
     }
   },
 
