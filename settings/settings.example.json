@@ -33,5 +33,6 @@
     "ocw": {
       "removeDashes": "true"
     }
-  }
+  },
+  "clear": null
 }

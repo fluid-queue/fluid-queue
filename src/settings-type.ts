@@ -164,5 +164,13 @@ export const Settings = z
       .boolean()
       .default(false)
       .describe("whether to enable i18next's debug mode"),
+    clear: z
+      .string()
+      .describe(
+        'The default argument for !clear. Set this to "all" to clear all levels by default.'
+      )
+      .nonempty() // can not be empty -> use null instead
+      .nullable()
+      .default(null),
   })
   .strict();

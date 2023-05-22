@@ -308,6 +308,8 @@ const chatLogTest = (fileName: string) => {
           jest.spyOn(test.fs, key).mockImplementationOnce(() => {
             throw new Error("fail on purpose in test");
           });
+        } else if (command == "time") {
+          await simSetTime(new Date(Date.parse(rest)));
         } else if (command.startsWith("[") && command.endsWith("]")) {
           await simSetTime(command.substring(1, command.length - 1), accuracy);
           // const time = new Date();

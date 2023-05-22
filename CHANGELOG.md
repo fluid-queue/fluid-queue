@@ -14,6 +14,7 @@
 - Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
 - The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.json`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
 - The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
+- `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.json` to `"all"` and then `!clear` clears all levels again.
 
 ## New features
 
@@ -23,6 +24,12 @@
 - Moderators and the broadcaster can now use the moderator `!entry <username>` command to show the queue entry of someone else.
 - The bot now uses `i18next` for internationalization, and supports arbitrary locales (in the formats `en`, `eng`, `en-us`, and `eng-usa`; two or three letters in each part, up to two parts) so long as a locale file is present. Only the `en` locale is supported currently.
 - The bot now optionally prints a message when a user whose level is next is offline.
+- Levels of deleted users can be cleared by using `!clear deleted`; this will also rename all users in the queue.
+- Levels of users who were not online for a while can now be cleared with `!clear {duration}` where duration can be multiple numbers followed by a unit (`min`, `hours`, `months`, etc. for a full list see [the documentation of timestring](https://github.com/mike182uk/timestring/tree/7.0.0#keywords)). For example `!clear 6 months 12 hours` clears all levels from everywhone who was not last online 6 months and 12 hours ago.
+
+## New settings
+
+- There is a new setting `clear` which can be set to the default argument of `!clear`. For example setting `clear` to `"all"` will make it so `!clear` will call `!clear all` or setting it to `6 months` would call `!clear 6 months` by default. Setting this to `null` (or not setting the value) will result into a usage message of the `!clear` command when using `!clear`.
 
 ## Bug fixes
 

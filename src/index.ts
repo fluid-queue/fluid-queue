@@ -780,9 +780,11 @@ async function HandleMessage(
     console.log(response);
     respond(`@${sender.displayName} ${response}`);
   } else if (aliases.isAlias("clear", message) && sender.isBroadcaster) {
-    quesoqueue.clear();
-    twitch.clearLurkers();
-    respond(i18next.t("queueCleared"));
+    const clearArgument = get_remainder(message);
+    const response = await quesoqueue.clear(clearArgument, respond);
+    if (response != null) {
+      respond(response);
+    }
   } else if (aliases.isAlias("brb", message)) {
     twitch.setToLurk(sender);
     respond(i18next.t("userLurk", { sender }));

@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"clear":"all"}
 # chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
@@ -40,7 +40,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [02:23:35] @^FurretWalkBot: !add invalid level code
 [02:23:36] @^helperblock: FurretWalkBot, that is an invalid level code.
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"clear":"all"}
 
 [02:24:35] ~%?liquidnya: !add NB0-1MD-SLG
 [02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG (maker code) has been added to the queue.

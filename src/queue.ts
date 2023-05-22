@@ -8,11 +8,14 @@ import {
   PersistedQueueEntry,
   QueueEntry,
   QueueSubmitter,
+  User,
   isQueueSubmitter,
 } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
 import { z } from "zod";
 import i18next from "i18next";
+import timestring from "timestring";
+import humanizeDuration from "humanize-duration";
 import { twitchApi } from "./twitch-api.js";
 
 const extensions = new Extensions();
@@ -164,13 +167,28 @@ class QueueData {
           extensions.deserialize(level)
         );
 
-        // split waiting map into lists
+        // create object from waiting list
         this.waitingByUserId = Waiting.fromList(state.waiting);
 
-        // extensions can now check their entries
+        // check for missing users in waitingByUserId (current level does not have a waiting time!)
+        const now = new Date();
+        this.levels
+          .filter((level) => !(level.submitter.id in this.waitingByUserId))
+          .forEach((level) => {
+            console.warn(`User ${level.submitter} didn't have a waiting time!`);
+            this.waitingByUserId[level.submitter.id] = Waiting.create(
+              level.submitter,
+              now
+            );
+            save = true;
+          });
+
+        // get all level entries including the current level
         const allEntries = (
           this.current_level === undefined ? [] : [this.current_level]
         ).concat(this.levels);
+
+        // extensions can now check their entries
         save = extensions.checkEntries(allEntries) || save;
 
         // set save handler -> from now on it is save to save!
@@ -1087,18 +1105,176 @@ const queue = {
             data.waitingByUserId[submitter.id] = Waiting.create(submitter, now);
           }
         });
+      // TODO: maybe increase the last online time even for people who are currently lurking but online
       data.saveLater();
     });
   },
 
-  clear: () => {
-    data.access((data) => {
-      data.current_level = undefined;
-      const removedLevels = data.levels;
-      data.levels = [];
-      data.onRemove(removedLevels);
-      data.saveLater();
-    });
+  parseClearArgument: (
+    what: string | null
+  ):
+    | { result: "invalid"; reason: "empty" | "format" }
+    | { result: "all" | "deleted" }
+    | { result: "duration"; durationMilliseconds: number } => {
+    if (what == null) {
+      return { result: "invalid", reason: "empty" };
+    }
+    what = what.trim();
+    if (what == "") {
+      return { result: "invalid", reason: "empty" };
+    }
+    const whatLowerCase = what.toLowerCase();
+    if (["a", "all"].includes(whatLowerCase)) {
+      return { result: "all" };
+    } else if (["d", "del", "delete", "deleted"].includes(whatLowerCase)) {
+      return { result: "deleted" };
+    }
+    try {
+      return {
+        result: "duration",
+        durationMilliseconds: timestring(what, "milliseconds"),
+      };
+    } catch (e) {
+      return { result: "invalid", reason: "format" };
+    }
+  },
+
+  clear: async (what?: string, respond?: Responder): Promise<string | null> => {
+    let clearResult = queue.parseClearArgument(what ?? null);
+    if (clearResult.result == "invalid" && clearResult.reason == "empty") {
+      clearResult = queue.parseClearArgument(settings.clear);
+    }
+    if (clearResult.result == "all") {
+      // all
+      return data.access((data) => {
+        twitch.clearLurkers(); // clear all lurkers, since people who are not in the queue could be lurking
+        data.current_level = undefined;
+        const removedLevels = data.levels;
+        data.levels = [];
+        data.onRemove(removedLevels);
+        data.saveLater();
+        return i18next.t("queueCleared");
+      });
+    } else if (clearResult.result == "deleted") {
+      // collect user ids first
+      const userIds = data.access((data) => {
+        const userIds = new Set<string>();
+        if (data.current_level !== undefined) {
+          userIds.add(data.current_level.submitter.id);
+        }
+        data.levels.forEach((level) => userIds.add(level.submitter.id));
+        Object.keys(data.waitingByUserId).forEach((id) => userIds.add(id));
+        return userIds;
+      });
+      const lookupIds: string[] = [...userIds];
+      if (lookupIds.length == 0) {
+        return i18next.t("queueClearDeletedNoUsers");
+      }
+      if (respond !== undefined) {
+        respond(
+          i18next.t("queueClearDeletedInfo", { users: lookupIds.length })
+        );
+      }
+      // create all requests
+      const usersMap = new Map<string, User>();
+      while (lookupIds.length > 0) {
+        const upgradeNumber = Math.min(100, lookupIds.length);
+        console.log(
+          `Checking ${upgradeNumber} out of ${lookupIds.length} users for deletion...`
+        );
+        const next100: string[] = lookupIds.splice(0, upgradeNumber);
+        const users = await twitchApi.getUsersById(next100);
+        users.forEach((user) => void usersMap.set(user.id, user));
+      }
+      return data.access((data) => {
+        // the data could have changed in the meantime! (levels added, removed; weights changed; etc.)
+        let removedLevels;
+        const renamedUsers = new Set<string>();
+        const removeLevelOrRename = (level: QueueEntry) => {
+          const id = level.submitter.id;
+          // only check users that were requested originally
+          if (userIds.has(id)) {
+            const user = usersMap.get(id);
+            if (user == null) {
+              // user was in the request, but not in the response
+              // this means that the user was deleted
+              return true;
+            } else {
+              // otherwise we can rename the submitter if the name or display name changed
+              if (level.rename(user)) {
+                renamedUsers.add(id);
+              }
+            }
+          }
+          return false;
+        };
+        [removedLevels, data.levels] = partition(
+          data.levels,
+          removeLevelOrRename
+        );
+        if (
+          data.current_level !== undefined &&
+          removeLevelOrRename(data.current_level)
+        ) {
+          removedLevels.push(data.current_level);
+          data.current_level = undefined;
+        }
+        data.onRemove(removedLevels);
+        // in this step we can also remove the waiting time (which isn't removed otherwise)
+        // because the waiting time is not needed for deleted users
+        for (const id of Object.keys(data.waitingByUserId)) {
+          if (userIds.has(id)) {
+            const user = usersMap.get(id);
+            if (user == null) {
+              delete data.waitingByUserId[id];
+            } else {
+              if (data.waitingByUserId[id].rename(user)) {
+                renamedUsers.add(id);
+              }
+            }
+          }
+        }
+        data.saveLater();
+        if (data.levels.length == 0) {
+          // all levels were cleared, lets clear all lurkers (no need to check current level)
+          twitch.clearLurkers();
+        }
+        const renamedUsersSize = renamedUsers.size;
+        return i18next.t("queueClearDeletedResult", {
+          removed: removedLevels.length,
+          renamed: renamedUsersSize,
+        });
+      });
+    } else if (clearResult.result == "duration") {
+      // older than {duration}
+      // note that the date added is not used, but instead the last online time of the submitter
+      const duration = clearResult.durationMilliseconds;
+      const time = Date.now() - clearResult.durationMilliseconds;
+      return data.access((data) => {
+        let removedLevels;
+        const removeLevel = (level: QueueEntry) =>
+          data.waitingByUserId[level.submitter.id].isOlderThan(time);
+        [removedLevels, data.levels] = partition(data.levels, removeLevel);
+
+        // note: the current level does not have a waiting time so it is never removed!
+
+        data.onRemove(removedLevels);
+        data.saveLater();
+        if (data.levels.length == 0) {
+          // all levels were cleared, lets clear all lurkers (no need to check current level)
+          twitch.clearLurkers();
+        }
+        return i18next.t("queueClearDurationResult", {
+          removed: removedLevels.length,
+          duration: humanizeDuration(duration, {
+            language: settings.language,
+            fallbacks: ["en"],
+          }),
+        });
+      });
+    } else {
+      return i18next.t("queueClearUsage");
+    }
   },
 
   level_list_message: async () => {
