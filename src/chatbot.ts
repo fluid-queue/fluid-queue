@@ -66,6 +66,17 @@ const chatbot_helper = function (channel: string): Chatbot {
         // Called every time the bot connects to Twitch chat
         const onConnectedHandler = (addr: string, port: number) => {
           console.log(i18next.t("chatbotConnected", { addr, port }));
+          if (
+            !twitchApi.tokenScopes.includes("chat:edit") ||
+            !twitchApi.tokenScopes.includes("chat:read") ||
+            !twitchApi.tokenScopes.includes("moderator:read:chatters")
+          ) {
+            const err = i18next.t("requiredScopeError");
+            throw new Error(err);
+          }
+          if (!twitchApi.tokenScopes.includes("channel:read:subscriptions")) {
+            console.warn(i18next.t("subscribersScopeMissing"));
+          }
         };
 
         // Called every time a message comes in

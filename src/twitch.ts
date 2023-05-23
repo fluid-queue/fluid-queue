@@ -1,6 +1,10 @@
 import { Duration } from "@js-joda/core";
 import { Chatter } from "./extensions-api/command.js";
-import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
+import {
+  QueueSubmitter,
+  User,
+  isQueueSubmitter,
+} from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
 
@@ -97,6 +101,27 @@ const twitch = {
 
   isSubscriber: (submitter: QueueSubmitter) => {
     return subscribers.has(submitter.id);
+  },
+
+  /**
+   * Updates the list of subscribers in chat, assuming the API token has permission to.
+   */
+  async updateSubscribers() {
+    if (!twitchApi.tokenScopes.includes("channel:read:subscriptions")) {
+      return;
+    }
+
+    for (const subscriber of await twitchApi.getSubscribers()) {
+      const subscriberChatter: Chatter = {
+        ...subscriber,
+        equals(other) {
+          return isQueueSubmitter(this, other);
+        },
+      };
+      if (!subscribers.has(subscriberChatter.id)) {
+        subscribers.set(subscriberChatter.id, subscriberChatter, {});
+      }
+    }
   },
 
   async getOnlineSubscribers(forceRefresh = false): Promise<OnlineUsers> {

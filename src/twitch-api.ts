@@ -33,6 +33,7 @@ class TwitchApi {
   #apiClient: ApiClient | null = null;
   #broadcasterUser: HelixUser | null = null;
   #chattersCache: SingleValueCache<User[]>;
+  #tokenScopes: string[] = [];
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -62,6 +63,10 @@ class TwitchApi {
       throw new Error("Tried to load chatters before client set up");
     }
     return this.#botUserId;
+  }
+
+  get tokenScopes(): string[] {
+    return this.#tokenScopes;
   }
 
   /**
@@ -121,6 +126,7 @@ class TwitchApi {
       "user-by-id",
       "chatters",
       "stream-online",
+      "subscribers-by-broadcaster",
     ]);
     // create the api client
     this.#apiClient = new ApiClient({
@@ -135,6 +141,10 @@ class TwitchApi {
       async (ctx) => {
         return ctx.users.getUserByName(settings.channel);
       }
+    );
+    // get the scopes
+    this.#tokenScopes = this.#authProvider.getCurrentScopesForUser(
+      this.#botUserId
     );
   }
 
@@ -243,6 +253,37 @@ class TwitchApi {
         this.mapUser(user)
       );
     });
+  }
+
+  async getSubscribers() {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get subscriptions without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const subscribers = await this.apiClient.asIntent(
+      ["subscribers-by-broadcaster"],
+      async (ctx) => {
+        return await ctx.subscriptions.getSubscriptions(broadcasterId);
+      }
+    );
+    if (subscribers == undefined) {
+      // Not sure if this is because there was a problem, or just because the broadcaster has no subs
+      return [];
+    }
+
+    // Extract all the user IDs
+    const subscriberIds = subscribers.data.map((subscriber) => {
+      return {
+        id: subscriber.userId,
+        name: subscriber.userName,
+        displayName: subscriber.userDisplayName,
+        isSubscriber: true,
+        isMod: false,
+        isBroadcaster: false,
+      };
+    });
+    return subscriberIds;
   }
 
   async isStreamOnline(): Promise<boolean> {

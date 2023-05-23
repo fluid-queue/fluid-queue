@@ -110,5 +110,7 @@
   "noOrder": "No order has been specified.",
   "orderList": "Next level order: {{order, list}}",
   "streamIsOnline": "[{{time}}] Stream is online!",
-  "streamIsOffline": "[{{time}}] Stream is offline!"
+  "streamIsOffline": "[{{time}}] Stream is offline!",
+  "requiredScopeError": "Missing required scope in token. Please generate a new token providing all required scopes.",
+  "subscribersScopeMissing": "Missing the channel:read:subscriptions scope in token. Subscriber multipliers won't apply until the subscriber sends a chat message."
 }
