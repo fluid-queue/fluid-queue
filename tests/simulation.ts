@@ -299,7 +299,38 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         );
       });
 
+      getSubscribers = jest.fn(
+        async (): Promise<
+          {
+            id: string;
+            name: string;
+            displayName: string;
+            isSubscriber: boolean;
+            isMod: boolean;
+            isBroadcaster: boolean;
+          }[]
+        > => {
+          // No need to return anything here for now
+          // We probably want to use this as an actual test though
+          return [];
+        }
+      );
+
       isStreamOnline = jest.fn(() => Promise.resolve(true));
+      tokenScopes = [
+        "char:read",
+        "chat:edit",
+        "moderator:read:chatters",
+        "channel:read:subscriptions",
+      ];
+      esListener = {
+        start: () => {
+          // pass
+        },
+        onChannelSubscription: () => {
+          // pass
+        },
+      };
     }
     return {
       TwitchApi,
