@@ -88,7 +88,7 @@ async function setupMocks() {
   const twitch = (await import("../src/twitch.js")).twitch;
 
   // mock chatters
-  asMock(twitchApi.getChatters).mockImplementation(() =>
+  asMock(twitchApi, "getChatters").mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
   jest.unstable_mockModule("../src/settings", () => {
@@ -270,7 +270,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // the twitch api has been called 8 times
-  expect(asMock(twitchApi.getChatters).mock.calls.length).toBe(8);
+  expect(asMock(twitchApi, "getChatters").mock.calls.length).toBe(8);
 });
 
 test("createOnlineUsers:empty", async () => {

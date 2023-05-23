@@ -83,7 +83,7 @@ type UserOnlineTimeV1 = z.infer<typeof UserOnlineTimeV1>;
 const EntryV2 = z.object({
   code: z.string().describe("contains the level code as a string").optional(),
   type: z.string().nullable().default(null),
-  data: z.any().optional(),
+  data: z.unknown().optional(),
 });
 
 export type EntryV2 = z.infer<typeof EntryV2>;
@@ -160,7 +160,10 @@ const QueueV2 = z.object({
   ),
   waiting: z.record(z.string().describe("waiting username"), WaitingSchemeV2),
   extensions: z
-    .record(z.string().describe("the extension name"), ExtensionDataV2(z.any()))
+    .record(
+      z.string().describe("the extension name"),
+      ExtensionDataV2(z.unknown())
+    )
     .default({}),
 });
 type QueueV2 = z.infer<typeof QueueV2>;
@@ -168,7 +171,7 @@ type QueueV2 = z.infer<typeof QueueV2>;
 const EntryV3 = z.object({
   type: z.string().nullable(), // not optional any more!
   code: z.string().describe("contains the level code as a string").optional(),
-  data: z.any().optional(),
+  data: z.unknown().optional(),
 });
 export type EntryV3 = z.infer<typeof EntryV3>;
 
@@ -220,7 +223,7 @@ export const QueueV3 = z.object({
   extensions: z
     .record(
       z.string().describe("the extension name"),
-      ExtensionDataV3(z.any().optional())
+      ExtensionDataV3(z.unknown().optional())
     )
     .default({}),
 });
@@ -246,7 +249,7 @@ function loadFileDefault<T>(
 ): T {
   if (fs.existsSync(fileName)) {
     try {
-      const fileContents = JSON.parse(
+      const fileContents: unknown = JSON.parse(
         fs.readFileSync(fileName, { encoding: "utf8" })
       );
       console.log(`${fileName} has been successfully validated.`);
@@ -670,7 +673,8 @@ export class VersionedFile<T, P = T> {
           upgradeHooks: [],
         };
       },
-      async (value) => ({ data: value, save: false, upgradeHooks: [] }),
+      (value) =>
+        Promise.resolve({ data: value, save: false, upgradeHooks: [] }),
       load,
       majorVersion
     );

@@ -90,7 +90,7 @@ const commandHandler = (
 ) => {
   return {
     aliases: ["!customcode", "!customcodes"],
-    async handle(
+    handle(
       message: string,
       sender: Chatter,
       respond: (message: string) => void
@@ -99,7 +99,7 @@ const commandHandler = (
         if (message == "") {
           respond(this.customCodes());
         } else {
-          respond(await this.customCodeManagement(message));
+          respond(this.customCodeManagement(message));
         }
       } else {
         respond(this.customCodes());

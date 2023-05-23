@@ -63,7 +63,7 @@ function resolver(code: string): { code: string } | null {
   return null;
 }
 
-export async function setup(api: ExtensionsApi) {
+export function setup(api: ExtensionsApi) {
   api
     .queueEntry("smm1", "smm1 level code")
     .usingCode()

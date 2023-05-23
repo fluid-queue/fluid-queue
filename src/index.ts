@@ -195,7 +195,7 @@ const position_message = async (
   }
 };
 
-const weightedchance_message = async (
+const weightedchance_message = (
   chance: string | number,
   multiplier: number,
   sender: Chatter
@@ -221,10 +221,7 @@ const weightedchance_message = async (
   }
 };
 
-const submitted_message = async (
-  level: QueueEntry | number,
-  sender: Chatter
-) => {
+const submitted_message = (level: QueueEntry | number, sender: Chatter) => {
   if (level === 0) {
     return i18next.t("positionCurrent");
   } else if (typeof level === "number") {
@@ -233,7 +230,7 @@ const submitted_message = async (
   return i18next.t("senderSubmitted", { sender, level });
 };
 
-const submitted_mod_message = async (
+const submitted_mod_message = (
   submitted:
     | { result: "no-submitter" | "not-found" }
     | { result: "current" | "level"; level: QueueEntry },
@@ -721,7 +718,7 @@ async function HandleMessage(
     );
   } else if (aliases.isAlias("weightedchance", message)) {
     respond(
-      await weightedchance_message(
+      weightedchance_message(
         await quesoqueue.weightedchance(sender),
         quesoqueue.multiplier(sender),
         sender
@@ -731,14 +728,14 @@ async function HandleMessage(
     const usernameArgument = get_remainder(message);
     if ((sender.isMod || sender.isBroadcaster) && usernameArgument != "") {
       respond(
-        await submitted_mod_message(
+        submitted_mod_message(
           quesoqueue.modSubmittedLevel(usernameArgument),
           usernameArgument
         )
       );
     } else {
       respond(
-        await submitted_message(await quesoqueue.submittedlevel(sender), sender)
+        submitted_message(await quesoqueue.submittedlevel(sender), sender)
       );
     }
   } else if (

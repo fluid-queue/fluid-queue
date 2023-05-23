@@ -13,7 +13,11 @@ export interface Chatter extends QueueSubmitter {
 
 export interface CommandHandler {
   aliases: string[];
-  handle(message: string, sender: Chatter, respond: Responder): Promise<void>;
+  handle(
+    message: string,
+    sender: Chatter,
+    respond: Responder
+  ): Promise<void> | void;
 }
 
 export interface CommandsApi {

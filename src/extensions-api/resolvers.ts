@@ -226,7 +226,7 @@ export class RegisterResolvers {
                 );
               },
               usingData<Data>(
-                deserializer: Deserialize<Data> | z.ZodAny,
+                deserializer: Deserialize<Data> | z.ZodType<Data>,
                 serializer: Serialize<Data> | undefined
               ) {
                 return {
@@ -244,7 +244,7 @@ export class RegisterResolvers {
                       ({ code, data }) => {
                         return {
                           data:
-                            deserializer instanceof z.ZodAny
+                            deserializer instanceof z.ZodType<Data>
                               ? deserializer.parse(data)
                               : deserializer(data),
                           code: z.string().parse(code),
@@ -263,7 +263,7 @@ export class RegisterResolvers {
             };
           },
           usingData<Data>(
-            deserializer: Deserialize<Data> | z.ZodAny,
+            deserializer: Deserialize<Data> | z.ZodType<Data>,
             serializer: Serialize<Data> | undefined
           ) {
             return {
@@ -278,7 +278,7 @@ export class RegisterResolvers {
                   ({ data }) => {
                     return {
                       data:
-                        deserializer instanceof z.ZodAny
+                        deserializer instanceof z.ZodType<Data>
                           ? deserializer.parse(data)
                           : deserializer(data),
                     };
@@ -307,7 +307,7 @@ export class RegisterResolvers {
                       ({ code, data }) => {
                         return {
                           data:
-                            deserializer instanceof z.ZodAny
+                            deserializer instanceof z.ZodType<Data>
                               ? deserializer.parse(data)
                               : deserializer(data),
                           code: z.string().parse(code),

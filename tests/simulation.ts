@@ -1,6 +1,7 @@
 // imports
 import { jest } from "@jest/globals";
 import * as jestChance from "jest-chance";
+import { FunctionLike } from "jest-mock";
 import { Volume, createFsFromVolume } from "memfs";
 import path from "path";
 import fs from "fs";
@@ -116,7 +117,7 @@ const mockModules = async () => {
   await import("set-interval-async/dynamic");
 
   // mock chatters
-  asMock(twitchApi.getChatters).mockImplementation(() =>
+  asMock(twitchApi, "getChatters").mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
 
@@ -139,12 +140,18 @@ const expectErrorMessage = (promise: Promise<unknown>) => {
       (value) => value,
       (reason) => {
         console.log(reason);
-        if (reason.constructor === Error) {
-          expect(reason.constructor).toBe(Error);
-        } else {
-          expect(Object.getPrototypeOf(reason.constructor)).toBe(Error);
+        if (typeof reason !== "object") {
+          return Promise.reject(reason);
         }
-        return Promise.reject(reason.message);
+        const reasonObject = reason as object;
+        if (reasonObject.constructor === Error.prototype.constructor) {
+          expect(reasonObject.constructor).toBe(Error);
+        } else {
+          expect(Object.getPrototypeOf(reasonObject.constructor)).toBe(Error);
+        }
+        return Promise.reject(
+          "message" in reasonObject ? reasonObject.message : reasonObject
+        );
       }
     )
   ).rejects;
@@ -231,10 +238,15 @@ type Index = {
   twitch: Twitch;
 };
 
-function asMock<R, A extends unknown[]>(
-  fn: (...args: A) => R
-): jest.Mock<(...args: A) => R> {
-  return <jest.Mock<(...args: A) => R>>fn;
+function asMock<T, K extends keyof T>(
+  obj: T,
+  key: K
+): T[K] extends FunctionLike ? jest.Mock<T[K]> : never {
+  const result = obj[key];
+  if (typeof result !== "function") {
+    throw new Error(`Not a function!`);
+  }
+  return <T[K] extends FunctionLike ? jest.Mock<T[K]> : never>result;
 }
 
 export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
@@ -248,38 +260,45 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
           "This should never be called from tests -> Use the chatbot.js mock instead!"
         );
       }
-      getChatters = jest.fn(async (): Promise<User[]> => {
-        return [];
+      getChatters = jest.fn((): Promise<User[]> => {
+        return Promise.resolve([]);
       });
 
-      getUsers = jest.fn(async (users: string[]): Promise<User[]> => {
-        return users
-          .filter((user) => {
-            return !user.match(/^\${(deleted|renamed)\(.*\)(\.name)?}$/);
-          })
-          .map((user) => ({
-            id: `\${user(${JSON.stringify(user)}).id}`,
-            name: user,
-            displayName: `\${user(${JSON.stringify(user)}).displayName}`,
-          }));
+      getUsers = jest.fn((users: string[]): Promise<User[]> => {
+        return Promise.resolve(
+          users
+            .filter((user) => {
+              return !user.match(/^\${(deleted|renamed)\(.*\)(\.name)?}$/);
+            })
+            .map((user) => ({
+              id: `\${user(${JSON.stringify(user)}).id}`,
+              name: user,
+              displayName: `\${user(${JSON.stringify(user)}).displayName}`,
+            }))
+        );
       });
 
-      getUsersById = jest.fn(async (ids: string[]): Promise<User[]> => {
-        return ids
-          .filter((ids) => {
-            return !ids.match(/^\${(deleted|renamed)\(.*\)(\.id)?}$/);
-          })
-          .map((user) => {
-            const name = /^\${user\((.*)\)(\.id)?}$/.exec(user)?.[1];
-            return {
-              id: user,
-              name: `\${user(${name}).name}`,
-              displayName: `\${user(${name}).displayName}`,
-            };
-          });
+      getUsersById = jest.fn((ids: string[]): Promise<User[]> => {
+        return Promise.resolve(
+          ids
+            .filter((ids) => {
+              return !ids.match(/^\${(deleted|renamed)\(.*\)(\.id)?}$/);
+            })
+            .map((user) => {
+              const name = /^\${user\((.*)\)(\.id)?}$/.exec(user)?.[1];
+              if (name == null) {
+                throw new Error("User id has invalid format for tests!");
+              }
+              return {
+                id: user,
+                name: `\${user(${name}).name}`,
+                displayName: `\${user(${name}).displayName}`,
+              };
+            })
+        );
       });
 
-      isStreamOnline = jest.fn(async () => true);
+      isStreamOnline = jest.fn(() => Promise.resolve(true));
     }
     return {
       TwitchApi,
@@ -332,8 +351,9 @@ const simRequireIndex = async (
 
     // setup random mock
     const chance = jestChance.getChance();
+    const mt = chance.mersenne_twister(chance.seed) as { random: () => number };
     random = jest.spyOn(global.Math, "random").mockImplementation(() => {
-      return chance.random();
+      return mt.random();
     });
 
     // prepare settings
@@ -391,8 +411,8 @@ const simRequireIndex = async (
     }
 
     // get hold of chatbot_helper
-    expect(asMock(chatbot.helper)).toHaveBeenCalledTimes(1);
-    const result = asMock(chatbot.helper).mock.results[0];
+    expect(asMock(chatbot, "helper")).toHaveBeenCalledTimes(1);
+    const result = asMock(chatbot, "helper").mock.results[0];
     if (result.type === "return") {
       chatbot_helper = result.value;
     }
@@ -407,10 +427,10 @@ const simRequireIndex = async (
 
     // get hold of the handle function
     // the first argument of setup has to be an AsyncFunction
-    expect(asMock(chatbot_helper.setup).mock.calls[0][0]).toBeInstanceOf(
+    expect(asMock(chatbot_helper, "setup").mock.calls[0][0]).toBeInstanceOf(
       AsyncFunction
     );
-    handle_func = asMock(chatbot_helper.setup).mock.calls[0][0];
+    handle_func = asMock(chatbot_helper, "setup").mock.calls[0][0];
   } catch (err) {
     console.warn(err);
     if (err != null && typeof err === "object") {
@@ -469,7 +489,7 @@ const clearAllTimers = async () => {
   const time = new Date();
   jest.clearAllTimers();
   if (clearAllTimersIntern != null) {
-    await clearAllTimersIntern;
+    await clearAllTimersIntern();
   }
   jest.setSystemTime(time);
 };
@@ -528,7 +548,9 @@ const simSetTime = async (time: string | Date, accuracy = 0) => {
   } else if (diff < 0) {
     // should not happen
     throw Error(
-      `Time went backwards, from ${prevTime} to ${newTime} (${time})`
+      `Time went backwards, from ${prevTime.toISOString()} to ${newTime.toISOString()} (${
+        typeof time === "string" ? time : time.toISOString()
+      })`
     );
   }
 };

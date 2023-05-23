@@ -18,7 +18,7 @@ async function setupMocks(
 ): Promise<typeof fs> {
   jest.resetModules();
   const { twitchApi } = await mockTwitchApi();
-  asMock(twitchApi.getChatters).mockImplementation(() =>
+  asMock(twitchApi, "getChatters").mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
   if (volume == null) {
@@ -193,7 +193,10 @@ class SaveAndVerify<T> {
 
   static create<T>() {
     const saveAndVerify = new SaveAndVerify<T>();
-    return { save: saveAndVerify.save, verify: saveAndVerify.verify };
+    return {
+      save: asMock(saveAndVerify, "save"),
+      verify: asMock(saveAndVerify, "verify"),
+    };
   }
 }
 
@@ -231,7 +234,7 @@ test("loadResultActions:save-and-verify", async () => {
   expect(result).toEqual("data");
   expect(save).toBeCalledTimes(1);
   expect(verify).toBeCalledTimes(1);
-  expect(asMock(save).mock.calls[0][0]).toEqual("data");
+  expect(save.mock.calls[0][0]).toEqual("data");
 });
 
 test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
@@ -239,7 +242,7 @@ test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
   await setupMocks();
   const { loadResultActions } = await import("../src/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
-  asMock(verify).mockReturnValue(null);
+  verify.mockReturnValue(null);
   const promise = loadResultActions(
     {
       data: "data",
@@ -259,7 +262,7 @@ test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
   expect(save).toBeCalledTimes(1);
   expect(verify).toBeCalledTimes(1);
-  expect(asMock(save).mock.calls[0][0]).toEqual("data");
+  expect(save.mock.calls[0][0]).toEqual("data");
 });
 
 test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
@@ -267,7 +270,7 @@ test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
   await setupMocks();
   const { loadResultActions } = await import("../src/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
-  asMock(verify).mockImplementation(() => {
+  verify.mockImplementation(() => {
     throw new Error("Loading failed!");
   });
   const promise = loadResultActions(
@@ -287,7 +290,7 @@ test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
   expect(save).toBeCalledTimes(1);
   expect(verify).toBeCalledTimes(1);
-  expect(asMock(save).mock.calls[0][0]).toEqual("data");
+  expect(save.mock.calls[0][0]).toEqual("data");
 });
 
 test("loadResultActions:save-and-verify-hooks-abort-save-off", async () => {

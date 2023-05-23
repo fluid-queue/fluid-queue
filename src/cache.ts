@@ -69,7 +69,7 @@ export class SingleValueCache<T> {
       this.expiry = Instant.now().plus(this.timeToLive);
     } catch (e) {
       // ignore error
-      console.error(`Error loading cache: ${e}`);
+      console.error(`Error loading cache: ${String(e)}`);
     }
     return this.value;
   }

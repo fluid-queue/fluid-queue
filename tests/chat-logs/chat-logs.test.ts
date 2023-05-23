@@ -1,7 +1,6 @@
 // imports
 import { MethodLikeKeys } from "jest-mock";
 import { jest } from "@jest/globals";
-import * as jestChance from "jest-chance";
 import readline from "readline";
 import path from "path";
 import fs from "fs";
@@ -21,6 +20,7 @@ import {
 import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import * as uuidModule from "uuid";
+import { z } from "zod";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -39,7 +39,7 @@ beforeEach(() => {
 
 let uuid: { v4: jest.Mock<() => string> } | null = null;
 
-const mocks = async () => {
+const mocks = () => {
   jest.mock("uuid", () => {
     const originalModule = jest.requireActual<typeof uuidModule>("uuid");
     return {
@@ -146,7 +146,9 @@ const chatLogTest = (fileName: string) => {
     }
 
     try {
-      asMock(test.chatbot_helper.say).mockImplementation(pushMessageWithStack);
+      asMock(test.chatbot_helper, "say").mockImplementation(
+        pushMessageWithStack
+      );
 
       const fileStream = fs.createReadStream(fileName);
 
@@ -187,7 +189,7 @@ const chatLogTest = (fileName: string) => {
           const time = new Date();
           await clearAllTimers();
           test = await simRequireIndex(test.volume, test.settings, time, mocks);
-          asMock(test.chatbot_helper.say).mockImplementation(
+          asMock(test.chatbot_helper, "say").mockImplementation(
             pushMessageWithStack
           );
         } else if (command == "accuracy") {
@@ -211,7 +213,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command.startsWith("queue.json")) {
           try {
             const memberIdx = command.indexOf("/");
-            let jsonData = JSON.parse(
+            let jsonData: unknown = JSON.parse(
               test.fs.readFileSync(
                 path.resolve(
                   path.dirname(fileURLToPath(import.meta.url)),
@@ -223,7 +225,9 @@ const chatLogTest = (fileName: string) => {
             if (memberIdx != -1) {
               const members = command.substring(memberIdx + 1).split("/");
               for (const member of members) {
-                jsonData = jsonData[member];
+                jsonData = z.object({ [member]: z.unknown() }).parse(jsonData)[
+                  member
+                ];
               }
             }
             expect(jsonData).toEqual(JSON.parse(rest));
@@ -239,7 +243,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command.startsWith("extensions")) {
           try {
             const args = command.split("/");
-            let jsonData = JSON.parse(
+            let jsonData: unknown = JSON.parse(
               test.fs.readFileSync(
                 path.resolve(
                   path.dirname(fileURLToPath(import.meta.url)),
@@ -250,7 +254,9 @@ const chatLogTest = (fileName: string) => {
             );
             if (2 in args) {
               const member = args[2];
-              jsonData = jsonData[member];
+              jsonData = z.object({ [member]: z.unknown() }).parse(jsonData)[
+                member
+              ];
             }
             expect(jsonData).toEqual(JSON.parse(rest));
           } catch (error: unknown) {
@@ -272,11 +278,6 @@ const chatLogTest = (fileName: string) => {
             ),
             rest
           );
-        } else if (command == "seed") {
-          const chance = jestChance.getChance(rest);
-          test.random.mockImplementation(() => {
-            return chance.random();
-          });
         } else if (command == "flushPromises") {
           await flushPromises();
         } else if (command == "random") {

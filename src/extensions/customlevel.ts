@@ -259,7 +259,7 @@ const resolver = (custom: CustomData) => {
 const customlevelCommand = (custom: CustomData) => {
   return {
     aliases: ["!customlevel", "!customlevels"],
-    async handle(message: string, sender: Chatter, respond: Responder) {
+    handle(message: string, sender: Chatter, respond: Responder) {
       if (sender.isBroadcaster) {
         if (message == "") {
           respond(this.customLevels(true));
@@ -502,18 +502,18 @@ const customlevelCommand = (custom: CustomData) => {
               "names:" + JSON.stringify(Object.fromEntries(custom.cache.names))
             );
             const json = rest.join(" ");
-            const userData = JSON.parse(json);
+            const UserDataScheme = z.string().array();
+            const userDataResult = UserDataScheme.safeParse(JSON.parse(json));
             // validate user data
             if (
-              !Array.isArray(userData) ||
-              userData.length < 3 ||
-              !userData.every((data) => typeof data === "string") ||
-              !uuidValidate(userData[0])
+              !userDataResult.success ||
+              userDataResult.data.length < 3 ||
+              !uuidValidate(userDataResult.data[0])
             ) {
               respond(i18next.t("invalidData", { ns: "customlevel" }));
               return;
             }
-            const [uuid, levelName, ...codes] = userData;
+            const [uuid, levelName, ...codes] = userDataResult.data;
             const fromName = custom.fromArguments(levelName);
             if (fromName != null) {
               respond(
@@ -676,7 +676,7 @@ const queueBinding = {
   },
 };
 
-export async function setup(api: ExtensionsApi) {
+export function setup(api: ExtensionsApi) {
   const binding = api.createQueueBinding(queueBinding);
   const custom = new CustomData(binding);
 
