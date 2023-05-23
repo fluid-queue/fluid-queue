@@ -13,6 +13,7 @@ import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { User } from "./extensions-api/queue-entry.js";
+import { EventSubWsListener } from "@twurple/eventsub-ws";
 import { z } from "zod";
 
 const tokensFileName = "./settings/tokens.json";
@@ -34,6 +35,7 @@ class TwitchApi {
   #broadcasterUser: HelixUser | null = null;
   #chattersCache: SingleValueCache<User[]>;
   #tokenScopes: string[] = [];
+  #esListener: EventSubWsListener | null = null;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -49,6 +51,14 @@ class TwitchApi {
       throw new Error("Tried to load chatters before client set up");
     }
     return this.#apiClient;
+  }
+
+  // visible for event sub
+  get broadcasterId(): string {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Tried to access broadcaster ID before client set up");
+    }
+    return this.#broadcasterUser.id;
   }
 
   private get broadcaster(): UserIdResolvable {
@@ -67,6 +77,13 @@ class TwitchApi {
 
   get tokenScopes(): string[] {
     return this.#tokenScopes;
+  }
+
+  get esListener() {
+    if (this.#esListener == null) {
+      throw new Error("Tried to get esListener before client set up");
+    }
+    return this.#esListener;
   }
 
   /**
@@ -146,6 +163,9 @@ class TwitchApi {
     this.#tokenScopes = this.#authProvider.getCurrentScopesForUser(
       this.#botUserId
     );
+    // set up the eventsub listener
+    const apiClient = this.#apiClient;
+    this.#esListener = new EventSubWsListener({ apiClient });
   }
 
   /**

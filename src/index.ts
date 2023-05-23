@@ -817,6 +817,15 @@ chatbot_helper.setup(HandleMessage);
 // setup the twitch api
 await twitchApi.setup();
 
+if (twitchApi.tokenScopes.includes("channel:read:subscriptions")) {
+  // set up the eventsub listener for subs
+  twitchApi.esListener.onChannelSubscription(
+    twitchApi.broadcasterId,
+    twitch.handleSub
+  );
+  twitchApi.esListener.start();
+}
+
 // loading the queue
 await quesoqueue.load();
 

@@ -7,6 +7,7 @@ import {
 } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
+import { EventSubChannelSubscriptionEvent } from "@twurple/eventsub-base";
 
 const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
 const LURKERS_TTL = Duration.parse("PT12H").toMillis();
@@ -121,6 +122,25 @@ const twitch = {
       if (!subscribers.has(subscriberChatter.id)) {
         subscribers.set(subscriberChatter.id, subscriberChatter, {});
       }
+    }
+  },
+
+  async handleSub(event: EventSubChannelSubscriptionEvent) {
+    console.log(`Got subscription event for ${event.userDisplayName}`);
+    if (!subscribers.has(event.userId)) {
+      const subscriberChatter: Chatter = {
+        id: event.userId,
+        name: event.userName,
+        displayName: event.userDisplayName,
+        isSubscriber: true,
+        isBroadcaster: false,
+        isMod: false,
+        equals(other) {
+          return isQueueSubmitter(this, other);
+        },
+      };
+      subscribers.set(subscriberChatter.id, subscriberChatter);
+      console.log(`Added ${event.userDisplayName} to subscribers list`);
     }
   },
 
