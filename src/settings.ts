@@ -14,17 +14,18 @@ export let fileContents: string | undefined;
 
 const fileNames = [
   "settings/settings.yml",
+  "settings/settings.yaml",
   "settings/settings.json",
   "settings.json",
 ];
 
-for (const [key, value] of fileNames.entries()) {
+for (const value of fileNames) {
   fileName = value;
   try {
     fileContents = fs.readFileSync(fileName, {
       encoding: "utf8",
     });
-    if (key != 0) {
+    if (value.endsWith(".json")) {
       console.warn(
         `Loading ${fileName} is deprecated and may stop working in a future release.`
       );
