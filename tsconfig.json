@@ -1,11 +1,11 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./build",
+    "noEmit": true,
     "allowJs": false,
     "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*", "build.ts", "dist.ts"],
   "exclude": []
 }

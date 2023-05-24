@@ -17,7 +17,7 @@ extends:
   - prettier
 overrides: []
 parserOptions:
-  project: "tsconfig.eslint.json"
+  project: "tsconfig.json"
 ignorePatterns:
   - "build/**/*"
 rules:
