@@ -14,6 +14,8 @@ import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { User } from "./extensions-api/queue-entry.js";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
+import { twitch } from "./twitch.js";
+import i18next from "i18next";
 import { z } from "zod";
 
 const tokensFileName = "./settings/tokens.json";
@@ -77,13 +79,6 @@ class TwitchApi {
 
   get tokenScopes(): string[] {
     return this.#tokenScopes;
-  }
-
-  get esListener() {
-    if (this.#esListener == null) {
-      throw new Error("Tried to get esListener before client set up");
-    }
-    return this.#esListener;
   }
 
   /**
@@ -159,6 +154,12 @@ class TwitchApi {
         return ctx.users.getUserByName(settings.channel);
       }
     );
+
+    // check to make sure we got the user ID successfully
+    if (!this.#broadcasterUser) {
+      throw new Error("Failed to get broadcaster user during API setup");
+    }
+
     // get the scopes
     this.#tokenScopes = this.#authProvider.getCurrentScopesForUser(
       this.#botUserId
@@ -166,6 +167,27 @@ class TwitchApi {
     // set up the eventsub listener
     const apiClient = this.#apiClient;
     this.#esListener = new EventSubWsListener({ apiClient });
+
+    if (
+      !this.#tokenScopes.includes("chat:edit") ||
+      !this.#tokenScopes.includes("chat:read") ||
+      !this.#tokenScopes.includes("moderator:read:chatters")
+    ) {
+      const err = i18next.t("requiredScopeError");
+      throw new Error(err);
+    }
+    if (!this.#tokenScopes.includes("channel:read:subscriptions")) {
+      console.warn(i18next.t("subscribersScopeMissing"));
+    }
+
+    if (this.#tokenScopes.includes("channel:read:subscriptions")) {
+      // set up the eventsub listener for subs
+      this.#esListener.onChannelSubscription(
+        this.#broadcasterUser.id,
+        twitch.handleSub
+      );
+      this.#esListener.start();
+    }
   }
 
   /**
