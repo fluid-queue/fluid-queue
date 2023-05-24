@@ -1,10 +1,6 @@
 import { Duration } from "@js-joda/core";
 import { Chatter } from "./extensions-api/command.js";
-import {
-  QueueSubmitter,
-  User,
-  isQueueSubmitter,
-} from "./extensions-api/queue-entry.js";
+import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
 import { EventSubChannelSubscriptionEvent } from "@twurple/eventsub-base";
@@ -17,9 +13,9 @@ const MODS_TTL = Duration.parse("PT12H").toMillis();
 const recentChatters = new TTLCache<string, Chatter>({
   ttl: RECENT_CHATTERS_TTL,
 });
-const lurkers = new TTLCache<string, Chatter>({ ttl: LURKERS_TTL });
-const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
-const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
+const lurkers = new TTLCache<string, User>({ ttl: LURKERS_TTL });
+const subscribers = new TTLCache<string, User>({ ttl: SUBSCRIBERS_TTL });
+const mods = new TTLCache<string, User>({ ttl: MODS_TTL });
 
 type OnlineUser = { online: boolean; user: User } | { online: false };
 
@@ -113,14 +109,8 @@ const twitch = {
     }
 
     for (const subscriber of await twitchApi.getSubscribers()) {
-      const subscriberChatter: Chatter = {
-        ...subscriber,
-        equals(other) {
-          return isQueueSubmitter(this, other);
-        },
-      };
-      if (!subscribers.has(subscriberChatter.id)) {
-        subscribers.set(subscriberChatter.id, subscriberChatter, {});
+      if (!subscribers.has(subscriber.id)) {
+        subscribers.set(subscriber.id, subscriber);
       }
     }
   },
@@ -128,18 +118,12 @@ const twitch = {
   async handleSub(event: EventSubChannelSubscriptionEvent) {
     console.log(`Got subscription event for ${event.userDisplayName}`);
     if (!subscribers.has(event.userId)) {
-      const subscriberChatter: Chatter = {
+      const subscriber: User = {
         id: event.userId,
         name: event.userName,
         displayName: event.userDisplayName,
-        isSubscriber: true,
-        isBroadcaster: false,
-        isMod: false,
-        equals(other) {
-          return isQueueSubmitter(this, other);
-        },
       };
-      subscribers.set(subscriberChatter.id, subscriberChatter);
+      subscribers.set(subscriber.id, subscriber);
       console.log(`Added ${event.userDisplayName} to subscribers list`);
     }
   },

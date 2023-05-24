@@ -320,9 +320,6 @@ class TwitchApi {
         id: subscriber.userId,
         name: subscriber.userName,
         displayName: subscriber.userDisplayName,
-        isSubscriber: true,
-        isMod: false,
-        isBroadcaster: false,
       };
     });
     return subscriberIds;
