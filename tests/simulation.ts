@@ -19,6 +19,7 @@ import { Queue } from "../src/queue.js";
 import { Twitch } from "../src/twitch.js";
 import * as timers from "timers";
 import { fileURLToPath } from "url";
+import YAML from "yaml";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -213,9 +214,9 @@ const createMockVolume = (
   populateMockVolume(volume, "./src");
   populateMockVolume(volume, "./locales", false);
   if (settings !== undefined) {
-    console.log("./settings/settings.json: " + JSON.stringify(settings));
+    console.log("./settings/settings.yml: " + YAML.stringify(settings));
     volume.fromJSON(
-      { "./settings/settings.json": JSON.stringify(settings) },
+      { "./settings/settings.yml": YAML.stringify(settings) },
       path.resolve(".")
     );
   }
@@ -370,7 +371,7 @@ const simRequireIndex = async (
       volume = new Volume();
       volume.fromJSON(files);
       volume.fromJSON(
-        { "./settings/settings.json": JSON.stringify(mockSettings) },
+        { "./settings/settings.yml": YAML.stringify(mockSettings) },
         path.resolve(".")
       );
       populateMockVolume(volume, "./locales", false);
