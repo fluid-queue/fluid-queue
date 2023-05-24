@@ -175,7 +175,9 @@ class QueueData {
         this.levels
           .filter((level) => !(level.submitter.id in this.waitingByUserId))
           .forEach((level) => {
-            console.warn(`User ${level.submitter} didn't have a waiting time!`);
+            console.warn(
+              `User ${level.submitter.toString()} didn't have a waiting time!`
+            );
             this.waitingByUserId[level.submitter.id] = Waiting.create(
               level.submitter,
               now
@@ -432,23 +434,25 @@ const queue = {
     });
   },
 
-  absolutePosition: async (submitter: QueueSubmitter): Promise<number> => {
-    return data.access((data) => {
-      if (
-        data.current_level != undefined &&
-        data.current_level.submitter.equals(submitter)
-      ) {
-        return 0;
-      }
-      if (data.levels.length == 0) {
+  absolutePosition: (submitter: QueueSubmitter): Promise<number> => {
+    return Promise.resolve(
+      data.access((data) => {
+        if (
+          data.current_level != undefined &&
+          data.current_level.submitter.equals(submitter)
+        ) {
+          return 0;
+        }
+        if (data.levels.length == 0) {
+          return -1;
+        }
+        const index = data.levels.findIndex(queue.matchSubmitter(submitter));
+        if (index != -1) {
+          return index + 1 + (data.current_level != undefined ? 1 : 0);
+        }
         return -1;
-      }
-      const index = data.levels.findIndex(queue.matchSubmitter(submitter));
-      if (index != -1) {
-        return index + 1 + (data.current_level != undefined ? 1 : 0);
-      }
-      return -1;
-    });
+      })
+    );
   },
 
   weightedPosition: async (
@@ -586,40 +590,46 @@ const queue = {
     });
   },
 
-  punt: async () => {
-    return data.access((data) => {
-      if (data.current_level === undefined) {
-        return i18next.t("puntNoLevel");
-      }
-      const top = data.current_level;
-      data.current_level = undefined;
-      data.levels.push(top);
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          data.waitingByUserId,
-          top.submitter.id
-        )
-      ) {
-        data.waitingByUserId[top.submitter.id] = Waiting.create(top.submitter);
-      }
-      data.saveLater();
-      return i18next.t("puntPunted");
-    });
+  punt: (): Promise<string> => {
+    return Promise.resolve(
+      data.access((data) => {
+        if (data.current_level === undefined) {
+          return i18next.t("puntNoLevel");
+        }
+        const top = data.current_level;
+        data.current_level = undefined;
+        data.levels.push(top);
+        if (
+          !Object.prototype.hasOwnProperty.call(
+            data.waitingByUserId,
+            top.submitter.id
+          )
+        ) {
+          data.waitingByUserId[top.submitter.id] = Waiting.create(
+            top.submitter
+          );
+        }
+        data.saveLater();
+        return i18next.t("puntPunted");
+      })
+    );
   },
 
-  dismiss: async () => {
-    return data.access((data) => {
-      if (data.current_level === undefined) {
-        return i18next.t("dismissNoLevel");
-      }
-      const response = i18next.t("dismissDismissed", { data });
-      const removedLevels =
-        data.current_level === undefined ? [] : [data.current_level];
-      data.current_level = undefined;
-      data.onRemove(removedLevels);
-      data.saveLater();
-      return response;
-    });
+  dismiss: (): Promise<string> => {
+    return Promise.resolve(
+      data.access((data) => {
+        if (data.current_level === undefined) {
+          return i18next.t("dismissNoLevel");
+        }
+        const response = i18next.t("dismissDismissed", { data });
+        const removedLevels =
+          data.current_level === undefined ? [] : [data.current_level];
+        data.current_level = undefined;
+        data.onRemove(removedLevels);
+        data.saveLater();
+        return response;
+      })
+    );
   },
 
   next: async (

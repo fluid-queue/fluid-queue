@@ -62,21 +62,21 @@ export class TypedBindings {
   createTypeBindingBuilder<Data, Transient>(
     description: BindingDescription<Data, Transient>
   ): TypeBindingBuilder<Data, Transient> {
-    const buildData = (value?: PersistedBinding) => {
+    const buildData = (value?: PersistedBinding): Data => {
       if (value != null) {
         return description.deserialize(value);
       }
       if (typeof description.empty === "function") {
-        return description.empty();
+        return description.empty() as Data;
       } else {
-        return description.empty;
+        return description.empty as Data;
       }
     };
-    const buildTransient = (data: Data) => {
+    const buildTransient = (data: Data): Transient => {
       if (typeof description.initialize === "function") {
-        return description.initialize(data);
+        return description.initialize(data) as Transient;
       } else {
-        return description.initialize;
+        return description.initialize as Transient;
       }
     };
     return {

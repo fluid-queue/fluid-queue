@@ -100,7 +100,7 @@ function upgrade(code: string): { code: string } | null {
   return null;
 }
 
-export async function setup(api: ExtensionsApi) {
+export function setup(api: ExtensionsApi) {
   api
     .queueEntry("ocw", "ocw level code")
     .usingCode()

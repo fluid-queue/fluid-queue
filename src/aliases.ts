@@ -1,11 +1,14 @@
 import fs from "fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import settings from "./settings.js";
+import { z } from "zod";
 
 const ALIASES_FILE = {
   directory: "./settings",
   fileName: "./settings/aliases.json",
 };
+
+const AliasesScheme = z.record(z.string().array());
 
 const defaultAliases: Record<string, string[]> = {
   add: ["!add"],
@@ -73,8 +76,8 @@ const Aliases = {
       Aliases.loadAliases(true);
     }
     try {
-      const data = JSON.parse(
-        fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" })
+      const data = AliasesScheme.parse(
+        JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }))
       );
       // override defaults
       aliases = { ...defaultAliases, ...data };

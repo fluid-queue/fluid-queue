@@ -13,12 +13,12 @@ extends:
   - eslint:recommended
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
+  - plugin:@typescript-eslint/recommended-requiring-type-checking
   - prettier
 overrides: []
 parserOptions:
-  project: "tsconfig.eslint.json"
+  project: "tsconfig.json"
 ignorePatterns:
   - "build/**/*"
 rules:
   curly: "error"
-  "@typescript-eslint/no-floating-promises": "error"

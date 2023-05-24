@@ -11,6 +11,7 @@ console.log(`Compiling version: ${buildVersion} (${buildTag})`);
 console.log(`Compiling extensions: ${extensions.join(", ")}`);
 
 await esbuild.build({
+  tsconfig: "tsconfig.json",
   entryPoints: ["src/index.ts"].concat(extensions),
   bundle: true,
   outdir: "build/",

@@ -99,10 +99,10 @@ const checkResult = (
   testFolder: string,
   version?: string
 ) => {
-  const queue_real = JSON.parse(
+  const queue_real: unknown = JSON.parse(
     mockFs.readFileSync("./data/queue.json", "utf-8")
   );
-  let queue_expect;
+  let queue_expect: unknown;
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
@@ -133,8 +133,10 @@ const checkLostLevels = (
   testFolder: string,
   fileName: string
 ) => {
-  const lostLevelsReal = JSON.parse(mockFs.readFileSync(fileName, "utf-8"));
-  const lostLevelsExpect = JSON.parse(
+  const lostLevelsReal: unknown = JSON.parse(
+    mockFs.readFileSync(fileName, "utf-8")
+  );
+  const lostLevelsExpect: unknown = JSON.parse(
     realFs.readFileSync(
       path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
@@ -152,10 +154,10 @@ const checkCustomCodes = (
   testFolder: string,
   version?: string
 ) => {
-  const queue_real = JSON.parse(
+  const queue_real: unknown = JSON.parse(
     mockFs.readFileSync("./data/extensions/customcode.json", "utf-8")
   );
-  let queue_expect;
+  let queue_expect: unknown;
   if (version === undefined) {
     queue_expect = JSON.parse(
       realFs.readFileSync(
@@ -374,7 +376,7 @@ function getFsFromError(err: unknown): typeof fs {
     return ((err as { simIndex: object }).simIndex as { fs: unknown })
       .fs as typeof fs;
   }
-  throw new Error(`Could not find file system in error ${err}`);
+  throw new Error(`Could not find file system in error ${String(err)}`);
 }
 
 async function throwingIndex(
@@ -563,7 +565,7 @@ test("test-incompatible-v4.9.9.9", async () => {
   const mockFs = await throwingIndex(volume);
   // check file system -> old file still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./data/queue.json")).toBe(true);
-  const data = JSON.parse(
+  const data: unknown = JSON.parse(
     mockFs.readFileSync("./data/queue.json", { encoding: "utf-8" })
   );
   expect(data).toEqual({

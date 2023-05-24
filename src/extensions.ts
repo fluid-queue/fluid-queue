@@ -131,7 +131,10 @@ const loadExtensionModules = async (
         prefix = "file://";
       }
       const importName = prefix + path.join(directory, fileName);
-      const module = await import(importName);
+      const module: unknown = await import(importName);
+      if (typeof module !== "object" || module == null) {
+        throw new Error(`Module ${importName} does not export an object!`);
+      }
       return { name, module };
     });
   const modules: { name: string; module: object }[] = await Promise.all(

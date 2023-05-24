@@ -200,8 +200,8 @@ test("ConcurrentLoader:fetch-method-throws", async () => {
 
 test("SingleValueCache:ttl", async () => {
   jest.useFakeTimers();
-  const fetchMethod = jest.fn(async (): Promise<string | null> => {
-    return null;
+  const fetchMethod = jest.fn((): Promise<string | null> => {
+    return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
     fetchMethod,
@@ -251,8 +251,8 @@ test("SingleValueCache:ttl", async () => {
 
 test("SingleValueCache:error", async () => {
   jest.useFakeTimers();
-  const fetchMethod = jest.fn(async (): Promise<string | null> => {
-    return null;
+  const fetchMethod = jest.fn((): Promise<string | null> => {
+    return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
     fetchMethod,
@@ -287,8 +287,8 @@ test("SingleValueCache:error", async () => {
 
 test("SingleValueCache:fetch-concurrently", async () => {
   jest.useFakeTimers();
-  const fetchMethod = jest.fn(async (): Promise<string | null> => {
-    return null;
+  const fetchMethod = jest.fn((): Promise<string | null> => {
+    return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
     fetchMethod,
@@ -341,8 +341,8 @@ test("SingleValueCache:fetch-concurrently", async () => {
 
 test("SingleValueCache:long-load", async () => {
   jest.useFakeTimers();
-  const fetchMethod = jest.fn(async (): Promise<string | null> => {
-    return null;
+  const fetchMethod = jest.fn((): Promise<string | null> => {
+    return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
     fetchMethod,

@@ -25,9 +25,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm install --only=dev
-      - run: ./node_modules/.bin/eslint src/
       - run: npx prettier --check .
-      - run: npx tsc --noemit
+      - run: npm run check
 
   build:
     runs-on: ubuntu-latest

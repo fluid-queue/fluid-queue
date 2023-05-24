@@ -13,8 +13,19 @@ import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { User } from "./extensions-api/queue-entry.js";
+import { z } from "zod";
 
 const tokensFileName = "./settings/tokens.json";
+
+const InitialTokenScheme = z
+  .object({
+    accessToken: z.string().optional(),
+    refreshToken: z.string().nullable(),
+    scope: z.string().array().optional(), // optional when unknown
+    expiresIn: z.number().nullable().default(0), // null means lives forever, 0 means unknown
+    obtainmentTimestamp: z.number().default(0), // 0 means unknown
+  })
+  .passthrough();
 
 class TwitchApi {
   #authProvider: RefreshingAuthProvider | null = null;
@@ -72,7 +83,9 @@ class TwitchApi {
       throw new Error(`${settingsFile}: Invalid clientSecret.`);
     }
     // validation is done before setting anything up to help users figure out problems early
-    const tokenData = JSON.parse(fs.readFileSync(tokensFileName, "utf-8"));
+    const tokenData = InitialTokenScheme.parse(
+      JSON.parse(fs.readFileSync(tokensFileName, "utf-8"))
+    );
     if (
       tokenData.accessToken == null ||
       tokenData.accessToken == "" ||
@@ -171,7 +184,7 @@ class TwitchApi {
   async #isLimited(): Promise<boolean> {
     const rateLimiterStats = await this.apiClient.asIntent(
       ["chatters"],
-      async (ctx) => ctx.rateLimiterStats
+      (ctx) => Promise.resolve(ctx.rateLimiterStats)
     );
     return (
       rateLimiterStats != null &&

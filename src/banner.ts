@@ -44,7 +44,9 @@ const printBanner = () => {
     console.log(banner);
     if (checkVersion() === false) {
       console.warn(
-        `Warning: Running a different version of the queue (${buildVersion()} instead of ${version()})`
+        `Warning: Running a different version of the queue (${String(
+          buildVersion()
+        )} instead of ${version()})`
       );
       console.warn("(Use `npm run build` to build the current version)\n");
     }
