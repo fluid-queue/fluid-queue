@@ -39,8 +39,8 @@ copySync(join(srcDir, "SECURITY.md"), join(working, "SECURITY.md"));
 // Also the sample settings files
 mkdirpSync(join(working, "settings"));
 copySync(
-  join(srcDir, "settings/settings.example.json"),
-  join(working, "settings/settings.example.json")
+  join(srcDir, "settings/settings.example.yml"),
+  join(working, "settings/settings.example.yml")
 );
 copySync(
   join(srcDir, "settings/tokens.example.json"),

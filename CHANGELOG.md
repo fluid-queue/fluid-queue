@@ -2,6 +2,10 @@
 
 ## Breaking changes
 
+- Move `settings/settings.json` to `settings/settings.yml` and deprecate loading
+  `settings/settings.json`. The deprecation warning means this isn't breaking
+  yet, but **this will break eventually**.
+  The settings are now parsed as YAML instead of JSON.
 - New queue save file version 3.0 that can not be read by previous versions of the queue.
   All old save file versions are converted automatically and require the twitch api.
   The location of the save file stays the same: `data/queue.json`.
@@ -12,9 +16,9 @@
   Also make sure you have the dev dependencies installed before building the queue `NODE_ENV=development npm install`.
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
 - Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
-- The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.json`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
+- The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.yml`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
 - The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
-- `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.json` to `"all"` and then `!clear` clears all levels again.
+- `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.yml` to `"all"` and then `!clear` clears all levels again.
 
 ## New features
 

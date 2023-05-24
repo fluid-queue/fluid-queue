@@ -14,7 +14,7 @@ package-lock.json
 /settings/*
 
 # Don't ignore the example files
-!/settings/settings.example.json
+!/settings/settings.example.yml
 !/settings/tokens.example.json
 
 # Secrets and non-sample sample files

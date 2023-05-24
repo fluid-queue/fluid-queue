@@ -197,7 +197,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "chatbot") {
           chatbot = rest.trim().toLowerCase();
         } else if (command == "settings") {
-          // TODO: ideally new settings would be written to settings.json
+          // TODO: ideally new settings would be written to settings.yml
           //       and settings.js could be reloaded instead to validate settings
           replace(test.settings, Settings.parse(JSON.parse(rest)));
 

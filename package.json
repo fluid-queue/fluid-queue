@@ -27,6 +27,7 @@
     "timestring": "^7.0.0",
     "uuid": "^9.0.0",
     "write-file-atomic": "^5.0.1",
+    "yaml": "^2.3.0",
     "zod": "^3.21.4"
   },
   "scripts": {

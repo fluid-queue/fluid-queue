@@ -156,7 +156,7 @@ export const Settings = z
       .nullable()
       .default(null),
     extensionOptions: z
-      .record(z.string(), z.record(z.string(), z.string()))
+      .record(z.string(), z.record(z.string(), z.coerce.string()))
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),
