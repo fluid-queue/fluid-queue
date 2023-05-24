@@ -312,7 +312,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         > => {
           // No need to return anything here for now
           // We probably want to use this as an actual test though
-          return [];
+          return Promise.resolve([]);
         }
       );
 

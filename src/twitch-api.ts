@@ -182,10 +182,8 @@ class TwitchApi {
 
     if (this.#tokenScopes.includes("channel:read:subscriptions")) {
       // set up the eventsub listener for subs
-      this.#esListener.onChannelSubscription(
-        this.#broadcasterUser.id,
-        twitch.handleSub
-      );
+      const broadcasterId = this.#broadcasterUser.id;
+      this.#esListener.onChannelSubscription(broadcasterId, twitch.handleSub);
       this.#esListener.start();
     }
   }

@@ -115,8 +115,7 @@ const twitch = {
     }
   },
 
-  async handleSub(event: EventSubChannelSubscriptionEvent) {
-    console.log(`Got subscription event for ${event.userDisplayName}`);
+  handleSub(this: void, event: EventSubChannelSubscriptionEvent) {
     if (!subscribers.has(event.userId)) {
       const subscriber: User = {
         id: event.userId,
@@ -124,7 +123,6 @@ const twitch = {
         displayName: event.userDisplayName,
       };
       subscribers.set(subscriber.id, subscriber);
-      console.log(`Added ${event.userDisplayName} to subscribers list`);
     }
   },
 
