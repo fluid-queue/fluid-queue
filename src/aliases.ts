@@ -2,6 +2,7 @@ import fs from "fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import settings from "./settings.js";
 import { z } from "zod";
+import { error } from "./chalk-print.js";
 
 const ALIASES_FILE = {
   directory: "./settings",
@@ -82,10 +83,14 @@ const Aliases = {
       // override defaults
       aliases = { ...defaultAliases, ...data };
     } catch (err) {
-      console.warn(
-        "An error occurred when trying to load %s. %s",
-        ALIASES_FILE.fileName,
-        err instanceof Error ? err.message : err
+      const errMessage = (() => {
+        if (err instanceof Error) {
+          return err.message;
+        }
+        return String(err);
+      })();
+      error(
+        `An error occurred when trying to load ${ALIASES_FILE.fileName}. ${errMessage}`
       );
       throw err;
     }

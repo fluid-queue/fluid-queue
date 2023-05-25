@@ -1,5 +1,6 @@
 import { Duration, Instant } from "@js-joda/core";
 import { BroadcastOnce } from "./sync.js";
+import { error } from "./chalk-print.js";
 
 /**
  * This class creates an adapter for loading data asynchronously.
@@ -69,7 +70,7 @@ export class SingleValueCache<T> {
       this.expiry = Instant.now().plus(this.timeToLive);
     } catch (e) {
       // ignore error
-      console.error(`Error loading cache: ${String(e)}`);
+      error(`Error loading cache: ${String(e)}`);
     }
     return this.value;
   }

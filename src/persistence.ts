@@ -7,6 +7,7 @@ import path from "path";
 import { z } from "zod";
 import { twitchApi } from "./twitch-api.js";
 import { User } from "./extensions-api/queue-entry.js";
+import { log, warn, error } from "./chalk-print.js";
 
 const DATA_DIRECTORY = "data";
 const VERSIONED_FILE_NAME = path.join(DATA_DIRECTORY, "queue.json");
@@ -252,21 +253,16 @@ function loadFileDefault<T>(
       const fileContents: unknown = JSON.parse(
         fs.readFileSync(fileName, { encoding: "utf8" })
       );
-      console.log(`${fileName} has been successfully validated.`);
+      log(`${fileName} has been successfully validated.`);
       return parse(fileContents);
     } catch (err) {
       if (errorMessage != null) {
-        console.warn(
-          "An error occurred when trying to load %s. %s",
-          fileName,
-          errorMessage,
-          err
+        warn(
+          `An error occurred when trying to load ${fileName}. ${errorMessage}`
         );
       } else {
-        console.warn(
-          "An error occurred when trying to load %s.",
-          fileName,
-          err
+        warn(
+          `An error occurred when trying to load ${fileName}. ${String(err)}`
         );
       }
       // let it crash!
@@ -291,11 +287,11 @@ const loadQueueV1 = (): UpgradeResult<QueueV2> | null => {
       []
     );
     if (levelsV1.some((level) => level.username == null)) {
-      console.warn(`Usernames are not set in the file ${QUEUE_V1.queso}!`);
-      console.warn(
+      warn(`Usernames are not set in the file ${QUEUE_V1.queso}!`);
+      warn(
         "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
       );
-      console.warn("To be safe, clear the queue with !clear.");
+      warn("To be safe, clear the queue with !clear.");
     }
     const upgrade = ({
       code,
@@ -377,7 +373,7 @@ const loadQueueV1 = (): UpgradeResult<QueueV2> | null => {
   } else {
     filesDescription = "previous save files";
   }
-  console.log(
+  log(
     `${VERSIONED_FILE_NAME} has been successfully created from ${filesDescription}.`
   );
   return {
@@ -390,9 +386,9 @@ const loadQueueV1 = (): UpgradeResult<QueueV2> | null => {
           if (fs.existsSync(file)) {
             try {
               fs.unlinkSync(file);
-              console.log(`${file} has been deleted successfully.`);
+              log(`${file} has been deleted successfully.`);
             } catch (err) {
-              console.warn("%s could not be deleted.", file, err);
+              warn(`${file} could not be deleted. ${String(err)}`);
               // this error can be safely ignored!
             }
           }
@@ -432,13 +428,13 @@ const loadQueueV2 = (object: object): QueueV2 => {
       `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${QUEUE_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
     );
   }
-  console.log(`${fileName} has been successfully validated.`);
+  log(`${fileName} has been successfully validated.`);
   return state;
 };
 
 const loadQueueV3 = (object: object): z.output<typeof QueueV3> => {
   const state = QueueV3.parse(object);
-  console.log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
+  log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
   return state;
 };
 
@@ -591,7 +587,7 @@ export async function loadResultActions<T>(
           `Can not upgrade save file while saving is turned off!`
         );
       }
-      console.warn(
+      warn(
         "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
       );
       return result.data;
@@ -799,7 +795,7 @@ function loadSync<T>(
     // TODO: this is optional and can be removed in a later version of the queue
     Object.values(filesVersion1).forEach((file) => {
       if (fs.existsSync(file)) {
-        console.log(`${file} is no longer needed and can be deleted.`);
+        log(`${file} is no longer needed and can be deleted.`);
       }
     });
     return loadVersion2();
@@ -814,7 +810,7 @@ function loadSync<T>(
     } else {
       filesDescription = "previous save files";
     }
-    console.log(
+    log(
       `${descriptorVersion2.fileName} has been successfully created from ${filesDescription}.`
     );
     const dataVersion2 = loadVersion2();
@@ -824,9 +820,9 @@ function loadSync<T>(
       if (fs.existsSync(file)) {
         try {
           fs.unlinkSync(file);
-          console.log(`${file} has been deleted successfully.`);
+          log(`${file} has been deleted successfully.`);
         } catch (err) {
-          console.warn("%s could not be deleted.", file, err);
+          warn(`${file} could not be deleted. ${String(err)}`);
           // this error can be safely ignored!
         }
       }
@@ -836,7 +832,7 @@ function loadSync<T>(
   // create an empty save file
   const createdVersion2 = createVersion2();
   saveVersion2(createdVersion2);
-  console.log(`${descriptorVersion2.fileName} has been successfully created.`);
+  log(`${descriptorVersion2.fileName} has been successfully created.`);
   return loadVersion2();
 }
 
@@ -942,9 +938,7 @@ async function upgradeQueueV2ToV3(
   let lostUsers = 0;
   while (upgrades.length > 0) {
     const upgradeNumber = Math.min(100, upgrades.length);
-    console.log(
-      `Upgrading ${upgradeNumber} out of ${upgrades.length} users...`
-    );
+    log(`Upgrading ${upgradeNumber} out of ${upgrades.length} users...`);
     const next100 = upgrades.splice(0, upgradeNumber);
     const userNames = next100.map(([userName]) => userName);
     const users = await twitchApi.getUsers(userNames);
@@ -971,16 +965,12 @@ async function upgradeQueueV2ToV3(
         settings.prettySaveFiles ? 2 : 0
       )
     );
-    console.warn(`${lostUsers} users in your queue could not be found!`);
-    console.warn(
-      "This means that they deleted their account or renamed themselves."
-    );
-    console.warn(
+    warn(`${lostUsers} users in your queue could not be found!`);
+    warn("This means that they deleted their account or renamed themselves.");
+    warn(
       "All waiting times and queue entries of those users have been removed!"
     );
-    console.warn(
-      `The data that could not be converted can be found here: ${fileName}`
-    );
+    warn(`The data that could not be converted can be found here: ${fileName}`);
   }
   return {
     data: {
@@ -1031,10 +1021,10 @@ export const saveQueueSync = (
     });
     return true;
   } catch (err) {
-    console.error(
-      "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      VERSIONED_FILE_NAME,
-      err
+    error(
+      `${VERSIONED_FILE_NAME} could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart. ${String(
+        err
+      )}`
     );
     // ignore this error and keep going
     // hopefully this issue is gone on the next save
@@ -1094,7 +1084,7 @@ const loadCustomCodesV2 = (): ExtensionDataV2<CustomCodesV2> => {
       `Custom codes save file ${fileName}: version in file "${state.version}" is not compatible with custom codes save file version "${CUSTOM_CODES_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
     );
   }
-  console.log(`${fileName} has been successfully validated.`);
+  log(`${fileName} has been successfully validated.`);
   return state;
 };
 
@@ -1112,12 +1102,14 @@ export const saveCustomCodesSync = (
     );
   } catch (err) {
     if (errorMessage !== undefined) {
-      console.warn(errorMessage);
+      warn(errorMessage);
     }
-    console.error(
-      "%s could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart.",
-      CUSTOM_CODES_V2.fileName,
-      err
+    error(
+      `${
+        CUSTOM_CODES_V2.fileName
+      } could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart. ${String(
+        err
+      )}`
     );
     // ignore this error and keep going
     // hopefully this issue is gone on the next save

@@ -17,6 +17,7 @@ import i18next from "i18next";
 import timestring from "timestring";
 import humanizeDuration from "humanize-duration";
 import { twitchApi } from "./twitch-api.js";
+import { log, warn } from "./chalk-print.js";
 
 const extensions = new Extensions();
 
@@ -175,7 +176,7 @@ class QueueData {
         this.levels
           .filter((level) => !(level.submitter.id in this.waitingByUserId))
           .forEach((level) => {
-            console.warn(
+            warn(
               `User ${level.submitter.toString()} didn't have a waiting time!`
             );
             this.waitingByUserId[level.submitter.id] = Waiting.create(
@@ -210,7 +211,7 @@ class QueueData {
 
       removeWaiting() {
         if (this.current_level == undefined) {
-          console.warn("removeWaiting called with no current level");
+          warn("removeWaiting called with no current level");
           return;
         }
         if (
@@ -555,7 +556,7 @@ const queue = {
         .findIndex(queue.matchSubmitter(submitter));
 
       if (index != -1) {
-        console.log(
+        log(
           i18next.t("eligibleUsers", {
             users: weightedList.entries.map((entry) =>
               entry.level.submitter.toString()
@@ -564,7 +565,7 @@ const queue = {
             type: "unit",
           })
         );
-        console.log(
+        log(
           i18next.t("eligibleUsersTime", {
             weights: weightedList.entries.map((entry) => entry.weight()),
             style: "short",
@@ -573,7 +574,7 @@ const queue = {
         );
         const weight = weightedList.entries[index].weight();
         const totalWeight = weightedList.totalWeight;
-        console.log(
+        log(
           i18next.t("consolePrintWeight", { submitter, weight, totalWeight })
         );
         const percent = weight / totalWeight;
@@ -781,7 +782,7 @@ const queue = {
       let levelIndex = 0;
       let gettingThereSomeday = weightedList.entries[0].weight();
 
-      console.log(
+      log(
         i18next.t("eligibleUsers", {
           users: weightedList.entries.map((entry) =>
             entry.level.submitter.toString()
@@ -790,7 +791,7 @@ const queue = {
           type: "unit",
         })
       );
-      console.log(
+      log(
         i18next.t("eligibleUsersTime", {
           weights: weightedList.entries.map((entry) => entry.weight()),
           style: "short",
@@ -798,20 +799,16 @@ const queue = {
         })
       );
 
-      console.log(i18next.t("randomNumber", { randomNumber }));
-      console.log(i18next.t("currentCumulativeTime", { gettingThereSomeday }));
+      log(i18next.t("randomNumber", { randomNumber }));
+      log(i18next.t("currentCumulativeTime", { gettingThereSomeday }));
       while (gettingThereSomeday < randomNumber) {
         levelIndex++;
         gettingThereSomeday =
           gettingThereSomeday + weightedList.entries[levelIndex].weight();
-        console.log(
-          i18next.t("currentCumulativeTime", { gettingThereSomeday })
-        );
+        log(i18next.t("currentCumulativeTime", { gettingThereSomeday }));
       }
 
-      console.log(
-        i18next.t("consoleIndexChosen", { levelIndex, gettingThereSomeday })
-      );
+      log(i18next.t("consoleIndexChosen", { levelIndex, gettingThereSomeday }));
       data.current_level = weightedList.entries[levelIndex].level;
 
       const index = data.levels.findIndex(
@@ -1088,9 +1085,9 @@ const queue = {
       };
       if (streamOnline) {
         await twitch.updateSubscribers();
-        console.log(i18next.t("streamIsOnline", args));
+        log(i18next.t("streamIsOnline", args));
       } else {
-        console.log(i18next.t("streamIsOffline", args));
+        log(i18next.t("streamIsOffline", args));
       }
     }
     if (!streamOnline) {
@@ -1190,7 +1187,7 @@ const queue = {
       const usersMap = new Map<string, User>();
       while (lookupIds.length > 0) {
         const upgradeNumber = Math.min(100, lookupIds.length);
-        console.log(
+        log(
           `Checking ${upgradeNumber} out of ${lookupIds.length} users for deletion...`
         );
         const next100: string[] = lookupIds.splice(0, upgradeNumber);

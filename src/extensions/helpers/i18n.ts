@@ -3,6 +3,7 @@ import FsBackend, { FsBackendOptions } from "i18next-fs-backend";
 import { join, dirname as pathDirname } from "path";
 import { fileURLToPath } from "url";
 import { readdirSync, lstatSync } from "fs";
+import { log } from "../../chalk-print.js";
 
 export async function init(extension: string) {
   if (process && process.env && process.env.NODE_ENV != "test") {
@@ -12,7 +13,7 @@ export async function init(extension: string) {
     // This feels like a hack but it works
     const dirname = pathDirname(fileURLToPath(import.meta.url));
 
-    console.log(`Initializing i18next for extension ${extension}...`);
+    log(`Initializing i18next for extension ${extension}...`);
     await i18next.use(FsBackend).init<FsBackendOptions>({
       ...options,
       backend: {

@@ -291,7 +291,9 @@ test("conversion-test-1", async () => {
   const mockFs = index.fs;
   // should load without errors, but a warning in the console
   expect(consoleWarnMock).toHaveBeenCalledWith(
-    "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+    expect.stringContaining(
+      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+    )
   );
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
@@ -483,7 +485,9 @@ test("custom-levels-v1a-to-v3.0", async () => {
   const mockFs = index.fs;
   // should load without errors, but a warning in the console
   expect(consoleWarnMock).toHaveBeenCalledWith(
-    "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+    expect.stringContaining(
+      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+    )
   );
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   checkResult(mockFs, fs, test);
@@ -605,10 +609,12 @@ test("test-renamed-or-deleted", async () => {
   }Z.json`;
   expect(consoleWarnMock).toHaveBeenCalledTimes(4);
   expect(consoleWarnMock).toHaveBeenCalledWith(
-    "4 users in your queue could not be found!"
+    expect.stringContaining("4 users in your queue could not be found!")
   );
   expect(consoleWarnMock).toHaveBeenCalledWith(
-    `The data that could not be converted can be found here: ${fileName}`
+    expect.stringContaining(
+      `The data that could not be converted can be found here: ${fileName}`
+    )
   );
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately

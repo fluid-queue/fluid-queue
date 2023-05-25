@@ -36,6 +36,7 @@ import {
 import { BroadcastOnce, SendOnce } from "./sync.js";
 import { fileURLToPath } from "url";
 import i18next from "i18next";
+import { log, warn, error } from "./chalk-print.js";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
 const fileEnding: string[] = [".js", ".ts"];
@@ -145,7 +146,7 @@ const loadExtensionModules = async (
     if (instanceOfExtensionModule(module.module)) {
       result[module.name] = mapAnyExtensionModule(module.module);
     } else {
-      console.warn(
+      warn(
         `Extension ${module.name} does not declare a setup function and will be ignored.`
       );
     }
@@ -220,7 +221,7 @@ export class Extensions {
    */
   async load() {
     if (this.configuredResolvers != null) {
-      console.warn("Extensions already loaded!");
+      warn("Extensions already loaded!");
       return;
     }
     // load extensions
@@ -248,7 +249,7 @@ export class Extensions {
       })
     );
 
-    console.log(
+    log(
       i18next.t("extensionsList", {
         extensions: Object.keys(this.extensions),
         style: "short",
@@ -269,7 +270,7 @@ export class Extensions {
     // try to fallback to code
     if (entry.code == null) {
       // can not display queue entry
-      console.error("Can not display queue entry: %s", JSON.stringify(entry));
+      error(`Can not display queue entry: ${JSON.stringify(entry)}`);
       return i18next.t("unknownEntry");
     }
     return entry.code;
@@ -360,7 +361,7 @@ export class Extensions {
     { descriptions: string[] }
   > {
     if (this.configuredResolvers == null) {
-      console.warn("Extensions not loaded yet!");
+      warn("Extensions not loaded yet!");
       return { success: false, descriptions: [] };
     }
     const descriptions: Set<string> = new Set();

@@ -340,7 +340,9 @@ test("loadResultActions:save-and-verify-save-off", async () => {
   expect(save).toBeCalledTimes(0);
   expect(verify).toBeCalledTimes(0);
   expect(consoleWarnMock).toHaveBeenCalledWith(
-    "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
+    expect.stringContaining(
+      "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
+    )
   );
 });
 

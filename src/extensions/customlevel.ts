@@ -10,6 +10,7 @@ import { checkVersion } from "./helpers/version.js";
 import { v5 as uuidv5, v4 as uuidv4, validate as uuidValidate } from "uuid";
 import { z } from "zod";
 import i18next from "i18next";
+import { log } from "../chalk-print.js";
 
 await (await import("./helpers/i18n.js")).init("customlevel");
 
@@ -495,10 +496,10 @@ const customlevelCommand = (custom: CustomData) => {
             );
             return;
           } else if (command == "import" && rest.length >= 1) {
-            console.log(
+            log(
               "codes:" + JSON.stringify(Object.fromEntries(custom.cache.codes))
             );
-            console.log(
+            log(
               "names:" + JSON.stringify(Object.fromEntries(custom.cache.names))
             );
             const json = rest.join(" ");
@@ -630,11 +631,11 @@ const queueHandler = (custom: CustomData) => {
         allEntries.every((level) => !isRomHackLevel(level))
       ) {
         queueChanged = custom.removeRomHack() || queueChanged;
-        console.log(i18next.t("romhackRemoved", { ns: "customlevel" }));
+        log(i18next.t("romhackRemoved", { ns: "customlevel" }));
       } else {
         queueChanged =
           custom.addRomHack(!!settings.romhacks_enabled) || queueChanged;
-        console.log(
+        log(
           i18next.t("romhackAdded", {
             ns: "customlevel",
             enabled: !!settings.romhacks_enabled,
@@ -646,11 +647,11 @@ const queueHandler = (custom: CustomData) => {
         allEntries.every((level) => !isUnclearedLevel(level))
       ) {
         queueChanged = custom.removeUncleared() || queueChanged;
-        console.log(i18next.t("unclearedRemoved", { ns: "customlevel" }));
+        log(i18next.t("unclearedRemoved", { ns: "customlevel" }));
       } else {
         queueChanged =
           custom.addUncleared(!!settings.uncleared_enabled) || queueChanged;
-        console.log(
+        log(
           i18next.t("unclearedAdded", {
             ns: "customlevel",
             enabled: !!settings.uncleared_enabled,

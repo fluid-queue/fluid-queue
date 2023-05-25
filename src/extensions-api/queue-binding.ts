@@ -1,4 +1,5 @@
 import { FunctionOrData } from "./helpers.js";
+import { warn } from "../chalk-print.js";
 
 export interface PersistedBinding {
   data?: unknown;
@@ -49,7 +50,7 @@ export class TypedBindings {
   private saveHandler: SaveHandler | null = null;
   private save(name: string) {
     if (this.saveHandler == null) {
-      console.warn(
+      warn(
         `extension ${name} requested to save, but no save handler is registered`
       );
       return;
