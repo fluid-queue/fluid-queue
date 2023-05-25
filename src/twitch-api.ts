@@ -17,6 +17,7 @@ import { EventSubWsListener } from "@twurple/eventsub-ws";
 import { twitch } from "./twitch.js";
 import i18next from "i18next";
 import { z } from "zod";
+import { warn } from "./chalk-print.js";
 
 const tokensFileName = "./settings/tokens.json";
 
@@ -177,13 +178,34 @@ class TwitchApi {
       throw new Error(err);
     }
     if (!this.#tokenScopes.includes("channel:read:subscriptions")) {
-      console.warn(i18next.t("subscribersScopeMissing"));
+      warn(i18next.t("subscribersScopeMissing"));
+    }
+    if (!this.#tokenScopes.includes("moderation:read")) {
+      warn(i18next.t("moderatorsScopeMissing"));
     }
 
     if (this.#tokenScopes.includes("channel:read:subscriptions")) {
-      // set up the eventsub listener for subs
-      const broadcasterId = this.#broadcasterUser.id;
-      this.#esListener.onChannelSubscription(broadcasterId, twitch.handleSub);
+      // set up the eventsub listeners for subs
+      this.#esListener.onChannelSubscription(
+        this.#broadcasterUser.id,
+        twitch.handleSub
+      );
+      this.#esListener.onChannelSubscriptionEnd(
+        this.#broadcasterUser.id,
+        twitch.handleUnsub
+      );
+      this.#esListener.start();
+    }
+    if (this.#tokenScopes.includes("moderation:read")) {
+      // Set up the eventsub listeners for mods
+      this.#esListener.onChannelModeratorAdd(
+        this.#broadcasterUser.id,
+        twitch.handleMod
+      );
+      this.#esListener.onChannelModeratorRemove(
+        this.#broadcasterUser.id,
+        twitch.handleUnmod
+      );
       this.#esListener.start();
     }
   }
@@ -223,7 +245,7 @@ class TwitchApi {
         });
         result.push(...page.data.map(mapUser));
       }
-      // console.log(`Fetched ${result.length} chatters`);
+      // log(`Fetched ${result.length} chatters`);
       return result;
     });
   }
@@ -253,13 +275,13 @@ class TwitchApi {
    */
   async getChatters(forceRefresh: boolean): Promise<User[]> {
     if (forceRefresh) {
-      // console.log("Force refresh");
+      // log("Force refresh");
       return await this.#chattersCache.fetch({
         forceRefresh: forceRefresh,
       });
     }
     if (await this.#isLimited()) {
-      console.warn("Use cache because of rate limits.");
+      warn("Use cache because of rate limits.");
       // use cache because of rate limiting
       return this.#chattersCache.get();
     }

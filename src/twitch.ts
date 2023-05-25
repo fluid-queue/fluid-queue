@@ -3,7 +3,11 @@ import { Chatter } from "./extensions-api/command.js";
 import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
-import { EventSubChannelSubscriptionEvent } from "@twurple/eventsub-base";
+import {
+  EventSubChannelModeratorEvent,
+  EventSubChannelSubscriptionEndEvent,
+  EventSubChannelSubscriptionEvent,
+} from "@twurple/eventsub-base";
 
 const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
 const LURKERS_TTL = Duration.parse("PT12H").toMillis();
@@ -123,6 +127,29 @@ const twitch = {
         displayName: event.userDisplayName,
       };
       subscribers.set(subscriber.id, subscriber);
+    }
+  },
+
+  handleUnsub(this: void, event: EventSubChannelSubscriptionEndEvent) {
+    if (subscribers.has(event.userId)) {
+      subscribers.delete(event.userId);
+    }
+  },
+
+  handleMod(this: void, event: EventSubChannelModeratorEvent) {
+    if (!mods.has(event.userId)) {
+      const mod: User = {
+        id: event.userId,
+        name: event.userName,
+        displayName: event.userDisplayName,
+      };
+      mods.set(mod.id, mod);
+    }
+  },
+
+  handleUnmod(this: void, event: EventSubChannelModeratorEvent) {
+    if (mods.has(event.userId)) {
+      mods.delete(event.userId);
     }
   },
 
