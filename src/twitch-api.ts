@@ -140,6 +140,7 @@ class TwitchApi {
       "chatters",
       "stream-online",
       "subscribers-by-broadcaster",
+      "moderators-by-broadcaster",
     ]);
     // create the api client
     this.#apiClient = new ApiClient({
@@ -184,6 +185,7 @@ class TwitchApi {
       warn(i18next.t("moderatorsScopeMissing"));
     }
 
+    let startListener = false;
     if (this.#tokenScopes.includes("channel:read:subscriptions")) {
       // set up the eventsub listeners for subs
       this.#esListener.onChannelSubscription(
@@ -194,7 +196,7 @@ class TwitchApi {
         this.#broadcasterUser.id,
         twitch.handleUnsub
       );
-      this.#esListener.start();
+      startListener = true;
     }
     if (this.#tokenScopes.includes("moderation:read")) {
       // Set up the eventsub listeners for mods
@@ -206,6 +208,11 @@ class TwitchApi {
         this.#broadcasterUser.id,
         twitch.handleUnmod
       );
+      startListener = true;
+    }
+
+    // We can only start the listener once
+    if (startListener) {
       this.#esListener.start();
     }
   }
@@ -335,14 +342,42 @@ class TwitchApi {
     }
 
     // Extract all the user IDs
-    const subscriberIds = subscribers.data.map((subscriber) => {
+    const subscriberUsers = subscribers.data.map((subscriber) => {
       return {
         id: subscriber.userId,
         name: subscriber.userName,
         displayName: subscriber.userDisplayName,
       };
     });
-    return subscriberIds;
+    return subscriberUsers;
+  }
+
+  async getModerators() {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get subscriptions without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const mods = await this.apiClient.asIntent(
+      ["moderators-by-broadcaster"],
+      async (ctx) => {
+        return await ctx.moderation.getModerators(broadcasterId);
+      }
+    );
+    if (mods == undefined) {
+      // Not sure if this is because there was a problem, or just because the broadcaster has no subs
+      return [];
+    }
+
+    // Extract all the user IDs
+    const modUsers = mods.data.map((mod) => {
+      return {
+        id: mod.userId,
+        name: mod.userName,
+        displayName: mod.userDisplayName,
+      };
+    });
+    return modUsers;
   }
 
   async isStreamOnline(): Promise<boolean> {

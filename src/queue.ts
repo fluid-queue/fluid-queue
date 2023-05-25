@@ -1084,7 +1084,7 @@ const queue = {
         time: new Date().toISOString(), // printing the time as ISO instead of using the localized time representation
       };
       if (streamOnline) {
-        await twitch.updateSubscribers();
+        await twitch.updateModsAndSubscribers();
         log(i18next.t("streamIsOnline", args));
       } else {
         log(i18next.t("streamIsOffline", args));
