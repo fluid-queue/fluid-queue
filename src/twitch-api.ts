@@ -20,6 +20,7 @@ import { z } from "zod";
 import { warn } from "./chalk-print.js";
 
 const tokensFileName = "./settings/tokens.json";
+const broadcasterTokensFileName = "./settings/tokens.broadcaster.json";
 
 const InitialTokenScheme = z
   .object({
@@ -37,7 +38,8 @@ class TwitchApi {
   #apiClient: ApiClient | null = null;
   #broadcasterUser: HelixUser | null = null;
   #chattersCache: SingleValueCache<User[]>;
-  #tokenScopes: string[] = [];
+  #botTokenScopes: string[] = [];
+  #broadcasterTokenScopes: string[] = [];
   #esListener: EventSubWsListener | null = null;
 
   constructor() {
@@ -78,8 +80,12 @@ class TwitchApi {
     return this.#botUserId;
   }
 
-  get tokenScopes(): string[] {
-    return this.#tokenScopes;
+  get botTokenScopes(): string[] {
+    return this.#botTokenScopes;
+  }
+
+  get broadcasterTokenScopes(): string[] {
+    return this.#broadcasterTokenScopes;
   }
 
   /**
@@ -120,16 +126,28 @@ class TwitchApi {
         `Invalid ${tokensFileName} file: refreshToken not found.`
       );
     }
+
     // create the refreshing provider
     this.#authProvider = new RefreshingAuthProvider({
       clientId: settings.clientId,
       clientSecret: settings.clientSecret,
-      onRefresh: (userId, newTokenData) =>
-        writeFileAtomicSync(
-          tokensFileName,
-          JSON.stringify(newTokenData, null, 4),
-          { encoding: "utf-8" }
-        ),
+      onRefresh: (userId, newTokenData) => {
+        let fileName;
+        if (this.#botUserId == null || this.#botUserId == userId) {
+          // this has to be the bot token, since the id is not known yet or matches
+          fileName = tokensFileName;
+        } else if (this.#broadcasterUser?.id == userId) {
+          // note that `this.#broadcasterUser` is set before the token is even added to the provider
+          fileName = broadcasterTokensFileName;
+        } else {
+          throw new Error(
+            `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
+          );
+        }
+        writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
+          encoding: "utf-8",
+        });
+      },
     });
     // register refresh and access token of the bot and get the user id of the bot
     // this token is used for both chat as well as api calls
@@ -137,10 +155,7 @@ class TwitchApi {
       "chat",
       "user-by-name",
       "user-by-id",
-      "chatters",
       "stream-online",
-      "subscribers-by-broadcaster",
-      "moderators-by-broadcaster",
     ]);
     // create the api client
     this.#apiClient = new ApiClient({
@@ -163,30 +178,84 @@ class TwitchApi {
     }
 
     // get the scopes
-    this.#tokenScopes = this.#authProvider.getCurrentScopesForUser(
+    this.#botTokenScopes = this.#authProvider.getCurrentScopesForUser(
       this.#botUserId
     );
+    if (this.#broadcasterUser.id == this.#botUserId) {
+      // if the bot is the broadcaster add intents to bot/broadcaster account
+      this.#authProvider.addIntentsToUser(this.#botUserId, [
+        "subscribers-by-broadcaster",
+        "moderators-by-broadcaster",
+        "chatters",
+      ]);
+      this.#broadcasterTokenScopes = this.#botTokenScopes;
+    } else {
+      // look for a broadcaster tokens file
+      let tokenData;
+      try {
+        tokenData = InitialTokenScheme.parse(
+          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf-8"))
+        );
+      } catch (err) {
+        if (
+          typeof err === "object" &&
+          err != null &&
+          "code" in err &&
+          err.code === "ENOENT"
+        ) {
+          // There's no provided tokens for the broadcaster
+          this.#broadcasterTokenScopes = [];
+          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
+        } else {
+          throw err;
+        }
+      }
+
+      if (tokenData) {
+        const id = await this.#authProvider.addUserForToken(tokenData, [
+          "subscribers-by-broadcaster",
+          "moderators-by-broadcaster",
+        ]);
+        if (id != this.#broadcasterUser.id) {
+          throw new Error(
+            `Broadcaster id ${
+              this.#broadcasterUser.id
+            } does not match token user id ${id}`
+          );
+        }
+        this.#broadcasterTokenScopes =
+          this.#authProvider.getCurrentScopesForUser(id);
+        if (this.#broadcasterTokenScopes.includes("moderator:read:chatters")) {
+          this.#authProvider.addIntentsToUser(id, ["chatters"]);
+        } else {
+          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
+        }
+      }
+    }
     // set up the eventsub listener
     const apiClient = this.#apiClient;
     this.#esListener = new EventSubWsListener({ apiClient });
 
     if (
-      !this.#tokenScopes.includes("chat:edit") ||
-      !this.#tokenScopes.includes("chat:read") ||
-      !this.#tokenScopes.includes("moderator:read:chatters")
+      !this.#botTokenScopes.includes("chat:edit") ||
+      !this.#botTokenScopes.includes("chat:read") ||
+      !(
+        this.#broadcasterTokenScopes.includes("moderator:read:chatters") ||
+        this.#botTokenScopes.includes("moderator:read:chatters")
+      )
     ) {
       const err = i18next.t("requiredScopeError");
       throw new Error(err);
     }
-    if (!this.#tokenScopes.includes("channel:read:subscriptions")) {
+    if (!this.#broadcasterTokenScopes.includes("channel:read:subscriptions")) {
       warn(i18next.t("subscribersScopeMissing"));
     }
-    if (!this.#tokenScopes.includes("moderation:read")) {
+    if (!this.#broadcasterTokenScopes.includes("moderation:read")) {
       warn(i18next.t("moderatorsScopeMissing"));
     }
 
     let startListener = false;
-    if (this.#tokenScopes.includes("channel:read:subscriptions")) {
+    if (this.#broadcasterTokenScopes.includes("channel:read:subscriptions")) {
       // set up the eventsub listeners for subs
       this.#esListener.onChannelSubscription(
         this.#broadcasterUser.id,
@@ -198,7 +267,7 @@ class TwitchApi {
       );
       startListener = true;
     }
-    if (this.#tokenScopes.includes("moderation:read")) {
+    if (this.#broadcasterTokenScopes.includes("moderation:read")) {
       // Set up the eventsub listeners for mods
       this.#esListener.onChannelModeratorAdd(
         this.#broadcasterUser.id,
