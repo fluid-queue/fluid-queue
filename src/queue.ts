@@ -1080,14 +1080,11 @@ const queue = {
     const streamOnline = await twitchApi.isStreamOnline();
     if (streamLastOnline !== streamOnline) {
       streamLastOnline = streamOnline;
-      const args = {
-        time: new Date().toISOString(), // printing the time as ISO instead of using the localized time representation
-      };
       if (streamOnline) {
         await twitch.updateModsAndSubscribers();
-        log(i18next.t("streamIsOnline", args));
+        log(i18next.t("streamIsOnline"));
       } else {
-        log(i18next.t("streamIsOffline", args));
+        log(i18next.t("streamIsOffline"));
       }
     }
     if (!streamOnline) {
