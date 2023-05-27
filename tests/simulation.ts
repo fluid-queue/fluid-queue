@@ -344,7 +344,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
       );
 
       isStreamOnline = jest.fn(() => Promise.resolve(true));
-      botTokenScopes = ["char:read", "chat:edit", "moderator:read:chatters"];
+      botTokenScopes = ["chat:read", "chat:edit", "moderator:read:chatters"];
       broadcasterTokenScopes = [
         "channel:read:subscriptions",
         "moderation:read",
