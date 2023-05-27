@@ -600,9 +600,12 @@ test("test-renamed-or-deleted", async () => {
   const index = await simRequireIndex(volume, undefined, 1683058095000);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
-  const fileName = `data/lost-levels-${
-    new Date().toISOString().replaceAll(":", "").split(".")[0]
-  }Z.json`;
+  const fileName = path.join(
+    "data",
+    `lost-levels-${
+      new Date().toISOString().replaceAll(":", "").split(".")[0]
+    }Z.json`
+  );
   expect(consoleWarnMock).toHaveBeenCalledTimes(4);
   expect(consoleWarnMock).toHaveBeenCalledWith(
     "4 users in your queue could not be found!"
