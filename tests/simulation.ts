@@ -40,14 +40,16 @@ const DEFAULT_TEST_SETTINGS = {
   message_cooldown: 5,
 };
 // constants
-const EMPTY_CHATTERS: User[] = [];
+const EMPTY_CHATTERS: Chatter[] = [];
 // async function type
 const AsyncFunction = (async () => {
   /* used for type information */
 }).constructor;
 
 // mock variables
-let mockChatters: User[] = [];
+let mockChatters: Chatter[] = [];
+let mockSubscribers: Chatter[] = [];
+let mockModerators: Chatter[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -158,8 +160,16 @@ const expectErrorMessage = (promise: Promise<unknown>) => {
   ).rejects;
 };
 
-const simSetChatters = (newChatters: User[]) => {
+const simSetChatters = (newChatters: Chatter[]) => {
   mockChatters = newChatters;
+};
+
+const simSetSubscribers = (newSubscribers: Chatter[]) => {
+  mockSubscribers = newSubscribers;
+};
+
+const simSetModerators = (newMods: Chatter[]) => {
+  mockModerators = newMods;
 };
 
 /**
@@ -310,9 +320,34 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
             isBroadcaster: boolean;
           }[]
         > => {
-          // No need to return anything here for now
-          // We probably want to use this as an actual test though
-          return Promise.resolve([]);
+          // Return all the mock subscribers that have been added
+          return Promise.resolve(
+            mockSubscribers.map((chatter) => {
+              chatter.isSubscriber = true;
+              return chatter;
+            })
+          );
+        }
+      );
+
+      getModerators = jest.fn(
+        async (): Promise<
+          {
+            id: string;
+            name: string;
+            displayName: string;
+            isSubscriber: boolean;
+            isMod: boolean;
+            isBroadcaster: boolean;
+          }[]
+        > => {
+          // Return all the mock subscribers that have been added
+          return Promise.resolve(
+            mockModerators.map((chatter) => {
+              chatter.isMod = true;
+              return chatter;
+            })
+          );
         }
       );
 
@@ -322,6 +357,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         "chat:edit",
         "moderator:read:chatters",
         "channel:read:subscriptions",
+        "moderation:read",
       ];
       esListener = {
         start: () => {
@@ -636,6 +672,8 @@ export {
   simAdvanceTime,
   simSetTime,
   simSetChatters,
+  simSetSubscribers,
+  simSetModerators,
   buildChatter,
   createMockVolume,
   replace,
