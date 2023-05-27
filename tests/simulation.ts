@@ -40,16 +40,16 @@ const DEFAULT_TEST_SETTINGS = {
   message_cooldown: 5,
 };
 // constants
-const EMPTY_CHATTERS: Chatter[] = [];
+const EMPTY_CHATTERS: User[] = [];
 // async function type
 const AsyncFunction = (async () => {
   /* used for type information */
 }).constructor;
 
 // mock variables
-let mockChatters: Chatter[] = [];
-let mockSubscribers: Chatter[] = [];
-let mockModerators: Chatter[] = [];
+let mockChatters: User[] = [];
+let mockSubscribers: User[] = [];
+let mockModerators: User[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -160,15 +160,15 @@ const expectErrorMessage = (promise: Promise<unknown>) => {
   ).rejects;
 };
 
-const simSetChatters = (newChatters: Chatter[]) => {
+const simSetChatters = (newChatters: User[]) => {
   mockChatters = newChatters;
 };
 
-const simSetSubscribers = (newSubscribers: Chatter[]) => {
+const simSetSubscribers = (newSubscribers: User[]) => {
   mockSubscribers = newSubscribers;
 };
 
-const simSetModerators = (newMods: Chatter[]) => {
+const simSetModerators = (newMods: User[]) => {
   mockModerators = newMods;
 };
 
@@ -315,15 +315,11 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
             id: string;
             name: string;
             displayName: string;
-            isSubscriber: boolean;
-            isMod: boolean;
-            isBroadcaster: boolean;
           }[]
         > => {
           // Return all the mock subscribers that have been added
           return Promise.resolve(
             mockSubscribers.map((chatter) => {
-              chatter.isSubscriber = true;
               return chatter;
             })
           );
@@ -336,15 +332,11 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
             id: string;
             name: string;
             displayName: string;
-            isSubscriber: boolean;
-            isMod: boolean;
-            isBroadcaster: boolean;
           }[]
         > => {
           // Return all the mock subscribers that have been added
           return Promise.resolve(
             mockModerators.map((chatter) => {
-              chatter.isMod = true;
               return chatter;
             })
           );

@@ -109,10 +109,7 @@ test("fetch subs", async () => {
   queue.testAccess((data) => {
     const list = getList(data);
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual({
-      ...chatter1,
-      isSubscriber: true,
-    });
+    expect(list.online.at(0)?.submitter.id).toEqual(chatter1.id);
   });
 });
 
@@ -143,7 +140,7 @@ test("fetch mods", async () => {
   queue.testAccess((data) => {
     const list = getList(data);
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual({ ...chatter2, isMod: true });
+    expect(list.online.at(0)?.submitter.id).toEqual(chatter2.id);
   });
 });
 
@@ -196,7 +193,7 @@ test("send eventsub for new sub", async () => {
     // Comparing the chatter directly here fails, since the list still has isSubscriber = false
     const chatterSubmitter: QueueSubmitter = chatter3;
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual(chatterSubmitter);
+    expect(list.online.at(0)?.submitter.id).toEqual(chatterSubmitter.id);
   });
 });
 
@@ -224,7 +221,7 @@ test("send eventsub for ended sub", async () => {
   queue.testAccess((data) => {
     const list = getList(data);
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual(chatter3);
+    expect(list.online.at(0)?.submitter.id).toEqual(chatter3.id);
   });
 
   // Send an eventsub message to demote chatter3
@@ -302,7 +299,7 @@ test("send eventsub for new mod", async () => {
     // Comparing the chatter directly here fails, since the list still has isSubscriber = false
     const chatterSubmitter: QueueSubmitter = chatter3;
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual(chatterSubmitter);
+    expect(list.online.at(0)?.submitter.id).toEqual(chatterSubmitter.id);
   });
 });
 
@@ -330,7 +327,7 @@ test("send eventsub for demoted mod", async () => {
   queue.testAccess((data) => {
     const list = getList(data);
     expect(list.online).toHaveLength(1);
-    expect(list.online.at(0)?.submitter).toEqual(chatter3);
+    expect(list.online.at(0)?.submitter.id).toEqual(chatter3.id);
   });
 
   // Send an eventsub message to demote chatter3
