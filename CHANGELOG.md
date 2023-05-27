@@ -20,6 +20,8 @@
 - The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
 - `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.yml` to `"all"` and then `!clear` clears all levels again.
 - Subscribers and moderators are now monitored through eventsub and with a check when the stream comes online. This requires new token scopes, and a warning will be printed during startup (and this functionality disabled) if the scopes are missing.
+  - This is now implemented with a separate (optional) broadcaster token.
+  - As a result of this, the bot no longer has to be mod, so long as a broadcaster token is provided with the `moderator:read:chatters` scope.
 
 ## New features
 

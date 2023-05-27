@@ -196,6 +196,22 @@ class TwitchApi {
         tokenData = InitialTokenScheme.parse(
           JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf-8"))
         );
+      } catch (err) {
+        if (
+          typeof err === "object" &&
+          err != null &&
+          "code" in err &&
+          err.code === "ENOENT"
+        ) {
+          // There's no provided tokens for the broadcaster
+          this.#broadcasterTokenScopes = [];
+          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
+        } else {
+          throw err;
+        }
+      }
+
+      if (tokenData) {
         const id = await this.#authProvider.addUserForToken(tokenData, [
           "subscribers-by-broadcaster",
           "moderators-by-broadcaster",
@@ -213,18 +229,6 @@ class TwitchApi {
           this.#authProvider.addIntentsToUser(id, ["chatters"]);
         } else {
           this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
-        }
-      } catch (err) {
-        if (
-          typeof err === "object" &&
-          err != null &&
-          "code" in err &&
-          err.code === "ENOENT"
-        ) {
-          this.#broadcasterTokenScopes = [];
-          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
-        } else {
-          throw err;
         }
       }
     }

@@ -111,7 +111,7 @@
   "orderList": "Next level order: {{order, list}}",
   "streamIsOnline": "Stream is online!",
   "streamIsOffline": "Stream is offline!",
-  "requiredScopeError": "Missing required scope in token. Please generate a new token providing all required scopes.",
-  "subscribersScopeMissing": "Missing the channel:read:subscriptions scope in token. Subscriber multipliers won't apply until the subscriber sends a chat message.",
-  "moderatorsScopeMissing": "Missing the moderation:read scope in token. !modnext (etc) will not work for mods until they speak in chat."
+  "requiredScopeError": "Missing required scope in bot token. Please generate a new token providing all required scopes.",
+  "subscribersScopeMissing": "Missing a broadcaster token, or the provided broadcaster token is missing the channel:read:subscriptions scope. Subscriber multipliers won't apply until the subscriber sends a chat message.",
+  "moderatorsScopeMissing": "Missing a broadcaster token, or the provided broadcaster token is missing the moderation:read scope. !modnext (etc) will not work for mods until they speak in chat."
 }
