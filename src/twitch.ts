@@ -108,7 +108,9 @@ const twitch = {
    * Updates the list of subscribers in chat, assuming the API token has permission to.
    */
   async updateModsAndSubscribers() {
-    if (twitchApi.tokenScopes.includes("channel:read:subscriptions")) {
+    if (
+      twitchApi.broadcasterTokenScopes.includes("channel:read:subscriptions")
+    ) {
       for (const subscriber of await twitchApi.getSubscribers()) {
         if (!subscribers.has(subscriber.id)) {
           subscribers.set(subscriber.id, subscriber);
@@ -116,7 +118,7 @@ const twitch = {
       }
     }
 
-    if (twitchApi.tokenScopes.includes("moderation:read")) {
+    if (twitchApi.broadcasterTokenScopes.includes("moderation:read")) {
       for (const mod of await twitchApi.getModerators()) {
         if (!mods.has(mod.id)) {
           mods.set(mod.id, mod);
