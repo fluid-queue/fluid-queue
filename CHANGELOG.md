@@ -19,6 +19,7 @@
 - The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.yml`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
 - The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
 - `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.yml` to `"all"` and then `!clear` clears all levels again.
+- Subscribers and moderators are now monitored through eventsub and with a check when the stream comes online. This requires new token scopes, and a warning will be printed during startup (and this functionality disabled) if the scopes are missing.
 
 ## New features
 
@@ -30,6 +31,7 @@
 - The bot now optionally prints a message when a user whose level is next is offline.
 - Levels of deleted users can be cleared by using `!clear deleted`; this will also rename all users in the queue.
 - Levels of users who were not online for a while can now be cleared with `!clear {duration}` where duration can be multiple numbers followed by a unit (`min`, `hours`, `months`, etc. for a full list see [the documentation of timestring](https://github.com/mike182uk/timestring/tree/7.0.0#keywords)). For example `!clear 6 months 12 hours` clears all levels from everywhone who was not last online 6 months and 12 hours ago.
+- Console messages printed by the bot are now timestamped, and errors and warnings printed in color with `chalk`.
 
 ## New settings
 

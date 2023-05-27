@@ -6,6 +6,7 @@ import {
 } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import { ChatUserstate, Client } from "tmi.js";
+import { log } from "./chalk-print.js";
 
 const build_chatter = function (
   userId: string,
@@ -65,7 +66,7 @@ const chatbot_helper = function (channel: string): Chatbot {
       if (this.handle_func != null) {
         // Called every time the bot connects to Twitch chat
         const onConnectedHandler = (addr: string, port: number) => {
-          console.log(i18next.t("chatbotConnected", { addr, port }));
+          log(i18next.t("chatbotConnected", { addr, port }));
         };
 
         // Called every time a message comes in

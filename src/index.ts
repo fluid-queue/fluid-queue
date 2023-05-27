@@ -11,6 +11,7 @@ import { QueueEntry } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
 await import("./i18n.js");
 import i18next from "i18next";
+import { log } from "./chalk-print.js";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -773,8 +774,8 @@ async function HandleMessage(
   } else if (aliases.isAlias("persistence", message) && sender.isBroadcaster) {
     const subCommand = get_remainder(message);
     const response = await quesoqueue.persistenceManagement(subCommand);
-    console.log(subCommand);
-    console.log(response);
+    log(subCommand);
+    log(response);
     respond(`@${sender.displayName} ${response}`);
   } else if (aliases.isAlias("clear", message) && sender.isBroadcaster) {
     const clearArgument = get_remainder(message);

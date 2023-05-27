@@ -7,6 +7,7 @@ import {
   QueueEntry,
   QueueSubmitter,
 } from "./queue-entry.js";
+import { log } from "../chalk-print.js";
 
 const defaultActivated: string[] = [
   "smm2",
@@ -368,7 +369,7 @@ export class ConfiguredResolvers implements Iterable<QueueEntryResolver> {
     this.activatedOrder.forEach((activated) =>
       this.activatedSet.add(activated)
     );
-    console.log(
+    log(
       i18next.t("resolversList", {
         activatedOrder: this.activatedOrder,
         style: "short",

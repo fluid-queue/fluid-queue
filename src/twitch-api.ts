@@ -13,7 +13,11 @@ import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { User } from "./extensions-api/queue-entry.js";
+import { EventSubWsListener } from "@twurple/eventsub-ws";
+import { twitch } from "./twitch.js";
+import i18next from "i18next";
 import { z } from "zod";
+import { warn } from "./chalk-print.js";
 
 const tokensFileName = "./settings/tokens.json";
 
@@ -33,6 +37,8 @@ class TwitchApi {
   #apiClient: ApiClient | null = null;
   #broadcasterUser: HelixUser | null = null;
   #chattersCache: SingleValueCache<User[]>;
+  #tokenScopes: string[] = [];
+  #esListener: EventSubWsListener | null = null;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -50,6 +56,14 @@ class TwitchApi {
     return this.#apiClient;
   }
 
+  // visible for event sub
+  get broadcasterId(): string {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Tried to access broadcaster ID before client set up");
+    }
+    return this.#broadcasterUser.id;
+  }
+
   private get broadcaster(): UserIdResolvable {
     if (this.#broadcasterUser == null) {
       throw new Error("Tried to load chatters before client set up");
@@ -62,6 +76,10 @@ class TwitchApi {
       throw new Error("Tried to load chatters before client set up");
     }
     return this.#botUserId;
+  }
+
+  get tokenScopes(): string[] {
+    return this.#tokenScopes;
   }
 
   /**
@@ -121,6 +139,8 @@ class TwitchApi {
       "user-by-id",
       "chatters",
       "stream-online",
+      "subscribers-by-broadcaster",
+      "moderators-by-broadcaster",
     ]);
     // create the api client
     this.#apiClient = new ApiClient({
@@ -136,6 +156,65 @@ class TwitchApi {
         return ctx.users.getUserByName(settings.channel);
       }
     );
+
+    // check to make sure we got the user ID successfully
+    if (!this.#broadcasterUser) {
+      throw new Error("Failed to get broadcaster user during API setup");
+    }
+
+    // get the scopes
+    this.#tokenScopes = this.#authProvider.getCurrentScopesForUser(
+      this.#botUserId
+    );
+    // set up the eventsub listener
+    const apiClient = this.#apiClient;
+    this.#esListener = new EventSubWsListener({ apiClient });
+
+    if (
+      !this.#tokenScopes.includes("chat:edit") ||
+      !this.#tokenScopes.includes("chat:read") ||
+      !this.#tokenScopes.includes("moderator:read:chatters")
+    ) {
+      const err = i18next.t("requiredScopeError");
+      throw new Error(err);
+    }
+    if (!this.#tokenScopes.includes("channel:read:subscriptions")) {
+      warn(i18next.t("subscribersScopeMissing"));
+    }
+    if (!this.#tokenScopes.includes("moderation:read")) {
+      warn(i18next.t("moderatorsScopeMissing"));
+    }
+
+    let startListener = false;
+    if (this.#tokenScopes.includes("channel:read:subscriptions")) {
+      // set up the eventsub listeners for subs
+      this.#esListener.onChannelSubscription(
+        this.#broadcasterUser.id,
+        twitch.handleSub
+      );
+      this.#esListener.onChannelSubscriptionEnd(
+        this.#broadcasterUser.id,
+        twitch.handleUnsub
+      );
+      startListener = true;
+    }
+    if (this.#tokenScopes.includes("moderation:read")) {
+      // Set up the eventsub listeners for mods
+      this.#esListener.onChannelModeratorAdd(
+        this.#broadcasterUser.id,
+        twitch.handleMod
+      );
+      this.#esListener.onChannelModeratorRemove(
+        this.#broadcasterUser.id,
+        twitch.handleUnmod
+      );
+      startListener = true;
+    }
+
+    // We can only start the listener once
+    if (startListener) {
+      this.#esListener.start();
+    }
   }
 
   /**
@@ -173,7 +252,7 @@ class TwitchApi {
         });
         result.push(...page.data.map(mapUser));
       }
-      // console.log(`Fetched ${result.length} chatters`);
+      // log(`Fetched ${result.length} chatters`);
       return result;
     });
   }
@@ -203,13 +282,13 @@ class TwitchApi {
    */
   async getChatters(forceRefresh: boolean): Promise<User[]> {
     if (forceRefresh) {
-      // console.log("Force refresh");
+      // log("Force refresh");
       return await this.#chattersCache.fetch({
         forceRefresh: forceRefresh,
       });
     }
     if (await this.#isLimited()) {
-      console.warn("Use cache because of rate limits.");
+      warn("Use cache because of rate limits.");
       // use cache because of rate limiting
       return this.#chattersCache.get();
     }
@@ -243,6 +322,62 @@ class TwitchApi {
         this.mapUser(user)
       );
     });
+  }
+
+  async getSubscribers() {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get subscriptions without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const subscribers = await this.apiClient.asIntent(
+      ["subscribers-by-broadcaster"],
+      async (ctx) => {
+        return await ctx.subscriptions.getSubscriptions(broadcasterId);
+      }
+    );
+    if (subscribers == undefined) {
+      // Not sure if this is because there was a problem, or just because the broadcaster has no subs
+      return [];
+    }
+
+    // Extract all the user IDs
+    const subscriberUsers = subscribers.data.map((subscriber) => {
+      return {
+        id: subscriber.userId,
+        name: subscriber.userName,
+        displayName: subscriber.userDisplayName,
+      };
+    });
+    return subscriberUsers;
+  }
+
+  async getModerators() {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get subscriptions without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const mods = await this.apiClient.asIntent(
+      ["moderators-by-broadcaster"],
+      async (ctx) => {
+        return await ctx.moderation.getModerators(broadcasterId);
+      }
+    );
+    if (mods == undefined) {
+      // Not sure if this is because there was a problem, or just because the broadcaster has no subs
+      return [];
+    }
+
+    // Extract all the user IDs
+    const modUsers = mods.data.map((mod) => {
+      return {
+        id: mod.userId,
+        name: mod.userName,
+        displayName: mod.userDisplayName,
+      };
+    });
+    return modUsers;
   }
 
   async isStreamOnline(): Promise<boolean> {

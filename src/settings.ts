@@ -2,6 +2,7 @@ import fs from "fs";
 import { z } from "zod";
 import { Settings } from "./settings-type.js";
 import YAML from "yaml";
+import { warn } from "./chalk-print.js";
 
 export type Settings = z.infer<typeof Settings>;
 /**
@@ -26,10 +27,10 @@ for (const value of fileNames) {
       encoding: "utf8",
     });
     if (value.endsWith(".json")) {
-      console.warn(
+      warn(
         `Loading ${fileName} is deprecated and may stop working in a future release.`
       );
-      console.warn(`Please move '${fileName}' to '${fileNames[0]}'.`);
+      warn(`Please move '${fileName}' to '${fileNames[0]}'.`);
     }
     break;
   } catch (err) {

@@ -109,6 +109,9 @@
   "userLurk": "See you later, {{sender.displayName}}! Your level will not be played until you use the !back command.",
   "noOrder": "No order has been specified.",
   "orderList": "Next level order: {{order, list}}",
-  "streamIsOnline": "[{{time}}] Stream is online!",
-  "streamIsOffline": "[{{time}}] Stream is offline!"
+  "streamIsOnline": "Stream is online!",
+  "streamIsOffline": "Stream is offline!",
+  "requiredScopeError": "Missing required scope in token. Please generate a new token providing all required scopes.",
+  "subscribersScopeMissing": "Missing the channel:read:subscriptions scope in token. Subscriber multipliers won't apply until the subscriber sends a chat message.",
+  "moderatorsScopeMissing": "Missing the moderation:read scope in token. !modnext (etc) will not work for mods until they speak in chat."
 }

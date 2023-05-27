@@ -1,4 +1,5 @@
 import { version, buildVersion, buildTag } from "./version.js";
+import { warn } from "./chalk-print.js";
 
 const bannerTemplate = ` ___  _          _      _
 /  _|| |        |_|    | | ###################################
@@ -41,14 +42,15 @@ const printBanner = () => {
     const banner = bannerTemplate.replace(/#+/g, (characters) =>
       displayVersion().padStart(characters.length, " ")
     );
+    // Print this directly to avoid a timestamp
     console.log(banner);
     if (checkVersion() === false) {
-      console.warn(
+      warn(
         `Warning: Running a different version of the queue (${String(
           buildVersion()
         )} instead of ${version()})`
       );
-      console.warn("(Use `npm run build` to build the current version)\n");
+      warn("(Use `npm run build` to build the current version)\n");
     }
   } catch (e) {
     // ignore error

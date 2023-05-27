@@ -48,6 +48,8 @@ const AsyncFunction = (async () => {
 
 // mock variables
 let mockChatters: User[] = [];
+let mockSubscribers: User[] = [];
+let mockModerators: User[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -160,6 +162,14 @@ const expectErrorMessage = (promise: Promise<unknown>) => {
 
 const simSetChatters = (newChatters: User[]) => {
   mockChatters = newChatters;
+};
+
+const simSetSubscribers = (newSubscribers: User[]) => {
+  mockSubscribers = newSubscribers;
+};
+
+const simSetModerators = (newMods: User[]) => {
+  mockModerators = newMods;
 };
 
 /**
@@ -299,7 +309,56 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         );
       });
 
+      getSubscribers = jest.fn(
+        async (): Promise<
+          {
+            id: string;
+            name: string;
+            displayName: string;
+          }[]
+        > => {
+          // Return all the mock subscribers that have been added
+          return Promise.resolve(
+            mockSubscribers.map((chatter) => {
+              return chatter;
+            })
+          );
+        }
+      );
+
+      getModerators = jest.fn(
+        async (): Promise<
+          {
+            id: string;
+            name: string;
+            displayName: string;
+          }[]
+        > => {
+          // Return all the mock subscribers that have been added
+          return Promise.resolve(
+            mockModerators.map((chatter) => {
+              return chatter;
+            })
+          );
+        }
+      );
+
       isStreamOnline = jest.fn(() => Promise.resolve(true));
+      tokenScopes = [
+        "char:read",
+        "chat:edit",
+        "moderator:read:chatters",
+        "channel:read:subscriptions",
+        "moderation:read",
+      ];
+      esListener = {
+        start: () => {
+          // pass
+        },
+        onChannelSubscription: () => {
+          // pass
+        },
+      };
     }
     return {
       TwitchApi,
@@ -605,6 +664,8 @@ export {
   simAdvanceTime,
   simSetTime,
   simSetChatters,
+  simSetSubscribers,
+  simSetModerators,
   buildChatter,
   createMockVolume,
   replace,

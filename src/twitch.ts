@@ -3,6 +3,11 @@ import { Chatter } from "./extensions-api/command.js";
 import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
 import TTLCache from "@isaacs/ttlcache";
+import {
+  EventSubChannelModeratorEvent,
+  EventSubChannelSubscriptionEndEvent,
+  EventSubChannelSubscriptionEvent,
+} from "@twurple/eventsub-base";
 
 const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
 const LURKERS_TTL = Duration.parse("PT12H").toMillis();
@@ -12,9 +17,9 @@ const MODS_TTL = Duration.parse("PT12H").toMillis();
 const recentChatters = new TTLCache<string, Chatter>({
   ttl: RECENT_CHATTERS_TTL,
 });
-const lurkers = new TTLCache<string, Chatter>({ ttl: LURKERS_TTL });
-const subscribers = new TTLCache<string, Chatter>({ ttl: SUBSCRIBERS_TTL });
-const mods = new TTLCache<string, Chatter>({ ttl: MODS_TTL });
+const lurkers = new TTLCache<string, User>({ ttl: LURKERS_TTL });
+const subscribers = new TTLCache<string, User>({ ttl: SUBSCRIBERS_TTL });
+const mods = new TTLCache<string, User>({ ttl: MODS_TTL });
 
 type OnlineUser = { online: boolean; user: User } | { online: false };
 
@@ -97,6 +102,61 @@ const twitch = {
 
   isSubscriber: (submitter: QueueSubmitter) => {
     return subscribers.has(submitter.id);
+  },
+
+  /**
+   * Updates the list of subscribers in chat, assuming the API token has permission to.
+   */
+  async updateModsAndSubscribers() {
+    if (twitchApi.tokenScopes.includes("channel:read:subscriptions")) {
+      for (const subscriber of await twitchApi.getSubscribers()) {
+        if (!subscribers.has(subscriber.id)) {
+          subscribers.set(subscriber.id, subscriber);
+        }
+      }
+    }
+
+    if (twitchApi.tokenScopes.includes("moderation:read")) {
+      for (const mod of await twitchApi.getModerators()) {
+        if (!mods.has(mod.id)) {
+          mods.set(mod.id, mod);
+        }
+      }
+    }
+  },
+
+  handleSub(this: void, event: EventSubChannelSubscriptionEvent) {
+    if (!subscribers.has(event.userId)) {
+      const subscriber: User = {
+        id: event.userId,
+        name: event.userName,
+        displayName: event.userDisplayName,
+      };
+      subscribers.set(subscriber.id, subscriber);
+    }
+  },
+
+  handleUnsub(this: void, event: EventSubChannelSubscriptionEndEvent) {
+    if (subscribers.has(event.userId)) {
+      subscribers.delete(event.userId);
+    }
+  },
+
+  handleMod(this: void, event: EventSubChannelModeratorEvent) {
+    if (!mods.has(event.userId)) {
+      const mod: User = {
+        id: event.userId,
+        name: event.userName,
+        displayName: event.userDisplayName,
+      };
+      mods.set(mod.id, mod);
+    }
+  },
+
+  handleUnmod(this: void, event: EventSubChannelModeratorEvent) {
+    if (mods.has(event.userId)) {
+      mods.delete(event.userId);
+    }
   },
 
   async getOnlineSubscribers(forceRefresh = false): Promise<OnlineUsers> {

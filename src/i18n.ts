@@ -5,10 +5,11 @@ import { fileURLToPath } from "url";
 import { readdirSync, lstatSync } from "fs";
 import { options } from "./i18next-options.js";
 import Pseudo from "i18next-pseudo";
+import { log } from "./chalk-print.js";
 
 const dirname = pathDirname(fileURLToPath(import.meta.url));
 
-console.log("Initializing i18next...");
+log("Initializing i18next...");
 await i18next
   .use(FsBackend)
   .use(
