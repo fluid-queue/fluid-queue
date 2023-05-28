@@ -1,5 +1,6 @@
 import ExtensionsApi from "../extensions.js";
 import settings from "../settings.js";
+import { extractValidCode } from "./helpers/codematching.js";
 import {
   courseIdValidity as _courseIdValidity,
   CodeTypes,
@@ -13,10 +14,12 @@ await (await import("./helpers/i18n.js")).init("ocw");
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
 const levelCodeRegexStrict = new RegExp(
-  `^(${code})${delim}(${code})${delim}(${code})$`
+  `^(${code})${delim}(${code})${delim}(${code})$`,
+  "g"
 );
 const levelCodeRegex = new RegExp(
-  `(${code})${delim}(${code})${delim}(${code})`
+  `(?=(${code})${delim}(${code})${delim}(${code}))`,
+  "g"
 );
 
 function courseIdValidity(courseIdString: string) {
@@ -32,31 +35,6 @@ function courseIdValidity(courseIdString: string) {
   return { valid: parsed.valid, makerCode: parsed.makerCode };
 }
 
-const extractValidCode = (levelCode: string, lenient = false) => {
-  // TODO: iterate through matches and check if the code is valid for each match and return the first valid one to make this even more lenient
-  let match;
-  if (lenient) {
-    match = levelCode.match(levelCodeRegex);
-  } else {
-    match = levelCode.match(levelCodeRegexStrict);
-  }
-  if (match) {
-    const courseIdString = `${match[1]}${match[2]}${match[3]}`.toUpperCase();
-    const validity = courseIdValidity(courseIdString);
-    return {
-      ...validity,
-      code: `${match[1]}-${match[2]}-${match[3]}`.toUpperCase(),
-      validSyntax: true,
-    };
-  }
-  return {
-    code: levelCode,
-    valid: false,
-    validSyntax: false,
-    makerCode: false,
-  };
-};
-
 function display(code: string) {
   let codeDisplay = code;
   if (
@@ -69,7 +47,9 @@ function display(code: string) {
   }
   if (settings.showMakerCode === false) {
     return i18next.t("levelCodeNoSuffix", { ns: "ocw", codeDisplay });
-  } else if (extractValidCode(code).makerCode) {
+  } else if (
+    extractValidCode(code, levelCodeRegexStrict, courseIdValidity).makerCode
+  ) {
     return i18next.t("makerCode", { ns: "ocw", codeDisplay });
   } else {
     return i18next.t("levelCode", { ns: "ocw", codeDisplay });
@@ -77,7 +57,7 @@ function display(code: string) {
 }
 
 function resolver(args: string) {
-  const result = extractValidCode(args, false);
+  const result = extractValidCode(args, levelCodeRegexStrict, courseIdValidity);
   if (result.valid) {
     return { code: result.code };
   }
@@ -85,7 +65,7 @@ function resolver(args: string) {
 }
 
 function lenientResolver(args: string) {
-  const result = extractValidCode(args, true);
+  const result = extractValidCode(args, levelCodeRegex, courseIdValidity);
   if (result.valid) {
     return { code: result.code };
   }
