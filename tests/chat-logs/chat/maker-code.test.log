@@ -84,3 +84,13 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [02:24:35] ~%?liquidnya: !add D36-010-5YF
 [02:24:35] @^helperblock: liquidnya, D36-010-5YF has been added to the queue.
 
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+
+# also check if smm2-lenient is working
+[20:36:15] ~%?liquidnya: !add please play this level NB0-1MD-SLG thank you!
+[20:36:16] @^helperblock: liquidnya, NB0-1MD-SLG (maker code) has been added to the queue.
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+[20:36:21] ~%?liquidnya: !add please play this level 3H7-B19-7RF thank you!
+[20:36:21] @^helperblock: liquidnya, 3H7-B19-7RF has been added to the queue.
