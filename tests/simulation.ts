@@ -352,14 +352,10 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         "channel:read:subscriptions",
         "moderation:read",
       ];
-      esListener = {
-        start: () => {
-          // pass
-        },
-        onChannelSubscription: () => {
-          // pass
-        },
-      };
+      registerStreamCallbacks = jest.fn(() => {
+        // These can be tested without being registered
+        return;
+      });
     }
     return {
       TwitchApi,
