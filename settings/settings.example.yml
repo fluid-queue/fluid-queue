@@ -5,6 +5,7 @@ clientSecret: "YOUR_CLIENT_SECRET" # the client secret of your application.
 
 start_open: false # is the toggle for whether or not the queue will start open.
 enable_absolute_position: false # is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position).
+offline_message: true # is the toggle for whether or not to print a message when a level's submitter is offline, and that level is selected
 custom_codes_enabled: false # is the toggle for whether or not custom codes are allowed to be added to the queue. (the "customcode" resolver also needs to be enabled)
 romhacks_enabled: false # if the "customlevel" resolver is enabled, one can add ROMhacks using `!add ROMhack`.
 uncleared_enabled: false # if the "customlevel" resolver is enabled, one can add uncleared levels using `!add Uncleared`.

@@ -10,6 +10,7 @@
 # Don't ignore the example files
 !/settings/settings.example.yml
 !/settings/tokens.example.json
+!/settings/channel-points.example.yml
 
 # Secrets and non-sample sample files
 settings.json

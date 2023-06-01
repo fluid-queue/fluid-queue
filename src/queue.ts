@@ -18,6 +18,7 @@ import timestring from "timestring";
 import humanizeDuration from "humanize-duration";
 import { twitchApi } from "./twitch-api.js";
 import { log, warn } from "./chalk-print.js";
+import { channelPointManager } from "./channel-points.js";
 
 const extensions = new Extensions();
 
@@ -633,6 +634,14 @@ const queue = {
     );
   },
 
+  isOnline: async (user: QueueSubmitter) => {
+    const getList = await queue.list(true);
+    return data.access((data) => {
+      const list = getList(data);
+      return list.online.some((value) => value.submitter.id == user.id);
+    });
+  },
+
   next: async (
     list: QueueDataMap<OnlineOfflineList> | undefined = undefined
   ) => {
@@ -1076,15 +1085,27 @@ const queue = {
     loaded = true;
   },
 
+  onStreamOnline: () => {
+    streamLastOnline = true;
+    void twitch.updateModsAndSubscribers();
+    channelPointManager.onStreamOnline();
+    log(i18next.t("streamIsOnline"));
+  },
+
+  onStreamOffline: () => {
+    streamLastOnline = false;
+    channelPointManager.onStreamOffline();
+    log(i18next.t("streamIsOffline"));
+  },
+
   waitingTimerTick: async () => {
     const streamOnline = await twitchApi.isStreamOnline();
     if (streamLastOnline !== streamOnline) {
       streamLastOnline = streamOnline;
       if (streamOnline) {
-        await twitch.updateModsAndSubscribers();
-        log(i18next.t("streamIsOnline"));
+        queue.onStreamOnline();
       } else {
-        log(i18next.t("streamIsOffline"));
+        queue.onStreamOffline();
       }
     }
     if (!streamOnline) {
