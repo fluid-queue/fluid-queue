@@ -122,6 +122,7 @@
   "duplicateRedemptionRemoved": "Removed a duplicate redemption of {{redemption.rewardTitle}} by {{redemption.userDisplayName}}",
   "skipNotInQueue": "{{redeemer.displayName}}, you cannot redeem a queue skip unless you're in the queue!",
   "skipAlreadyRedeemed": "{{redeemer.displayName}}, you already have a pending queue skip!",
+  "skipAllRedeemed": "{{redeemer.displayName}}, all queue skips this stream have been redeemed!",
   "skipRegistered": "{{redeemer.displayName}}, thank you for redeeming \"{{rewardTitle}}\"! Your level will now be prioritized.",
   "absentRedemptionRemoved": "Removed and refunded redemption from {{redemption.userDisplayName}}, who is no longer in the level queue."
 }

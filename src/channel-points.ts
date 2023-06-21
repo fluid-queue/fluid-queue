@@ -270,11 +270,28 @@ class ChannelPointManager {
   handleRedemptionAdd(event: EventSubChannelRedemptionAddEvent) {
     const redeemer = redemptionToQueueSkipper(event);
     // Make sure the user is actually in the queue
-    console.log(quesoqueue);
     quesoqueue.position(redeemer).then(
       (position) => {
         if (this.#say_func == undefined) {
           throw new Error("Trying to handle a redemption without say_func");
+        }
+        // Make sure we have enough rewards in the pool first
+        // The reward should be paused, but we can double check
+        if (
+          this.#config.rewards["skip_queue"].global_limit &&
+          this.#streamCounter >= this.#config.rewards["skip_queue"].global_limit
+        ) {
+          this.#say_func(i18next.t("skipAllRedeemed", { redeemer }));
+          void twitchApi.updateCustomRewardRedemption(
+            event.rewardId,
+            event.id,
+            "CANCELED"
+          );
+          // Make sure the reeward is paused
+          void twitchApi.updateCustomReward(event.rewardId, {
+            isPaused: true,
+          });
+          return;
         }
         // If they're not in the queue or their level is being played, refund their redemption
         if (position < 1) {
@@ -294,24 +311,23 @@ class ChannelPointManager {
             event.id,
             "CANCELED"
           );
-        } else {
-          this.#say_func(
-            i18next.t("skipRegistered", {
-              redeemer,
-              rewardTitle: event.rewardTitle,
-            })
-          );
-          this.#skipQueue.push(redeemer);
-          this.#streamCounter += 1;
-          if (
-            this.#config.rewards["skip_queue"].global_limit &&
-            this.#streamCounter >=
-              this.#config.rewards["skip_queue"].global_limit
-          ) {
-            void twitchApi.updateCustomReward(event.rewardId, {
-              isPaused: true,
-            });
-          }
+          return;
+        }
+        this.#say_func(
+          i18next.t("skipRegistered", {
+            redeemer,
+            rewardTitle: event.rewardTitle,
+          })
+        );
+        this.#skipQueue.push(redeemer);
+        this.#streamCounter += 1;
+        if (
+          this.#config.rewards["skip_queue"].global_limit &&
+          this.#streamCounter >= this.#config.rewards["skip_queue"].global_limit
+        ) {
+          void twitchApi.updateCustomReward(event.rewardId, {
+            isPaused: true,
+          });
         }
       },
       (reason) => {
