@@ -579,8 +579,6 @@ async function HandleMessage(
     } else {
       // if they're leaving, they're not lurking
       twitch.notLurkingAnymore(sender);
-      // and if they redeemed a queue skip, they deserve their points back
-      channelPointManager.removeFromSkipQueue(sender);
       respond(quesoqueue.remove(sender));
     }
   } else if (aliases.isAlias("replace", message)) {

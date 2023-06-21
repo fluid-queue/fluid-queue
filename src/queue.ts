@@ -231,9 +231,11 @@ class QueueData {
        */
       onRemove(removedLevels: QueueEntry[]) {
         // unlurk anyone that is removed from the queue
-        removedLevels.forEach((level) =>
-          twitch.notLurkingAnymore(level.submitter)
-        );
+        removedLevels.forEach((level) => {
+          twitch.notLurkingAnymore(level.submitter);
+          // and if they redeemed a queue skip, they deserve their points back
+          channelPointManager.removeFromSkipQueue(level.submitter);
+        });
         // check if romhack levels or uncleared levels are disabled and need to be removed
         const allEntries = (
           this.current_level === undefined ? [] : [this.current_level]
