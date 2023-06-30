@@ -41,7 +41,6 @@ class TwitchApi {
   #botTokenScopes: string[] = [];
   #broadcasterTokenScopes: string[] = [];
   #esListener: EventSubWsListener | null = null;
-  private chattersUserId: string | null = null;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -180,8 +179,8 @@ class TwitchApi {
       this.#authProvider.addIntentsToUser(this.#botUserId, [
         "subscribers-by-broadcaster",
         "moderators-by-broadcaster",
+        "chatters",
       ]);
-      this.chattersUserId = this.#botUserId;
       this.#broadcasterTokenScopes = this.#botTokenScopes;
     } else {
       // look for a broadcaster tokens file
@@ -199,7 +198,7 @@ class TwitchApi {
         ) {
           // There's no provided tokens for the broadcaster
           this.#broadcasterTokenScopes = [];
-          this.chattersUserId = this.#botUserId;
+          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
         } else {
           throw err;
         }
@@ -220,9 +219,9 @@ class TwitchApi {
         this.#broadcasterTokenScopes =
           this.#authProvider.getCurrentScopesForUser(id);
         if (this.#broadcasterTokenScopes.includes("moderator:read:chatters")) {
-          this.chattersUserId = id;
+          this.#authProvider.addIntentsToUser(id, ["chatters"]);
         } else {
-          this.chattersUserId = this.#botUserId;
+          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
         }
       }
     }
@@ -301,44 +300,40 @@ class TwitchApi {
       name: user.userName,
       displayName: user.userDisplayName,
     });
-    const result: User[] = [];
-    // request the maximum of 1000 to reduce number of requests
-    let page = await this.apiClient.chat.getChatters(
-      this.broadcaster,
-      this.chattersUser,
-      {
+    // TODO: remember user id from setup instead
+    const moderator = (
+      await this.#authProvider?.getAccessTokenForIntent("chatters")
+    )?.userId;
+    if (moderator == null) {
+      throw new Error(
+        "Account with the chatters intend for the moderator:read:chatters scope could not be found!"
+      );
+    }
+    return await this.apiClient.asUser(moderator, async (ctx) => {
+      const result: User[] = [];
+      // request the maximum of 1000 to reduce number of requests
+      let page = await ctx.chat.getChatters(this.broadcaster, moderator, {
         limit: 1000,
-      }
-    );
-    result.push(...page.data.map(mapUser));
-    while (page.cursor != null) {
-      page = await this.apiClient.chat.getChatters(
-        this.broadcaster,
-        this.chattersUser,
-        {
+      });
+      result.push(...page.data.map(mapUser));
+      while (page.cursor != null) {
+        page = await ctx.chat.getChatters(this.broadcaster, moderator, {
           after: page.cursor,
           limit: 1000,
-        }
-      );
-      result.push(...page.data.map(mapUser));
-    }
-    // log(`Fetched ${result.length} chatters`);
-    return result;
-  }
-
-  private get chattersUser(): UserIdResolvable {
-    if (this.chattersUserId == null) {
-      throw new Error("Tried to load chatters before client set up");
-    }
-    return this.chattersUserId;
+        });
+        result.push(...page.data.map(mapUser));
+      }
+      // log(`Fetched ${result.length} chatters`);
+      return result;
+    });
   }
 
   /**
    * @returns if the api has limited use
    */
   async #isLimited(): Promise<boolean> {
-    const rateLimiterStats = await this.apiClient.asUser(
-      this.chattersUser,
+    const rateLimiterStats = await this.apiClient.asIntent(
+      ["chatters"],
       (ctx) => Promise.resolve(ctx.rateLimiterStats)
     );
     return (
