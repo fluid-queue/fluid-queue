@@ -73,13 +73,6 @@ class TwitchApi {
     return this.#broadcasterUser;
   }
 
-  private get moderator(): UserIdResolvable {
-    if (this.#botUserId == null) {
-      throw new Error("Tried to load chatters before client set up");
-    }
-    return this.#botUserId;
-  }
-
   get botTokenScopes(): string[] {
     return this.#botTokenScopes;
   }
@@ -307,15 +300,24 @@ class TwitchApi {
       name: user.userName,
       displayName: user.userDisplayName,
     });
-    return await this.apiClient.asIntent(["chatters"], async (ctx) => {
+    // TODO: remember user id from setup instead
+    const moderator = (
+      await this.#authProvider?.getAccessTokenForIntent("chatters")
+    )?.userId;
+    if (moderator == null) {
+      throw new Error(
+        "Account with the chatters intend for the moderator:read:chatters scope could not be found!"
+      );
+    }
+    return await this.apiClient.asUser(moderator, async (ctx) => {
       const result: User[] = [];
       // request the maximum of 1000 to reduce number of requests
-      let page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+      let page = await ctx.chat.getChatters(this.broadcaster, moderator, {
         limit: 1000,
       });
       result.push(...page.data.map(mapUser));
       while (page.cursor != null) {
-        page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+        page = await ctx.chat.getChatters(this.broadcaster, moderator, {
           after: page.cursor,
           limit: 1000,
         });
