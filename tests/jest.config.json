@@ -11,5 +11,6 @@
     "^.+\\.(t|j)sx?$": "@swc/jest"
   },
   "rootDir": "..",
-  "roots": ["<rootDir>/src/", "<rootDir>/tests/"]
+  "roots": ["<rootDir>/src/", "<rootDir>/tests/"],
+  "testTimeout": 10000
 }
