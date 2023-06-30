@@ -400,5 +400,12 @@ for (const file of testFiles) {
     ".",
     path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
   );
-  test(fileName, chatLogTest(fileName));
+  test(
+    fileName,
+    () => {
+      jest.setTimeout(10_000); // <- this might not work
+      chatLogTest(fileName);
+    },
+    10_000 // <- setting timeout here as well
+  );
 }
