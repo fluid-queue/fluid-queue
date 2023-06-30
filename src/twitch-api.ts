@@ -294,38 +294,51 @@ class TwitchApi {
     return new tmi.client({ ...opts, authProvider: this.#authProvider });
   }
 
-  async #loadChatters() {
-    const mapUser = (user: HelixChatChatter) => ({
-      id: user.userId,
-      name: user.userName,
-      displayName: user.userDisplayName,
-    });
-    // TODO: remember user id from setup instead
+  async getChattersUser(): Promise<UserIdResolvable> {
+    if (this.#authProvider == null) {
+      throw new Error("#authProvider null when accessing chatters");
+    }
     const moderator = (
-      await this.#authProvider?.getAccessTokenForIntent("chatters")
+      await this.#authProvider.getAccessTokenForIntent("chatters")
     )?.userId;
     if (moderator == null) {
       throw new Error(
         "Account with the chatters intend for the moderator:read:chatters scope could not be found!"
       );
     }
-    return await this.apiClient.asUser(moderator, async (ctx) => {
-      const result: User[] = [];
-      // request the maximum of 1000 to reduce number of requests
-      let page = await ctx.chat.getChatters(this.broadcaster, moderator, {
+    return moderator;
+  }
+
+  async #loadChatters() {
+    const mapUser = (user: HelixChatChatter) => ({
+      id: user.userId,
+      name: user.userName,
+      displayName: user.userDisplayName,
+    });
+    const chattersUser = await this.getChattersUser();
+    const result: User[] = [];
+    // request the maximum of 1000 to reduce number of requests
+    let page = await this.apiClient.chat.getChatters(
+      this.broadcaster,
+      chattersUser,
+      {
         limit: 1000,
-      });
-      result.push(...page.data.map(mapUser));
-      while (page.cursor != null) {
-        page = await ctx.chat.getChatters(this.broadcaster, moderator, {
+      }
+    );
+    result.push(...page.data.map(mapUser));
+    while (page.cursor != null) {
+      page = await this.apiClient.chat.getChatters(
+        this.broadcaster,
+        chattersUser,
+        {
           after: page.cursor,
           limit: 1000,
-        });
-        result.push(...page.data.map(mapUser));
-      }
-      // log(`Fetched ${result.length} chatters`);
-      return result;
-    });
+        }
+      );
+      result.push(...page.data.map(mapUser));
+    }
+    // log(`Fetched ${result.length} chatters`);
+    return result;
   }
 
   /**
