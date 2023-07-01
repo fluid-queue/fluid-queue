@@ -1,7 +1,7 @@
 ---
-channel: "{CHANNEL_NAME}" # is the channel that the bot will run in. This should be your Twitch account username, only containing underscores and lowercase alphanumeric characters.
-clientId: "{YOUR_CLIENT_ID}" # the client ID of your application.
-clientSecret: "{YOUR_CLIENT_SECRET}" # the client secret of your application.
+channel: "CHANNEL_NAME" # is the channel that the bot will run in. This should be your Twitch account username, only containing underscores and lowercase alphanumeric characters.
+clientId: "YOUR_CLIENT_ID" # the client ID of your application.
+clientSecret: "YOUR_CLIENT_SECRET" # the client secret of your application.
 
 start_open: false # is the toggle for whether or not the queue will start open.
 enable_absolute_position: false # is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position).

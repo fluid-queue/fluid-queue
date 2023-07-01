@@ -88,14 +88,16 @@ class TwitchApi {
     if (
       settings.clientId == null ||
       settings.clientId == "" ||
-      settings.clientId == "{YOUR_CLIENT_ID}"
+      settings.clientId == "{YOUR_CLIENT_ID}" ||
+      settings.clientId == "YOUR_CLIENT_ID"
     ) {
       throw new Error(`${settingsFile}: Invalid clientId.`);
     }
     if (
       settings.clientSecret == null ||
       settings.clientSecret == "" ||
-      settings.clientSecret == "{YOUR_CLIENT_SECRET}"
+      settings.clientSecret == "{YOUR_CLIENT_SECRET}" ||
+      settings.clientSecret == "YOUR_CLIENT_SECRET"
     ) {
       throw new Error(`${settingsFile}: Invalid clientSecret.`);
     }
@@ -106,14 +108,16 @@ class TwitchApi {
     if (
       tokenData.accessToken == null ||
       tokenData.accessToken == "" ||
-      tokenData.accessToken == "{INITIAL_ACCESS_TOKEN}"
+      tokenData.accessToken == "{INITIAL_ACCESS_TOKEN}" ||
+      tokenData.accessToken == "INITIAL_ACCESS_TOKEN"
     ) {
       throw new Error(`Invalid ${tokensFileName} file: accessToken not found.`);
     }
     if (
       tokenData.refreshToken == null ||
       tokenData.refreshToken == "" ||
-      tokenData.refreshToken == "{INITIAL_REFRESH_TOKEN}"
+      tokenData.refreshToken == "{INITIAL_REFRESH_TOKEN}" ||
+      tokenData.refreshToken == "INITIAL_REFRESH_TOKEN"
     ) {
       throw new Error(
         `Invalid ${tokensFileName} file: refreshToken not found.`
