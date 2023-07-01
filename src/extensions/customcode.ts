@@ -7,7 +7,7 @@ import { Result } from "../extensions-api/helpers.js";
 import { Chatter } from "../extensions-api/command.js";
 import i18next from "i18next";
 
-await (await import("./helpers/i18n.js")).init("customcode");
+await (await import("./helpers/i18n.js")).init("customcode", import.meta.url);
 
 class CustomCodes {
   map: Map<string, { customCode: string; entry: Entry }> = new Map<

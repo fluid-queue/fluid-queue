@@ -34,7 +34,7 @@ import {
   QueueEntryApi,
 } from "./extensions-api/resolvers.js";
 import { BroadcastOnce, SendOnce } from "./sync.js";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import i18next from "i18next";
 import { log, warn, error } from "./chalk-print.js";
 
@@ -127,14 +127,12 @@ const loadExtensionModules = async (
 
   const importModules: Promise<{ name: string; module: object }>[] =
     moduleFiles.map(async ({ name, fileName }) => {
-      let prefix = "";
-      if (process.platform === "win32") {
-        prefix = "file://";
-      }
-      const importName = prefix + path.join(directory, fileName);
-      const module: unknown = await import(importName);
+      const importUrl = pathToFileURL(
+        path.join(directory, fileName)
+      ).toString();
+      const module: unknown = await import(importUrl);
       if (typeof module !== "object" || module == null) {
-        throw new Error(`Module ${importName} does not export an object!`);
+        throw new Error(`Module ${importUrl} does not export an object!`);
       }
       return { name, module };
     });

@@ -36,12 +36,14 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./tests/jest.config.json --verbose",
     "start": "node --enable-source-maps ./build/index.js",
+    "start:swc": "node --loader @swc-node/register/esm ./src/index.ts",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
     "build": "node --loader @swc-node/register/esm ./build.ts",
     "clean": "rimraf build/",
-    "check": "npx tsc --noemit && eslint .",
+    "check": "tsc --noemit && eslint .",
     "dist-clean": "rimraf build/ dist/",
-    "dist-build": "npm run check && npm run test && npm run build && node --loader @swc-node/register/esm ./dist.ts"
+    "dist-build": "npm run check && npm run test && npm run build && node --loader @swc-node/register/esm ./dist.ts",
+    "fmt": "prettier --write ."
   },
   "devDependencies": {
     "@babel/code-frame": "^7.21.4",
