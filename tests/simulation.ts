@@ -5,18 +5,21 @@ import { FunctionLike } from "jest-mock";
 import { Volume, createFsFromVolume } from "memfs";
 import path from "path";
 import fs from "fs";
-import * as twitchApiModule from "../src/twitch-api.js";
+import * as twitchApiModule from "fluid-queue/twitch-api.js";
 import {
   SetIntervalAsyncHandler,
   SetIntervalAsyncTimer,
 } from "set-interval-async";
-import { Settings } from "../src/settings-type.js";
-import { Chatter, Responder } from "../src/extensions-api/command.js";
-import { Chatbot, helper } from "../src/chatbot.js";
+import { Settings } from "fluid-queue/settings-type.js";
+import { Chatter, Responder } from "fluid-queue/extensions-api/command.js";
+import { Chatbot, helper } from "fluid-queue/chatbot.js";
 import { z } from "zod";
-import { QueueSubmitter, User } from "../src/extensions-api/queue-entry.js";
-import { Queue } from "../src/queue.js";
-import { Twitch } from "../src/twitch.js";
+import {
+  QueueSubmitter,
+  User,
+} from "fluid-queue/extensions-api/queue-entry.js";
+import { Queue } from "fluid-queue/queue.js";
+import { Twitch } from "fluid-queue/twitch.js";
 import * as timers from "timers";
 import { fileURLToPath } from "url";
 import YAML from "yaml";
@@ -56,7 +59,7 @@ let clearAllTimersIntern: (() => Promise<void>) | null = null;
 const mockModules = async () => {
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
-  jest.unstable_mockModule("../src/chatbot.js", () => {
+  jest.unstable_mockModule("fluid-queue/chatbot.js", () => {
     const chatbot_helper = jest.fn((): Chatbot => {
       return {
         client: null, // do not mock client, since it is not used outside
@@ -261,7 +264,7 @@ function asMock<T, K extends keyof T>(
 }
 
 export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
-  jest.unstable_mockModule("../src/twitch-api.js", () => {
+  jest.unstable_mockModule("fluid-queue/twitch-api.js", () => {
     class TwitchApi {
       async setup() {
         // do nothing
@@ -363,8 +366,8 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
       twitchApi: new TwitchApi(),
     };
   });
-  return await import("../src/twitch-api.js");
-  //return jest.requireMock<typeof twitchApiModule>("../src/twitch-api.js");
+  return await import("fluid-queue/twitch-api.js");
+  //return jest.requireMock<typeof twitchApiModule>("fluid-queue/twitch-api.js");
 }
 
 /**
@@ -454,16 +457,16 @@ const simRequireIndex = async (
     fs = (await import("fs")).default;
 
     // import settings
-    settings = (await import("../src/settings.js")).default;
+    settings = (await import("fluid-queue/settings.js")).default;
 
     // import libraries
-    chatbot = await import("../src/chatbot.js");
-    twitch = (await import("../src/twitch.js")).twitch;
-    const queue = await import("../src/queue.js");
+    chatbot = await import("fluid-queue/chatbot.js");
+    twitch = (await import("fluid-queue/twitch.js")).twitch;
+    const queue = await import("fluid-queue/queue.js");
     quesoqueue = queue.quesoqueue();
 
     // run index.js
-    await import("../src/index.js");
+    await import("fluid-queue/index.js");
     if (chatbot === undefined) {
       throw new Error("chatbot was not loaded correctly");
     }

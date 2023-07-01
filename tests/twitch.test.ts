@@ -6,8 +6,8 @@ import {
   mockTwitchApi,
   createMockVolume,
 } from "./simulation.js";
-import { Settings } from "../src/settings-type.js";
-import { User } from "../src/extensions-api/queue-entry.js";
+import { Settings } from "fluid-queue/settings-type.js";
+import { User } from "fluid-queue/extensions-api/queue-entry.js";
 import * as timers from "timers";
 import { createFsFromVolume } from "memfs";
 
@@ -85,7 +85,7 @@ async function setupMocks() {
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
 
-  const twitch = (await import("../src/twitch.js")).twitch;
+  const twitch = (await import("fluid-queue/twitch.js")).twitch;
 
   // mock chatters
   asMock(twitchApi, "getChatters").mockImplementation(() =>
@@ -94,7 +94,7 @@ async function setupMocks() {
   jest.unstable_mockModule("../src/settings", () => {
     return { default: {} };
   });
-  const settings = (await import("../src/settings.js")).default;
+  const settings = (await import("fluid-queue/settings.js")).default;
   replace(settings, Settings.parse(defaultTestSettings));
 
   return { settings, twitch, twitchApi };
@@ -275,7 +275,7 @@ test("online users", async () => {
 
 test("createOnlineUsers:empty", async () => {
   await setupMocks();
-  const { createOnlineUsers } = await import("../src/twitch.js");
+  const { createOnlineUsers } = await import("fluid-queue/twitch.js");
   const users: User[] = [];
   const result = createOnlineUsers(users);
   expect(result.users).toEqual(new Map());
@@ -301,7 +301,7 @@ function createUser(i: number): User {
 
 test("createOnlineUsers:users", async () => {
   await setupMocks();
-  const { createOnlineUsers } = await import("../src/twitch.js");
+  const { createOnlineUsers } = await import("fluid-queue/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const result = createOnlineUsers(users);
   expect(result.users).toEqual(
@@ -343,7 +343,7 @@ test("createOnlineUsers:users", async () => {
 
 test("createOnlineUsers:users-with-lurkers", async () => {
   await setupMocks();
-  const { createOnlineUsers } = await import("../src/twitch.js");
+  const { createOnlineUsers } = await import("fluid-queue/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
   const filter = (user: User) => !lurkers(user);
@@ -405,7 +405,7 @@ test("createOnlineUsers:users-with-lurkers", async () => {
 
 test("createOnlineUsers:users-with-lurkers-and-subscribers", async () => {
   await setupMocks();
-  const { createOnlineUsers } = await import("../src/twitch.js");
+  const { createOnlineUsers } = await import("fluid-queue/twitch.js");
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const lurkers = (user: User) => parseInt(user.id) % 3 == 0;
   const filter0 = (user: User) => !lurkers(user);

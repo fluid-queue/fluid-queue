@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
-import { ConcurrentLoader, SingleValueCache } from "../src/cache.js";
-import { BroadcastOnce } from "../src/sync.js";
+import { ConcurrentLoader, SingleValueCache } from "fluid-queue/cache.js";
+import { BroadcastOnce } from "fluid-queue/sync.js";
 import { Duration } from "@js-joda/core";
 import { expectErrorMessage } from "./simulation.js";
 

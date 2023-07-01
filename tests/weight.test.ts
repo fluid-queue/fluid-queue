@@ -10,7 +10,7 @@ import {
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
 } from "./simulation.js";
-import { Queue, QueueDataMap, WeightedList } from "../src/queue.js";
+import { Queue, QueueDataMap, WeightedList } from "fluid-queue/queue.js";
 
 // console checks
 const consoleWarnMock = jest.spyOn(global.console, "warn");

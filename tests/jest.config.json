@@ -3,8 +3,8 @@
   "testEnvironment": "node",
   "modulePathIgnorePatterns": ["<rootDir>/build"],
   "moduleNameMapper": {
-    "^\\.{2}/src/(.*)\\.js$": "<rootDir>/src/$1",
-    "^(\\.{1,2}/.*)\\.js$": "$1"
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^fluid-queue/(.*)\\.js$": "<rootDir>/src/$1"
   },
   "extensionsToTreatAsEsm": [".ts"],
   "transform": {
