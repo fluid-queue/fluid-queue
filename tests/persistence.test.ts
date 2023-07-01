@@ -6,7 +6,7 @@ import {
   expectErrorMessage,
   mockTwitchApi,
 } from "./simulation.js";
-import { User } from "../src/extensions-api/queue-entry.js";
+import { User } from "fluid-queue/extensions-api/queue-entry.js";
 import { Volume, createFsFromVolume } from "memfs";
 import path from "path";
 
@@ -53,7 +53,7 @@ async function runHooks(hooks: (() => Promise<void> | void)[]): Promise<void> {
 
 test("UpgradeEngine:load", async () => {
   await setupMocks();
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => "loaded");
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("loaded");
@@ -64,7 +64,7 @@ test("UpgradeEngine:load", async () => {
 
 test("UpgradeEngine:create", async () => {
   await setupMocks();
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => null);
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("created");
@@ -76,7 +76,7 @@ test("UpgradeEngine:create", async () => {
 test("UpgradeEngine:upgrade", async () => {
   await setupMocks();
   let upgradeHookCalled = false;
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => "loaded").upgrade(
     (value) => ({
       data: `upgraded(${value})`,
@@ -100,7 +100,7 @@ test("UpgradeEngine:upgrade", async () => {
 
 test("UpgradeEngine:create-with-upgrade", async () => {
   await setupMocks();
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => null).upgrade(
     (value) => ({
       data: `upgraded(${value})`,
@@ -121,7 +121,7 @@ test("UpgradeEngine:create-with-upgrade", async () => {
 
 test("UpgradeEngine:load-with-upgrade", async () => {
   await setupMocks();
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => "loaded").upgrade(
     (value) => ({
       data: `upgraded(${value})`,
@@ -143,7 +143,7 @@ test("UpgradeEngine:load-with-upgrade", async () => {
 test("UpgradeEngine:upgrade-twice", async () => {
   const hookCalls: string[] = [];
   await setupMocks();
-  const { UpgradeEngine } = await import("../src/persistence.js");
+  const { UpgradeEngine } = await import("fluid-queue/persistence.js");
   const engine = UpgradeEngine.from<string>(() => "loaded")
     .upgrade(
       (value) => ({
@@ -202,7 +202,7 @@ class SaveAndVerify<T> {
 
 test("loadResultActions:data", async () => {
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   const result = await loadResultActions(
     {
@@ -220,7 +220,7 @@ test("loadResultActions:data", async () => {
 
 test("loadResultActions:save-and-verify", async () => {
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   const result = await loadResultActions(
     {
@@ -240,7 +240,7 @@ test("loadResultActions:save-and-verify", async () => {
 test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
   const hookCalls: number[] = [];
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   verify.mockReturnValue(null);
   const promise = loadResultActions(
@@ -268,7 +268,7 @@ test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
 test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
   const hookCalls: number[] = [];
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   verify.mockImplementation(() => {
     throw new Error("Loading failed!");
@@ -296,7 +296,7 @@ test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
 test("loadResultActions:save-and-verify-hooks-abort-save-off", async () => {
   const hookCalls: number[] = [];
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   const promise = loadResultActions(
     {
@@ -324,7 +324,7 @@ test("loadResultActions:save-and-verify-save-off", async () => {
   const consoleWarnMock = jest.spyOn(global.console, "warn");
   // this works because there are no hooks
   await setupMocks();
-  const { loadResultActions } = await import("../src/persistence.js");
+  const { loadResultActions } = await import("fluid-queue/persistence.js");
   const { save, verify } = SaveAndVerify.create<string>();
   const result = await loadResultActions(
     {
@@ -348,7 +348,7 @@ test("loadResultActions:save-and-verify-save-off", async () => {
 
 test("VersionedFile:no-file", async () => {
   await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   });
@@ -365,7 +365,7 @@ test("VersionedFile:no-file", async () => {
 
 test("VersionedFile:version-one", async () => {
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   });
@@ -395,7 +395,7 @@ test("VersionedFile:version-one", async () => {
 test("VersionedFile:version-three", async () => {
   const hookCalls: number[] = [];
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   })
@@ -447,7 +447,7 @@ test("VersionedFile:version-three", async () => {
 test("VersionedFile:version-two-upgrade-to-three", async () => {
   let hookCalls: number[] = [];
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   })
@@ -506,7 +506,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
 test("VersionedFile:version-one-upgrade-to-three", async () => {
   let hookCalls: number[] = [];
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   })
@@ -565,7 +565,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
 test("VersionedFile:version-too-big", async () => {
   const hookCalls: number[] = [];
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   })
@@ -608,7 +608,7 @@ test("VersionedFile:version-too-big", async () => {
 test("VersionedFile:version-too-small", async () => {
   const hookCalls: number[] = [];
   const fs = await setupMocks();
-  const { VersionedFile } = await import("../src/persistence.js");
+  const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
     return `loaded(${JSON.stringify(object)})`;
   })

@@ -4,7 +4,10 @@
     "noEmit": true,
     "allowJs": false,
     "moduleResolution": "node16",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "fluid-queue/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*", "tests/**/*", "build.ts", "dist.ts"],
   "exclude": []

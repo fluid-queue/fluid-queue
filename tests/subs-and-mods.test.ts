@@ -11,13 +11,13 @@ import {
   simSetSubscribers,
   simSetModerators,
 } from "./simulation.js";
-import { Queue, QueueDataMap, OnlineOfflineList } from "../src/queue.js";
+import { Queue, QueueDataMap, OnlineOfflineList } from "fluid-queue/queue.js";
 import {
   EventSubChannelSubscriptionEvent,
   EventSubChannelSubscriptionEndEvent,
   EventSubChannelModeratorEvent,
 } from "@twurple/eventsub-base";
-import { QueueSubmitter } from "../src/extensions-api/queue-entry.js";
+import { QueueSubmitter } from "fluid-queue/extensions-api/queue-entry.js";
 
 // Set up the fake timers
 jest.useFakeTimers();
