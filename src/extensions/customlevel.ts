@@ -12,7 +12,7 @@ import { z } from "zod";
 import i18next from "i18next";
 import { log } from "../chalk-print.js";
 
-await (await import("./helpers/i18n.js")).init("customlevel");
+await (await import("./helpers/i18n.js")).init("customlevel", import.meta.url);
 
 const QUEUE_NAMESPACE = "1e511052-e714-49bb-8564-b60915cf7279"; // this is the namespace for *known* level types for the queue (Version 4 UUID)
 const ROMHACK_UUID = uuidv5("ROMhack", QUEUE_NAMESPACE);

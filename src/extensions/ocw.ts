@@ -7,7 +7,7 @@ import {
 } from "./helpers/codeparsing.js";
 import i18next from "i18next";
 
-await (await import("./helpers/i18n.js")).init("ocw");
+await (await import("./helpers/i18n.js")).init("ocw", import.meta.url);
 
 // Need a slightly different regex because we don't know what OCW IDs will end with
 // If anyone figures that out, we can update this, but it would still be different

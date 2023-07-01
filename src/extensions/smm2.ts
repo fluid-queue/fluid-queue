@@ -7,7 +7,7 @@ import {
 } from "./helpers/codeparsing.js";
 import i18next from "i18next";
 
-await (await import("./helpers/i18n.js")).init("smm2");
+await (await import("./helpers/i18n.js")).init("smm2", import.meta.url);
 
 const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
