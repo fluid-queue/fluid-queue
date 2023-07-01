@@ -245,7 +245,7 @@ export class RegisterResolvers {
                       ({ code, data }) => {
                         return {
                           data:
-                            deserializer instanceof z.ZodType<Data>
+                            deserializer instanceof z.ZodType
                               ? deserializer.parse(data)
                               : deserializer(data),
                           code: z.string().parse(code),
@@ -279,7 +279,7 @@ export class RegisterResolvers {
                   ({ data }) => {
                     return {
                       data:
-                        deserializer instanceof z.ZodType<Data>
+                        deserializer instanceof z.ZodType
                           ? deserializer.parse(data)
                           : deserializer(data),
                     };
@@ -308,7 +308,7 @@ export class RegisterResolvers {
                       ({ code, data }) => {
                         return {
                           data:
-                            deserializer instanceof z.ZodType<Data>
+                            deserializer instanceof z.ZodType
                               ? deserializer.parse(data)
                               : deserializer(data),
                           code: z.string().parse(code),
