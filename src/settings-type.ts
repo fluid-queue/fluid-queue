@@ -23,17 +23,19 @@ const list_options: readonly [string, ...string[]] = [
   "none",
 ];
 
-function deprecatedValue<V, N>(value: V, newValue: N, ctx: RefinementCtx) {
+export function deprecatedValue<V, N>(
+  value: V,
+  newValue: N,
+  ctx: RefinementCtx
+) {
   warn(
-    `Setting ${String(
-      value
-    )} for ${ctx.path.toString()} is deprected, please replace the value with "${String(
-      newValue
-    )}".`
+    `Setting ${String(value)} for ${ctx.path.join(
+      "."
+    )} is deprected, please replace the value with ${String(newValue)}.`
   );
 }
 
-const TimeValue = z.string().transform((value) => {
+export const TimeValue = z.string().transform((value) => {
   value = value.trim();
   if (value.startsWith("P")) {
     // ISO-8601
@@ -49,7 +51,7 @@ const DeprectedMinutesValue = z
   .safe()
   .transform((value, ctx) => {
     // do not translate this newValue as configuration is only done in english
-    const newValue = `${value} minute${value == 1 ? "" : "s"}`;
+    const newValue = JSON.stringify(`${value} minute${value == 1 ? "" : "s"}`);
     deprecatedValue(value, newValue, ctx);
     return value * 1000 * 60;
   })
@@ -59,7 +61,7 @@ const DeprectedSecondsValue = z
   .safe()
   .transform((value, ctx) => {
     // do not translate this newValue as configuration is only done in english
-    const newValue = `${value} second${value == 1 ? "" : "s"}`;
+    const newValue = JSON.stringify(`${value} second${value == 1 ? "" : "s"}`);
     deprecatedValue(value, newValue, ctx);
     return value * 1000;
   })
@@ -205,7 +207,7 @@ export const Settings = z
       .nullable()
       .default(null),
     extensionOptions: z
-      .record(z.string(), z.record(z.string(), z.coerce.string()))
+      .record(z.string(), z.unknown())
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),

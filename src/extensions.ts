@@ -37,6 +37,8 @@ import { BroadcastOnce, SendOnce } from "./sync.js";
 import { fileURLToPath, pathToFileURL } from "url";
 import i18next from "i18next";
 import { log, warn, error } from "./chalk-print.js";
+import { z } from "zod";
+import { ZodTypeUnknown } from "./zod.js";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
 const fileEnding: string[] = [".js", ".ts"];
@@ -89,6 +91,17 @@ export default interface ExtensionsApi
    * Completes the setup and returns a promise that resolves when all extensions completed setup.
    */
   complete(): Promise<void>;
+  /**
+   * Gets options from `settings.extensionOptions` using a `Record<string, string>`.
+   */
+  options(name: string): Record<string, string>;
+  /**
+   * Gets and validates extension options from `settings.extensionOptions` using a schema.
+   */
+  options<Schema extends ZodTypeUnknown>(
+    name: string,
+    schema: Schema
+  ): z.output<Schema>;
 }
 
 function instanceOfExtensionModule(
@@ -413,6 +426,23 @@ export class Extensions {
     };
   }
 
+  options<Schema extends ZodTypeUnknown>(
+    name: string,
+    schema?: Schema
+  ): z.output<Schema> | Record<string, string> {
+    let options: unknown | undefined = undefined;
+    if (
+      settings.extensionOptions != null &&
+      name in settings.extensionOptions
+    ) {
+      options = settings.extensionOptions[name];
+    }
+    if (schema == null) {
+      return z.record(z.string(), z.coerce.string()).default({}).parse(options);
+    }
+    return schema.parse(options);
+  }
+
   get api(): Omit<ExtensionsApi, "complete"> {
     return {
       ...this.registeredResolvers.api,
@@ -421,6 +451,7 @@ export class Extensions {
       ...this.queueHandlers.api,
       resolve: this.resolve.bind(this),
       deserialize: this.deserialize.bind(this),
+      options: this.options.bind(this),
     };
   }
 }
