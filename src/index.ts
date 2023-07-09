@@ -26,7 +26,7 @@ if (settings.level_timeout) {
     chatbot_helper.say(
       i18next.t("timerExpired", { channel: settings.channel })
     );
-  }, settings.level_timeout * 1000 * 60);
+  }, settings.level_timeout);
 }
 
 function get_remainder(x: string) {
@@ -690,7 +690,7 @@ async function HandleMessage(
     } else if (settings.message_cooldown) {
       if (can_list) {
         can_list = false;
-        setTimeout(() => (can_list = true), settings.message_cooldown * 1000);
+        setTimeout(() => (can_list = true), settings.message_cooldown);
         do_list = true;
       } else {
         respond(i18next.t("scrollUp"));
