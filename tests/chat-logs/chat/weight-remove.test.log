@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"list": "weight","message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true,"clear":"all"}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"list": "weight","message_cooldown":"5 seconds","showMakerCode":false,"enable_absolute_position":true,"clear":"all"}
 # chatters
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
@@ -37,7 +37,7 @@ queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":
 [16:26:48] @^FurretWalkBot: !list
 [16:26:48] @^helperblock: 2 online: (no current level), liquidnya (99.9%), FurretWalkBot (0.0693%) (0 offline)
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"enable_absolute_position":true,"position":"both"}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"enable_absolute_position":true,"position":"both"}
 restart
 
 [16:26:48] @^FurretWalkBot: !pos

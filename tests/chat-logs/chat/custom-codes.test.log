@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"custom_codes_enabled":true,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","custom_codes_enabled":true,"showMakerCode":false}
 # restart to test with custom_codes_enabled set to true from the very beginning
 restart
 # chatters 

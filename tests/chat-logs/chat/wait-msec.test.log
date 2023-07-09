@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds", "start_open": true,"showMakerCode":false}
 # restart to start queue open (reload settings)
 restart
 # chatters 

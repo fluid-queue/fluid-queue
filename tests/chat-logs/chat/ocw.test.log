@@ -1,7 +1,7 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false}
 # chatters 
 chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
@@ -23,7 +23,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [20:29:54] @^helperblock: liquidnya, that is an invalid level code.
 
 # configure ocw
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "true"}}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "true"}}}
 # restart to reload settings
 restart
 
@@ -40,7 +40,7 @@ restart
 [20:36:21] @^helperblock: liquidnya, RHCD08CC8 (OCW) has been added to the queue.
 
 # showMakerCode
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "true"}}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "true"}}}
 # restart to reload settings
 restart
 
@@ -50,7 +50,7 @@ restart
 [20:32:21] @^helperblock: liquidnya, RHCD08CC8 (OCW maker code) has been added to the queue.
 
 # removeDashes off
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "false"}}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":true,"resolvers":["smm2","ocw","smm2-lenient","ocw-lenient"],"extensionOptions":{"ocw":{"removeDashes": "false"}}}
 # restart to reload settings
 restart
 
