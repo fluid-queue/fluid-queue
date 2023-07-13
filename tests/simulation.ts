@@ -31,7 +31,7 @@ const DEFAULT_TEST_SETTINGS = {
   clientId: "",
   clientSecret: "",
   max_size: 50,
-  level_timeout: 10,
+  level_timeout: "10 minutes",
   level_selection: [
     "next",
     "subnext",
@@ -40,7 +40,7 @@ const DEFAULT_TEST_SETTINGS = {
     "subrandom",
     "modrandom",
   ],
-  message_cooldown: 5,
+  message_cooldown: "5 seconds",
 };
 // constants
 const EMPTY_CHATTERS: User[] = [];

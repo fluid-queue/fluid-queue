@@ -8,6 +8,7 @@ import {
   QueueSubmitter,
 } from "./queue-entry.js";
 import { log } from "../chalk-print.js";
+import { ZodTypeUnknown } from "../zod.js";
 
 const defaultActivated: string[] = [
   "smm2",
@@ -99,7 +100,7 @@ export interface UsingDataStage<
     deserializer: Deserialize<Data>,
     serializer?: Serialize<Data>
   ): QueueEntryApi<AdjustStages<S, T & { data: Data }, [...A, Data]>>;
-  usingData<Schema extends z.ZodTypeAny>(
+  usingData<Schema extends ZodTypeUnknown>(
     schema: Schema,
     serializer?: Serialize<z.input<Schema>>
   ): QueueEntryApi<

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import ExtensionsApi from "../extensions.js";
 import settings from "../settings.js";
 import { extractValidCode } from "./helpers/codematching.js";
@@ -6,6 +7,7 @@ import {
   CodeTypes,
 } from "./helpers/codeparsing.js";
 import i18next from "i18next";
+import { deprecatedValue } from "../settings-type.js";
 
 await (await import("./helpers/i18n.js")).init("ocw", import.meta.url);
 
@@ -35,14 +37,28 @@ function courseIdValidity(courseIdString: string) {
   return { valid: parsed.valid, makerCode: parsed.makerCode };
 }
 
-function display(code: string) {
+const Options = z
+  .object({
+    removeDashes: z
+      .boolean()
+      .or(
+        z.string().transform((value, ctx) => {
+          const newValue = value == "true" || value == "yes";
+          deprecatedValue(
+            JSON.stringify(value),
+            `${JSON.stringify(newValue)} (without the quotes)`,
+            ctx
+          );
+          return newValue;
+        })
+      )
+      .default(false),
+  })
+  .default({});
+
+function display(code: string, options: z.output<typeof Options>) {
   let codeDisplay = code;
-  if (
-    settings.extensionOptions &&
-    settings.extensionOptions.ocw &&
-    (settings.extensionOptions.ocw.removeDashes == "true" ||
-      settings.extensionOptions.ocw.removeDashes == "yes")
-  ) {
+  if (options.removeDashes) {
     codeDisplay = code.replaceAll("-", "");
   }
   if (settings.showMakerCode === false) {
@@ -81,10 +97,11 @@ function upgrade(code: string): { code: string } | null {
 }
 
 export function setup(api: ExtensionsApi) {
+  const options = api.options("ocw", Options);
   api
     .queueEntry("ocw", "ocw level code")
     .usingCode()
-    .build(display)
+    .build((...args) => display(...args, options))
     .registerResolver("ocw", resolver)
     .registerResolver("ocw-lenient", lenientResolver)
     .registerUpgrade(upgrade);

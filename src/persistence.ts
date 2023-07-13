@@ -8,6 +8,7 @@ import { z } from "zod";
 import { twitchApi } from "./twitch-api.js";
 import { User } from "./extensions-api/queue-entry.js";
 import { log, warn, error } from "./chalk-print.js";
+import { ZodTypeUnknown } from "./zod.js";
 
 const DATA_DIRECTORY = "data";
 const VERSIONED_FILE_NAME = path.join(DATA_DIRECTORY, "queue.json");
@@ -104,7 +105,9 @@ interface ExtensionDataV2<T> {
   data: T;
 }
 
-function ExtensionDataV2<ItemType extends z.ZodTypeAny>(itemSchema: ItemType) {
+function ExtensionDataV2<ItemType extends ZodTypeUnknown>(
+  itemSchema: ItemType
+) {
   return z.object({
     version: z
       .string()
@@ -192,7 +195,9 @@ type SubmittedEntryV3 = z.infer<typeof SubmittedEntryV3>;
 
 type ExtensionDataV3<T> = ExtensionDataV2<T>;
 
-function ExtensionDataV3<ItemType extends z.ZodTypeAny>(itemSchema: ItemType) {
+function ExtensionDataV3<ItemType extends ZodTypeUnknown>(
+  itemSchema: ItemType
+) {
   return ExtensionDataV2(itemSchema);
 }
 

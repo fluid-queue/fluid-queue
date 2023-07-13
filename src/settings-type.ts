@@ -1,4 +1,7 @@
-import { z } from "zod";
+import timestring from "timestring";
+import { RefinementCtx, z } from "zod";
+import { warn } from "./chalk-print.js";
+import { Duration } from "@js-joda/core";
 
 const order_options: readonly [string, ...string[]] = [
   "next",
@@ -19,6 +22,50 @@ const list_options: readonly [string, ...string[]] = [
   "both",
   "none",
 ];
+
+export function deprecatedValue<V, N>(
+  value: V,
+  newValue: N,
+  ctx: RefinementCtx
+) {
+  warn(
+    `Setting ${String(value)} for ${ctx.path.join(
+      "."
+    )} is deprected, please replace the value with ${String(newValue)}.`
+  );
+}
+
+export const TimeValue = z.string().transform((value) => {
+  value = value.trim();
+  if (value.startsWith("P")) {
+    // ISO-8601
+    return Duration.parse(value).toMillis();
+  } else {
+    // user friendly
+    return timestring(value, "milliseconds");
+  }
+});
+
+const DeprectedMinutesValue = z
+  .number()
+  .safe()
+  .transform((value, ctx) => {
+    // do not translate this newValue as configuration is only done in english
+    const newValue = JSON.stringify(`${value} minute${value == 1 ? "" : "s"}`);
+    deprecatedValue(value, newValue, ctx);
+    return value * 1000 * 60;
+  })
+  .or(TimeValue);
+const DeprectedSecondsValue = z
+  .number()
+  .safe()
+  .transform((value, ctx) => {
+    // do not translate this newValue as configuration is only done in english
+    const newValue = JSON.stringify(`${value} second${value == 1 ? "" : "s"}`);
+    deprecatedValue(value, newValue, ctx);
+    return value * 1000;
+  })
+  .or(TimeValue);
 
 export const Settings = z
   .object({
@@ -79,20 +126,24 @@ export const Settings = z
       .nonnegative()
       .describe("max number of levels in the queue")
       .default(100),
-    level_timeout: z
-      .number()
-      .safe()
-      .describe("number of minutes on one level before timer goes off")
+    /**
+     * configured as a timestring (with the deprected fallback of setting minutes), but resolves to milliseconds
+     */
+    level_timeout: DeprectedMinutesValue.describe(
+      "number of minutes on one level before timer goes off"
+    )
       .nullable()
       .default(null),
     level_selection: z
       .enum(order_options)
       .array()
       .describe("order of methods used to pick next level"),
-    message_cooldown: z
-      .number()
-      .safe()
-      .describe("number of seconds between list commands")
+    /**
+     * configured as a timestring (with the deprected fallback of setting seconds), but resolves to milliseconds
+     */
+    message_cooldown: DeprectedSecondsValue.describe(
+      "number of seconds between list commands"
+    )
       .nullable()
       .default(null),
     dataIdCourseThreshold: z
@@ -156,7 +207,7 @@ export const Settings = z
       .nullable()
       .default(null),
     extensionOptions: z
-      .record(z.string(), z.record(z.string(), z.coerce.string()))
+      .record(z.string(), z.unknown())
       .describe("any options for your enabled resolvers")
       .nullable()
       .default(null),
