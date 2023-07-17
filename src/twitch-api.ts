@@ -73,6 +73,13 @@ class TwitchApi {
     return this.#broadcasterUser;
   }
 
+  private get moderator(): UserIdResolvable {
+    if (this.#botUserId == null) {
+      throw new Error("Tried to load chatters before client set up");
+    }
+    return this.#botUserId;
+  }
+
   get botTokenScopes(): string[] {
     return this.#botTokenScopes;
   }
@@ -298,51 +305,29 @@ class TwitchApi {
     return new tmi.client({ ...opts, authProvider: this.#authProvider });
   }
 
-  async getChattersUser(): Promise<UserIdResolvable> {
-    if (this.#authProvider == null) {
-      throw new Error("#authProvider null when accessing chatters");
-    }
-    const moderator = (
-      await this.#authProvider.getAccessTokenForIntent("chatters")
-    )?.userId;
-    if (moderator == null) {
-      throw new Error(
-        "Account with the chatters intend for the moderator:read:chatters scope could not be found!"
-      );
-    }
-    return moderator;
-  }
-
   async #loadChatters() {
     const mapUser = (user: HelixChatChatter) => ({
       id: user.userId,
       name: user.userName,
       displayName: user.userDisplayName,
     });
-    const chattersUser = await this.getChattersUser();
-    const result: User[] = [];
-    // request the maximum of 1000 to reduce number of requests
-    let page = await this.apiClient.chat.getChatters(
-      this.broadcaster,
-      chattersUser,
-      {
+    return await this.apiClient.asIntent(["chatters"], async (ctx) => {
+      const result: User[] = [];
+      // request the maximum of 1000 to reduce number of requests
+      let page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
         limit: 1000,
-      }
-    );
-    result.push(...page.data.map(mapUser));
-    while (page.cursor != null) {
-      page = await this.apiClient.chat.getChatters(
-        this.broadcaster,
-        chattersUser,
-        {
+      });
+      result.push(...page.data.map(mapUser));
+      while (page.cursor != null) {
+        page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
           after: page.cursor,
           limit: 1000,
-        }
-      );
-      result.push(...page.data.map(mapUser));
-    }
-    // log(`Fetched ${result.length} chatters`);
-    return result;
+        });
+        result.push(...page.data.map(mapUser));
+      }
+      // log(`Fetched ${result.length} chatters`);
+      return result;
+    });
   }
 
   /**
