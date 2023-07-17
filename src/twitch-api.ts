@@ -135,24 +135,27 @@ class TwitchApi {
     this.#authProvider = new RefreshingAuthProvider({
       clientId: settings.clientId,
       clientSecret: settings.clientSecret,
-      onRefresh: (userId, newTokenData) => {
-        let fileName;
-        if (this.#botUserId == null || this.#botUserId == userId) {
-          // this has to be the bot token, since the id is not known yet or matches
-          fileName = tokensFileName;
-        } else if (this.#broadcasterUser?.id == userId) {
-          // note that `this.#broadcasterUser` is set before the token is even added to the provider
-          fileName = broadcasterTokensFileName;
-        } else {
-          throw new Error(
-            `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
-          );
-        }
-        writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
-          encoding: "utf-8",
-        });
-      },
     });
+
+    // Register the onRefresh callback
+    this.#authProvider.onRefresh((userId, newTokenData) => {
+      let fileName;
+      if (this.#botUserId == null || this.#botUserId == userId) {
+        // this has to be the bot token, since the id is not known yet or matches
+        fileName = tokensFileName;
+      } else if (this.#broadcasterUser?.id == userId) {
+        // note that `this.#broadcasterUser` is set before the token is even added to the provider
+        fileName = broadcasterTokensFileName;
+      } else {
+        throw new Error(
+          `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
+        );
+      }
+      writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
+        encoding: "utf-8",
+      });
+    });
+
     // register refresh and access token of the bot and get the user id of the bot
     // this token is used for both chat as well as api calls
     this.#botUserId = await this.#authProvider.addUserForToken(tokenData, [
@@ -314,12 +317,12 @@ class TwitchApi {
     return await this.apiClient.asIntent(["chatters"], async (ctx) => {
       const result: User[] = [];
       // request the maximum of 1000 to reduce number of requests
-      let page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+      let page = await ctx.chat.getChatters(this.broadcaster, {
         limit: 1000,
       });
       result.push(...page.data.map(mapUser));
       while (page.cursor != null) {
-        page = await ctx.chat.getChatters(this.broadcaster, this.moderator, {
+        page = await ctx.chat.getChatters(this.broadcaster, {
           after: page.cursor,
           limit: 1000,
         });

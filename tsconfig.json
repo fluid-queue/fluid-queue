@@ -6,7 +6,8 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "fluid-queue/*": ["./src/*"]
-    }
+    },
+    "lib": ["es2021", "DOM"]
   },
   "include": ["src/**/*", "tests/**/*", "build.ts", "dist.ts"],
   "exclude": []
