@@ -128,24 +128,27 @@ class TwitchApi {
     this.#authProvider = new RefreshingAuthProvider({
       clientId: settings.clientId,
       clientSecret: settings.clientSecret,
-      onRefresh: (userId, newTokenData) => {
-        let fileName;
-        if (this.#botUserId == null || this.#botUserId == userId) {
-          // this has to be the bot token, since the id is not known yet or matches
-          fileName = tokensFileName;
-        } else if (this.#broadcasterUser?.id == userId) {
-          // note that `this.#broadcasterUser` is set before the token is even added to the provider
-          fileName = broadcasterTokensFileName;
-        } else {
-          throw new Error(
-            `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
-          );
-        }
-        writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
-          encoding: "utf-8",
-        });
-      },
     });
+
+    // Register the onRefresh callback
+    this.#authProvider.onRefresh((userId, newTokenData) => {
+      let fileName;
+      if (this.#botUserId == null || this.#botUserId == userId) {
+        // this has to be the bot token, since the id is not known yet or matches
+        fileName = tokensFileName;
+      } else if (this.#broadcasterUser?.id == userId) {
+        // note that `this.#broadcasterUser` is set before the token is even added to the provider
+        fileName = broadcasterTokensFileName;
+      } else {
+        throw new Error(
+          `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
+        );
+      }
+      writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
+        encoding: "utf-8",
+      });
+    });
+
     // register refresh and access token of the bot and get the user id of the bot
     // this token is used for both chat as well as api calls
     this.#botUserId = await this.#authProvider.addUserForToken(tokenData, [
@@ -298,51 +301,29 @@ class TwitchApi {
     return new tmi.client({ ...opts, authProvider: this.#authProvider });
   }
 
-  async getChattersUser(): Promise<UserIdResolvable> {
-    if (this.#authProvider == null) {
-      throw new Error("#authProvider null when accessing chatters");
-    }
-    const moderator = (
-      await this.#authProvider.getAccessTokenForIntent("chatters")
-    )?.userId;
-    if (moderator == null) {
-      throw new Error(
-        "Account with the chatters intend for the moderator:read:chatters scope could not be found!"
-      );
-    }
-    return moderator;
-  }
-
   async #loadChatters() {
     const mapUser = (user: HelixChatChatter) => ({
       id: user.userId,
       name: user.userName,
       displayName: user.userDisplayName,
     });
-    const chattersUser = await this.getChattersUser();
-    const result: User[] = [];
-    // request the maximum of 1000 to reduce number of requests
-    let page = await this.apiClient.chat.getChatters(
-      this.broadcaster,
-      chattersUser,
-      {
+    return await this.apiClient.asIntent(["chatters"], async (ctx) => {
+      const result: User[] = [];
+      // request the maximum of 1000 to reduce number of requests
+      let page = await ctx.chat.getChatters(this.broadcaster, {
         limit: 1000,
-      }
-    );
-    result.push(...page.data.map(mapUser));
-    while (page.cursor != null) {
-      page = await this.apiClient.chat.getChatters(
-        this.broadcaster,
-        chattersUser,
-        {
+      });
+      result.push(...page.data.map(mapUser));
+      while (page.cursor != null) {
+        page = await ctx.chat.getChatters(this.broadcaster, {
           after: page.cursor,
           limit: 1000,
-        }
-      );
-      result.push(...page.data.map(mapUser));
-    }
-    // log(`Fetched ${result.length} chatters`);
-    return result;
+        });
+        result.push(...page.data.map(mapUser));
+      }
+      // log(`Fetched ${result.length} chatters`);
+      return result;
+    });
   }
 
   /**

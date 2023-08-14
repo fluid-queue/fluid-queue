@@ -152,8 +152,6 @@ test("send eventsub for new sub", async () => {
 
   jest.mock("@twurple/api");
   jest.mock("@twurple/auth");
-  const { ApiClient } = await import("@twurple/api");
-  const { StaticAuthProvider } = await import("@twurple/auth");
 
   // Add our mock users to chat
   simSetChatters([chatter1, chatter2, chatter3]);
@@ -166,23 +164,16 @@ test("send eventsub for new sub", async () => {
   });
 
   // Send an eventsub message to promote a chatter
-  const event = new EventSubChannelSubscriptionEvent(
-    {
-      user_id: chatter3.id,
-      user_login: chatter3.name,
-      user_name: chatter3.displayName,
-      broadcaster_user_id: "",
-      broadcaster_user_login: "",
-      broadcaster_user_name: "",
-      tier: "1000",
-      is_gift: false,
-    },
-    jest.mocked(
-      new ApiClient({
-        authProvider: jest.mocked(new StaticAuthProvider("", "")),
-      })
-    )
-  );
+  const event = new EventSubChannelSubscriptionEvent({
+    user_id: chatter3.id,
+    user_login: chatter3.name,
+    user_name: chatter3.displayName,
+    broadcaster_user_id: "",
+    broadcaster_user_login: "",
+    broadcaster_user_name: "",
+    tier: "1000",
+    is_gift: false,
+  });
   twitch.handleSub(event);
 
   // Ensure our new sub is now online
@@ -205,8 +196,6 @@ test("send eventsub for ended sub", async () => {
 
   jest.mock("@twurple/api");
   jest.mock("@twurple/auth");
-  const { ApiClient } = await import("@twurple/api");
-  const { StaticAuthProvider } = await import("@twurple/auth");
 
   // Make chatter 3 a sub
   chatter3.isSubscriber = true;
@@ -225,23 +214,16 @@ test("send eventsub for ended sub", async () => {
   });
 
   // Send an eventsub message to demote chatter3
-  const event = new EventSubChannelSubscriptionEndEvent(
-    {
-      user_id: chatter3.id,
-      user_login: chatter3.name,
-      user_name: chatter3.displayName,
-      broadcaster_user_id: "",
-      broadcaster_user_login: "",
-      broadcaster_user_name: "",
-      tier: "1000",
-      is_gift: false,
-    },
-    jest.mocked(
-      new ApiClient({
-        authProvider: jest.mocked(new StaticAuthProvider("", "")),
-      })
-    )
-  );
+  const event = new EventSubChannelSubscriptionEndEvent({
+    user_id: chatter3.id,
+    user_login: chatter3.name,
+    user_name: chatter3.displayName,
+    broadcaster_user_id: "",
+    broadcaster_user_login: "",
+    broadcaster_user_name: "",
+    tier: "1000",
+    is_gift: false,
+  });
   twitch.handleUnsub(event);
 
   // Ensure our list is now empty
@@ -260,8 +242,6 @@ test("send eventsub for new mod", async () => {
 
   jest.mock("@twurple/api");
   jest.mock("@twurple/auth");
-  const { ApiClient } = await import("@twurple/api");
-  const { StaticAuthProvider } = await import("@twurple/auth");
 
   // Add our mock users to chat
   simSetChatters([chatter1, chatter2, chatter3]);
@@ -274,21 +254,14 @@ test("send eventsub for new mod", async () => {
   });
 
   // Send an eventsub message to promote a chatter
-  const event = new EventSubChannelModeratorEvent(
-    {
-      user_id: chatter3.id,
-      user_login: chatter3.name,
-      user_name: chatter3.displayName,
-      broadcaster_user_id: "",
-      broadcaster_user_login: "",
-      broadcaster_user_name: "",
-    },
-    jest.mocked(
-      new ApiClient({
-        authProvider: jest.mocked(new StaticAuthProvider("", "")),
-      })
-    )
-  );
+  const event = new EventSubChannelModeratorEvent({
+    user_id: chatter3.id,
+    user_login: chatter3.name,
+    user_name: chatter3.displayName,
+    broadcaster_user_id: "",
+    broadcaster_user_login: "",
+    broadcaster_user_name: "",
+  });
   twitch.handleMod(event);
 
   // Ensure our new mod is now online
@@ -311,8 +284,6 @@ test("send eventsub for demoted mod", async () => {
 
   jest.mock("@twurple/api");
   jest.mock("@twurple/auth");
-  const { ApiClient } = await import("@twurple/api");
-  const { StaticAuthProvider } = await import("@twurple/auth");
 
   // Make chatter 3 a mod
   chatter3.isMod = true;
@@ -332,21 +303,14 @@ test("send eventsub for demoted mod", async () => {
 
   // Send an eventsub message to demote chatter3
   // (this event is the same as promotion, just sent to a different handler)
-  const event = new EventSubChannelModeratorEvent(
-    {
-      user_id: chatter3.id,
-      user_login: chatter3.name,
-      user_name: chatter3.displayName,
-      broadcaster_user_id: "",
-      broadcaster_user_login: "",
-      broadcaster_user_name: "",
-    },
-    jest.mocked(
-      new ApiClient({
-        authProvider: jest.mocked(new StaticAuthProvider("", "")),
-      })
-    )
-  );
+  const event = new EventSubChannelModeratorEvent({
+    user_id: chatter3.id,
+    user_login: chatter3.name,
+    user_name: chatter3.displayName,
+    broadcaster_user_id: "",
+    broadcaster_user_login: "",
+    broadcaster_user_name: "",
+  });
   twitch.handleUnmod(event);
 
   // Ensure our list is now empty
