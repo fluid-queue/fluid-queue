@@ -73,13 +73,6 @@ class TwitchApi {
     return this.#broadcasterUser;
   }
 
-  private get moderator(): UserIdResolvable {
-    if (this.#botUserId == null) {
-      throw new Error("Tried to load chatters before client set up");
-    }
-    return this.#botUserId;
-  }
-
   get botTokenScopes(): string[] {
     return this.#botTokenScopes;
   }
