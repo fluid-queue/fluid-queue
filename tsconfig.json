@@ -7,7 +7,7 @@
     "paths": {
       "fluid-queue/*": ["./src/*"]
     },
-    "lib": ["es2021", "DOM"]
+    "lib": ["es2021"]
   },
   "include": ["src/**/*", "tests/**/*", "build.ts", "dist.ts"],
   "exclude": []
