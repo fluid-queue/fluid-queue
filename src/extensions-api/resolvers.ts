@@ -33,10 +33,10 @@ export interface QueueEntryResolver {
 
 export interface QueueEntryDeserializer {
   type: string;
-  deserialize(code: string | undefined, data: unknown | undefined): Entry;
+  deserialize(code: string | undefined, data: unknown): Entry;
   deserialize(
     code: string | undefined,
-    data: unknown | undefined,
+    data: unknown,
     submitter: QueueSubmitter
   ): QueueEntry;
 }
@@ -76,7 +76,7 @@ export interface RegisterStage<T extends object, U extends object = T>
 
 export interface BuildStage<
   T extends object = EmptyObject,
-  A extends unknown[] = [T]
+  A extends unknown[] = [T],
 > extends Stage {
   build(display: (...args: A) => string): QueueEntryApi<RegisterStage<T>>;
 }
@@ -84,7 +84,7 @@ export interface BuildStage<
 export interface UsingCodeStage<
   S extends Stage = Stage,
   T extends object = EmptyObject,
-  A extends unknown[] = []
+  A extends unknown[] = [],
 > extends Stage {
   usingCode(): QueueEntryApi<
     AdjustStages<S, T & { code: string }, [...A, string]>
@@ -94,7 +94,7 @@ export interface UsingCodeStage<
 export interface UsingDataStage<
   S extends Stage = Stage,
   T extends object = EmptyObject,
-  A extends unknown[] = []
+  A extends unknown[] = [],
 > extends Stage {
   usingData<Data>(
     deserializer: Deserialize<Data>,
@@ -111,7 +111,7 @@ export interface UsingDataStage<
 type AdjustStages<
   S,
   T extends object,
-  A extends unknown[] = []
+  A extends unknown[] = [],
 > = (S extends UsingCodeStage<infer U> ? UsingCodeStage<U, T, A> : Stage) &
   (S extends UsingDataStage<infer U> ? UsingDataStage<U, T, A> : Stage) &
   (S extends BuildStage ? BuildStage<T, A> : Stage);
@@ -444,13 +444,10 @@ function createGenericResolversApi<T extends object>(
   ) => void,
   registerUpgrade: (upgrade: QueueEntryUpgrade) => void,
   display: (value: T) => string,
-  deserialize: (value: {
-    code: string | undefined;
-    data: unknown | undefined;
-  }) => T,
+  deserialize: (value: { code: string | undefined; data: unknown }) => T,
   serialize: (value: T) => {
     code: string | undefined;
-    data: unknown | undefined;
+    data: unknown;
   }
 ): QueueEntryApi<RegisterStage<T>> {
   function queueEntry(value: T): Entry;
@@ -691,19 +688,13 @@ class QueueEntryGenericResolver<T> implements QueueEntryResolver {
 
 class QueueEntryGenericDeserializer<T> implements QueueEntryDeserializer {
   type: string;
-  deserializeFn: (value: {
-    code: string | undefined;
-    data: unknown | undefined;
-  }) => T;
+  deserializeFn: (value: { code: string | undefined; data: unknown }) => T;
   entry: (value: T) => Entry;
   queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry;
 
   constructor(
     type: string,
-    deserializeFn: (value: {
-      code: string | undefined;
-      data: unknown | undefined;
-    }) => T,
+    deserializeFn: (value: { code: string | undefined; data: unknown }) => T,
     entry: (value: T) => Entry,
     queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry
   ) {

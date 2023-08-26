@@ -52,7 +52,7 @@ class CustomCodes {
       Object.entries(customCodesObject).map(
         ([customCode, entry]): [
           string,
-          { customCode: string; entry: Entry }
+          { customCode: string; entry: Entry },
         ] => [
           customCode.toUpperCase(),
           { customCode, entry: deserialize(entry) },

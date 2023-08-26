@@ -6,7 +6,7 @@ export type Result<Data extends object, Error extends object = EmptyObject> =
 
 export type FunctionOrData<
   Type,
-  Arguments extends unknown[]
+  Arguments extends unknown[],
 > = Type extends () => unknown
   ? (...args: Arguments) => Type
   : ((...args: Arguments) => Type) | Type;

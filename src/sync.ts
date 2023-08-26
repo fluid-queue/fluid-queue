@@ -2,7 +2,7 @@
 function channel<T>(): [
   promise: Promise<T>,
   resolve: (value: T | PromiseLike<T>) => void,
-  reject: (reason?: unknown) => void
+  reject: (reason?: unknown) => void,
 ] {
   let captureResolve;
   let captureReject;
