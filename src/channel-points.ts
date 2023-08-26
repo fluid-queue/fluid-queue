@@ -498,9 +498,8 @@ class ChannelPointManager {
             isEnabled: true,
             autoFulfill: false,
           };
-          const newReward = await twitchApi.createCustomReward(
-            createRewardData
-          );
+          const newReward =
+            await twitchApi.createCustomReward(createRewardData);
           log(i18next.t("customRewardCreated", { newReward }));
           reward.id = newReward.id;
         }
