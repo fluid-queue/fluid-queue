@@ -149,9 +149,8 @@ const loadExtensionModules = async (
       }
       return { name, module };
     });
-  const modules: { name: string; module: object }[] = await Promise.all(
-    importModules
-  );
+  const modules: { name: string; module: object }[] =
+    await Promise.all(importModules);
 
   for (const module of modules) {
     if (instanceOfExtensionModule(module.module)) {
@@ -430,7 +429,7 @@ export class Extensions {
     name: string,
     schema?: Schema
   ): z.output<Schema> | Record<string, string> {
-    let options: unknown | undefined = undefined;
+    let options: unknown = undefined;
     if (
       settings.extensionOptions != null &&
       name in settings.extensionOptions
