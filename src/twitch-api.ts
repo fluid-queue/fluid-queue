@@ -195,6 +195,7 @@ class TwitchApi {
         "subscribers-by-broadcaster",
         "moderators-by-broadcaster",
         "chatters",
+        "custom-rewards",
       ]);
       this.#broadcasterTokenScopes = this.#botTokenScopes;
     } else {
