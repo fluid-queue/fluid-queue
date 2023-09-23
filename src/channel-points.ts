@@ -74,7 +74,7 @@ type ChannelPointRewardType = z.infer<typeof ChannelPointReward>;
 /**
  * Decodes channel-points.yml
  */
-const ChannelPointConfig = z.object({
+export const ChannelPointConfig = z.object({
   rewards: z.record(z.enum(SUPPORTED_REWARDS), ChannelPointReward),
   // Global configuration options
   skip_spacing: z
@@ -400,16 +400,6 @@ class ChannelPointManager {
     ) {
       this.#enabled = false;
       const err = i18next.t("channelPointMissingScope");
-      warn(err);
-      return;
-    }
-
-    // Temporary workaround for https://github.com/twurple/twurple/issues/512
-    if (
-      !twitchApi.broadcasterTokenScopes.includes("channel:read:redemptions")
-    ) {
-      this.#enabled = false;
-      const err = i18next.t("channelPointMissingReadScope");
       warn(err);
       return;
     }
