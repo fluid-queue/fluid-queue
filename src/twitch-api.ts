@@ -218,9 +218,7 @@ class TwitchApi {
         ]);
         if (id != this.#broadcasterUser.id) {
           throw new Error(
-            `Broadcaster id ${
-              this.#broadcasterUser.id
-            } does not match token user id ${id}`
+            `Broadcaster id ${this.#broadcasterUser.id} does not match token user id ${id}`
           );
         }
         this.#broadcasterTokenScopes =
