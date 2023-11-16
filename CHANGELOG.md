@@ -2,6 +2,7 @@
 
 ## Breaking changes
 
+- The minimum node version is now `20.9.0` and the docker image is now build with node version `20`.
 - Move `settings/settings.json` to `settings/settings.yml` and deprecate loading
   `settings/settings.json`. The deprecation warning means this isn't breaking
   yet, but **this will break eventually**.
@@ -17,7 +18,6 @@
   You can also download a compiled version at <https://github.com/fluid-queue/fluid-queue/releases> or use the docker container to avoid building the sources.
 - Subscriber status, moderator status and BRB status (by using the `!brb` command) is only stored for 12 hours per user after which the status is reset.
 - The setting `smm1_codes_enabled` was removed and needs to be removed from `settings/settings.yml`. If you want to use SMM1 levels, make sure to configure `"smm1"` as one of the resolvers for the `"resolvers"` setting instead.
-- The minimum node version is now `18.6.0` and the docker image is now build with node version `20`.
 - `!clear` no longer clears all levels, instead you have to use `!clear all` to clear all levels; or instead set the `"clear"` setting in `settings/settings.yml` to `"all"` and then `!clear` clears all levels again.
 - Subscribers and moderators are now monitored through eventsub and with a check when the stream comes online. This requires new token scopes, and a warning will be printed during startup (and this functionality disabled) if the scopes are missing.
   - This is now implemented with a separate (optional) broadcaster token.
