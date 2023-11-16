@@ -6,8 +6,8 @@ ENV NODE_ENV=development
 # Set the base application directory
 WORKDIR /build
 
-# Minimize number of layers by copying all 3 files at once
-COPY package.json package-lock.json register-swc.js ./
+# Minimize number of layers by copying both files at once
+COPY package.json package-lock.json ./
 
 # Install the dependencies (optional dependencies are needed for swc)
 RUN npm ci --include=optional
