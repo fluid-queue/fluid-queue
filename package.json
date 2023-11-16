@@ -36,13 +36,13 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./tests/jest.config.json --verbose",
     "start": "node --enable-source-maps ./build/index.js",
-    "start:swc": "node --import 'data:text/javascript,import{register as r}from\"node:module\";import{pathToFileURL as p}from\"node:url\";r(\"%40swc-node/register/esm\",p(\"./\"));' ./src/index.ts",
+    "start:swc": "node --import ./register-swc.js ./src/index.ts",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
-    "build": "node --import 'data:text/javascript,import{register as r}from\"node:module\";import{pathToFileURL as p}from\"node:url\";r(\"%40swc-node/register/esm\",p(\"./\"));' ./build.ts",
+    "build": "node --import ./register-swc.js ./build.ts",
     "clean": "rimraf build/",
     "check": "tsc --noemit && eslint .",
     "dist-clean": "rimraf build/ dist/",
-    "dist-build": "npm run check && npm run test && npm run build && node --import 'data:text/javascript,import{register as r}from\"node:module\";import{pathToFileURL as p}from\"node:url\";r(\"%40swc-node/register/esm\",p(\"./\"));' ./dist.ts",
+    "dist-build": "npm run check && npm run test && npm run build && node --import ./register-swc.js ./dist.ts",
     "fmt": "prettier --write ."
   },
   "devDependencies": {

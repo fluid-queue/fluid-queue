@@ -20,5 +20,6 @@ parserOptions:
   project: "tsconfig.json"
 ignorePatterns:
   - "build/**/*"
+  - "register-swc.js"
 rules:
   curly: "error"
