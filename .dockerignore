@@ -4,6 +4,7 @@
 # Allow the actual bot code
 !/package.json
 !/package-lock.json
+!/register-swc.js
 !/src
 !/tsconfig.json
 !/build.ts

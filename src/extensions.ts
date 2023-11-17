@@ -140,12 +140,15 @@ const loadExtensionModules = async (
 
   const importModules: Promise<{ name: string; module: object }>[] =
     moduleFiles.map(async ({ name, fileName }) => {
-      const importUrl = pathToFileURL(
-        path.join(directory, fileName)
-      ).toString();
-      const module: unknown = await import(importUrl);
+      let importArg = path.join(directory, fileName);
+      if (process.platform == "win32") {
+        // only file:// URLs are allowed on Windows
+        // this does not work with `npm run start:swc` on Linux
+        importArg = pathToFileURL(importArg).toString();
+      }
+      const module: unknown = await import(importArg);
       if (typeof module !== "object" || module == null) {
-        throw new Error(`Module ${importUrl} does not export an object!`);
+        throw new Error(`Module ${importArg} does not export an object!`);
       }
       return { name, module };
     });
