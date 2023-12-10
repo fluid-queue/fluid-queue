@@ -16,6 +16,7 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   asMock,
+  simSetStreamOnline,
 } from "../simulation.js";
 import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
@@ -32,6 +33,9 @@ jest.useFakeTimers();
 beforeEach(() => {
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
+
+  // reset online status
+  simSetStreamOnline(true);
 
   // reset time
   jest.setSystemTime(START_TIME);
@@ -192,6 +196,12 @@ const chatLogTest = (fileName: string) => {
           asMock(test.chatbot_helper, "say").mockImplementation(
             pushMessageWithStack
           );
+        } else if (command == "online") {
+          simSetStreamOnline(true);
+          test.quesoqueue.onStreamOnline();
+        } else if (command == "offline") {
+          simSetStreamOnline(false);
+          test.quesoqueue.onStreamOffline();
         } else if (command == "accuracy") {
           accuracy = parseInt(rest);
         } else if (command == "chatbot") {

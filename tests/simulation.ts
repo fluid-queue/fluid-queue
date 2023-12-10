@@ -53,6 +53,7 @@ const AsyncFunction = (async () => {
 let mockChatters: User[] = [];
 let mockSubscribers: User[] = [];
 let mockModerators: User[] = [];
+let mockStreamOnline = true;
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -127,6 +128,11 @@ const mockModules = async () => {
     Promise.resolve(mockChatters)
   );
 
+  // mock stream online/offline status
+  asMock(twitchApi, "isStreamOnline").mockImplementation(() =>
+    Promise.resolve(mockStreamOnline)
+  );
+
   // mock needed for ttlcache
   jest.spyOn(global.performance, "now").mockImplementation(() => {
     let result;
@@ -173,6 +179,10 @@ const simSetSubscribers = (newSubscribers: User[]) => {
 
 const simSetModerators = (newMods: User[]) => {
   mockModerators = newMods;
+};
+
+const simSetStreamOnline = (online: boolean) => {
+  mockStreamOnline = online;
 };
 
 /**
@@ -663,6 +673,7 @@ export {
   simSetChatters,
   simSetSubscribers,
   simSetModerators,
+  simSetStreamOnline,
   buildChatter,
   createMockVolume,
   replace,
