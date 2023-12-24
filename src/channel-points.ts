@@ -1,6 +1,5 @@
 import fs from "fs";
 import YAML from "yaml";
-import { z } from "zod";
 import {
   QueueSubmitter,
   isQueueSubmitter,
@@ -21,92 +20,20 @@ import {
 } from "@twurple/eventsub-base";
 import { Queue, quesoqueue as queue } from "./queue.js";
 
+import {
+  ChannelPointRewardType,
+  QueueSkipper,
+  ChannelPointConfigType,
+  ChannelPointDataType,
+  CONFIG_FILE_NAME,
+  ChannelPointConfig,
+  DATA_FILE_NAME,
+  ChannelPointData,
+  SUPPORTED_REWARDS,
+  ChannelPointManagerPrototype,
+} from "./channel-points-types.js";
+
 let quesoqueue: Queue;
-
-const DATA_FILE_NAME = "data/channel-points.json";
-const CONFIG_FILE_NAME = "settings/channel-points.yml";
-const SUPPORTED_REWARDS: readonly [string, ...string[]] = ["skip_queue"];
-
-interface QueueSkipper extends QueueSubmitter {
-  redemptionId: string;
-}
-
-/**
- * Base type to define a channel point reward
- */
-const ChannelPointReward = z.object({
-  enabled: z
-    .boolean()
-    .describe("Whether the reward should be created and monitored by the bot"),
-  name: z.string().describe("What the reward should be named"),
-  cost: z.number().describe("How many channel points the reward should cost"),
-  prompt: z
-    .string()
-    .optional()
-    .default("")
-    .describe("The description of the channel point reward."),
-  global_limit: z
-    .number()
-    .nullable()
-    .optional()
-    .describe(
-      "A per-stream limit, enforced by the bot, of how many times this can be redeemed."
-    ),
-  per_user_limit: z
-    .number()
-    .nullable()
-    .optional()
-    .describe("A per-user per-stream limit, enforced by Twitch."),
-  global_cooldown: z
-    .number()
-    .nullable()
-    .optional()
-    .describe(
-      "A global cooldown on the reward, enforced by Twitch. Specified in seconds."
-    ),
-});
-
-/**
- * Base type to define a channel point reward
- */
-type ChannelPointRewardType = z.infer<typeof ChannelPointReward>;
-
-/**
- * Decodes channel-points.yml
- */
-export const ChannelPointConfig = z.object({
-  rewards: z.record(z.enum(SUPPORTED_REWARDS), ChannelPointReward),
-  // Global configuration options
-  skip_spacing: z
-    .number()
-    .nullable()
-    .optional()
-    .describe("How many levels should be played in between queue-skip levels."),
-});
-
-/**
- * Decodes channel-points.json
- */
-const ChannelPointData = z.array(
-  z.object({
-    type: z.enum(SUPPORTED_REWARDS).describe("The type of reward."),
-    id: z
-      .string()
-      .nullable()
-      .describe("The ID of the award provided by Twitch."),
-    data: ChannelPointReward.describe("The reward data itself, excluding ID."),
-  })
-);
-
-/**
- * Type for data decoded from channel-points.yml
- */
-type ChannelPointConfigType = z.infer<typeof ChannelPointConfig>;
-
-/**
- * Type for data decoded from channel-points.json
- */
-type ChannelPointDataType = z.infer<typeof ChannelPointData>;
 
 /**
  * Converts a reward from Helix to our types.
@@ -177,7 +104,7 @@ function redemptionToQueueSkipper(redemption: {
   };
 }
 
-export class ChannelPointManager {
+export class ChannelPointManager extends ChannelPointManagerPrototype {
   #initialized = false;
   #enabled = false;
   #skipQueue: QueueSkipper[] = [];
@@ -188,6 +115,8 @@ export class ChannelPointManager {
   #say_func: ((message: string) => void) | undefined = undefined;
 
   private constructor() {
+    // This does nothing, but typescript says we must call
+    super();
     try {
       const configContents = fs.readFileSync(CONFIG_FILE_NAME, {
         encoding: "utf8",
