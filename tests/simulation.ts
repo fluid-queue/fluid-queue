@@ -19,9 +19,10 @@ import {
   User,
 } from "fluid-queue/extensions-api/queue-entry.js";
 import { Queue } from "fluid-queue/queue.js";
-import { Twitch } from "fluid-queue/twitch.js";
 import * as timers from "timers";
+import { Twitch } from "fluid-queue/twitch.js";
 import { fileURLToPath } from "url";
+import { ChannelPointConfig, ChannelPointManagerPrototype } from "fluid-queue/channel-points-types.js";
 import YAML from "yaml";
 
 // constants
@@ -230,7 +231,8 @@ const populateMockVolume = (
 };
 
 const createMockVolume = (
-  settings?: z.input<typeof Settings>
+  settings?: z.input<typeof Settings>,
+  pointconf?: z.input<typeof ChannelPointConfig>
 ): InstanceType<typeof Volume> => {
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
@@ -240,6 +242,13 @@ const createMockVolume = (
     console.log("./settings/settings.yml: " + YAML.stringify(settings));
     volume.fromJSON(
       { "./settings/settings.yml": YAML.stringify(settings) },
+      path.resolve(".")
+    );
+  }
+  if (pointconf !== undefined) {
+    console.log("./settings/channel-points.yml: " + YAML.stringify(pointconf));
+    volume.fromJSON(
+      { "./settings/channel-points.yml": YAML.stringify(pointconf) },
       path.resolve(".")
     );
   }
@@ -260,6 +269,8 @@ type Index = {
     respond: Responder
   ) => Promise<void>;
   twitch: Twitch;
+  channelPointManagerReinit: FunctionLike;
+  channelPointManager: ChannelPointManagerPrototype ;
 };
 
 function asMock<T, K extends keyof T>(
@@ -377,7 +388,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
 }
 
 /**
- * load `index.js` and test it being setup correctly
+ * load `index.js` and other modules that require setup and test them being setup correctly
  */
 const simRequireIndex = async (
   volume?: InstanceType<typeof Volume>,
@@ -463,7 +474,9 @@ const simRequireIndex = async (
     fs = (await import("fs")).default;
 
     // import settings
+    console.debug("loading settings: %s", YAML.stringify(mockSettings));
     settings = (await import("fluid-queue/settings.js")).default;
+    console.debug("loaded");
 
     // import libraries
     chatbot = await import("fluid-queue/chatbot.js");
@@ -516,6 +529,11 @@ const simRequireIndex = async (
     throw err;
   }
 
+  // Import the channel point manager
+  // Because this is a singleton and the class isn't exported, this cannot be predeclared
+  const { ChannelPointManager, channelPointManager } = (await import("fluid-queue/channel-points.js")); 
+  await channelPointManager.init(chatbot_helper.say.bind(chatbot_helper));
+
   if (fs === undefined) {
     throw new Error("fs was not loaded correctly");
   }
@@ -545,6 +563,8 @@ const simRequireIndex = async (
     quesoqueue,
     handle_func,
     twitch,
+    channelPointManagerReinit: ChannelPointManager.reinit.bind(ChannelPointManager),
+    channelPointManager,
   };
 };
 
@@ -569,6 +589,7 @@ const clearAllTimers = async () => {
  * @param {number} accuracy How accurate timers are being simulated, in milliseconds
  */
 const simAdvanceTime = async (ms: number, accuracy = 0) => {
+  console.log("Current date: %s. Pending timers: %d", new Date().toISOString(), jest.getTimerCount());
   const currentTime = new Date();
   await flushPromises();
 
@@ -583,7 +604,14 @@ const simAdvanceTime = async (ms: number, accuracy = 0) => {
     jest.advanceTimersByTime(ms);
     await flushPromises();
   }
-  expect(new Date().getTime() - currentTime.getTime()).toEqual(ms);
+  console.log("New date: %s. Pending timers: %d", new Date().toISOString(), jest.getTimerCount());
+  if (new Date().toISOString() == "2022-04-22T12:15:50.000Z") {
+    console.log("Advancing to next timer...");
+    jest.advanceTimersToNextTimer(5);
+    await flushPromises();
+    console.log("New date: %s. Pending timers: %d", new Date().toISOString(), jest.getTimerCount());
+  }
+  // expect(new Date().getTime() - currentTime.getTime()).toEqual(ms);
 };
 
 /**

@@ -22,6 +22,9 @@ import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import * as uuidModule from "uuid";
 import { z } from "zod";
+import { EventSubChannelRedemptionAddEvent, EventSubChannelRedemptionUpdateEvent } from "@twurple/eventsub-base";
+import YAML from "yaml";
+import { ChannelPointConfig } from "fluid-queue/channel-points-types.js";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -135,6 +138,48 @@ const parseChatter = (chatter: string) => {
   );
 };
 
+const buildRedeemAddEvent = (userId: string, userName: string, userDisplayName: string): EventSubChannelRedemptionAddEvent => {
+  return new EventSubChannelRedemptionAddEvent({
+    id: uuidModule.v4(),
+    broadcaster_user_id: "",
+    broadcaster_user_name: "liquidnya",
+    broadcaster_user_login: "liquidnya",
+    user_id: userId,
+    user_login: userDisplayName,
+    user_name: userName,
+    user_input: "",
+    status: "unfulfilled",
+    reward: {
+      id: "e605d751-c741-4a9e-9e23-b96dea621ae4", // chosen by fair dice roll, guaranteed to be random,
+      title: "Pway My Wevel",
+      cost: 0,
+      prompt: ""
+    },
+    redeemed_at: new Date().toISOString(),
+  })
+}
+
+const buildRedeemUpdateEvent = (userId: string, userName: string, userDisplayName: string, newStatus: "canceled" | "fulfilled"): EventSubChannelRedemptionUpdateEvent => {
+  return new EventSubChannelRedemptionUpdateEvent({
+    id: uuidModule.v4(),
+    broadcaster_user_id: "",
+    broadcaster_user_name: "liquidnya",
+    broadcaster_user_login: "liquidnya",
+    user_id: userId,
+    user_login: userDisplayName,
+    user_name: userName,
+    user_input: "",
+    status: newStatus,
+    reward: {
+      id: "e605d751-c741-4a9e-9e23-b96dea621ae4", // chosen by fair dice roll, guaranteed to be random,
+      title: "Pway My Wevel",
+      cost: 0,
+      prompt: ""
+    },
+    redeemed_at: new Date().toISOString(),
+  })
+}
+
 const chatLogTest = (fileName: string) => {
   return async () => {
     let test = await simRequireIndex(undefined, undefined, undefined, mocks);
@@ -212,6 +257,14 @@ const chatLogTest = (fileName: string) => {
           replace(test.settings, Settings.parse(JSON.parse(rest)));
 
           console.log("set settings to: " + JSON.stringify(test.settings));
+        } else if (command == "pointconf") {
+          const pointconf = ChannelPointConfig.parse(rest);
+          test.volume.fromJSON(
+            { "./settings/channel-points.yml": YAML.stringify(pointconf) },
+            path.resolve(".")
+          );
+          test.channelPointManagerReinit();
+          fail("Fail on purpose to make sure this test works")
         } else if (command == "chatters") {
           const users = rest.split(",");
           simSetChatters(
@@ -410,12 +463,30 @@ for (const file of testFiles) {
     ".",
     path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
   );
-  test(
-    fileName,
-    () => {
-      jest.setTimeout(10_000); // <- this might not work
-      chatLogTest(fileName);
-    },
-    10_000 // <- setting timeout here as well
-  );
+  const currentTest = async () => {
+    console.log("======== START %s ========", fileName);
+    jest.useFakeTimers();
+    await chatLogTest(fileName)();
+    console.log("======== END %s ========", fileName);
+  };
+  if (fileName.endsWith(".xfail.test.log")) {
+    test.failing(
+      fileName,
+      async () => {
+        jest.setTimeout(10_000);
+        await currentTest();
+      },
+      10_000
+    )
+  }
+  else {
+    test(
+      fileName,
+      async () => {
+        jest.setTimeout(10_000); // <- this might not work
+        await currentTest();
+      },
+      10_000 // <- setting timeout here as well
+    );
+  }
 }
