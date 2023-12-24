@@ -177,7 +177,7 @@ function redemptionToQueueSkipper(redemption: {
   };
 }
 
-class ChannelPointManager {
+export class ChannelPointManager {
   #initialized = false;
   #enabled = false;
   #skipQueue: QueueSkipper[] = [];
@@ -187,7 +187,7 @@ class ChannelPointManager {
   #customRewards: ChannelPointDataType = [];
   #say_func: ((message: string) => void) | undefined = undefined;
 
-  public constructor() {
+  private constructor() {
     try {
       const configContents = fs.readFileSync(CONFIG_FILE_NAME, {
         encoding: "utf8",
@@ -607,6 +607,33 @@ class ChannelPointManager {
       );
     }
   }
+
+  // Singleton pattern
+  static #manager: ChannelPointManager | undefined = undefined;
+  static instance(): ChannelPointManager {
+    if (this.#manager === undefined) {
+      this.#manager = new ChannelPointManager();
+    }
+    return this.#manager;
+  }
+  static async reinit() {
+    if (this.#manager === undefined) {
+      throw new TypeError(
+        "Cannot reinit ChannelPointManager that has not been initialized"
+      );
+    }
+    if (!quesoqueue.testAccess) {
+      throw new TypeError(
+        "ChannelPointManager.reinit() can only be called in tests"
+      );
+    }
+    const say_func = this.#manager.#say_func;
+    if (say_func === undefined) {
+      throw new Error("unreachable");
+    }
+    this.#manager = new ChannelPointManager();
+    await this.#manager.init(say_func);
+  }
 }
 
-export const channelPointManager = new ChannelPointManager();
+export const channelPointManager = ChannelPointManager.instance();
