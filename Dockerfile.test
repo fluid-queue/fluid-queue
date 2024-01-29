@@ -1,0 +1,28 @@
+FROM node:20-alpine
+
+# For version information
+ARG SOURCE_COMMIT
+ARG DOCKER_TAG
+ENV SOURCE_COMMIT=$SOURCE_COMMIT
+ENV DOCKER_TAG=$DOCKER_TAG
+
+# Run as the node user for security purposes
+USER node
+
+# Set the base application directory
+WORKDIR /home/node
+
+# We're testing, so we need the dev dependencies
+ENV NODE_ENV=development
+
+# Minimize number of layers by copying both files at once
+COPY --chown=node:node package.json package-lock.json ./
+
+# Install the dependencies
+RUN npm ci --include=optional
+
+# Copy the application itself
+COPY --chown=node:node . /home/node
+
+# Run the tests, this Dockerfile is useless for anything else
+CMD [ "npm", "run", "test"]

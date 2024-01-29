@@ -1,0 +1,16 @@
+{
+  "globalSetup": "./node_modules/jest-chance/dist/esm/index.js",
+  "testEnvironment": "node",
+  "modulePathIgnorePatterns": ["<rootDir>/build"],
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^fluid-queue/(.*)\\.js$": "<rootDir>/src/$1"
+  },
+  "extensionsToTreatAsEsm": [".ts"],
+  "transform": {
+    "^.+\\.(t|j)sx?$": "@swc/jest"
+  },
+  "rootDir": "..",
+  "roots": ["<rootDir>/src/", "<rootDir>/tests/"],
+  "testTimeout": 10000
+}

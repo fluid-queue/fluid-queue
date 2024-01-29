@@ -14,7 +14,7 @@ package-lock.json
 /settings/*
 
 # Don't ignore the example files
-!/settings/settings.example.json
+!/settings/settings.example.yml
 !/settings/tokens.example.json
 
 # Secrets and non-sample sample files
@@ -128,3 +128,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+# TypeScript output
+/build/
+
+# Ignore the missing localization files; they're useful for development but don't need to be checked in
+locales/**/*.missing.json
+
+oss-attribution

@@ -1,0 +1,78 @@
+{
+  "version": "3.0",
+  "extensions": {
+    "customlevel": {
+      "data": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
+          "enabled": false
+        }
+      },
+      "version": "1.0"
+    }
+  },
+  "entries": {
+    "current": {
+      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "type": "customlevel",
+      "submitter": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
+      }
+    },
+    "queue": [
+      {
+        "code": "QWF-3K9-84G",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"furretwalkbot\").id}",
+          "name": "furretwalkbot",
+          "displayName": "${user(\"furretwalkbot\").displayName}"
+        }
+      },
+      {
+        "code": "BRL-F70-CLG",
+        "type": "smm2",
+        "submitter": {
+          "id": "${user(\"helperblock\").id}",
+          "name": "helperblock",
+          "displayName": "${user(\"helperblock\").displayName}"
+        }
+      }
+    ]
+  },
+  "waiting": [
+    {
+      "user": {
+        "id": "${user(\"furretwalkbot\").id}",
+        "name": "furretwalkbot",
+        "displayName": "${user(\"furretwalkbot\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    },
+    {
+      "user": {
+        "id": "${user(\"helperblock\").id}",
+        "name": "helperblock",
+        "displayName": "${user(\"helperblock\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    }
+  ]
+}

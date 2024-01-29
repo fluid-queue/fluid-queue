@@ -1,9 +1,9 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true}
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":true,"clear":"all"}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -23,7 +23,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [02:20:37] @^helperblock: Sorry, FurretWalkBot, you may only submit one level at a time.
 
 [02:21:24] @^FurretWalkBot: !list
-[02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot... (0 offline)
+[02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot (0 offline)
 
 [02:22:02] ~%?liquidnya: !next
 [02:22:03] @^helperblock: Now playing NB0-1MD-SLG (maker code) submitted by FurretWalkBot.
@@ -40,7 +40,7 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [02:23:35] @^FurretWalkBot: !add invalid level code
 [02:23:36] @^helperblock: FurretWalkBot, that is an invalid level code.
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":true}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":true,"clear":"all"}
 
 [02:24:35] ~%?liquidnya: !add NB0-1MD-SLG
 [02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG (maker code) has been added to the queue.
@@ -58,10 +58,10 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":1,"le
 # TODO: is this a bug?
 
 [02:25:49] @^FurretWalkBot: !list
-[02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
+[02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/currentLevel {"code":"NB0-1MD-SLG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [02:19:13] ~%?liquidnya: !clear
 [02:19:14] @^helperblock: The queue has been cleared!
@@ -84,3 +84,13 @@ queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot
 [02:24:35] ~%?liquidnya: !add D36-010-5YF
 [02:24:35] @^helperblock: liquidnya, D36-010-5YF has been added to the queue.
 
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+
+# also check if smm2-lenient is working
+[20:36:15] ~%?liquidnya: !add please play this level NB0-1MD-SLG thank you!
+[20:36:16] @^helperblock: liquidnya, NB0-1MD-SLG (maker code) has been added to the queue.
+[02:19:13] ~%?liquidnya: !clear
+[02:19:14] @^helperblock: The queue has been cleared!
+[20:36:21] ~%?liquidnya: !add please play this level 3H7-B19-7RF thank you!
+[20:36:21] @^helperblock: liquidnya, 3H7-B19-7RF has been added to the queue.

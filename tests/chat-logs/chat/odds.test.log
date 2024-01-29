@@ -1,9 +1,9 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -21,15 +21,15 @@ accuracy 60000
 [16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:26:46] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 [16:26:47] @^FurretWalkBot: !odds
-[16:26:48] @^helperblock: FurretWalkBot, you have a 100.0% chance of getting chosen in weighted random.
+[16:26:48] @^helperblock: FurretWalkBot, you have a 100% chance of getting chosen in weighted random.
 
 
 [17:29:49] @^FurretWalkBot: !odds
-[17:29:49] @^helperblock: FurretWalkBot, you have a 100.0% chance of getting chosen in weighted random.
+[17:29:49] @^helperblock: FurretWalkBot, you have a 100% chance of getting chosen in weighted random.
 
 [17:30:49] @^FurretWalkBot: !pos
 [17:30:50] @^helperblock: FurretWalkBot, you are currently in the 1st position.

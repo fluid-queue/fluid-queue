@@ -1,9 +1,9 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -16,17 +16,17 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [23:40:19] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:40:19] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 [23:40:29] ~%?liquidnya: !list
-[23:40:30] @^helperblock: 1 online: (no current level), FurretWalkBot... (0 offline)
+[23:40:30] @^helperblock: 1 online: (no current level), FurretWalkBot (0 offline)
 [23:40:33] ~%?liquidnya: !select test
 [23:40:34] @^helperblock: No levels in the queue were submitted by test.
-[23:40:39] ~%?liquidnya: !select @FurretWalkBot 
+[23:40:39] ~%?liquidnya: !select @FurretWalkBot
 [23:40:39] @^helperblock: Now playing NB0-1MD-SLG submitted by FurretWalkBot.
 [23:40:43] ~%?liquidnya: !list
-[23:40:45] @^helperblock: 1 online: FurretWalkBot (current)... (0 offline)
+[23:40:45] @^helperblock: 1 online: FurretWalkBot (current) (0 offline)
 
 [23:41:08] ~%?liquidnya: !punt
 [23:41:08] @^helperblock: Ok, adding the current level back into the queue.
-[23:41:19] ~%?liquidnya: !select furretwalkbot 
+[23:41:19] ~%?liquidnya: !select furretwalkbot
 [23:41:19] @^helperblock: Now playing NB0-1MD-SLG submitted by FurretWalkBot.
 [23:41:28] ~%?liquidnya: !list
-[23:41:30] @^helperblock: 1 online: FurretWalkBot (current)... (0 offline)
+[23:41:30] @^helperblock: 1 online: FurretWalkBot (current) (0 offline)

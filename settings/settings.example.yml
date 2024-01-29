@@ -1,0 +1,77 @@
+---
+channel: "CHANNEL_NAME" # is the channel that the bot will run in. This should be your Twitch account username, only containing underscores and lowercase alphanumeric characters.
+clientId: "YOUR_CLIENT_ID" # the client ID of your application.
+clientSecret: "YOUR_CLIENT_SECRET" # the client secret of your application.
+
+start_open: false # is the toggle for whether or not the queue will start open.
+enable_absolute_position: false # is the toggle for whether or not absolute position (offline position) is displayed along relative position (online position).
+offline_message: true # is the toggle for whether or not to print a message when a level's submitter is offline, and that level is selected
+custom_codes_enabled: false # is the toggle for whether or not custom codes are allowed to be added to the queue. (the "customcode" resolver also needs to be enabled)
+romhacks_enabled: false # if the "customlevel" resolver is enabled, one can add ROMhacks using `!add ROMhack`.
+uncleared_enabled: false # if the "customlevel" resolver is enabled, one can add uncleared levels using `!add Uncleared`.
+max_size: 100 # is the maximum amount of levels allowed in the queue at once.
+level_timeout: null # is the amount of time a level can be played before the bot will inform you that time is up. The default value of `null` means that the timer is deactivated. Example values: `10` (minutes), `10 minutes 30 seconds`, `1 hour`. Supplying no unit is deprecated and might stop in a future version, but it will imply a value of minutes for now.
+message_cooldown: 10 seconds # is the amount of time that a user must wait before !list will display the levels in the queue after a previous use. Example values: `10 seconds`, `1 minute`, `1 second`, `100 milliseconds`. Supplying no unit is deprecated and might stop in a future version, but it will imply a value of seconds for now.
+subscriberWeightMultiplier: 1.0 # is the number added as a wait time for subscribers. Setting this to 1.2 for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to 1.0.
+
+# will be selected in upon using `!level`
+# there are multiple options and you can also use the options multiple times, for example [next, next, random]
+level_selection:
+  - next # will select the next level from the queue.
+  # - subnext # will select the next subscriber's level from the queue.
+  # - modnext # will select the next moderator's level from the queue.
+  - random # will select a random level from the queue.
+  # - weightedrandom # will select a random level from the queue using the amount of time spent online and waiting in the queue as weight.
+  # - weightednext # will select the level from the queue with the most amount of time spent online and waiting in the queue. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
+  # - subrandom # will select a random subscriber's level from the queue.
+  # - modrandom # will select a random moderator's level from the queue.
+  # - weightedsubrandom # will select a random level from the subscribers using the amount of time spent online and waiting in the queue as weight.
+  # - weightedsubnext # will select the level from the queue with the most amount of time spent online and waiting in the queue and being subscribed. If multiple users have the same maximum time spent then the level nearer to the top will be chosen.
+
+# list is the order of the `!list`/`!queue` command. The following values are possible:
+# "position" - the list will be sorted by time added (`!next`).
+# "weight" - the list will be sorted by weighted chance (watch time, `!weightednext`).
+# "both" - the list will be sent twice, once sorted by time added and once sorted by weighted chance (watch time).
+# "none" - the `!list`/`!queue` commands will be disabled.
+# null - the setting is automatically determined by what is configured in level_selection.
+list: null
+
+# position is which position the `!position` command shows. The following values are possible:
+# "position" - the position of `!next`.
+# "weight" - the position of `!weightednext`.
+# "both" - both the position of `!next` and `!weightednext`.
+# "none" - the `!position` command will be disabled.
+# null - the setting is automatically determined by what is configured in level_selection.
+position: null
+
+showMakerCode: true # if set to true it will display `(maker code)` next to level codes in chat if the code is a maker code.
+
+resolvers: # will resolve what users type after `!add` to a level type. You can also set the order in which the level code is determined.
+  - smm2 # use this to allow SMM2 levels
+  # - ocw # use this to allow OCW levels
+  - customcode # use this to setup custom codes that can then be resolved to a level
+  - customlevel # use this for custom levels like ROMHacks and uncleared levels
+  # - smm1 # use this to allow SMM1 levels
+  - smm2-lenient # use this to allow for using `!add` with a sentence/emotes and still containing a SMM2 level code
+  # - ocw-lenient # use this to allow for using `!add` with a sentence/emotes and still containing an OCW level code
+  - customlevel-name # use this for being able to add a custom level by its name and not just its code
+
+# extensions settings
+extensionOptions:
+  ocw:
+    removeDashes: true # if set to true will remove dashes from level codes for easier copying.
+
+# Use the default option for `!clear`
+# `!clear all` clears all levels in the queue.
+# `!clear deleted` clears all levels from users which deleted their account.
+# `!clear {duration}` (for example `!clear 6 months`) clears all levels from everywhone who was not last online {duration} ago.
+# For example setting this to "all" will make `!clear` use `!clear all` by default.
+clear: null
+
+# dataIdCourseThreshold/dataIdMakerThreshold is the highest allowed data ID for course/maker IDs.
+# This is used to stop levels that do not exist from entering the queue, however it is very difficult to know and/or dynamically change this amount accordingly.
+# As such, the default value is `null`, which ignores the restriction.
+dataIdCourseThreshold: null
+dataIdMakerThreshold: null
+
+prettySaveFiles: false # if set to true the files in the ./data/ and ./settings/ directory are going to be formatted with spaces and new lines.

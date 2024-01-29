@@ -1,11 +1,11 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5, "start_open": true,"showMakerCode":false}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds", "start_open": true,"showMakerCode":false,"clear":"all"}
 # restart to start queue open (reload settings)
 restart
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -17,33 +17,33 @@ accuracy 60000
 [12:12:28] ~%?liquidnya: !add BW2-G2R-CMG
 [12:12:29] @^helperblock: liquidnya, BW2-G2R-CMG has been added to the queue.
 [12:12:33] ~%?liquidnya: !list
-[12:12:34] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[12:12:34] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 [12:15:33] ~%?liquidnya: !persistence off
 [12:15:34] @^helperblock: @liquidnya Deactivated automatic queue persistence.
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
-queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 
 # let one day pass
 [15:15:33] ~%?liquidnya: UwU
 [12:15:33] ~%?liquidnya: UwU
 
 # waiting did not change on disk!
-queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 
 # adding a level to the queue does not change anything on disk
 [12:15:34] @^FurretWalkBot: !add MY2-H2M-DSG
 [12:15:35] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
-queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
-queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 [12:15:36] ~%?liquidnya: !remove @FurretWalkBot
 [12:15:36] @^helperblock: @FurretWalkBot's level has been removed from the queue.
-queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
-queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 
 # manually persist
 
@@ -54,16 +54,16 @@ fs-fail writeSync
 [12:15:38] @^helperblock: @liquidnya Error while persisting queue state, see logs.
 
 # still old save file
-queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
-queue.json/waiting {"liquidnya":{"waitTime":3,"weightMin":3,"weightMsec":0,"lastOnlineTime":"2022-04-21T12:14:34.000Z"}}
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 
 # now actually save it
 [12:15:38] ~%?liquidnya: !persistence save
 [12:15:39] @^helperblock: @liquidnya Successfully persisted the queue state.
-queue.json/currentLevel null
-queue.json/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
-queue.json/waiting {"liquidnya":{"waitTime":1443,"weightMin":1443,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:15:33.000Z"},"furretwalkbot":{"waitTime":1,"weightMin":1,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:15:34.000Z"}}
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":1443},"weight":{"minutes":1443,"milliseconds":0},"lastOnline":"2022-04-22T12:15:33.000Z"},{"user":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"waiting":{"minutes":1},"weight":{"minutes":1,"milliseconds":0},"lastOnline":"2022-04-22T12:15:34.000Z"}]
 
 # now override it with changes
 
@@ -71,7 +71,7 @@ queue.json/waiting {"liquidnya":{"waitTime":1443,"weightMin":1443,"weightMsec":0
 save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"},"queue":[],"waiting":{}}
 
 [12:15:40] ~%?liquidnya: !list
-[12:15:44] @^helperblock: 1 online: (no current level), liquidnya... (0 offline)
+[12:15:44] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 [12:15:44] ~%?liquidnya: !current
 [12:15:45] @^helperblock: We're not playing a level right now!
@@ -80,10 +80,10 @@ save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","subm
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 
 [12:15:50] ~%?liquidnya: !list
-[12:15:51] @^helperblock: 1 online: liquidnya (current)... (0 offline)
+[12:15:51] @^helperblock: 1 online: ${user("liquidnya").displayName} (current) (0 offline)
 
 [12:19:17] ~%?liquidnya: !current
-[12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by liquidnya.
+[12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by ${user("liquidnya").displayName}.
 
 # autosave is still off -> same file
 # do not upgrade version to 2.x here
@@ -96,6 +96,6 @@ queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"li
 [12:19:28] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
 # it was automatically saved
-queue.json/currentLevel {"code":"BW2-G2R-CMG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
-queue.json/waiting {"furretwalkbot":{"waitTime":1,"weightMin":1,"weightMsec":0,"lastOnlineTime":"2022-04-22T12:19:28.000Z"}}
+queue.json/entries/current {"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"${user(\"liquidnya\").displayName}"}}
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/waiting [{"user":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"waiting":{"minutes":1},"weight":{"minutes":1,"milliseconds":0},"lastOnline":"2022-04-22T12:19:28.000Z"}]

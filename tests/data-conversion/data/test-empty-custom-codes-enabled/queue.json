@@ -1,7 +1,9 @@
 {
-  "version": "2.2",
-  "currentLevel": null,
+  "version": "3.0",
+  "entries": {
+    "current": null,
+    "queue": []
+  },
   "extensions": {},
-  "queue": [],
-  "waiting": {}
+  "waiting": []
 }

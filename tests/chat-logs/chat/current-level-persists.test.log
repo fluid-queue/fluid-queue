@@ -1,9 +1,9 @@
 # this captures the chat messages of that user as the chatbot responses
 chatbot helperblock
 
-settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":10,"level_selection":[],"message_cooldown":5,"showMakerCode":false}
-# chatters 
-chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],"vips":[],"moderators":["furretwalkbot","streamelements"],"staff":[],"admins":[],"global_mods":[],"viewers":["viewerlevels"]}}
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
+# chatters
+chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # chatty chat log
 # ~ broadcaster
 # @ moderator
@@ -18,36 +18,36 @@ chatters {"_links":{},"chatter_count":4,"chatters":{"broadcaster":["liquidnya"],
 [23:58:18] ~%?liquidnya: !next
 [23:58:19] @^helperblock: Now playing MY2-H2M-DSG submitted by liquidnya.
 [23:58:28] ~%?liquidnya: !list
-[23:58:29] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
+[23:58:29] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 [23:58:31] ~%?liquidnya: !list
 [23:58:32] @^helperblock: Scroll up to see the queue.
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 restart
 
 # now the selected level is still current
 [23:58:35] ~%?liquidnya: !list
-[23:58:36] @^helperblock: 2 online: liquidnya (current), FurretWalkBot... (0 offline)
+[23:58:36] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/currentLevel {"code":"MY2-H2M-DSG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
 
 
 [00:00:35] ~%?liquidnya: !punt
 [00:00:35] @^helperblock: Ok, adding the current level back into the queue.
 
 [00:01:15] ~%?liquidnya: !list
-[00:01:17] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya... (0 offline)
+[00:01:17] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya (0 offline)
 
-queue.json/currentLevel null
-queue.json/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":"FurretWalkBot","username":"furretwalkbot"},{"code":"MY2-H2M-DSG","type":"smm2","submitter":"liquidnya","username":"liquidnya"}]
+queue.json/entries/current null
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
 
 restart
 
 [00:01:25] ~%?liquidnya: !list
-[00:01:26] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya... (0 offline)
+[00:01:26] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya (0 offline)
 
 [00:01:52] ~%?liquidnya: !current
 [00:01:52] @^helperblock: We're not playing a level right now!
@@ -55,8 +55,8 @@ restart
 [00:02:06] ~%?liquidnya: !clear
 [00:02:07] @^helperblock: The queue has been cleared!
 
-queue.json/currentLevel null
-queue.json/queue []
+queue.json/entries/current null
+queue.json/entries/queue []
 
 restart
 

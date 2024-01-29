@@ -1,8 +1,9 @@
 services:
   sut:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.test
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=test
       - DOCKER_TAG
       - SOURCE_COMMIT
-    command: sh -c 'npm install && npm run test'

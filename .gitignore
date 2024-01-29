@@ -8,8 +8,9 @@
 /settings/*
 
 # Don't ignore the example files
-!/settings/settings.example.json
+!/settings/settings.example.yml
 !/settings/tokens.example.json
+!/settings/channel-points.example.yml
 
 # Secrets and non-sample sample files
 settings.json
@@ -123,7 +124,15 @@ dist
 # TernJS port file
 .tern-port
 
+# TypeScript output
+/build/
+
 # allow test files
 # like *.test.log even if *.log is ignored
 # replay test log files (/tests/chat-logs/chat/*.test.log)
 !*.test.log
+
+# Ignore the missing localization files; they're useful for development but don't need to be checked in
+locales/**/*.missing.json
+
+oss-attribution
