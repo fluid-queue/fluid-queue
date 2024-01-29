@@ -18,6 +18,7 @@ import timestring from "timestring";
 import humanizeDuration from "humanize-duration";
 import { twitchApi } from "./twitch-api.js";
 import { log, warn } from "./chalk-print.js";
+import { channelPointManager } from "./channel-points.js";
 
 const extensions = new Extensions();
 
@@ -230,9 +231,11 @@ class QueueData {
        */
       onRemove(removedLevels: QueueEntry[]) {
         // unlurk anyone that is removed from the queue
-        removedLevels.forEach((level) =>
-          twitch.notLurkingAnymore(level.submitter)
-        );
+        removedLevels.forEach((level) => {
+          twitch.notLurkingAnymore(level.submitter);
+          // and if they redeemed a queue skip, they deserve their points back
+          channelPointManager.removeFromSkipQueue(level.submitter);
+        });
         // check if romhack levels or uncleared levels are disabled and need to be removed
         const allEntries = (
           this.current_level === undefined ? [] : [this.current_level]
@@ -631,6 +634,14 @@ const queue = {
         return response;
       })
     );
+  },
+
+  isOnline: async (user: QueueSubmitter) => {
+    const getList = await queue.list(true);
+    return data.access((data) => {
+      const list = getList(data);
+      return list.online.some((value) => value.submitter.id == user.id);
+    });
   },
 
   next: async (
@@ -1076,15 +1087,27 @@ const queue = {
     loaded = true;
   },
 
+  onStreamOnline: () => {
+    streamLastOnline = true;
+    void twitch.updateModsAndSubscribers();
+    channelPointManager.onStreamOnline();
+    log(i18next.t("streamIsOnline"));
+  },
+
+  onStreamOffline: () => {
+    streamLastOnline = false;
+    channelPointManager.onStreamOffline();
+    log(i18next.t("streamIsOffline"));
+  },
+
   waitingTimerTick: async () => {
     const streamOnline = await twitchApi.isStreamOnline();
     if (streamLastOnline !== streamOnline) {
       streamLastOnline = streamOnline;
       if (streamOnline) {
-        await twitch.updateModsAndSubscribers();
-        log(i18next.t("streamIsOnline"));
+        queue.onStreamOnline();
       } else {
-        log(i18next.t("streamIsOffline"));
+        queue.onStreamOffline();
       }
     }
     if (!streamOnline) {

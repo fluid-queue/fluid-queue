@@ -1,0 +1,16 @@
+---
+rewards:
+  skip_queue:
+    enabled: true           # Whether the reward should be created and monitored by the bot
+    name: "Pway My Wevel!"  # What the reward should be named
+    prompt: null            # What description (if any) the reward should have
+    cost: 10001             # How many channel points the reward should cost
+
+    global_limit: 2         # A per-stream limit, enforced by the bot, of how many times this can be redeemed.
+                            # Will reset every time the bot is started, or when the bot notices the stream go offline.
+                            # Similarly, when this limit is hit, the bot will pause the reward, and unpause it when the bot is started or notices the stream go offline.
+
+    per_user_limit: 1       # A per-user per-stream limit, enforced by Twitch.
+    global_cooldown: 180    # A global cooldown on the reward, enforced by Twitch. Specified in seconds.
+skip_spacing: 1         # How many levels should be played in between queue-skip levels.
+                        # This does not prevent redemptions. This just ensures that the specified number of non-skip levels are played in between skip levels.

@@ -113,5 +113,15 @@
   "streamIsOffline": "Stream is offline!",
   "requiredScopeError": "Missing required scope in bot token. Please generate a new token providing all required scopes.",
   "subscribersScopeMissing": "Missing a broadcaster token, or the provided broadcaster token is missing the channel:read:subscriptions scope. Subscriber multipliers won't apply until the subscriber sends a chat message.",
-  "moderatorsScopeMissing": "Missing a broadcaster token, or the provided broadcaster token is missing the moderation:read scope. !modnext (etc) will not work for mods until they speak in chat."
+  "moderatorsScopeMissing": "Missing a broadcaster token, or the provided broadcaster token is missing the moderation:read scope. !modnext (etc) will not work for mods until they speak in chat.",
+  "channelPointMissingScope": "Missing a broadcaster token, or the provided broadcaster token is missing the channel:manage:redemptions scope, but channel point rewards are configured. Cannot use channel point rewards.",
+  "customRewardCreated": "Created a new channel point reward {{newReward.title}} with ID {{newReward.id}}.",
+  "savedRewardConflict": "Encountered a conflict between settings/channel-points.yml and data/channel-points.json. Updating the saved data to match the new version of {{type}} from channel-points.yml.",
+  "helixRewardConflict": "Encountered a conflict between configured reward data and data on Twitch. Updating the reward on Twitch to match the new version of {{type}} from channel-points.yml.",
+  "duplicateRedemptionRemoved": "Removed a duplicate redemption of {{redemption.rewardTitle}} by {{redemption.userDisplayName}}",
+  "skipNotInQueue": "{{redeemer.displayName}}, you cannot redeem a queue skip unless you're in the queue!",
+  "skipAlreadyRedeemed": "{{redeemer.displayName}}, you already have a pending queue skip!",
+  "skipAllRedeemed": "{{redeemer.displayName}}, all queue skips this stream have been redeemed!",
+  "skipRegistered": "{{redeemer.displayName}}, thank you for redeeming \"{{rewardTitle}}\"! Your level will now be prioritized.",
+  "absentRedemptionRemoved": "Removed and refunded redemption from {{redemption.userDisplayName}}, who is no longer in the level queue."
 }

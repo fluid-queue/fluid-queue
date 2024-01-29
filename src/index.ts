@@ -7,11 +7,13 @@ import * as aliasManagement from "./aliases.js";
 import { twitchApi } from "./twitch-api.js";
 import settings from "./settings.js";
 import { helper } from "./chatbot.js";
-import { QueueEntry } from "./extensions-api/queue-entry.js";
+import { QueueEntry, QueueSubmitter } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
 await import("./i18n.js");
 import i18next from "i18next";
 import { log } from "./chalk-print.js";
+
+import { channelPointManager } from "./channel-points.js";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -247,6 +249,92 @@ const submitted_mod_message = (
 
   return i18next.t("modSubmittedNoArgument");
 };
+
+async function pickLevel(
+  selection_mode: string,
+  respond: Responder,
+  skip_user: QueueSubmitter | null | "none" | "not yet"
+): Promise<
+  | (QueueEntry & {
+      online: boolean;
+    })
+  | undefined
+> {
+  let next_level;
+  let dip_level;
+  switch (selection_mode) {
+    case "next":
+      next_level = await quesoqueue.next();
+      break;
+    case "subnext":
+      next_level = await quesoqueue.subnext();
+      break;
+    case "modnext":
+      next_level = await quesoqueue.modnext();
+      break;
+    case "random":
+      next_level = await quesoqueue.random();
+      break;
+    case "subrandom":
+      next_level = await quesoqueue.subrandom();
+      break;
+    case "modrandom":
+      next_level = await quesoqueue.modrandom();
+      break;
+    case "weightedrandom":
+      next_level = await quesoqueue.weightedrandom();
+      respond(
+        "(" + selection_mode + ") " + weightedrandom_level_message(next_level)
+      );
+      break;
+    case "weightednext":
+      next_level = await quesoqueue.weightednext();
+      respond(
+        "(" + selection_mode + ") " + weightednext_level_message(next_level)
+      );
+      break;
+    case "weightedsubrandom":
+      next_level = await quesoqueue.weightedsubrandom();
+      respond(
+        "(" +
+          selection_mode +
+          ") " +
+          weightedrandom_level_message(next_level, " (subscriber)")
+      );
+      break;
+    case "weightedsubnext":
+      next_level = await quesoqueue.weightedsubnext();
+      respond(
+        "(" +
+          selection_mode +
+          ") " +
+          weightednext_level_message(next_level, " (subscriber)")
+      );
+      break;
+    case "skip":
+      if (skip_user == null) {
+        throw new Error(
+          "Trying to skip the queue without specifying a skip user"
+        );
+      }
+      if (skip_user == "none" || skip_user == "not yet") {
+        throw new Error(
+          "Trying to skip the queue but skip user is none/not yet"
+        );
+      }
+      dip_level = quesoqueue.dip(skip_user.name);
+      if (dip_level == undefined) {
+        next_level = undefined;
+        break;
+      }
+      next_level = { ...dip_level, online: true };
+      break;
+    default:
+      selection_mode = "default";
+      next_level = await quesoqueue.next();
+  }
+  return next_level;
+}
 
 // What the bot should do when someone sends a message in chat.
 // `message` is the full text of the message. `sender` is the username
@@ -502,66 +590,32 @@ async function HandleMessage(
     }
     respond(quesoqueue.replace(sender, level_code));
   } else if (aliases.isAlias("level", message) && sender.isBroadcaster) {
-    let next_level;
-    let selection_mode =
-      settings.level_selection[
-        selection_iter++ % settings.level_selection.length
-      ];
-    if (selection_iter >= settings.level_selection.length) {
-      selection_iter = 0;
+    let next_level:
+      | (QueueEntry & {
+          online: boolean;
+        })
+      | undefined;
+    let selection_mode;
+    // Check for a queue skip
+    let skip = await channelPointManager.getNextSubmitter();
+    if ((skip as QueueSubmitter).name) {
+      selection_mode = "skip";
+    } else {
+      selection_mode =
+        settings.level_selection[
+          selection_iter++ % settings.level_selection.length
+        ];
+      if (selection_iter >= settings.level_selection.length) {
+        selection_iter = 0;
+      }
     }
-    switch (selection_mode) {
-      case "next":
-        next_level = await quesoqueue.next();
-        break;
-      case "subnext":
-        next_level = await quesoqueue.subnext();
-        break;
-      case "modnext":
-        next_level = await quesoqueue.modnext();
-        break;
-      case "random":
-        next_level = await quesoqueue.random();
-        break;
-      case "subrandom":
-        next_level = await quesoqueue.subrandom();
-        break;
-      case "modrandom":
-        next_level = await quesoqueue.modrandom();
-        break;
-      case "weightedrandom":
-        next_level = await quesoqueue.weightedrandom();
-        respond(
-          "(" + selection_mode + ") " + weightedrandom_level_message(next_level)
-        );
-        break;
-      case "weightednext":
-        next_level = await quesoqueue.weightednext();
-        respond(
-          "(" + selection_mode + ") " + weightednext_level_message(next_level)
-        );
-        break;
-      case "weightedsubrandom":
-        next_level = await quesoqueue.weightedsubrandom();
-        respond(
-          "(" +
-            selection_mode +
-            ") " +
-            weightedrandom_level_message(next_level, " (subscriber)")
-        );
-        break;
-      case "weightedsubnext":
-        next_level = await quesoqueue.weightedsubnext();
-        respond(
-          "(" +
-            selection_mode +
-            ") " +
-            weightednext_level_message(next_level, " (subscriber)")
-        );
-        break;
-      default:
-        selection_mode = "default";
-        next_level = await quesoqueue.next();
+    if (selection_mode == undefined) {
+      selection_mode = "default";
+    }
+    next_level = await pickLevel(selection_mode, respond, skip);
+    if (skip == "not yet" && next_level == undefined) {
+      skip = await channelPointManager.getNextSubmitter(true);
+      next_level = await pickLevel(selection_mode, respond, skip);
     }
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -575,6 +629,11 @@ async function HandleMessage(
     ) {
       respond("(" + selection_mode + ") " + next_level_message(next_level));
     }
+    // Make sure the level is removed from the skip queue if the user was offline and it was pulled anyway;
+    // This will refund their points, but that's fair
+    if (selection_mode != "skip" && next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("next", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -582,6 +641,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("subnext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -589,6 +652,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.subnext();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("modnext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -596,6 +663,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.modnext();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("random", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -603,6 +674,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.random();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("weightednext", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -610,6 +685,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.weightednext();
     respond(weightednext_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (
     aliases.isAlias("weightedrandom", message) &&
     sender.isBroadcaster
@@ -620,6 +699,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.weightedrandom();
     respond(weightedrandom_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (
     aliases.isAlias("weightedsubnext", message) &&
     sender.isBroadcaster
@@ -630,6 +713,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.weightedsubnext();
     respond(weightednext_level_message(next_level, " (subscriber)"));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (
     aliases.isAlias("weightedsubrandom", message) &&
     sender.isBroadcaster
@@ -640,6 +727,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.weightedsubrandom();
     respond(weightedrandom_level_message(next_level, " (subscriber)"));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("subrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -647,6 +738,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.subrandom();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("modrandom", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -654,6 +749,10 @@ async function HandleMessage(
     }
     const next_level = await quesoqueue.modrandom();
     respond(next_level_message(next_level));
+    // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
+    if (next_level) {
+      channelPointManager.removeFromSkipQueue(next_level.submitter);
+    }
   } else if (aliases.isAlias("punt", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
@@ -676,6 +775,10 @@ async function HandleMessage(
     if (dip_level !== undefined) {
       twitch.notLurkingAnymore(dip_level.submitter);
       respond(i18next.t("nowPlayingBasic", { level: dip_level }));
+
+      // Remove them from the skip queue, but fulfill the reward
+      // If they were selected, they clearly skipped the queue
+      channelPointManager.removeFromSkipQueue(dip_level.submitter, "FULFILLED");
     } else {
       respond(i18next.t("selectNoLevel", { username }));
     }
@@ -820,6 +923,13 @@ await twitchApi.setup();
 
 // loading the queue
 await quesoqueue.load();
+twitchApi.registerStreamCallbacks(
+  quesoqueue.onStreamOnline,
+  quesoqueue.onStreamOffline
+);
+
+// setting up channel point rewards needs to happen after the queue is loaded
+await channelPointManager.init(chatbot_helper.say.bind(chatbot_helper));
 
 // connect to the Twitch channel.
 await chatbot_helper.connect();

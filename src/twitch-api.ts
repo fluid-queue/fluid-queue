@@ -1,6 +1,8 @@
 import {
   ApiClient,
   HelixChatChatter,
+  HelixCreateCustomRewardData,
+  HelixUpdateCustomRewardData,
   HelixUser,
   UserIdResolvable,
 } from "@twurple/api";
@@ -18,6 +20,12 @@ import { twitch } from "./twitch.js";
 import i18next from "i18next";
 import { z } from "zod";
 import { warn } from "./chalk-print.js";
+import {
+  EventSubChannelRedemptionAddEvent,
+  EventSubChannelRedemptionUpdateEvent,
+  EventSubStreamOfflineEvent,
+  EventSubStreamOnlineEvent,
+} from "@twurple/eventsub-base";
 
 const tokensFileName = "./settings/tokens.json";
 const broadcasterTokensFileName = "./settings/tokens.broadcaster.json";
@@ -187,6 +195,7 @@ class TwitchApi {
         "subscribers-by-broadcaster",
         "moderators-by-broadcaster",
         "chatters",
+        "custom-rewards",
       ]);
       this.#broadcasterTokenScopes = this.#botTokenScopes;
     } else {
@@ -215,6 +224,7 @@ class TwitchApi {
         const id = await this.#authProvider.addUserForToken(tokenData, [
           "subscribers-by-broadcaster",
           "moderators-by-broadcaster",
+          "custom-rewards",
         ]);
         if (id != this.#broadcasterUser.id) {
           throw new Error(
@@ -445,6 +455,155 @@ class TwitchApi {
       };
     });
     return modUsers;
+  }
+
+  async getCustomRewards() {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get rewards without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const rewards = await this.apiClient.asIntent(
+      ["custom-rewards"],
+      async (ctx) => {
+        return await ctx.channelPoints.getCustomRewards(broadcasterId, true);
+      }
+    );
+    return rewards;
+  }
+
+  async getCustomRewardById(id: string) {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to get reward without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    const reward = await this.apiClient.asIntent(
+      ["custom-rewards"],
+      async (ctx) => {
+        try {
+          return await ctx.channelPoints.getCustomRewardById(broadcasterId, id);
+        } catch (err) {
+          if (
+            typeof err === "object" &&
+            err != null &&
+            "_statusCode" in err &&
+            err._statusCode == "404"
+          ) {
+            // The reward was deleted, which means it should be null
+            return null;
+          } else {
+            throw err;
+          }
+        }
+      }
+    );
+    return reward;
+  }
+
+  async createCustomReward(rewardData: HelixCreateCustomRewardData) {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to create reward without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    return this.apiClient.asIntent(["custom-rewards"], async (ctx) => {
+      return await ctx.channelPoints.createCustomReward(
+        broadcasterId,
+        rewardData
+      );
+    });
+  }
+
+  async updateCustomReward(
+    id: string,
+    rewardData: HelixUpdateCustomRewardData
+  ) {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to update reward without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    return this.apiClient.asIntent(["custom-rewards"], async (ctx) => {
+      return await ctx.channelPoints.updateCustomReward(
+        broadcasterId,
+        id,
+        rewardData
+      );
+    });
+  }
+
+  async getCustomRewardRedemptions(id: string) {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to update reward without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    return this.apiClient.asIntent(["custom-rewards"], async (ctx) => {
+      const list = await ctx.channelPoints.getRedemptionsForBroadcaster(
+        broadcasterId,
+        id,
+        "UNFULFILLED",
+        { newestFirst: true }
+      );
+      return list.data.reverse();
+    });
+  }
+
+  async updateCustomRewardRedemption(
+    reward: string,
+    redemption: string,
+    status: "FULFILLED" | "CANCELED"
+  ) {
+    if (this.#broadcasterUser == null) {
+      throw new Error("Trying to update reward without a broadcaster set");
+    }
+
+    const broadcasterId = this.#broadcasterUser.id;
+    return this.apiClient.asIntent(["custom-rewards"], async (ctx) => {
+      return await ctx.channelPoints.updateRedemptionStatusByIds(
+        broadcasterId,
+        reward,
+        [redemption],
+        status
+      );
+    });
+  }
+
+  registerRedemptionCallbacks(
+    id: string,
+    add: (data: EventSubChannelRedemptionAddEvent) => void,
+    update: (data: EventSubChannelRedemptionUpdateEvent) => void
+  ) {
+    if (this.#esListener == null || this.#broadcasterUser == undefined) {
+      throw new Error(
+        "Trying to register channel point redemptions before API set up"
+      );
+    }
+    this.#esListener.onChannelRedemptionAddForReward(
+      this.#broadcasterUser.id,
+      id,
+      add
+    );
+    this.#esListener.onChannelRedemptionUpdateForReward(
+      this.#broadcasterUser.id,
+      id,
+      update
+    );
+  }
+
+  registerStreamCallbacks(
+    onlineHandler: (event: EventSubStreamOnlineEvent) => void,
+    offlineHandler: (event: EventSubStreamOfflineEvent) => void
+  ) {
+    if (this.#esListener == null || this.#broadcasterUser == undefined) {
+      throw new Error(
+        "Trying to register online/offline handlers before API set up"
+      );
+    }
+
+    this.#esListener.onStreamOnline(this.#broadcasterUser, onlineHandler);
+    this.#esListener.onStreamOffline(this.#broadcasterUser, offlineHandler);
   }
 
   async isStreamOnline(): Promise<boolean> {
