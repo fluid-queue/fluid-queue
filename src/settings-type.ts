@@ -67,6 +67,12 @@ const DeprectedSecondsValue = z
   })
   .or(TimeValue);
 
+// these are setting provided at build-time added by build.ts to the header
+export type BuildSettings = {
+  /// client id of the public twitch application used for device code grant flow
+  publicClientId?: string | null;
+};
+
 export const Settings = z
   .object({
     language: z
@@ -77,26 +83,32 @@ export const Settings = z
       })
       .default("en")
       .describe("the language to run the bot in"),
+    /// private client authorization (legacy)
     channel: z
       .string()
       .describe("channel for bot to run in")
       .refine((channel) => /^[a-z0-9_]{2,}$/.test(channel), {
         message: "channel needs to be a valid twitch login name",
-      }),
+      })
+      .optional(),
+    /// private client authorization (legacy)
     clientId: z
       .string()
       .describe("client id of the twitch application")
       .refine((clientId) => clientId != "{YOUR_CLIENT_ID}", {
         message:
           "please replace `{YOUR_CLIENT_ID}` with the client id of your twitch application",
-      }),
+      })
+      .optional(),
+    /// private client authorization (legacy)
     clientSecret: z
       .string()
       .describe("client secret of the twitch application")
       .refine((clientSecret) => clientSecret != "{YOUR_CLIENT_SECRET}", {
         message:
           "Please replace `{YOUR_CLIENT_SECRET}` with your client secret.",
-      }),
+      })
+      .optional(),
     start_open: z
       .boolean()
       .describe("whether queue will start open")

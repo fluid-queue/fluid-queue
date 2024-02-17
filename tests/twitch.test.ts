@@ -110,6 +110,7 @@ test("online users", async () => {
   }
 
   expect(settings.channel).toBe("queso_queue_test_channel");
+  expect(twitchApi.channel).toBe("fluidqueue");
 
   // online users should be empty
   let onlineUsers = await twitch.getOnlineUsers();

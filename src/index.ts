@@ -6,7 +6,7 @@ import { timer, Timer } from "./timer.js";
 import * as aliasManagement from "./aliases.js";
 import { twitchApi } from "./twitch-api.js";
 import settings from "./settings.js";
-import { helper } from "./chatbot.js";
+import { Chatbot, helper } from "./chatbot.js";
 import { QueueEntry, QueueSubmitter } from "./extensions-api/queue-entry.js";
 import { Chatter, Responder } from "./extensions-api/command.js";
 await import("./i18n.js");
@@ -22,11 +22,12 @@ aliases.loadAliases();
 let queue_open = settings.start_open;
 let selection_iter = 0;
 let level_timer: Timer | null = null;
+let chatbot_helper: Chatbot;
 
 if (settings.level_timeout) {
   level_timer = timer(() => {
     chatbot_helper.say(
-      i18next.t("timerExpired", { channel: settings.channel })
+      i18next.t("timerExpired", { channel: twitchApi.channel })
     );
   }, settings.level_timeout);
 }
@@ -913,23 +914,27 @@ async function HandleMessage(
   }
 }
 
-// Set up the chatbot helper
-const chatbot_helper = helper(settings.channel);
-chatbot_helper.setup(HandleMessage);
+async function main() {
+  // run async code
+  // setup the twitch api
+  await twitchApi.setup();
 
-// run async code
-// setup the twitch api
-await twitchApi.setup();
+  // Set up the chatbot helper
+  chatbot_helper = helper(twitchApi.channel);
+  chatbot_helper.setup(HandleMessage);
 
-// loading the queue
-await quesoqueue.load();
-twitchApi.registerStreamCallbacks(
-  quesoqueue.onStreamOnline,
-  quesoqueue.onStreamOffline
-);
+  // loading the queue
+  await quesoqueue.load();
+  twitchApi.registerStreamCallbacks(
+    quesoqueue.onStreamOnline,
+    quesoqueue.onStreamOffline
+  );
 
-// setting up channel point rewards needs to happen after the queue is loaded
-await channelPointManager.init(chatbot_helper.say.bind(chatbot_helper));
+  // setting up channel point rewards needs to happen after the queue is loaded
+  await channelPointManager.init(chatbot_helper.say.bind(chatbot_helper));
 
-// connect to the Twitch channel.
-await chatbot_helper.connect();
+  // connect to the Twitch channel.
+  await chatbot_helper.connect();
+}
+
+await main();

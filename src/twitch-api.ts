@@ -8,8 +8,7 @@ import {
 } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import * as tmi from "@twurple/auth-tmi";
-import { settings, fileName as settingsFile } from "./settings.js";
-import fs from "fs";
+import { settings } from "./settings.js";
 import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
 import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
@@ -18,7 +17,6 @@ import { User } from "./extensions-api/queue-entry.js";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
 import { twitch } from "./twitch.js";
 import i18next from "i18next";
-import { z } from "zod";
 import { warn } from "./chalk-print.js";
 import {
   EventSubChannelRedemptionAddEvent,
@@ -26,19 +24,10 @@ import {
   EventSubStreamOfflineEvent,
   EventSubStreamOnlineEvent,
 } from "@twurple/eventsub-base";
+import { InitialTokenScheme, loadToken, setupAuth } from "./twitch-auth.js";
 
 const tokensFileName = "./settings/tokens.json";
 const broadcasterTokensFileName = "./settings/tokens.broadcaster.json";
-
-const InitialTokenScheme = z
-  .object({
-    accessToken: z.string().optional(),
-    refreshToken: z.string().nullable(),
-    scope: z.string().array().optional(), // optional when unknown
-    expiresIn: z.number().nullable().default(0), // null means lives forever, 0 means unknown
-    obtainmentTimestamp: z.number().default(0), // 0 means unknown
-  })
-  .passthrough();
 
 class TwitchApi {
   #authProvider: RefreshingAuthProvider | null = null;
@@ -49,6 +38,7 @@ class TwitchApi {
   #botTokenScopes: string[] = [];
   #broadcasterTokenScopes: string[] = [];
   #esListener: EventSubWsListener | null = null;
+  #channel: string | null = null;
 
   constructor() {
     this.#chattersCache = new SingleValueCache(
@@ -56,6 +46,13 @@ class TwitchApi {
       [],
       Duration.ofSeconds(30)
     );
+  }
+
+  get channel(): string {
+    if (this.#channel == null) {
+      throw new Error("Tried to load channel before client set up");
+    }
+    return this.#channel;
   }
 
   // visible for testing
@@ -93,50 +90,10 @@ class TwitchApi {
    * Setup authentication.
    */
   async setup() {
-    if (
-      settings.clientId == null ||
-      settings.clientId == "" ||
-      settings.clientId == "{YOUR_CLIENT_ID}" ||
-      settings.clientId == "YOUR_CLIENT_ID"
-    ) {
-      throw new Error(`${settingsFile}: Invalid clientId.`);
-    }
-    if (
-      settings.clientSecret == null ||
-      settings.clientSecret == "" ||
-      settings.clientSecret == "{YOUR_CLIENT_SECRET}" ||
-      settings.clientSecret == "YOUR_CLIENT_SECRET"
-    ) {
-      throw new Error(`${settingsFile}: Invalid clientSecret.`);
-    }
-    // validation is done before setting anything up to help users figure out problems early
-    const tokenData = InitialTokenScheme.parse(
-      JSON.parse(fs.readFileSync(tokensFileName, "utf-8"))
-    );
-    if (
-      tokenData.accessToken == null ||
-      tokenData.accessToken == "" ||
-      tokenData.accessToken == "{INITIAL_ACCESS_TOKEN}" ||
-      tokenData.accessToken == "INITIAL_ACCESS_TOKEN"
-    ) {
-      throw new Error(`Invalid ${tokensFileName} file: accessToken not found.`);
-    }
-    if (
-      tokenData.refreshToken == null ||
-      tokenData.refreshToken == "" ||
-      tokenData.refreshToken == "{INITIAL_REFRESH_TOKEN}" ||
-      tokenData.refreshToken == "INITIAL_REFRESH_TOKEN"
-    ) {
-      throw new Error(
-        `Invalid ${tokensFileName} file: refreshToken not found.`
-      );
-    }
+    this.#authProvider = setupAuth();
 
-    // create the refreshing provider
-    this.#authProvider = new RefreshingAuthProvider({
-      clientId: settings.clientId,
-      clientSecret: settings.clientSecret,
-    });
+    // validation is done before setting anything up to help users figure out problems early
+    const tokenData = loadToken(tokensFileName);
 
     // Register the onRefresh callback
     this.#authProvider.onRefresh((userId, newTokenData) => {
@@ -172,13 +129,76 @@ class TwitchApi {
         //minLevel: 'debug'
       },
     });
-    // get the user id of the channel/broadcaster
-    this.#broadcasterUser = await this.#apiClient.asIntent(
-      ["user-by-name"],
-      async (ctx) => {
-        return ctx.users.getUserByName(settings.channel);
+
+    // setting settings.channel is deprecated
+    // running the queue with only a bot token is still possible, but requires settings.channel to be set
+    let broadcasterId: string | undefined;
+    if (settings.channel == null) {
+      // look for the broadcaster file
+      let tokenData: InitialTokenScheme | undefined;
+      try {
+        tokenData = loadToken(broadcasterTokensFileName);
+      } catch (err) {
+        if (
+          typeof err === "object" &&
+          err != null &&
+          "code" in err &&
+          err.code === "ENOENT"
+        ) {
+          // There's no provided tokens for the broadcaster
+          // this means that the bot token is the broadcaster!
+        } else {
+          throw err;
+        }
       }
-    );
+      if (tokenData) {
+        // channel is the user from the broadcaster token
+        broadcasterId = await this.#authProvider.addUserForToken(tokenData, [
+          "subscribers-by-broadcaster",
+          "moderators-by-broadcaster",
+          "custom-rewards",
+        ]);
+        const id = broadcasterId;
+        this.#broadcasterUser = await this.#apiClient.asIntent(
+          ["user-by-id"],
+          async (ctx) => {
+            const result = await ctx.users.getUserById(id);
+            if (result == null) {
+              throw new Error(`Could not get channel name for user id ${id}`);
+            }
+            return result;
+          }
+        );
+        this.#channel = this.#broadcasterUser.name;
+      } else {
+        // channel is the user from the bot token
+        const botUserId = this.#botUserId;
+        this.#broadcasterUser = await this.#apiClient.asIntent(
+          ["user-by-id"],
+          async (ctx) => {
+            const result = await ctx.users.getUserById(botUserId);
+            if (result == null) {
+              throw new Error(
+                `Could not get channel name for user id ${this.#botUserId}`
+              );
+            }
+            return result;
+          }
+        );
+        this.#channel = this.#broadcasterUser.name;
+      }
+    } else {
+      const channel = settings.channel;
+      // get the user id of the channel/broadcaster
+      this.#broadcasterUser = await this.#apiClient.asIntent(
+        ["user-by-name"],
+        async (ctx) => {
+          return ctx.users.getUserByName(channel);
+        }
+      );
+      // channel is from the settings
+      this.#channel = channel;
+    }
 
     // check to make sure we got the user ID successfully
     if (!this.#broadcasterUser) {
@@ -199,36 +219,41 @@ class TwitchApi {
       ]);
       this.#broadcasterTokenScopes = this.#botTokenScopes;
     } else {
-      // look for a broadcaster tokens file
-      let tokenData;
-      try {
-        tokenData = InitialTokenScheme.parse(
-          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf-8"))
-        );
-      } catch (err) {
-        if (
-          typeof err === "object" &&
-          err != null &&
-          "code" in err &&
-          err.code === "ENOENT"
-        ) {
-          // There's no provided tokens for the broadcaster
-          this.#broadcasterTokenScopes = [];
-          this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
-        } else {
-          throw err;
+      if (broadcasterId === undefined) {
+        // look for a broadcaster tokens file
+        let tokenData;
+        try {
+          tokenData = loadToken(broadcasterTokensFileName);
+        } catch (err) {
+          if (
+            typeof err === "object" &&
+            err != null &&
+            "code" in err &&
+            err.code === "ENOENT"
+          ) {
+            // There's no provided tokens for the broadcaster
+            this.#broadcasterTokenScopes = [];
+            this.#authProvider.addIntentsToUser(this.#botUserId, ["chatters"]);
+          } else {
+            throw err;
+          }
+        }
+        if (tokenData) {
+          broadcasterId = await this.#authProvider.addUserForToken(tokenData, [
+            "subscribers-by-broadcaster",
+            "moderators-by-broadcaster",
+            "custom-rewards",
+          ]);
         }
       }
 
-      if (tokenData) {
-        const id = await this.#authProvider.addUserForToken(tokenData, [
-          "subscribers-by-broadcaster",
-          "moderators-by-broadcaster",
-          "custom-rewards",
-        ]);
+      if (broadcasterId !== undefined) {
+        const id = broadcasterId;
         if (id != this.#broadcasterUser.id) {
           throw new Error(
-            `Broadcaster id ${this.#broadcasterUser.id} does not match token user id ${id}`
+            `Broadcaster id ${
+              this.#broadcasterUser.id
+            } does not match token user id ${id}`
           );
         }
         this.#broadcasterTokenScopes =

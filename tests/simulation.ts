@@ -278,6 +278,8 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         return Promise.resolve([]);
       });
 
+      channel = "fluidqueue";
+
       getUsers = jest.fn((users: string[]): Promise<User[]> => {
         return Promise.resolve(
           users

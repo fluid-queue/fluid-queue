@@ -24,7 +24,7 @@ const extensions = new Extensions();
 
 function isChannel(submitter: QueueSubmitter): boolean {
   const channelSubmitter: Partial<QueueSubmitter> = {
-    name: settings.channel,
+    name: twitchApi.channel,
   };
   return isQueueSubmitter(submitter, channelSubmitter);
 }

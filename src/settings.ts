@@ -1,8 +1,14 @@
 import fs from "fs";
 import { z } from "zod";
-import { Settings } from "./settings-type.js";
+import { Settings, BuildSettings } from "./settings-type.js";
 import YAML from "yaml";
 import { warn } from "./chalk-print.js";
+
+// TODO: find a way to allow var for global declarations
+declare global {
+  // eslint-disable-next-line no-var
+  var __build_settings: BuildSettings | undefined;
+}
 
 export type Settings = z.infer<typeof Settings>;
 /**
