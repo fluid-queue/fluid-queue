@@ -11,6 +11,7 @@ romhacks_enabled: false # if the "customlevel" resolver is enabled, one can add 
 uncleared_enabled: false # if the "customlevel" resolver is enabled, one can add uncleared levels using `!add Uncleared`.
 max_size: 100 # is the maximum amount of levels allowed in the queue at once.
 level_timeout: null # is the amount of time a level can be played before the bot will inform you that time is up. The default value of `null` means that the timer is deactivated. Example values: `10` (minutes), `10 minutes 30 seconds`, `1 hour`. Supplying no unit is deprecated and might stop in a future version, but it will imply a value of minutes for now.
+auto_timer: false # is whether or not to automatically start the timer upon pulling a level (e.g. with `!level`)
 message_cooldown: 10 seconds # is the amount of time that a user must wait before !list will display the levels in the queue after a previous use. Example values: `10 seconds`, `1 minute`, `1 second`, `100 milliseconds`. Supplying no unit is deprecated and might stop in a future version, but it will imply a value of seconds for now.
 subscriberWeightMultiplier: 1.0 # is the number added as a wait time for subscribers. Setting this to 1.2 for example will give subscribers an advantage for weighted random, because they would get 6 minutes of wait time per 5 minutes of waiting. This can be set to anything greater than or equal to 1.0.
 
