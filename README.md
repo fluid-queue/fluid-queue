@@ -8,7 +8,7 @@ A queue system for Super Mario Maker 2 levels.
 
 This project is based on Queso Queue Plus, which was originally developed by Shoujo (<https://github.com/ToransuShoujo/quesoqueue_plus/>) and diceguyd30 (<https://github.com/diceguyd30/queso_to_go_template>).
 
-To get started with the bot, check out the [setup instructions](https://fluid-queue.dev/setup) on our site. If you have any issues, let us know by [opening an issue](https://github.com/fluid-queue/fluid-queue/issues/new) on Github or joining our [Discord server](https://discord.gg/GCM98NKHbF)!
+To get started with the bot, check out the [setup instructions](https://fluid-queue.dev/docs) on our site. If you have any issues, let us know by [opening an issue](https://github.com/fluid-queue/fluid-queue/issues/new) on Github or joining our [Discord server](https://discord.gg/GCM98NKHbF)!
 
 ## Docker Tags
 
