@@ -147,7 +147,7 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
 
   jest.unstable_mockModule("uuid", () => {
     // using seeded random values in tests
-    const v4 = (options?: Parameters<typeof module.v4>[0]) => {
+    const v4 = jest.fn((options?: Parameters<typeof module.v4>[0]) => {
       return module.v4(
         options ?? {
           rng: () => {
@@ -157,7 +157,7 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
           },
         }
       );
-    };
+    });
     return {
       __esModule: true, // Use it when dealing with esModules
       ...module,
@@ -276,6 +276,7 @@ type Index = {
     respond: Responder
   ) => Promise<void>;
   twitch: Twitch;
+  uuidv4: jest.Mock<() => string>;
 };
 
 function asMock<T, K extends keyof T>(
@@ -412,9 +413,12 @@ const simRequireIndex = async (
     | ((message: string, sender: Chatter, respond: Responder) => Promise<void>)
     | undefined;
   let twitch: Twitch | undefined;
+  let uuidv4: jest.Mock<() => string> | undefined;
 
   try {
     await clearAllTimers();
+    jest.clearAllTimers();
+    jest.runAllTicks();
     jest.resetModules();
     await mockModules(chanceSeed);
     if (setupMocks !== undefined) {
@@ -441,6 +445,9 @@ const simRequireIndex = async (
     random = jest.spyOn(global.Math, "random").mockImplementation(() => {
       return mt.random();
     });
+
+    const uuid = await import("uuid");
+    uuidv4 = asMock(uuid, "v4");
 
     // prepare settings
     if (mockSettings === undefined) {
@@ -530,6 +537,7 @@ const simRequireIndex = async (
         quesoqueue,
         handle_func,
         twitch,
+        uuidv4,
       };
     }
     throw err;
@@ -553,6 +561,9 @@ const simRequireIndex = async (
   if (twitch === undefined) {
     throw new Error("twitch was not loaded correctly");
   }
+  if (uuidv4 === undefined) {
+    throw new Error("uuidv4 was not loaded correctly");
+  }
 
   return {
     fs,
@@ -564,6 +575,7 @@ const simRequireIndex = async (
     quesoqueue,
     handle_func,
     twitch,
+    uuidv4,
   };
 };
 

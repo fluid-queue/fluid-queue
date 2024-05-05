@@ -15,54 +15,59 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [23:32:30] @^helperblock: The queue is now open!
 queue.json/entries/current null
 queue.json/entries/queue []
+uuidv4 3d6ac19c-6c68-4292-95d2-897676ecd593
 [23:32:50] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:32:51] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"3d6ac19c-6c68-4292-95d2-897676ecd593","submitted":"2022-04-21T23:32:50.000Z"}]
 [23:33:16] ~%?liquidnya: !remove @FurretWalkBot
 [23:33:17] @^helperblock: @FurretWalkBot's level has been removed from the queue.
 queue.json/entries/current null
 queue.json/entries/queue []
+uuidv4 c6f34f78-ae34-40d4-b25a-0e725179d6a4
 [23:33:24] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:25] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"c6f34f78-ae34-40d4-b25a-0e725179d6a4","submitted":"2022-04-21T23:33:24.000Z"}]
 [23:33:30] ~%?liquidnya: !remove FurretWalkBot
 [23:33:31] @^helperblock: FurretWalkBot's level has been removed from the queue.
 queue.json/entries/current null
 queue.json/entries/queue []
+uuidv4 b03b3478-1b2f-4b00-821f-3504e779cbbe
 [23:33:39] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:39] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"b03b3478-1b2f-4b00-821f-3504e779cbbe","submitted":"2022-04-21T23:33:39.000Z"}]
 [23:33:50] ~%?liquidnya: !remove @furretwalkbot
 [23:33:50] @^helperblock: @furretwalkbot's level has been removed from the queue.
 queue.json/entries/current null
 queue.json/entries/queue []
+uuidv4 dabf5d2e-487d-4d8d-a771-8e1940402fac
 [23:33:55] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:33:55] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"dabf5d2e-487d-4d8d-a771-8e1940402fac","submitted":"2022-04-21T23:33:55.000Z"}]
 [23:33:58] ~%?liquidnya: !remove furretwalkbot
 [23:33:58] @^helperblock: furretwalkbot's level has been removed from the queue.
 queue.json/entries/current null
 queue.json/entries/queue []
+uuidv4 cc2a529c-708c-4744-a402-745fc03401fb
 [23:34:04] @^FurretWalkBot: !add NB0-1MD-SLG
 [23:34:04] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"cc2a529c-708c-4744-a402-745fc03401fb","submitted":"2022-04-21T23:34:04.000Z"}]
 [23:34:11] ~%?liquidnya: !remove FURRETWALKBOT
 [23:34:11] @^helperblock: No levels from FURRETWALKBOT were found in the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"cc2a529c-708c-4744-a402-745fc03401fb","submitted":"2022-04-21T23:34:04.000Z"}]
 [23:34:16] ~%?liquidnya: !remove @FURRETWALKBOT
 [23:34:16] @^helperblock: No levels from @FURRETWALKBOT were found in the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"cc2a529c-708c-4744-a402-745fc03401fb","submitted":"2022-04-21T23:34:04.000Z"}]
 [23:34:23] ~%?liquidnya: !remove @@furretwalkbot
 [23:34:24] @^helperblock: No levels from @@furretwalkbot were found in the queue.
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"cc2a529c-708c-4744-a402-745fc03401fb","submitted":"2022-04-21T23:34:04.000Z"}]
 
 # The username argument is not split with spaces
 # TODO: is this a bug?

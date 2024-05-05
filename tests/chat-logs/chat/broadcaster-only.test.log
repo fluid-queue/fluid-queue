@@ -13,6 +13,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [19:37:22] @^FurretWalkBot: !close
 [19:37:42] @^FurretWalkBot: !add NB0-1MD-SLG
 [19:37:42] @^helperblock: Sorry, the queue is closed right now.
+uuidv4 dfc41a74-562e-407c-aeab-8daf77e08d1a
 [19:37:57] ~%?liquidnya: !add NB0-1MD-SLG
 [19:37:57] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
@@ -47,7 +48,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [19:41:06] @^FurretWalkBot: !clear
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"dfc41a74-562e-407c-aeab-8daf77e08d1a","submitted":"2022-04-21T19:37:57.000Z"}]
 
 [19:41:48] ~%?liquidnya: !open
 [19:41:49] @^helperblock: The queue is now open!

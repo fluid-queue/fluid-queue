@@ -42,6 +42,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","offline_message":true,"max_size":1,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
 
+uuidv4 00b511f4-7395-441a-b34b-7c46b5b72690
 [02:24:35] ~%?liquidnya: !add NB0-1MD-SLG
 [02:24:35] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
@@ -51,6 +52,7 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","offline_message
 [02:25:29] ~%?liquidnya: !next
 [02:25:31] @^helperblock: Now playing NB0-1MD-SLG submitted by liquidnya.
 
+uuidv4 a3bd7ffd-6493-4d7c-8059-a12d8cbf95f1
 [02:25:38] @^FurretWalkBot: !add MY2-H2M-DSG
 [02:25:39] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
@@ -60,8 +62,8 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","offline_message
 [02:25:49] @^FurretWalkBot: !list
 [02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
-queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"00b511f4-7395-441a-b34b-7c46b5b72690","submitted":"2022-04-21T02:24:35.000Z"}
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"a3bd7ffd-6493-4d7c-8059-a12d8cbf95f1","submitted":"2022-04-21T02:25:38.000Z"}]
 
 [02:19:13] ~%?liquidnya: !clear
 [02:19:14] @^helperblock: The queue has been cleared!

@@ -12,6 +12,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [02:19:13] ~%?liquidnya: !open
 [02:19:14] @^helperblock: The queue is now open!
 
+uuidv4 38f3fb10-4e89-46f2-ae28-6f9a07d543b7
 [02:19:42] @^FurretWalkBot: !add NB0-1MD-SLG
 [02:19:42] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
@@ -19,7 +20,7 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [02:21:26] @^helperblock: 1 online: (no current level), FurretWalkBot (0 offline)
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"38f3fb10-4e89-46f2-ae28-6f9a07d543b7","submitted":"2022-04-21T02:19:42.000Z"}]
 
 
 
@@ -28,16 +29,17 @@ queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":
 
 fs-fail writeSync
 
+uuidv4 c173416b-98c7-42ff-bf33-d58e3296437c
 [02:39:13] ~%?liquidnya: !add MY2-H2M-DSG
 [02:39:13] @^helperblock: liquidnya, MY2-H2M-DSG has been added to the queue.
 
 # was not updated, but at least it did not crash or cause corrupted files!
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"38f3fb10-4e89-46f2-ae28-6f9a07d543b7","submitted":"2022-04-21T02:19:42.000Z"}]
 
 # now wait 2 minutes
 [02:41:13] ~%?liquidnya: OwO
 
 # save file was updated this time due to the waiting timer!
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}, {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"38f3fb10-4e89-46f2-ae28-6f9a07d543b7","submitted":"2022-04-21T02:19:42.000Z"}, {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"c173416b-98c7-42ff-bf33-d58e3296437c","submitted":"2022-04-21T02:39:13.000Z"}]

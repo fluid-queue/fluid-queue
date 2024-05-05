@@ -10,13 +10,14 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 # % subscriber
 [01:37:49] ~%?liquidnya: !open
 [01:37:49] @^helperblock: The queue is now open!
+uuidv4 2c5117fe-1268-47ec-8f3f-a88e14193208
 [01:37:56] ~%?liquidnya: !add NB0-1MD-SLG
 [01:37:57] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 [01:37:59] ~%?liquidnya: !list
 [01:38:00] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 # check the contents of the save file
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"2c5117fe-1268-47ec-8f3f-a88e14193208","submitted":"2022-04-21T01:37:56.000Z"}]
 # clear the queue and check file contents
 [02:15:35] ~%?liquidnya: !clear
 [02:15:35] @^helperblock: The queue has been cleared!

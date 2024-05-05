@@ -18,17 +18,19 @@ accuracy 60000
 [16:26:45] ~%?liquidnya: !open
 [16:26:45] @^helperblock: The queue is now open!
 
+uuidv4 56f8e1d9-1eba-4b9e-8b27-f6f54e4abd7a
 [16:26:45] ~%?liquidnya: !add NB0-1MD-SLG
 [16:26:45] @^helperblock: liquidnya, NB0-1MD-SLG has been added to the queue.
 
 # one day passes
 [16:24:45] ~%?liquidnya: uwu
 
+uuidv4 e7983cd6-b59c-4b3f-b463-d334e3bcbb51
 [16:26:45] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:26:46] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}},{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"56f8e1d9-1eba-4b9e-8b27-f6f54e4abd7a","submitted":"2022-04-21T16:26:45.000Z"},{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"e7983cd6-b59c-4b3f-b463-d334e3bcbb51","submitted":"2022-04-22T16:26:45.000Z"}]
 
 [16:26:47] @^FurretWalkBot: !odds
 [16:26:48] @^helperblock: FurretWalkBot, you have a 0.0693% chance of getting chosen in weighted random.

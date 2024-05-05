@@ -19,7 +19,6 @@ import {
 } from "../simulation.js";
 import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
-import * as uuidModule from "uuid";
 import { z } from "zod";
 
 const isPronoun = (text: string) => {
@@ -37,25 +36,8 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
-let uuid: { v4: jest.Mock<() => string> } | null = null;
-
-const mocks = () => {
-  jest.mock("uuid", () => {
-    const originalModule = jest.requireActual<typeof uuidModule>("uuid");
-    return {
-      __esModule: true,
-      ...originalModule,
-      // mock v4
-      v4: jest.fn(() => {
-        return originalModule.v4();
-      }),
-    };
-  });
-  uuid = jest.requireMock<typeof uuid>("uuid");
-};
-
 test("setup", async () => {
-  await simRequireIndex(undefined, undefined, undefined, mocks);
+  await simRequireIndex();
 });
 
 const parseMessage = (line: string) => {
@@ -133,7 +115,7 @@ const parseChatter = (chatter: string) => {
 
 const chatLogTest = (fileName: string) => {
   return async () => {
-    let test = await simRequireIndex(undefined, undefined, undefined, mocks);
+    let test = await simRequireIndex();
     let chatbot = null;
 
     const replyMessageQueue: Array<{ message: string; error: Error }> = [];
@@ -188,7 +170,8 @@ const chatLogTest = (fileName: string) => {
         if (command == "restart") {
           const time = new Date();
           await clearAllTimers();
-          test = await simRequireIndex(test.volume, test.settings, time, mocks);
+          await clearAllTimers();
+          test = await simRequireIndex(test.volume, test.settings, time);
           asMock(test.chatbot_helper, "say").mockImplementation(
             pushMessageWithStack
           );
@@ -283,10 +266,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "random") {
           test.random.mockImplementationOnce(() => parseFloat(rest));
         } else if (command == "uuidv4") {
-          if (uuid == null) {
-            throw new Error("Mocks not initialized!");
-          }
-          uuid.v4.mockImplementationOnce(() => rest.trim());
+          test.uuidv4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
           if (
             !(
@@ -402,9 +382,9 @@ for (const file of testFiles) {
   );
   test(
     fileName,
-    () => {
+    async () => {
       jest.setTimeout(10_000); // <- this might not work
-      chatLogTest(fileName);
+      await chatLogTest(fileName)();
     },
     10_000 // <- setting timeout here as well
   );

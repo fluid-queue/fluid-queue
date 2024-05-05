@@ -11,8 +11,10 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 
 [23:57:54] ~%?liquidnya: !open
 [23:57:54] @^helperblock: The queue is now open!
+uuidv4 98c4024c-aeb9-4b74-a0ff-bd920638d2b7
 [23:57:55] ~%?liquidnya: !add MY2-H2M-DSG
 [23:57:55] @^helperblock: liquidnya, MY2-H2M-DSG has been added to the queue.
+uuidv4 73f991b8-c561-42be-860f-26cd253c8a32
 [23:58:08] @^FurretWalkBot: !add 9V1-4TX-9WG
 [23:58:08] @^helperblock: FurretWalkBot, 9V1-4TX-9WG has been added to the queue.
 [23:58:18] ~%?liquidnya: !next
@@ -22,18 +24,20 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 [23:58:31] ~%?liquidnya: !list
 [23:58:32] @^helperblock: Scroll up to see the queue.
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z"}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"73f991b8-c561-42be-860f-26cd253c8a32","submitted":"2022-04-21T23:58:08.000Z"}]
 
 restart
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
+accuracy 1000
 
 # now the selected level is still current
 [23:58:35] ~%?liquidnya: !list
 [23:58:36] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
-
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z"}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"73f991b8-c561-42be-860f-26cd253c8a32","submitted":"2022-04-21T23:58:08.000Z"}]
 
 [00:00:35] ~%?liquidnya: !punt
 [00:00:35] @^helperblock: Ok, adding the current level back into the queue.
@@ -42,9 +46,12 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [00:01:17] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya (0 offline)
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"73f991b8-c561-42be-860f-26cd253c8a32","submitted":"2022-04-21T23:58:08.000Z"},{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z"}]
 
 restart
+
+settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
+accuracy 1000
 
 [00:01:25] ~%?liquidnya: !list
 [00:01:26] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya (0 offline)

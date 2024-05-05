@@ -21,21 +21,23 @@ queue.json/entries/queue []
 
 [20:06:02] ~%?liquidnya: !open
 [20:06:03] @^helperblock: The queue is now open!
+uuidv4 e9f0e98a-7927-4f81-9573-3de05d93aab6
 [20:08:22] @^FurretWalkBot: !add MY2-H2M-DSG
 [20:08:22] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+uuidv4 4a780f97-082f-42cf-96ad-599e1321dfec
 [20:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [20:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"e9f0e98a-7927-4f81-9573-3de05d93aab6","submitted":"2022-04-21T20:08:22.000Z"},{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"4a780f97-082f-42cf-96ad-599e1321dfec","submitted":"2022-04-21T20:08:32.000Z"}]
 
 [20:08:35] ~%?liquidnya: !next
 [20:08:36] @^helperblock: Now playing MY2-H2M-DSG submitted by FurretWalkBot.
 [20:08:40] ~%?liquidnya: !list
 [20:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"e9f0e98a-7927-4f81-9573-3de05d93aab6","submitted":"2022-04-21T20:08:22.000Z"}
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"4a780f97-082f-42cf-96ad-599e1321dfec","submitted":"2022-04-21T20:08:32.000Z"}]
 
 [20:08:46] ~%?liquidnya: !dismiss
 [20:08:49] @^helperblock: Dismissed MY2-H2M-DSG submitted by FurretWalkBot.
@@ -43,13 +45,13 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 [20:08:53] @^helperblock: 1 online: (no current level), liquidnya (0 offline)
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"4a780f97-082f-42cf-96ad-599e1321dfec","submitted":"2022-04-21T20:08:32.000Z"}]
 
 [20:09:12] ~%?liquidnya: !dismiss
 [20:09:12] @^helperblock: The nothing you aren't playing cannot be dismissed.
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"}}]
+queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"4a780f97-082f-42cf-96ad-599e1321dfec","submitted":"2022-04-21T20:08:32.000Z"}]
 
 ##########################
 ###       !skip        ###
@@ -63,8 +65,10 @@ queue.json/entries/queue []
 
 [21:06:02] ~%?liquidnya: !open
 [21:06:03] @^helperblock: The queue is now open!
+uuidv4 3fae59e3-1d72-48f4-8fee-20c0659d08ca
 [21:08:22] @^FurretWalkBot: !add MY2-H2M-DSG
 [21:08:22] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+uuidv4 1b3dea78-00c2-4bb3-864e-f18b82bfaa79
 [21:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [21:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
@@ -105,8 +109,10 @@ queue.json/entries/queue []
 
 [22:06:02] ~%?liquidnya: !open
 [22:06:03] @^helperblock: The queue is now open!
+uuidv4 6b59a9be-f6d6-4d44-be8d-f87504ef744c
 [22:08:22] @^FurretWalkBot: !add MY2-H2M-DSG
 [22:08:22] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+uuidv4 b98c4443-d554-4c63-823a-6b9079185c66
 [22:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [22:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
@@ -147,8 +153,10 @@ queue.json/entries/queue []
 
 [23:06:02] ~%?liquidnya: !open
 [23:06:03] @^helperblock: The queue is now open!
+uuidv4 dc90816b-4624-441c-b5b8-79d67560d695
 [23:08:22] @^FurretWalkBot: !add MY2-H2M-DSG
 [23:08:22] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+uuidv4 c7bc9995-f806-4374-8289-29d61a2dc941
 [23:08:32] ~%?liquidnya: !add 9V1-4TX-9WG
 [23:08:32] @^helperblock: liquidnya, 9V1-4TX-9WG has been added to the queue.
 
