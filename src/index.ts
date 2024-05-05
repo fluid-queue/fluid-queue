@@ -619,7 +619,10 @@ async function HandleMessage(
     }
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
     if (
       selection_mode != "weightedrandom" &&
@@ -635,55 +638,70 @@ async function HandleMessage(
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("next", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.next();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.next();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("subnext", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.subnext();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.subnext();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("modnext", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.modnext();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.modnext();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("random", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.random();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.random();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("weightednext", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.weightednext();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.weightednext();
     respond(weightednext_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
@@ -693,11 +711,14 @@ async function HandleMessage(
     aliases.isAlias("weightedrandom", message) &&
     sender.isBroadcaster
   ) {
+    const next_level = await quesoqueue.weightedrandom();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.weightedrandom();
     respond(weightedrandom_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
@@ -707,11 +728,14 @@ async function HandleMessage(
     aliases.isAlias("weightedsubnext", message) &&
     sender.isBroadcaster
   ) {
+    const next_level = await quesoqueue.weightedsubnext();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.weightedsubnext();
     respond(weightednext_level_message(next_level, " (subscriber)"));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
@@ -721,33 +745,42 @@ async function HandleMessage(
     aliases.isAlias("weightedsubrandom", message) &&
     sender.isBroadcaster
   ) {
+    const next_level = await quesoqueue.weightedsubrandom();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.weightedsubrandom();
     respond(weightedrandom_level_message(next_level, " (subscriber)"));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("subrandom", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.subrandom();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.subrandom();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
       channelPointManager.removeFromSkipQueue(next_level.submitter);
     }
   } else if (aliases.isAlias("modrandom", message) && sender.isBroadcaster) {
+    const next_level = await quesoqueue.modrandom();
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!next_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const next_level = await quesoqueue.modrandom();
     respond(next_level_message(next_level));
     // Commands other than !level do not check the skip queue, points should be refunded if a level is pulled
     if (next_level) {
@@ -756,22 +789,27 @@ async function HandleMessage(
   } else if (aliases.isAlias("punt", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
+      // Always pause the timer
       level_timer.pause();
     }
     respond(await quesoqueue.punt());
   } else if (aliases.isAlias("dismiss", message) && sender.isBroadcaster) {
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
+      // Always pause the timer
       level_timer.pause();
     }
     respond(await quesoqueue.dismiss());
   } else if (aliases.isAlias("select", message) && sender.isBroadcaster) {
     const username = get_remainder(message);
+    const dip_level = quesoqueue.dip(username);
     if (settings.level_timeout && level_timer != null) {
       level_timer.restart();
-      level_timer.pause();
+      // Pause the timer if there's no next level, or the auto timer isn't set
+      if (!dip_level || !settings.auto_timer) {
+        level_timer.pause();
+      }
     }
-    const dip_level = quesoqueue.dip(username);
     if (dip_level !== undefined) {
       twitch.notLurkingAnymore(dip_level.submitter);
       respond(i18next.t("nowPlayingBasic", { level: dip_level }));

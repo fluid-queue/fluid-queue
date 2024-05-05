@@ -134,6 +134,10 @@ export const Settings = z
     )
       .nullable()
       .default(null),
+    auto_timer: z
+      .boolean()
+      .describe("whether to start the timer automatically when picking a level")
+      .default(false),
     level_selection: z
       .enum(order_options)
       .array()
