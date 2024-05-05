@@ -38,7 +38,8 @@ async function setupQueue() {
     volume,
     DEFAULT_TEST_SETTINGS,
     START_TIME,
-    setupMocks
+    setupMocks,
+    7
   );
   const queue: Queue = index.quesoqueue;
   if (queue.testAccess === undefined) {
@@ -110,11 +111,13 @@ test("weight test", async () => {
     expect(list.entries).toHaveLength(1);
     const entry = list.entries[0];
     expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      id: "44047f87-adde-4d54-a164-10ac49ace8b1",
       submitter: {
         id: testUser2.id,
         name: testUser2.name,
         displayName: testUser2.displayName,
       },
+      submitted: "2022-04-21T00:00:00.000Z",
       type: "smm2",
       code: level2,
       data: undefined,
@@ -141,11 +144,13 @@ test("weight test", async () => {
     expect(list.entries).toHaveLength(2);
     let entry = list.entries[0];
     expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      id: "44047f87-adde-4d54-a164-10ac49ace8b1",
       submitter: {
         id: testUser2.id,
         name: testUser2.name,
         displayName: testUser2.displayName,
       },
+      submitted: "2022-04-21T00:00:00.000Z",
       type: "smm2",
       code: level2,
       data: undefined,
@@ -154,11 +159,13 @@ test("weight test", async () => {
     expect(entry.weight()).toBe(11); // gained +10 weight
     entry = list.entries[1];
     expect(entry.level.serializePersistedQueueEntry()).toEqual({
+      id: "133ac751-70fa-4974-ba4e-89438016126b",
       submitter: {
         id: testUser1.id,
         name: testUser1.name,
         displayName: testUser1.displayName,
       },
+      submitted: "2022-04-21T00:00:00.000Z",
       type: "smm2",
       code: level1,
       data: undefined,

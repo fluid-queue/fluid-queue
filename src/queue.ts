@@ -76,7 +76,7 @@ interface QueueDataAccessor {
    */
   removeWaiting(): void;
 
-  override(state: z.output<typeof persistence.QueueV3>): void;
+  override(state: z.output<typeof persistence.QueueV3_1>): void;
 
   /**
    * This method has to be called with every level that is removed from the queue!
@@ -148,7 +148,7 @@ class QueueData {
         }
       },
 
-      override(state: z.output<typeof persistence.QueueV3>) {
+      override(state: z.output<typeof persistence.QueueV3_1>) {
         let save = false;
         // override queue bindings
         extensions.overrideQueueBindings(state.extensions);

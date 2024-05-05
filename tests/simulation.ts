@@ -56,7 +56,7 @@ let mockModerators: User[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
-const mockModules = async () => {
+const mockModules = async (chanceSeed?: Chance.Seed) => {
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
   jest.unstable_mockModule("fluid-queue/chatbot.js", () => {
@@ -137,6 +137,32 @@ const mockModules = async () => {
       result = new Date().getTime();
     }
     return result;
+  });
+
+  const module = await import("uuid");
+  const chance = jestChance.getChance(chanceSeed);
+  const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
+    random: () => number;
+  };
+
+  jest.unstable_mockModule("uuid", () => {
+    // using seeded random values in tests
+    const v4 = (options?: Parameters<typeof module.v4>[0]) => {
+      return module.v4(
+        options ?? {
+          rng: () => {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+              () => Math.floor(mt.random() * 256)
+            );
+          },
+        }
+      );
+    };
+    return {
+      __esModule: true, // Use it when dealing with esModules
+      ...module,
+      v4,
+    };
   });
 };
 
@@ -373,7 +399,8 @@ const simRequireIndex = async (
   volume?: InstanceType<typeof Volume>,
   mockSettings?: z.input<typeof Settings>,
   mockTime?: number | Date,
-  setupMocks?: () => Promise<void> | void
+  setupMocks?: () => Promise<void> | void,
+  chanceSeed?: Chance.Seed
 ): Promise<Index> => {
   let fs: Index["fs"] | undefined;
   let settings: z.output<typeof Settings> | undefined;
@@ -389,7 +416,7 @@ const simRequireIndex = async (
   try {
     await clearAllTimers();
     jest.resetModules();
-    await mockModules();
+    await mockModules(chanceSeed);
     if (setupMocks !== undefined) {
       await setupMocks();
     }
@@ -407,8 +434,10 @@ const simRequireIndex = async (
     }
 
     // setup random mock
-    const chance = jestChance.getChance();
-    const mt = chance.mersenne_twister(chance.seed) as { random: () => number };
+    const chance = jestChance.getChance(chanceSeed);
+    const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
+      random: () => number;
+    };
     random = jest.spyOn(global.Math, "random").mockImplementation(() => {
       return mt.random();
     });

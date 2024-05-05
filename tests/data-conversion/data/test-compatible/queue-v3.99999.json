@@ -18,7 +18,9 @@
         "id": "${user(\"furretwalkbot\").id}",
         "name": "furretwalkbot",
         "displayName": "FurretWalkBot"
-      }
+      },
+      "id": "382b4cff-2c66-4c7e-98b3-7a329fd306ef",
+      "submitted": "2023-06-02T20:08:15.000Z"
     },
     "queue": [
       {
@@ -28,7 +30,9 @@
           "id": "${user(\"liquidnya\").id}",
           "name": "liquidnya",
           "displayName": "liquidnya"
-        }
+        },
+        "id": "92d48a46-57aa-4456-bdda-1145b294ef72",
+        "submitted": "2023-07-02T20:08:15.000Z"
       },
       {
         "code": "BRL-F70-CLG",
@@ -37,7 +41,9 @@
           "id": "${user(\"helperblock\").id}",
           "name": "helperblock",
           "displayName": "helperblock"
-        }
+        },
+        "id": "91c6f5af-e635-469d-97b4-4135eeea6baf",
+        "submitted": "2023-08-02T20:08:15.000Z"
       }
     ]
   },

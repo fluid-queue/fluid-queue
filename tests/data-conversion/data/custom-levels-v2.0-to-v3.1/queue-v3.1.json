@@ -2,14 +2,20 @@
   "version": "3.1",
   "extensions": {
     "customlevel": {
-      "data": {},
+      "data": {
+        "80e63dc1-78f8-5310-b6c3-f15b11436860": {
+          "codes": ["ROMhack", "R0M-HAK-LVL"],
+          "name": "a ROMhack",
+          "enabled": false
+        }
+      },
       "version": "1.0"
     }
   },
   "entries": {
     "current": {
-      "code": "QWF-3K9-84G",
-      "type": "smm2",
+      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+      "type": "customlevel",
       "submitter": {
         "id": "${user(\"furretwalkbot\").id}",
         "name": "furretwalkbot",
@@ -31,8 +37,8 @@
         "submitted": "2022-04-21T00:00:00.000Z"
       },
       {
-        "code": "BRL-F70-CLG",
-        "type": "smm2",
+        "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+        "type": "customlevel",
         "submitter": {
           "id": "${user(\"helperblock\").id}",
           "name": "helperblock",

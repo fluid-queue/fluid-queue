@@ -301,11 +301,11 @@ export class Extensions {
     if (entry.type != null && entry.type in this.deserializers) {
       const deserializer = this.deserializers[entry.type];
       if (isPersistedQueueEntry(entry)) {
-        return deserializer.deserialize(
-          entry.code,
-          entry.data,
-          queueSubmitter(entry)
-        );
+        return deserializer.deserialize(entry.code, entry.data, {
+          id: entry.id,
+          submitter: queueSubmitter(entry),
+          submitted: entry.submitted,
+        });
       }
       return deserializer.deserialize(entry.code, entry.data);
     }
@@ -325,8 +325,14 @@ export class Extensions {
             data: entry.data,
           };
         },
+        get id() {
+          return entry.id;
+        },
         get submitter() {
           return queueSubmitter(entry);
+        },
+        get submitted() {
+          return entry.submitted;
         },
         rename: (newSubmitter: QueueSubmitter): boolean => {
           if (entry.submitter.id == newSubmitter.id) {

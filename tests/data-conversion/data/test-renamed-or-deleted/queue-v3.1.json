@@ -1,5 +1,5 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "extensions": {
     "customlevel": {
       "data": {},
@@ -7,15 +7,7 @@
     }
   },
   "entries": {
-    "current": {
-      "code": "QWF-3K9-84G",
-      "type": "smm2",
-      "submitter": {
-        "id": "${user(\"furretwalkbot\").id}",
-        "name": "furretwalkbot",
-        "displayName": "FurretWalkBot"
-      }
-    },
+    "current": null,
     "queue": [
       {
         "code": "BW2-G2R-CMG",
@@ -23,8 +15,10 @@
         "submitter": {
           "id": "${user(\"liquidnya\").id}",
           "name": "liquidnya",
-          "displayName": "liquidnya"
-        }
+          "displayName": "${user(\"liquidnya\").displayName}"
+        },
+        "id": "133ac751-70fa-4974-ba4e-89438016126b",
+        "submitted": "2023-05-02T20:08:15.000Z"
       },
       {
         "code": "BRL-F70-CLG",
@@ -32,8 +26,10 @@
         "submitter": {
           "id": "${user(\"helperblock\").id}",
           "name": "helperblock",
-          "displayName": "helperblock"
-        }
+          "displayName": "${user(\"helperblock\").displayName}"
+        },
+        "id": "44047f87-adde-4d54-a164-10ac49ace8b1",
+        "submitted": "2023-05-02T20:08:15.000Z"
       }
     ]
   },
@@ -42,7 +38,7 @@
       "user": {
         "id": "${user(\"liquidnya\").id}",
         "name": "liquidnya",
-        "displayName": "liquidnya"
+        "displayName": "${user(\"liquidnya\").displayName}"
       },
       "waiting": {
         "minutes": 10
@@ -57,7 +53,7 @@
       "user": {
         "id": "${user(\"helperblock\").id}",
         "name": "helperblock",
-        "displayName": "helperblock"
+        "displayName": "${user(\"helperblock\").displayName}"
       },
       "waiting": {
         "minutes": 3
