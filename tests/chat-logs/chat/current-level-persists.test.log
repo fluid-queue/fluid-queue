@@ -30,7 +30,6 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 restart
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
-accuracy 1000
 
 # now the selected level is still current
 [23:58:35] ~%?liquidnya: !list
@@ -51,7 +50,6 @@ queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":
 restart
 
 settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"level_timeout":"10 minutes","level_selection":[],"message_cooldown":"5 seconds","showMakerCode":false,"clear":"all"}
-accuracy 1000
 
 [00:01:25] ~%?liquidnya: !list
 [00:01:26] @^helperblock: 2 online: (no current level), FurretWalkBot, liquidnya (0 offline)

@@ -462,6 +462,7 @@ const simRequireIndex = async (
       const files = volume.toJSON();
       volume = new Volume();
       volume.fromJSON(files);
+      console.log("./settings/settings.yml: " + YAML.stringify(settings));
       volume.fromJSON(
         { "./settings/settings.yml": YAML.stringify(mockSettings) },
         path.resolve(".")

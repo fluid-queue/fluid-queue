@@ -60,8 +60,6 @@ queue.json/entries/current null
 queue.json/entries/queue [{"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"676d10af-3905-4a30-aed3-adfc054a98b1","submitted":"2022-04-21T12:12:28.000Z"}]
 queue.json/waiting [{"user":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"waiting":{"minutes":3},"weight":{"minutes":3,"milliseconds":0},"lastOnline":"2022-04-21T12:14:34.000Z"}]
 
-accuracy 1000
-
 # now actually save it
 [12:15:38] ~%?liquidnya: !persistence save
 [12:15:39] @^helperblock: @liquidnya Successfully persisted the queue state.
@@ -80,13 +78,13 @@ save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","subm
 [12:15:44] ~%?liquidnya: !current
 [12:15:45] @^helperblock: We're not playing a level right now!
 
+# note that the upgrade from 2.0 to 3.1 will add this UUID to liquidnya's level
+uuidv4 35e09575-c9b0-4e81-bdfe-9413b21adaa8
 [12:15:48] ~%?liquidnya: !persistence load
 [12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
 
 [12:15:50] ~%?liquidnya: !list
 [12:15:51] @^helperblock: 1 online: ${user("liquidnya").displayName} (current) (0 offline)
-
-accuracy 0
 
 [12:19:17] ~%?liquidnya: !current
 [12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by ${user("liquidnya").displayName}.
@@ -94,6 +92,8 @@ accuracy 0
 # autosave is still off -> same file
 # do not upgrade version to 2.x or 3.x here
 queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","submitter":"liquidnya","username":"liquidnya"},"queue":[],"waiting":{}}
+
+# note how the above save file will never be loaded, but rather overwritten!
 
 [12:19:27] ~%?liquidnya: !persistence on
 [12:19:28] @^helperblock: @liquidnya Activated automatic queue persistence.
@@ -103,6 +103,6 @@ uuidv4 44bd0563-7fef-45b7-ab87-0f7cfb4942db
 [12:19:28] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
 # it was automatically saved
-queue.json/entries/current {"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"${user(\"liquidnya\").displayName}"},"id":"676d10af-3905-4a30-aed3-adfc054a98b1","submitted":"2022-04-21T12:12:28.000Z"}
-queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/current {"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"${user(\"liquidnya\").displayName}"},"id":"35e09575-c9b0-4e81-bdfe-9413b21adaa8","submitted":"2022-04-22T12:15:48.000Z"}
+queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"44bd0563-7fef-45b7-ab87-0f7cfb4942db","submitted":"2022-04-22T12:19:28.000Z"}]
 queue.json/waiting [{"user":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"waiting":{"minutes":1},"weight":{"minutes":1,"milliseconds":0},"lastOnline":"2022-04-22T12:19:28.000Z"}]

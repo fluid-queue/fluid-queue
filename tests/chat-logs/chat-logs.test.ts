@@ -20,6 +20,7 @@ import {
 import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
+import YAML from "yaml";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -117,6 +118,7 @@ const chatLogTest = (fileName: string) => {
   return async () => {
     let test = await simRequireIndex();
     let chatbot = null;
+    let settingsInput: z.input<typeof Settings> | undefined = undefined;
 
     const replyMessageQueue: Array<{ message: string; error: Error }> = [];
     let accuracy = 0;
@@ -171,7 +173,7 @@ const chatLogTest = (fileName: string) => {
           const time = new Date();
           await clearAllTimers();
           await clearAllTimers();
-          test = await simRequireIndex(test.volume, test.settings, time);
+          test = await simRequireIndex(test.volume, settingsInput, time);
           asMock(test.chatbot_helper, "say").mockImplementation(
             pushMessageWithStack
           );
@@ -182,9 +184,11 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "settings") {
           // TODO: ideally new settings would be written to settings.yml
           //       and settings.js could be reloaded instead to validate settings
-          replace(test.settings, Settings.parse(JSON.parse(rest)));
-
-          console.log("set settings to: " + JSON.stringify(test.settings));
+          const data: unknown = JSON.parse(rest);
+          replace(test.settings, Settings.parse(data));
+          // this cast is okay, because Settings.parse would throw if data was not of type z.input<typeof Settings>
+          settingsInput = data as z.input<typeof Settings>;
+          console.log("set settings to: " + YAML.stringify(settingsInput));
         } else if (command == "chatters") {
           const users = rest.split(",");
           simSetChatters(
