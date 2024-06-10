@@ -1,5 +1,5 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "extensions": {
     "customlevel": {
       "data": {
@@ -13,24 +13,29 @@
     }
   },
   "entries": {
-    "current": {
-      "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
-      "type": "customlevel",
-      "submitter": {
-        "id": "${user(\"liquidnya\").id}",
-        "name": "liquidnya",
-        "displayName": "${user(\"liquidnya\").displayName}"
-      }
-    },
+    "current": null,
     "queue": [
       {
-        "code": "QWF-3K9-84G",
+        "code": "BW2-G2R-CMG",
         "type": "smm2",
+        "submitter": {
+          "id": "${user(\"liquidnya\").id}",
+          "name": "liquidnya",
+          "displayName": "${user(\"liquidnya\").displayName}"
+        },
+        "id": "133ac751-70fa-4974-ba4e-89438016126b",
+        "submitted": "2022-04-21T00:00:00.000Z"
+      },
+      {
+        "code": "80e63dc1-78f8-5310-b6c3-f15b11436860",
+        "type": "customlevel",
         "submitter": {
           "id": "${user(\"furretwalkbot\").id}",
           "name": "furretwalkbot",
           "displayName": "${user(\"furretwalkbot\").displayName}"
-        }
+        },
+        "id": "44047f87-adde-4d54-a164-10ac49ace8b1",
+        "submitted": "2022-04-21T00:00:00.000Z"
       },
       {
         "code": "BRL-F70-CLG",
@@ -39,11 +44,28 @@
           "id": "${user(\"helperblock\").id}",
           "name": "helperblock",
           "displayName": "${user(\"helperblock\").displayName}"
-        }
+        },
+        "id": "365873ed-ee43-46c0-9941-f3d93a2c8cca",
+        "submitted": "2022-04-21T00:00:00.000Z"
       }
     ]
   },
   "waiting": [
+    {
+      "user": {
+        "id": "${user(\"liquidnya\").id}",
+        "name": "liquidnya",
+        "displayName": "${user(\"liquidnya\").displayName}"
+      },
+      "waiting": {
+        "minutes": 1
+      },
+      "weight": {
+        "minutes": 1,
+        "milliseconds": 0
+      },
+      "lastOnline": "2022-04-21T00:00:00.000Z"
+    },
     {
       "user": {
         "id": "${user(\"furretwalkbot\").id}",

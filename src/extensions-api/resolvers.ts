@@ -9,6 +9,7 @@ import {
 } from "./queue-entry.js";
 import { log } from "../chalk-print.js";
 import { ZodTypeUnknown } from "../zod.js";
+import { v4 as uuidv4 } from "uuid";
 
 const defaultActivated: string[] = [
   "smm2",
@@ -37,7 +38,7 @@ export interface QueueEntryDeserializer {
   deserialize(
     code: string | undefined,
     data: unknown,
-    submitter: QueueSubmitter
+    queueData: QueueData
   ): QueueEntry;
 }
 
@@ -434,6 +435,12 @@ function createAnyResolversApi(
   return api;
 }
 
+export type QueueData = {
+  id: string;
+  submitter: QueueSubmitter;
+  submitted: string;
+};
+
 function createGenericResolversApi<T extends object>(
   type: string,
   globalDescription: string | undefined,
@@ -451,12 +458,9 @@ function createGenericResolversApi<T extends object>(
   }
 ): QueueEntryApi<RegisterStage<T>> {
   function queueEntry(value: T): Entry;
-  function queueEntry(value: T, submitter: QueueSubmitter): QueueEntry;
-  function queueEntry(
-    value: T,
-    submitter?: QueueSubmitter
-  ): QueueEntry | Entry {
-    if (submitter === undefined) {
+  function queueEntry(value: T, queueData: QueueData): QueueEntry;
+  function queueEntry(value: T, queueData?: QueueData): QueueEntry | Entry {
+    if (queueData === undefined) {
       return {
         toString() {
           return display(value);
@@ -478,11 +482,13 @@ function createGenericResolversApi<T extends object>(
       serializePersistedQueueEntry() {
         const { code, data } = serialize(value);
         return {
+          id: queueData.id,
           submitter: {
-            id: submitter.id,
-            name: submitter.name,
-            displayName: submitter.displayName,
+            id: queueData.submitter.id,
+            name: queueData.submitter.name,
+            displayName: queueData.submitter.displayName,
           },
+          submitted: queueData.submitted,
           type: type,
           code,
           data,
@@ -496,17 +502,23 @@ function createGenericResolversApi<T extends object>(
           data,
         };
       },
+      get id() {
+        return queueData.id;
+      },
       get submitter() {
-        return submitter;
+        return queueData.submitter;
+      },
+      get submitted() {
+        return queueData.submitted;
       },
       rename: (newSubmitter: QueueSubmitter): boolean => {
-        if (submitter.id == newSubmitter.id) {
+        if (queueData.submitter.id == newSubmitter.id) {
           const rename =
-            submitter.name != newSubmitter.name ||
-            submitter.displayName != newSubmitter.displayName;
+            queueData.submitter.name != newSubmitter.name ||
+            queueData.submitter.displayName != newSubmitter.displayName;
           if (rename) {
-            submitter.name = newSubmitter.name;
-            submitter.displayName = newSubmitter.displayName;
+            queueData.submitter.name = newSubmitter.name;
+            queueData.submitter.displayName = newSubmitter.displayName;
           }
           return rename;
         }
@@ -597,6 +609,8 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
       if (submitter === undefined) {
         return { success: true, entry: resolved };
       } else {
+        const entryId = uuidv4();
+        const entrySubmitted = new Date().toISOString();
         const queueEntry: Result<{ entry: QueueEntry }> = {
           success: true,
           entry: {
@@ -604,11 +618,13 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
             serializePersistedQueueEntry(): PersistedQueueEntry {
               const resolvedSerialized = resolved.serializePersistedEntry();
               return {
+                id: entryId,
                 submitter: {
                   id: submitter.id,
                   name: submitter.name,
                   displayName: submitter.displayName,
                 },
+                submitted: entrySubmitted,
                 type: resolvedSerialized.type,
                 code: resolvedSerialized.code,
                 data: resolvedSerialized.data,
@@ -617,8 +633,14 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
             serializePersistedEntry() {
               return resolved.serializePersistedEntry();
             },
+            get id() {
+              return entryId;
+            },
             get submitter() {
               return submitter;
+            },
+            get submitted() {
+              return entrySubmitted;
             },
             rename: (newSubmitter: QueueSubmitter): boolean => {
               if (submitter.id == newSubmitter.id) {
@@ -648,14 +670,14 @@ class QueueEntryGenericResolver<T> implements QueueEntryResolver {
   description: string | null;
   resolveFn: (levelCode: string) => T | null;
   entry: (value: T) => Entry;
-  queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry;
+  queueEntry: (value: T, queueData: QueueData) => QueueEntry;
 
   constructor(
     name: string,
     description: string | null,
     resolveFn: (levelCode: string) => T | null,
     entry: (value: T) => Entry,
-    queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry
+    queueEntry: (value: T, queueData: QueueData) => QueueEntry
   ) {
     this.name = name;
     this.description = description;
@@ -678,7 +700,14 @@ class QueueEntryGenericResolver<T> implements QueueEntryResolver {
       if (submitter === undefined) {
         return { success: true, entry: this.entry(resolved) };
       } else {
-        return { success: true, entry: this.queueEntry(resolved, submitter) };
+        return {
+          success: true,
+          entry: this.queueEntry(resolved, {
+            id: uuidv4(),
+            submitter,
+            submitted: new Date().toISOString(),
+          }),
+        };
       }
     } else {
       return { success: false };
@@ -690,13 +719,13 @@ class QueueEntryGenericDeserializer<T> implements QueueEntryDeserializer {
   type: string;
   deserializeFn: (value: { code: string | undefined; data: unknown }) => T;
   entry: (value: T) => Entry;
-  queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry;
+  queueEntry: (value: T, queueData: QueueData) => QueueEntry;
 
   constructor(
     type: string,
     deserializeFn: (value: { code: string | undefined; data: unknown }) => T,
     entry: (value: T) => Entry,
-    queueEntry: (value: T, submitter: QueueSubmitter) => QueueEntry
+    queueEntry: (value: T, queueData: QueueData) => QueueEntry
   ) {
     this.type = type;
     this.deserializeFn = deserializeFn;
@@ -708,18 +737,14 @@ class QueueEntryGenericDeserializer<T> implements QueueEntryDeserializer {
   deserialize(
     code: string | undefined,
     data: unknown,
-    submitter: QueueSubmitter
+    queueData: QueueData
   ): QueueEntry;
-  deserialize(
-    code: string | undefined,
-    data: unknown,
-    submitter?: QueueSubmitter
-  ) {
+  deserialize(code: string | undefined, data: unknown, queueData?: QueueData) {
     const value = this.deserializeFn({ code, data });
-    if (submitter === undefined) {
+    if (queueData === undefined) {
       return this.entry(value);
     } else {
-      return this.queueEntry(value, submitter);
+      return this.queueEntry(value, queueData);
     }
   }
 }

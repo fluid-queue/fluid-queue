@@ -9,10 +9,11 @@ import { twitchApi } from "./twitch-api.js";
 import { User } from "./extensions-api/queue-entry.js";
 import { log, warn, error } from "./chalk-print.js";
 import { ZodTypeUnknown } from "./zod.js";
+import { v4 as uuidv4 } from "uuid";
 
 const DATA_DIRECTORY = "data";
 const VERSIONED_FILE_NAME = path.join(DATA_DIRECTORY, "queue.json");
-const CURRENT_VERSION = "3.0";
+const CURRENT_VERSION = "3.1";
 const QUEUE_V2 = {
   fileName: VERSIONED_FILE_NAME,
   version: "2.2", // increase major version if data format changes in a way that is not understood by a previous version of the queue
@@ -23,12 +24,10 @@ const CUSTOM_CODES_V2 = {
   version: "2.0", // increase major version if data format changes in a way that is not understood by a previous version of the queue
   compatibility: /^2(\.|$)/, // the version that is being accepted
 };
-const lostLevelsFileName = () => {
+const lostLevelsFileName = (now: string) => {
   return path.join(
     DATA_DIRECTORY,
-    `lost-levels-${
-      new Date().toISOString().replaceAll(":", "").split(".")[0]
-    }Z.json`
+    `lost-levels-${now.replaceAll(":", "").split(".")[0]}Z.json`
   );
 };
 
@@ -179,9 +178,9 @@ const EntryV3 = z.object({
 });
 export type EntryV3 = z.infer<typeof EntryV3>;
 
-const SubmittedEntryV3 = z
+// this is now its own object
+const SubmittedEntryV3_0 = z
   .object({
-    // this is now its own object
     submitter: z
       .object({
         id: z.string().describe("the user id"),
@@ -191,7 +190,26 @@ const SubmittedEntryV3 = z
       .describe("the submitter of this queue entry"),
   })
   .merge(EntryV3);
-type SubmittedEntryV3 = z.infer<typeof SubmittedEntryV3>;
+type SubmittedEntryV3_0 = z.infer<typeof SubmittedEntryV3_0>;
+
+// this is now its own object
+const SubmittedEntryV3_1 = z
+  .object({
+    // using UUIDs for levels
+    // note that only levels that are submitted to the queue have an ID
+    // the ID is of that submission and not that of the level
+    id: z.string().uuid(),
+    submitter: z
+      .object({
+        id: z.string().describe("the user id"),
+        name: z.string().describe("the login name / username"),
+        displayName: z.string().describe("the display name"),
+      })
+      .describe("the submitter of this queue entry"),
+    submitted: z.string().datetime(),
+  })
+  .merge(EntryV3);
+type SubmittedEntryV3_1 = z.infer<typeof SubmittedEntryV3_1>;
 
 type ExtensionDataV3<T> = ExtensionDataV2<T>;
 
@@ -209,7 +227,7 @@ const VersionedObjectScheme = z
 
 type VersionedObject = z.output<typeof VersionedObjectScheme>;
 
-export const QueueV3 = z.object({
+export const QueueV3_0 = z.object({
   version: z
     .string()
     .describe(
@@ -220,10 +238,35 @@ export const QueueV3 = z.object({
       'version has to be starting with "3." or be "3"'
     ),
   entries: z.object({
-    current: SubmittedEntryV3.nullable().describe(
+    current: SubmittedEntryV3_0.nullable().describe(
       "the currently selected queue entry or null"
     ),
-    queue: SubmittedEntryV3.array().describe("entries in queue"),
+    queue: SubmittedEntryV3_0.array().describe("entries in queue"),
+  }),
+  waiting: WaitingSchemeV3.array(),
+  extensions: z
+    .record(
+      z.string().describe("the extension name"),
+      ExtensionDataV3(z.unknown().optional())
+    )
+    .default({}),
+});
+
+export const QueueV3_1 = z.object({
+  version: z
+    .string()
+    .describe(
+      `the version of this save file which has to be starting with "3." or be "3"`
+    )
+    .refine(
+      (version) => version == "3" || version.startsWith("3."),
+      'version has to be starting with "3." or be "3"'
+    ),
+  entries: z.object({
+    current: SubmittedEntryV3_1.nullable().describe(
+      "the currently selected queue entry or null"
+    ),
+    queue: SubmittedEntryV3_1.array().describe("entries in queue"),
   }),
   waiting: WaitingSchemeV3.array(),
   extensions: z
@@ -277,11 +320,10 @@ function loadFileDefault<T>(
   return newContent;
 }
 
-const loadQueueV1 = (): UpgradeResult<QueueV2> | null => {
+const loadQueueV1 = (now: string): UpgradeResult<QueueV2> | null => {
   if (!Object.values(QUEUE_V1).some((file) => fs.existsSync(file))) {
     return null;
   }
-  const now = new Date().toISOString();
   let levelsV2: SubmittedEntryV2[] = [];
   let currentLevel: SubmittedEntryV2 | null = null;
   // load levels
@@ -407,9 +449,8 @@ const upgradeWaiting = (
   waitingUsers: WaitingUsersV1,
   userWaitTime: UserWaitTimeV1,
   userOnlineTime: UserOnlineTimeV1,
-  now?: string
+  now: string
 ): Record<string, WaitingV2> => {
-  now = now ?? new Date().toISOString();
   const waiting: Record<string, WaitingV2> = {};
   for (let index = 0; index < waitingUsers.length; index++) {
     const username = waitingUsers[index];
@@ -425,7 +466,7 @@ const upgradeWaiting = (
   return waiting;
 };
 
-const loadQueueV2 = (object: object): QueueV2 => {
+const loadQueueV2 = (object: object): InitialLoadResult<QueueV2> => {
   const fileName = QUEUE_V2.fileName;
   const state = QueueV2.parse(object);
   if (!QUEUE_V2.compatibility.test(state.version)) {
@@ -434,16 +475,46 @@ const loadQueueV2 = (object: object): QueueV2 => {
     );
   }
   log(`${fileName} has been successfully validated.`);
-  return state;
+  return { data: state };
 };
 
-const loadQueueV3 = (object: object): z.output<typeof QueueV3> => {
-  const state = QueueV3.parse(object);
+const loadQueueV3 = (
+  object: VersionedObject,
+  now: string
+): InitialLoadResult<z.output<typeof QueueV3_1>> => {
+  const versionArray = object.version.split(".");
+  const versions = z.coerce.number().int().array().safeParse(versionArray);
+  if (versions.success && versions.data.length >= 2) {
+    const minorVersion = versions.data[1];
+    if (minorVersion >= 1) {
+      const state = QueueV3_1.parse(object);
+      log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
+      return { data: state };
+    }
+  }
+  // transform 3.0 to 3.1 data
+  const queueV3_0 = QueueV3_0.parse(object);
+  const transformEntry = (entry: SubmittedEntryV3_0): SubmittedEntryV3_1 => ({
+    ...entry,
+    id: uuidv4(),
+    submitted: now,
+  });
+  const state = {
+    ...queueV3_0,
+    entries: {
+      current:
+        queueV3_0.entries.current === null
+          ? null
+          : transformEntry(queueV3_0.entries.current),
+      queue: queueV3_0.entries.queue.map(transformEntry),
+    },
+  };
   log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
-  return state;
+  // data needs to be saved again
+  return { data: state, save: true };
 };
 
-const emptyQueue = (): z.output<typeof QueueV3> => {
+const emptyQueue = (): z.output<typeof QueueV3_1> => {
   return {
     version: CURRENT_VERSION,
     entries: {
@@ -463,20 +534,22 @@ const emptyCustomCodes = (): ExtensionDataV2<CustomCodesV2> => {
 };
 
 export class UpgradeEngine<T> {
-  private loader: () => Promise<LoadResult<T> | null>;
-  private newestLoader: () => Promise<T | null>;
+  private loader: (now: string) => Promise<LoadResult<T> | null>;
+  private newestLoader: (now: string) => Promise<T | null>;
 
   private constructor(
-    load: () => PromiseLike<LoadResult<T> | null> | LoadResult<T> | null,
-    newestLoad: () => PromiseLike<T | null> | T | null
+    load: (
+      now: string
+    ) => PromiseLike<LoadResult<T> | null> | LoadResult<T> | null,
+    newestLoad: (now: string) => PromiseLike<T | null> | T | null
   ) {
-    this.loader = () => Promise.resolve(load());
-    this.newestLoader = () => Promise.resolve(newestLoad());
+    this.loader = (now) => Promise.resolve(load(now));
+    this.newestLoader = (now) => Promise.resolve(newestLoad(now));
   }
 
-  static from<T>(load: () => PromiseLike<T | null> | T | null) {
-    return new UpgradeEngine<T>(async () => {
-      const result = await Promise.resolve(load());
+  static from<T>(load: (now: string) => PromiseLike<T | null> | T | null) {
+    return new UpgradeEngine<T>(async (now) => {
+      const result = await Promise.resolve(load(now));
       if (result == null) {
         return null;
       }
@@ -504,17 +577,20 @@ export class UpgradeEngine<T> {
   ): UpgradeEngine<U> | UpgradeEngine<A> {
     if (load instanceof VersionedFile && fileName !== undefined) {
       return new UpgradeEngine(
-        async () => {
-          const result = await Promise.resolve(load.load(fileName));
+        async (now) => {
+          const result = await Promise.resolve(load.load(fileName, now));
           if (result != null) {
             return result;
           }
-          const previousResult = await this.loader();
+          const previousResult = await this.loader(now);
           if (previousResult != null) {
             const upgradeResult1 = await Promise.resolve(
               upgrade(previousResult.data)
             );
-            const upgradeResult2 = await load.upgradeAll(upgradeResult1.data);
+            const upgradeResult2 = await load.upgradeAll(
+              upgradeResult1.data,
+              now
+            );
             return {
               data: upgradeResult2.data,
               save: true,
@@ -527,7 +603,7 @@ export class UpgradeEngine<T> {
           }
           return null;
         },
-        () => load.loadNewest(fileName)
+        (now) => load.loadNewest(fileName, now)
       );
     }
     if (typeof load !== "function") {
@@ -535,12 +611,12 @@ export class UpgradeEngine<T> {
         "Invalid arguments upgrade and load need to be functions."
       );
     }
-    return new UpgradeEngine(async () => {
+    return new UpgradeEngine(async (now) => {
       const result = await Promise.resolve(load());
       if (result != null) {
         return { data: result, save: false, upgradeHooks: [] };
       }
-      const previousResult = await this.loader();
+      const previousResult = await this.loader(now);
       if (previousResult != null) {
         const upgradeResult = await Promise.resolve(
           upgrade(previousResult.data)
@@ -558,8 +634,11 @@ export class UpgradeEngine<T> {
     }, load);
   }
 
-  async load(create: () => PromiseLike<T> | T): Promise<LoadResult<T>> {
-    const result = await this.loader();
+  async load(
+    create: () => PromiseLike<T> | T,
+    now?: string
+  ): Promise<LoadResult<T>> {
+    const result = await this.loader(now ?? new Date().toISOString());
     if (result != null) {
       return result;
     }
@@ -571,8 +650,8 @@ export class UpgradeEngine<T> {
     };
   }
 
-  async loadNewest(): Promise<T | null> {
-    return await this.newestLoader();
+  async loadNewest(now?: string): Promise<T | null> {
+    return await this.newestLoader(now ?? new Date().toISOString());
   }
 }
 
@@ -613,6 +692,12 @@ export async function loadResultActions<T>(
   return result.data;
 }
 
+export type InitialLoadResult<T> = {
+  save?: boolean;
+  data: T;
+  upgradeHooks?: (() => Promise<void> | void)[];
+};
+
 export type LoadResult<T> = {
   save: boolean;
   data: T;
@@ -628,20 +713,28 @@ export class VersionedFile<T, P = T> {
   private loader: (
     fileMajorVersion: number,
     object: VersionedObject,
-    versions: number[]
+    versions: number[],
+    now: string
   ) => Promise<LoadResult<T>>;
-  readonly upgradeAll: (value: P) => Promise<LoadResult<T>>;
-  private newestLoader: (object: VersionedObject) => PromiseLike<T> | T;
+  readonly upgradeAll: (value: P, now?: string) => Promise<LoadResult<T>>;
+  private newestLoader: (
+    object: VersionedObject,
+    now: string
+  ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>;
   private newestMajorVersion: number;
 
   private constructor(
     load: (
       fileMajorVersion: number,
       object: VersionedObject,
-      versions: number[]
+      versions: number[],
+      now: string
     ) => Promise<LoadResult<T>>,
-    upgradeAll: (value: P) => Promise<LoadResult<T>>,
-    newestLoader: (object: VersionedObject) => PromiseLike<T> | T,
+    upgradeAll: (value: P, now?: string) => Promise<LoadResult<T>>,
+    newestLoader: (
+      object: VersionedObject,
+      now: string
+    ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>,
     newestMajorVersion: number
   ) {
     this.loader = load;
@@ -652,13 +745,17 @@ export class VersionedFile<T, P = T> {
 
   static from<T>(
     majorVersion: number,
-    load: (object: VersionedObject) => PromiseLike<T> | T
+    load: (
+      object: VersionedObject,
+      now: string
+    ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>
   ): VersionedFile<T> {
     return new VersionedFile(
       async (
         fileMajorVersion: number,
         object: VersionedObject,
-        versions: number[]
+        versions: number[],
+        now: string
       ) => {
         if (fileMajorVersion != majorVersion) {
           throw new Error(
@@ -667,11 +764,11 @@ export class VersionedFile<T, P = T> {
             } ${[majorVersion, ...versions].join(", ")}.`
           );
         }
-        const result = await Promise.resolve(load(object));
+        const result = await Promise.resolve(load(object, now));
         return {
-          data: result,
           save: false,
           upgradeHooks: [],
+          ...result,
         };
       },
       (value) =>
@@ -682,22 +779,33 @@ export class VersionedFile<T, P = T> {
   }
 
   upgrade<U>(
-    upgrade: (value: T) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
+    upgrade: (
+      value: T,
+      now: string
+    ) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
     majorVersion: number,
-    load: (object: VersionedObject) => PromiseLike<U> | U
+    load: (
+      object: VersionedObject,
+      now: string
+    ) => PromiseLike<InitialLoadResult<U>> | InitialLoadResult<U>
   ): VersionedFile<U, P> {
     return new VersionedFile(
       async (
         fileMajorVersion: number,
         object: VersionedObject,
-        versions: number[]
+        versions: number[],
+        now: string
       ) => {
         if (fileMajorVersion != majorVersion) {
-          const result = await this.loader(fileMajorVersion, object, [
-            majorVersion,
-            ...versions,
-          ]);
-          const upgradeResult = await Promise.resolve(upgrade(result.data));
+          const result = await this.loader(
+            fileMajorVersion,
+            object,
+            [majorVersion, ...versions],
+            now
+          );
+          const upgradeResult = await Promise.resolve(
+            upgrade(result.data, now)
+          );
           return {
             data: upgradeResult.data,
             save: true,
@@ -707,16 +815,19 @@ export class VersionedFile<T, P = T> {
             ],
           };
         }
-        const result = await Promise.resolve(load(object));
+        const result = await Promise.resolve(load(object, now));
         return {
-          data: result,
           save: false,
           upgradeHooks: [],
+          ...result,
         };
       },
-      async (value: P) => {
-        const result = await this.upgradeAll(value);
-        const upgradeResult = await Promise.resolve(upgrade(result.data));
+      async (value: P, now?: string) => {
+        const nowPresent = now ?? new Date().toISOString();
+        const result = await this.upgradeAll(value, nowPresent);
+        const upgradeResult = await Promise.resolve(
+          upgrade(result.data, nowPresent)
+        );
         return {
           data: upgradeResult.data,
           save: true,
@@ -764,15 +875,20 @@ export class VersionedFile<T, P = T> {
     return { majorVersion: majorVersion.data, object };
   }
 
-  async load(fileName: string): Promise<LoadResult<T> | null> {
+  async load(fileName: string, now?: string): Promise<LoadResult<T> | null> {
     const result = await this.loadFile(fileName);
     if (result == null) {
       return result;
     }
-    return await this.loader(result.majorVersion, result.object, []);
+    return await this.loader(
+      result.majorVersion,
+      result.object,
+      [],
+      now ?? new Date().toISOString()
+    );
   }
 
-  async loadNewest(fileName: string): Promise<T | null> {
+  async loadNewest(fileName: string, now?: string): Promise<T | null> {
     const result = await this.loadFile(fileName);
     if (result == null) {
       return result;
@@ -782,7 +898,9 @@ export class VersionedFile<T, P = T> {
         `Save file version ${result.majorVersion} is incompatible with version ${this.newestMajorVersion}.`
       );
     }
-    return await this.newestLoader(result.object);
+    return (
+      await this.newestLoader(result.object, now ?? new Date().toISOString())
+    ).data;
   }
 }
 
@@ -843,35 +961,37 @@ function loadSync<T>(
 
 export async function loadQueue(
   options = { save: true }
-): Promise<z.output<typeof QueueV3>> {
+): Promise<z.output<typeof QueueV3_1>> {
+  const now = new Date().toISOString();
   const versionedFile = VersionedFile.from(2, loadQueueV2).upgrade(
     upgradeQueueV2ToV3,
     3,
     loadQueueV3
   );
   const result = await UpgradeEngine.from<UpgradeResult<QueueV2>>(loadQueueV1)
-    .upgrade<QueueV2, z.output<typeof QueueV3>>(
+    .upgrade<QueueV2, z.output<typeof QueueV3_1>>(
       (v2) => v2,
       versionedFile,
       VERSIONED_FILE_NAME
     )
-    .load(emptyQueue);
+    .load(emptyQueue, now);
   return loadResultActions(
     result,
     (data) => void saveQueueSync(data),
-    () => versionedFile.loadNewest(VERSIONED_FILE_NAME),
+    () => versionedFile.loadNewest(VERSIONED_FILE_NAME, now),
     options
   );
 }
 
 async function upgradeQueueV2ToV3(
-  value: QueueV2
-): Promise<UpgradeResult<z.output<typeof QueueV3>>> {
+  value: QueueV2,
+  now: string
+): Promise<UpgradeResult<z.output<typeof QueueV3_1>>> {
   const lostLevels: SubmittedEntryV2[] = [];
   const lostWaiting: (WaitingV2 & { username: string })[] = [];
-  let current: z.output<typeof SubmittedEntryV3> | null = null;
-  const queue: z.output<typeof QueueV3>["entries"]["queue"] = [];
-  const waiting: z.output<typeof QueueV3>["waiting"] = [];
+  let current: z.output<typeof SubmittedEntryV3_1> | null = null;
+  const queue: z.output<typeof QueueV3_1>["entries"]["queue"] = [];
+  const waiting: z.output<typeof QueueV3_1>["waiting"] = [];
   const upgrade: Record<string, ((user: User) => void)[]> = {};
   const addUpgrade = (
     userName: string,
@@ -884,13 +1004,14 @@ async function upgradeQueueV2ToV3(
   };
   const addEntryUpgrade = (
     entry: SubmittedEntryV2,
-    entryConsumer: (entry: z.output<typeof SubmittedEntryV3>) => void
+    entryConsumer: (entry: z.output<typeof SubmittedEntryV3_1>) => void
   ) => {
     addUpgrade(entry.username, (user) => {
       if (user == null) {
         lostLevels.push(entry);
       } else {
         entryConsumer({
+          id: uuidv4(),
           type: entry.type,
           code: entry.code,
           data: entry.data,
@@ -899,6 +1020,7 @@ async function upgradeQueueV2ToV3(
             name: user.name,
             displayName: user.displayName,
           },
+          submitted: now,
         });
       }
     });
@@ -961,7 +1083,7 @@ async function upgradeQueueV2ToV3(
     });
   }
   if (lostLevels.length > 0 || lostWaiting.length > 0) {
-    const fileName = lostLevelsFileName();
+    const fileName = lostLevelsFileName(now);
     writeFileAtomicSync(
       fileName,
       JSON.stringify(
@@ -992,7 +1114,7 @@ async function upgradeQueueV2ToV3(
 }
 
 const createSaveFileContent = (
-  queue: Omit<z.input<typeof QueueV3>, "version">
+  queue: Omit<z.input<typeof QueueV3_1>, "version">
 ) => {
   return JSON.stringify(
     {
@@ -1018,7 +1140,7 @@ const createCustomCodesFileContent = (
 };
 
 export const saveQueueSync = (
-  data: Omit<z.input<typeof QueueV3>, "version">
+  data: Omit<z.input<typeof QueueV3_1>, "version">
 ) => {
   try {
     writeFileAtomicSync(VERSIONED_FILE_NAME, createSaveFileContent(data), {

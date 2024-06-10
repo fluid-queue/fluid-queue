@@ -56,7 +56,7 @@ let mockModerators: User[] = [];
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
-const mockModules = async () => {
+const mockModules = async (chanceSeed?: Chance.Seed) => {
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
   jest.unstable_mockModule("fluid-queue/chatbot.js", () => {
@@ -137,6 +137,32 @@ const mockModules = async () => {
       result = new Date().getTime();
     }
     return result;
+  });
+
+  const module = await import("uuid");
+  const chance = jestChance.getChance(chanceSeed);
+  const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
+    random: () => number;
+  };
+
+  jest.unstable_mockModule("uuid", () => {
+    // using seeded random values in tests
+    const v4 = jest.fn((options?: Parameters<typeof module.v4>[0]) => {
+      return module.v4(
+        options ?? {
+          rng: () => {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+              () => Math.floor(mt.random() * 256)
+            );
+          },
+        }
+      );
+    });
+    return {
+      __esModule: true, // Use it when dealing with esModules
+      ...module,
+      v4,
+    };
   });
 };
 
@@ -250,6 +276,7 @@ type Index = {
     respond: Responder
   ) => Promise<void>;
   twitch: Twitch;
+  uuidv4: jest.Mock<() => string>;
 };
 
 function asMock<T, K extends keyof T>(
@@ -373,7 +400,8 @@ const simRequireIndex = async (
   volume?: InstanceType<typeof Volume>,
   mockSettings?: z.input<typeof Settings>,
   mockTime?: number | Date,
-  setupMocks?: () => Promise<void> | void
+  setupMocks?: () => Promise<void> | void,
+  chanceSeed?: Chance.Seed
 ): Promise<Index> => {
   let fs: Index["fs"] | undefined;
   let settings: z.output<typeof Settings> | undefined;
@@ -385,11 +413,14 @@ const simRequireIndex = async (
     | ((message: string, sender: Chatter, respond: Responder) => Promise<void>)
     | undefined;
   let twitch: Twitch | undefined;
+  let uuidv4: jest.Mock<() => string> | undefined;
 
   try {
     await clearAllTimers();
+    jest.clearAllTimers();
+    jest.runAllTicks();
     jest.resetModules();
-    await mockModules();
+    await mockModules(chanceSeed);
     if (setupMocks !== undefined) {
       await setupMocks();
     }
@@ -407,11 +438,16 @@ const simRequireIndex = async (
     }
 
     // setup random mock
-    const chance = jestChance.getChance();
-    const mt = chance.mersenne_twister(chance.seed) as { random: () => number };
+    const chance = jestChance.getChance(chanceSeed);
+    const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
+      random: () => number;
+    };
     random = jest.spyOn(global.Math, "random").mockImplementation(() => {
       return mt.random();
     });
+
+    const uuid = await import("uuid");
+    uuidv4 = asMock(uuid, "v4");
 
     // prepare settings
     if (mockSettings === undefined) {
@@ -426,6 +462,7 @@ const simRequireIndex = async (
       const files = volume.toJSON();
       volume = new Volume();
       volume.fromJSON(files);
+      console.log("./settings/settings.yml: " + YAML.stringify(settings));
       volume.fromJSON(
         { "./settings/settings.yml": YAML.stringify(mockSettings) },
         path.resolve(".")
@@ -501,6 +538,7 @@ const simRequireIndex = async (
         quesoqueue,
         handle_func,
         twitch,
+        uuidv4,
       };
     }
     throw err;
@@ -524,6 +562,9 @@ const simRequireIndex = async (
   if (twitch === undefined) {
     throw new Error("twitch was not loaded correctly");
   }
+  if (uuidv4 === undefined) {
+    throw new Error("uuidv4 was not loaded correctly");
+  }
 
   return {
     fs,
@@ -535,6 +576,7 @@ const simRequireIndex = async (
     quesoqueue,
     handle_func,
     twitch,
+    uuidv4,
   };
 };
 

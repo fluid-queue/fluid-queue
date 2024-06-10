@@ -350,7 +350,7 @@ test("VersionedFile:no-file", async () => {
   await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   });
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).toBeNull();
@@ -367,7 +367,7 @@ test("VersionedFile:version-one", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   });
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
@@ -397,7 +397,7 @@ test("VersionedFile:version-three", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   })
     .upgrade(
       (value) => ({
@@ -406,7 +406,7 @@ test("VersionedFile:version-three", async () => {
       }),
       2,
       (object) => {
-        return `loadedV2(${JSON.stringify(object)})`;
+        return { data: `loadedV2(${JSON.stringify(object)})` };
       }
     )
     .upgrade(
@@ -416,7 +416,7 @@ test("VersionedFile:version-three", async () => {
       }),
       3,
       (object) => {
-        return `loadedV3(${JSON.stringify(object)})`;
+        return { data: `loadedV3(${JSON.stringify(object)})` };
       }
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
@@ -449,7 +449,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   })
     .upgrade(
       (value) => ({
@@ -458,7 +458,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
       }),
       2,
       (object) => {
-        return `loadedV2(${JSON.stringify(object)})`;
+        return { data: `loadedV2(${JSON.stringify(object)})` };
       }
     )
     .upgrade(
@@ -468,7 +468,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
       }),
       3,
       (object) => {
-        return `loadedV3(${JSON.stringify(object)})`;
+        return { data: `loadedV3(${JSON.stringify(object)})` };
       }
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
@@ -508,7 +508,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   })
     .upgrade(
       (value) => ({
@@ -517,7 +517,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
       }),
       2,
       (object) => {
-        return `loadedV2(${JSON.stringify(object)})`;
+        return { data: `loadedV2(${JSON.stringify(object)})` };
       }
     )
     .upgrade(
@@ -527,7 +527,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
       }),
       3,
       (object) => {
-        return `loadedV3(${JSON.stringify(object)})`;
+        return { data: `loadedV3(${JSON.stringify(object)})` };
       }
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
@@ -567,7 +567,7 @@ test("VersionedFile:version-too-big", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   })
     .upgrade(
       (value) => ({
@@ -576,7 +576,7 @@ test("VersionedFile:version-too-big", async () => {
       }),
       2,
       (object) => {
-        return `loadedV2(${JSON.stringify(object)})`;
+        return { data: `loadedV2(${JSON.stringify(object)})` };
       }
     )
     .upgrade(
@@ -586,7 +586,7 @@ test("VersionedFile:version-too-big", async () => {
       }),
       3,
       (object) => {
-        return `loadedV3(${JSON.stringify(object)})`;
+        return { data: `loadedV3(${JSON.stringify(object)})` };
       }
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
@@ -610,7 +610,7 @@ test("VersionedFile:version-too-small", async () => {
   const fs = await setupMocks();
   const { VersionedFile } = await import("fluid-queue/persistence.js");
   const versionedFile = VersionedFile.from(1, (object) => {
-    return `loaded(${JSON.stringify(object)})`;
+    return { data: `loaded(${JSON.stringify(object)})` };
   })
     .upgrade(
       (value) => ({
@@ -619,7 +619,7 @@ test("VersionedFile:version-too-small", async () => {
       }),
       2,
       (object) => {
-        return `loadedV2(${JSON.stringify(object)})`;
+        return { data: `loadedV2(${JSON.stringify(object)})` };
       }
     )
     .upgrade(
@@ -629,7 +629,7 @@ test("VersionedFile:version-too-small", async () => {
       }),
       3,
       (object) => {
-        return `loadedV3(${JSON.stringify(object)})`;
+        return { data: `loadedV3(${JSON.stringify(object)})` };
       }
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });

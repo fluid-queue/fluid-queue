@@ -11,11 +11,12 @@ chatters ~%?liquidnya, @^FurretWalkBot, @''?^StreamElements, ^ViewerLevels
 
 [16:26:45] ~%?liquidnya: !open
 [16:26:45] @^helperblock: The queue is now open!
+uuidv4 4d5f0914-d107-499d-932a-ccca858e8350
 [16:27:48] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:27:48] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"4d5f0914-d107-499d-932a-ccca858e8350","submitted":"2022-04-21T16:27:48.000Z"}]
 
 [16:27:52] @^FurretWalkBot: !pos
 # !pos also works
@@ -28,11 +29,12 @@ queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":
 queue.json/entries/current null
 queue.json/entries/queue []
 
+uuidv4 28533018-b34d-40e7-8799-27dea6e725e5
 [16:28:31] @^FurretWalkBot: !add NB0-1MD-SLG
 [16:28:31] @^helperblock: FurretWalkBot, NB0-1MD-SLG has been added to the queue.
 
 queue.json/entries/current null
-queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"}}]
+queue.json/entries/queue [{"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"28533018-b34d-40e7-8799-27dea6e725e5","submitted":"2022-04-21T16:28:31.000Z"}]
 
 [16:28:33] @^FurretWalkBot: !leave
 [16:28:33] @^helperblock: FurretWalkBot, your level has been removed from the queue.

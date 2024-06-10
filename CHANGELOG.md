@@ -4,6 +4,11 @@
 
 - Added an option (default off) to automatically start the level timer when pulling a level (#140).
 
+## Other changes
+
+- Add ids to submitted levels.
+- Add the submission date of levels to the queue save file.
+
 # v2.0.0-rc.1
 
 ## Breaking changes

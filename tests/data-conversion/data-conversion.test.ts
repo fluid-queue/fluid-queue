@@ -13,12 +13,32 @@ import {
   expectErrorMessage,
 } from "../simulation.js";
 import { fileURLToPath } from "url";
+import { Settings } from "fluid-queue/settings-type.js";
+import { z } from "zod";
 
 // fake timers
 jest.useFakeTimers();
 // console checks
 const consoleWarnMock = jest.spyOn(global.console, "warn");
 const consoleErrorMock = jest.spyOn(global.console, "error");
+
+const FIXED_SEED = 7;
+
+const simRequireIndexFixedSeed = async (
+  volume?: InstanceType<typeof Volume>,
+  mockSettings?: z.input<typeof Settings>,
+  mockTime?: number | Date,
+  setupMocks?: () => Promise<void> | void,
+  chanceSeed?: Chance.Seed
+): Promise<ReturnType<typeof simRequireIndex>> => {
+  return await simRequireIndex(
+    volume,
+    mockSettings,
+    mockTime,
+    setupMocks,
+    chanceSeed ?? FIXED_SEED
+  );
+};
 
 beforeEach(() => {
   // reset chatters
@@ -186,7 +206,7 @@ test("conversion-test-empty", async () => {
   const test = "test-empty";
   const volume = loadVolume(test);
   // empty file system
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors!
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -199,7 +219,7 @@ test("conversion-test-empty-custom-codes-enabled", async () => {
   const test = "test-empty-custom-codes-enabled";
   const volume = loadVolume(test);
   // empty file system
-  const index = await simRequireIndex(volume, {
+  const index = await simRequireIndexFixedSeed(volume, {
     ...DEFAULT_TEST_SETTINGS,
     custom_codes_enabled: true,
   });
@@ -216,7 +236,7 @@ test("custom-codes-empty", async () => {
   const test = "custom-codes-empty";
   const volume = loadVolume(test);
   // empty file system
-  const index = await simRequireIndex(volume, {
+  const index = await simRequireIndexFixedSeed(volume, {
     ...DEFAULT_TEST_SETTINGS,
     custom_codes_enabled: true,
   });
@@ -230,8 +250,8 @@ test("custom-codes-empty", async () => {
   expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
-test("custom-codes-v1a-to-v2.0", async () => {
-  const test = "custom-codes-v1a-to-v2.0";
+test("custom-codes-v1a-to-v3.1", async () => {
+  const test = "custom-codes-v1a-to-v3.1";
   const volume = loadVolume(test);
   copy(
     volume,
@@ -243,7 +263,7 @@ test("custom-codes-v1a-to-v2.0", async () => {
     )
   );
   // customCodes.json present
-  const index = await simRequireIndex(volume, {
+  const index = await simRequireIndexFixedSeed(volume, {
     ...DEFAULT_TEST_SETTINGS,
     custom_codes_enabled: true,
   });
@@ -257,8 +277,8 @@ test("custom-codes-v1a-to-v2.0", async () => {
   expect(mockFs.existsSync("./customCodes.json")).toBe(false);
 });
 
-test("custom-codes-v1b-to-v2.0", async () => {
-  const test = "custom-codes-v1b-to-v2.0";
+test("custom-codes-v1b-to-v3.1", async () => {
+  const test = "custom-codes-v1b-to-v3.1";
   const volume = loadVolume(test);
   copy(
     volume,
@@ -270,7 +290,7 @@ test("custom-codes-v1b-to-v2.0", async () => {
     )
   );
   // customCodes.json present
-  const index = await simRequireIndex(volume, {
+  const index = await simRequireIndexFixedSeed(volume, {
     ...DEFAULT_TEST_SETTINGS,
     custom_codes_enabled: true,
   });
@@ -287,7 +307,7 @@ test("custom-codes-v1b-to-v2.0", async () => {
 test("conversion-test-1", async () => {
   const test = "test-1";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors, but a warning in the console
   expect(consoleWarnMock).toHaveBeenCalledWith(
@@ -306,7 +326,7 @@ test("conversion-test-1", async () => {
 test("conversion-test-2", async () => {
   const test = "test-2";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -321,7 +341,7 @@ test("conversion-test-2", async () => {
 test("conversion-test-3", async () => {
   const test = "test-3";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -336,7 +356,7 @@ test("conversion-test-3", async () => {
 test("conversion-test-4", async () => {
   const test = "test-4";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -351,7 +371,7 @@ test("conversion-test-4", async () => {
 test("conversion-test-5", async () => {
   const test = "test-5";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -363,8 +383,8 @@ test("conversion-test-5", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
 
-// FIXME: do this better, e.g. by making `simRequireIndex` not throw but the result could be a function that throws + partial properties
-// or make a `saveSimRequireIndex` that is like simRequireIndex but it does not throw
+// FIXME: do this better, e.g. by making `simRequireIndexFixedSeed` not throw but the result could be a function that throws + partial properties
+// or make a `savesimRequireIndexFixedSeed` that is like simRequireIndexFixedSeed but it does not throw
 function getFsFromError(err: unknown): typeof fs {
   if (
     err != null &&
@@ -388,7 +408,7 @@ async function throwingIndex(
 
   const index = async () => {
     try {
-      await simRequireIndex(volume);
+      await simRequireIndexFixedSeed(volume);
     } catch (err) {
       mockFs = getFsFromError(err);
       throw err;
@@ -442,46 +462,58 @@ test("conversion-test-corrupt-4", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(true);
 });
 
-test("conversion-test-v2.0-to-v3.0", async () => {
-  const test = "test-v2.0-to-v3.0";
+test("conversion-test-v2.0-to-v3.1", async () => {
+  const test = "test-v2.0-to-v3.1";
   const volume = loadVolumeV2(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
-test("conversion-test-v2.1-to-v3.0", async () => {
-  const test = "test-v2.1-to-v3.0";
+test("conversion-test-v2.1-to-v3.1", async () => {
+  const test = "test-v2.1-to-v3.1";
   const volume = loadVolumeV2(test, "2.1");
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
-test("conversion-test-v2.2-to-v3.0", async () => {
-  const test = "test-v2.2-to-v3.0";
+test("conversion-test-v2.2-to-v3.1", async () => {
+  const test = "test-v2.2-to-v3.1";
   const volume = loadVolumeV2(test, "2.2");
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
-test("custom-levels-v1a-to-v3.0", async () => {
-  const test = "custom-levels-v1a-to-v3.0";
+test("conversion-test-v3.0-to-v3.1", async () => {
+  const test = "test-v3.0-to-v3.1";
+  const volume = loadVolumeV2(test, "3.0");
+  const index = await simRequireIndexFixedSeed(volume);
+  const mockFs = index.fs;
+  // should load without errors and no exception was thrown
+  expect(consoleWarnMock).toHaveBeenCalledTimes(0);
+  expect(consoleErrorMock).toHaveBeenCalledTimes(0);
+  // queue will be saved immediately
+  checkResult(mockFs, fs, test, "3.1");
+});
+
+test("custom-levels-v1a-to-v3.1", async () => {
+  const test = "custom-levels-v1a-to-v3.1";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors, but a warning in the console
   expect(consoleWarnMock).toHaveBeenCalledWith(
@@ -497,10 +529,10 @@ test("custom-levels-v1a-to-v3.0", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
 
-test("custom-levels-v1b-to-v3.0", async () => {
-  const test = "custom-levels-v1b-to-v3.0";
+test("custom-levels-v1b-to-v3.1", async () => {
+  const test = "custom-levels-v1b-to-v3.1";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -512,10 +544,10 @@ test("custom-levels-v1b-to-v3.0", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
 
-test("custom-levels-v1c-to-v3.0", async () => {
-  const test = "custom-levels-v1c-to-v3.0";
+test("custom-levels-v1c-to-v3.1", async () => {
+  const test = "custom-levels-v1c-to-v3.1";
   const volume = loadVolume(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -527,40 +559,40 @@ test("custom-levels-v1c-to-v3.0", async () => {
   expect(mockFs.existsSync("./waitingUsers.txt")).toBe(false);
 });
 
-test("custom-levels-v2.0-to-v3.0", async () => {
-  const test = "custom-levels-v2.0-to-v3.0";
+test("custom-levels-v2.0-to-v3.1", async () => {
+  const test = "custom-levels-v2.0-to-v3.1";
   const volume = loadVolumeV2(test);
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
-test("custom-levels-v2.1-to-v3.0", async () => {
-  const test = "custom-levels-v2.1-to-v3.0";
+test("custom-levels-v2.1-to-v3.1", async () => {
+  const test = "custom-levels-v2.1-to-v3.1";
   const volume = loadVolumeV2(test, "2.1");
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
-test("custom-levels-v2.2-to-v3.0", async () => {
-  const test = "custom-levels-v2.2-to-v3.0";
+test("custom-levels-v2.2-to-v3.1", async () => {
+  const test = "custom-levels-v2.2-to-v3.1";
   const volume = loadVolumeV2(test, "2.2");
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
 test("test-incompatible-v4.9.9.9", async () => {
@@ -581,7 +613,7 @@ test("test-incompatible-v4.9.9.9", async () => {
 test("test-compatible-v3.99999", async () => {
   const test = "test-compatible";
   const volume = loadVolumeV2(test, "3.99999");
-  const index = await simRequireIndex(volume);
+  const index = await simRequireIndexFixedSeed(volume);
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   expect(consoleWarnMock).toHaveBeenCalledTimes(0);
@@ -595,13 +627,17 @@ test("test-compatible-v3.99999", async () => {
     accessor.saveNow();
   });
   // queue will be downgraded now (information is lost)
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
 });
 
 test("test-renamed-or-deleted", async () => {
   const test = "test-renamed-or-deleted";
   const volume = loadVolumeV2(test, "2.2");
-  const index = await simRequireIndex(volume, undefined, 1683058095000);
+  const index = await simRequireIndexFixedSeed(
+    volume,
+    undefined,
+    1683058095000
+  );
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
   const fileName = path.join(
@@ -621,6 +657,6 @@ test("test-renamed-or-deleted", async () => {
   );
   expect(consoleErrorMock).toHaveBeenCalledTimes(0);
   // queue will be saved immediately
-  checkResult(mockFs, fs, test, "3.0");
+  checkResult(mockFs, fs, test, "3.1");
   checkLostLevels(mockFs, fs, test, fileName);
 });

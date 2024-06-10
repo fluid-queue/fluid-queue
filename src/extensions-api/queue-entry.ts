@@ -74,11 +74,13 @@ export interface Entry {
 }
 
 export interface PersistedQueueEntry extends PersistedEntry {
+  id: string;
   submitter: {
     id: string;
     name: string;
     displayName: string;
   };
+  submitted: string;
 }
 
 export interface QueueEntry extends Entry {
@@ -87,9 +89,17 @@ export interface QueueEntry extends Entry {
    */
   serializePersistedQueueEntry(): PersistedQueueEntry;
   /**
+   * The ID of this queue entry.
+   */
+  get id(): string;
+  /**
    * The submitter of this queue entry.
    */
   get submitter(): QueueSubmitter;
+  /**
+   * The submitted time of this queue entry.
+   */
+  get submitted(): string;
   /**
    * Rename the submitter.
    * @returns true if the user name or display name changed.

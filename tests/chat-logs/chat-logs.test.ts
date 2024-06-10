@@ -19,8 +19,8 @@ import {
 } from "../simulation.js";
 import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
-import * as uuidModule from "uuid";
 import { z } from "zod";
+import YAML from "yaml";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -37,25 +37,8 @@ beforeEach(() => {
   jest.setSystemTime(START_TIME);
 });
 
-let uuid: { v4: jest.Mock<() => string> } | null = null;
-
-const mocks = () => {
-  jest.mock("uuid", () => {
-    const originalModule = jest.requireActual<typeof uuidModule>("uuid");
-    return {
-      __esModule: true,
-      ...originalModule,
-      // mock v4
-      v4: jest.fn(() => {
-        return originalModule.v4();
-      }),
-    };
-  });
-  uuid = jest.requireMock<typeof uuid>("uuid");
-};
-
 test("setup", async () => {
-  await simRequireIndex(undefined, undefined, undefined, mocks);
+  await simRequireIndex();
 });
 
 const parseMessage = (line: string) => {
@@ -133,8 +116,9 @@ const parseChatter = (chatter: string) => {
 
 const chatLogTest = (fileName: string) => {
   return async () => {
-    let test = await simRequireIndex(undefined, undefined, undefined, mocks);
+    let test = await simRequireIndex();
     let chatbot = null;
+    let settingsInput: z.input<typeof Settings> | undefined = undefined;
 
     const replyMessageQueue: Array<{ message: string; error: Error }> = [];
     let accuracy = 0;
@@ -188,7 +172,8 @@ const chatLogTest = (fileName: string) => {
         if (command == "restart") {
           const time = new Date();
           await clearAllTimers();
-          test = await simRequireIndex(test.volume, test.settings, time, mocks);
+          await clearAllTimers();
+          test = await simRequireIndex(test.volume, settingsInput, time);
           asMock(test.chatbot_helper, "say").mockImplementation(
             pushMessageWithStack
           );
@@ -199,9 +184,11 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "settings") {
           // TODO: ideally new settings would be written to settings.yml
           //       and settings.js could be reloaded instead to validate settings
-          replace(test.settings, Settings.parse(JSON.parse(rest)));
-
-          console.log("set settings to: " + JSON.stringify(test.settings));
+          const data: unknown = JSON.parse(rest);
+          replace(test.settings, Settings.parse(data));
+          // this cast is okay, because Settings.parse would throw if data was not of type z.input<typeof Settings>
+          settingsInput = data as z.input<typeof Settings>;
+          console.log("set settings to: " + YAML.stringify(settingsInput));
         } else if (command == "chatters") {
           const users = rest.split(",");
           simSetChatters(
@@ -283,10 +270,7 @@ const chatLogTest = (fileName: string) => {
         } else if (command == "random") {
           test.random.mockImplementationOnce(() => parseFloat(rest));
         } else if (command == "uuidv4") {
-          if (uuid == null) {
-            throw new Error("Mocks not initialized!");
-          }
-          uuid.v4.mockImplementationOnce(() => rest.trim());
+          test.uuidv4.mockImplementationOnce(() => rest.trim());
         } else if (command == "fs-fail") {
           if (
             !(
@@ -402,9 +386,9 @@ for (const file of testFiles) {
   );
   test(
     fileName,
-    () => {
+    async () => {
       jest.setTimeout(10_000); // <- this might not work
-      chatLogTest(fileName);
+      await chatLogTest(fileName)();
     },
     10_000 // <- setting timeout here as well
   );
