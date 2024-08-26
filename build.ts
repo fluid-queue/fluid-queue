@@ -1,5 +1,6 @@
 #!/usr/bin/env -S node --loader @swc-node/register/esm
-import * as esbuild from "esbuild";
+import { build } from "esbuild";
+import { copy } from "esbuild-plugin-copy";
 import { glob } from "glob";
 import { version } from "./src/version.js";
 
@@ -10,9 +11,9 @@ const buildTag = "esbuild";
 console.log(`Compiling version: ${buildVersion} (${buildTag})`);
 console.log(`Compiling extensions: ${extensions.join(", ")}`);
 
-await esbuild.build({
+await build({
   tsconfig: "tsconfig.json",
-  entryPoints: ["src/index.ts"].concat(extensions),
+  entryPoints: ["src/index.ts", "src/migrate.ts"].concat(extensions),
   bundle: true,
   outdir: "build/",
   format: "esm",
@@ -32,4 +33,17 @@ await esbuild.build({
   },
   minify: true,
   sourcemap: "linked",
+  plugins: [
+    copy({
+      assets: [
+        {
+          from: [
+            "./node_modules/@electric-sql/pglite/dist/postgres.wasm",
+            "./node_modules/@electric-sql/pglite/dist/share.data",
+          ],
+          to: ".",
+        },
+      ],
+    }),
+  ],
 });

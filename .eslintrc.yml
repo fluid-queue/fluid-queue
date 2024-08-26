@@ -21,5 +21,6 @@ parserOptions:
 ignorePatterns:
   - "build/**/*"
   - "register-swc.js"
+  - "migrate.js"
 rules:
   curly: "error"

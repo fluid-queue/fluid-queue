@@ -18,8 +18,11 @@ if (version == null) {
 const srcDir = dirname(fileURLToPath(import.meta.url));
 
 // Try to generate attribution.
-// This requires `oss-attribution-generator`, which has to be globally installed (it adds 124 packages, including obsolete versions of ones we use).
-execFileSync("generate-attribution");
+execFileSync("npx", [
+  "--package",
+  "oss-attribution-generator",
+  "generate-attribution",
+]);
 
 // Set up a temporary directory
 const directory = await mkdtemp(join(tmpdir(), "fluidqueue-"));
@@ -57,6 +60,10 @@ mkdirpSync(join(working, "build"));
 mkdirpSync(join(working, "locales"));
 copySync(join(srcDir, "build"), join(working, "build"));
 copySync(join(srcDir, "locales"), join(working, "locales"));
+
+// And we want the migrations
+mkdirpSync(join(working, "drizzle"));
+copySync(join(srcDir, "drizzle"), join(working, "drizzle"));
 
 // Everything's copied over, now tar and zip it up
 const distDir = join(srcDir, "dist");

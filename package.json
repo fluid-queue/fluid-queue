@@ -1,6 +1,6 @@
 {
   "name": "fluid-queue",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "description": "A queue system for Super Mario Maker 2 levels",
   "homepage": "https://fluid-queue.dev/",
   "bugs": {
@@ -35,6 +35,7 @@
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./tests/jest.config.json --verbose",
+    "migrate": "node ./build/migrate.js",
     "start": "node --enable-source-maps ./build/index.js",
     "start:swc": "node --import ./register-swc.js ./src/index.ts",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
@@ -71,6 +72,7 @@
     "drizzle-kit": "^0.23.1",
     "drizzle-orm": "^0.32.1",
     "esbuild": "0.19.5",
+    "esbuild-plugin-copy": "^2.1.1",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.6.0",
