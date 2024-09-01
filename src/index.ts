@@ -107,41 +107,19 @@ function weightednext_level_message(
 function current_level_message({
   level,
   levelTime,
-  submitterTime,
 }: {
   level: QueueEntry | undefined;
   levelTime: Duration;
-  submitterTime: Duration;
 }) {
   if (level === undefined) {
     return i18next.t("noCurrent");
   }
-  let smallerTime = levelTime;
-  let biggerTime = submitterTime;
-  const compare = smallerTime.compareTo(biggerTime);
-  if (compare === 0) {
-    return i18next.t("currentLevel1", {
-      level,
-      time: humanizeDuration(smallerTime.toMillis(), {
-        language: settings.language,
-        fallbacks: ["en"],
-      }),
-    });
-  }
-
-  if (compare > 0) {
-    [smallerTime, biggerTime] = [biggerTime, smallerTime];
-  }
-
-  return i18next.t("currentLevel2", {
+  return i18next.t("currentLevel", {
     level,
-    smallerTime: humanizeDuration(smallerTime.toMillis(), {
+    time: humanizeDuration(levelTime.toMillis(), {
       language: settings.language,
       fallbacks: ["en"],
-    }),
-    biggerTime: humanizeDuration(biggerTime.toMillis(), {
-      language: settings.language,
-      fallbacks: ["en"],
+      maxDecimalPoints: 0,
     }),
   });
 }

@@ -60,7 +60,10 @@ type Measurement = {
 interface QueueDataAccessor {
   startTimer(): void;
   stopTimer(): void;
-  getDuration(measurement: Measurement | null): Duration;
+  getDuration(
+    measurement: Measurement | null,
+    now?: Instant | undefined
+  ): Duration;
   get current_level(): QueueEntry | undefined;
   set current_level(value: QueueEntry | undefined);
   get levels(): QueueEntry[];
@@ -68,9 +71,7 @@ interface QueueDataAccessor {
   get waitingByUserId(): Record<string, Waiting>;
   set waitingByUserId(value: Record<string, Waiting>);
   get currentLevelTime(): Measurement | null;
-  get currentSubmitterTime(): Measurement | null;
   set currentLevelTime(value: Measurement | null);
-  set currentSubmitterTime(value: Measurement | null);
 
   /**
    * Saves at the end of the critical section
@@ -124,7 +125,7 @@ class QueueData {
         playTime instanceof Duration
           ? playTime
           : Duration.ofSeconds(
-              playTime.minutes * 60 + playTime.milliseconds / 1000,
+              playTime.minutes * 60 + Math.floor(playTime.milliseconds / 1000),
               (playTime.milliseconds % 1000) * 1_000_000
             ),
       start: data.isMeasuring ? Instant.now() : null,
@@ -136,7 +137,10 @@ class QueueData {
     const data = this;
     return {
       save: false,
-      getDuration(measurement: Measurement | null): Duration {
+      getDuration(
+        measurement: Measurement | null,
+        now?: Instant | undefined
+      ): Duration {
         if (measurement == null) {
           return Duration.ZERO;
         }
@@ -144,7 +148,7 @@ class QueueData {
           return measurement.duration;
         }
         return measurement.duration.plus(
-          Duration.between(measurement.start, Instant.now())
+          Duration.between(measurement.start, now ?? Instant.now())
         );
       },
       get current_level() {
@@ -186,8 +190,8 @@ class QueueData {
       get currentLevelTime() {
         return data.currentLevelTime;
       },
-      get currentSubmitterTime() {
-        return data.currentLevelTime;
+      set currentLevelTime(value) {
+        data.currentLevelTime = value;
       },
       saveLater(options) {
         const force = options?.force ?? false;
@@ -204,9 +208,9 @@ class QueueData {
           const persistMeasurement = (measurement: Measurement | null) => {
             const duration = this.getDuration(measurement);
             const seconds = duration.seconds();
-            const minutes = seconds / 60;
+            const minutes = Math.floor(seconds / 60);
             const milliseconds =
-              (seconds % 60) * 1000 + duration.nano() / 1_000_000;
+              (seconds % 60) * 1000 + Math.floor(duration.nano() / 1_000_000);
             return {
               minutes,
               milliseconds,
@@ -218,12 +222,7 @@ class QueueData {
                 serializedCurrentLevel !== null
                   ? {
                       ...serializedCurrentLevel,
-                      playTime: {
-                        submitter: persistMeasurement(
-                          this.currentSubmitterTime
-                        ),
-                        entry: persistMeasurement(this.currentLevelTime),
-                      },
+                      playTime: persistMeasurement(this.currentLevelTime),
                     }
                   : null,
               queue: this.levels.map((level) =>
@@ -292,10 +291,7 @@ class QueueData {
         } else {
           this.current_level = extensions.deserialize(state.entries.current);
           this.currentLevelTime = data.getMeasurement(
-            state.entries.current.playTime.entry
-          );
-          this.currentSubmitterTime = data.getMeasurement(
-            state.entries.current.playTime.submitter
+            state.entries.current.playTime
           );
         }
         this.levels = state.entries.queue.map((level) =>
@@ -849,10 +845,10 @@ const queue = {
   },
 
   current: () => {
+    const now = Instant.now();
     return data.access((data) => ({
       level: data.current_level,
-      levelTime: data.getDuration(data.currentLevelTime),
-      submitterTime: data.getDuration(data.currentLevelTime),
+      levelTime: data.getDuration(data.currentLevelTime, now),
     }));
   },
 
