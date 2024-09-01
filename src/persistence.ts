@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const DATA_DIRECTORY = "data";
 const VERSIONED_FILE_NAME = path.join(DATA_DIRECTORY, "queue.json");
-const CURRENT_VERSION = "3.1";
+const CURRENT_VERSION = "3.2";
 const QUEUE_V2 = {
   fileName: VERSIONED_FILE_NAME,
   version: "2.2", // increase major version if data format changes in a way that is not understood by a previous version of the queue
@@ -277,6 +277,42 @@ export const QueueV3_1 = z.object({
     .default({}),
 });
 
+export const QueueV3_2 = z.object({
+  version: z
+    .string()
+    .describe(
+      `the version of this save file which has to be starting with "3." or be "3"`
+    )
+    .refine(
+      (version) => version == "3" || version.startsWith("3."),
+      'version has to be starting with "3." or be "3"'
+    ),
+  entries: z.object({
+    current: SubmittedEntryV3_1.extend({
+      playTime: z.object({
+        submitter: z.object({
+          minutes: z.number().int().nonnegative(),
+          milliseconds: z.number().int().gte(0).lt(60000),
+        }),
+        entry: z.object({
+          minutes: z.number().int().nonnegative(),
+          milliseconds: z.number().int().gte(0).lt(60000),
+        }),
+      }),
+    })
+      .nullable()
+      .describe("the currently selected queue entry or null"),
+    queue: SubmittedEntryV3_1.array().describe("entries in queue"),
+  }),
+  waiting: WaitingSchemeV3.array(),
+  extensions: z
+    .record(
+      z.string().describe("the extension name"),
+      ExtensionDataV3(z.unknown().optional())
+    )
+    .default({}),
+});
+
 const CustomCodesV1 = z
   .tuple([z.string(), z.string()])
   .array()
@@ -481,18 +517,49 @@ const loadQueueV2 = (object: object): InitialLoadResult<QueueV2> => {
 const loadQueueV3 = (
   object: VersionedObject,
   now: string
-): InitialLoadResult<z.output<typeof QueueV3_1>> => {
+): InitialLoadResult<z.output<typeof QueueV3_2>> => {
   const versionArray = object.version.split(".");
   const versions = z.coerce.number().int().array().safeParse(versionArray);
+  const transformCurrent = (
+    entry: SubmittedEntryV3_1
+  ): z.output<typeof QueueV3_2>["entries"]["current"] => ({
+    ...entry,
+    playTime: {
+      submitter: {
+        minutes: 0,
+        milliseconds: 0,
+      },
+      entry: {
+        minutes: 0,
+        milliseconds: 0,
+      },
+    },
+  });
   if (versions.success && versions.data.length >= 2) {
     const minorVersion = versions.data[1];
-    if (minorVersion >= 1) {
-      const state = QueueV3_1.parse(object);
+    if (minorVersion >= 2) {
+      const state = QueueV3_2.parse(object);
       log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
       return { data: state };
+    } else if (minorVersion >= 1) {
+      // transform 3.1 to 3.2 data
+      const queueV3_1 = QueueV3_1.parse(object);
+      const state = {
+        ...queueV3_1,
+        entries: {
+          ...queueV3_1.entries,
+          current:
+            queueV3_1.entries.current === null
+              ? null
+              : transformCurrent(queueV3_1.entries.current),
+        },
+      };
+      log(`${VERSIONED_FILE_NAME} has been successfully validated.`);
+      // data needs to be saved again
+      return { data: state, save: true };
     }
   }
-  // transform 3.0 to 3.1 data
+  // transform 3.0 to 3.2 data
   const queueV3_0 = QueueV3_0.parse(object);
   const transformEntry = (entry: SubmittedEntryV3_0): SubmittedEntryV3_1 => ({
     ...entry,
@@ -505,7 +572,7 @@ const loadQueueV3 = (
       current:
         queueV3_0.entries.current === null
           ? null
-          : transformEntry(queueV3_0.entries.current),
+          : transformCurrent(transformEntry(queueV3_0.entries.current)),
       queue: queueV3_0.entries.queue.map(transformEntry),
     },
   };
@@ -514,7 +581,7 @@ const loadQueueV3 = (
   return { data: state, save: true };
 };
 
-const emptyQueue = (): z.output<typeof QueueV3_1> => {
+const emptyQueue = (): z.output<typeof QueueV3_2> => {
   return {
     version: CURRENT_VERSION,
     entries: {
@@ -961,7 +1028,7 @@ function loadSync<T>(
 
 export async function loadQueue(
   options = { save: true }
-): Promise<z.output<typeof QueueV3_1>> {
+): Promise<z.output<typeof QueueV3_2>> {
   const now = new Date().toISOString();
   const versionedFile = VersionedFile.from(2, loadQueueV2).upgrade(
     upgradeQueueV2ToV3,
@@ -969,7 +1036,7 @@ export async function loadQueue(
     loadQueueV3
   );
   const result = await UpgradeEngine.from<UpgradeResult<QueueV2>>(loadQueueV1)
-    .upgrade<QueueV2, z.output<typeof QueueV3_1>>(
+    .upgrade<QueueV2, z.output<typeof QueueV3_2>>(
       (v2) => v2,
       versionedFile,
       VERSIONED_FILE_NAME
@@ -986,10 +1053,10 @@ export async function loadQueue(
 async function upgradeQueueV2ToV3(
   value: QueueV2,
   now: string
-): Promise<UpgradeResult<z.output<typeof QueueV3_1>>> {
+): Promise<UpgradeResult<z.output<typeof QueueV3_2>>> {
   const lostLevels: SubmittedEntryV2[] = [];
   const lostWaiting: (WaitingV2 & { username: string })[] = [];
-  let current: z.output<typeof SubmittedEntryV3_1> | null = null;
+  let current: z.output<typeof QueueV3_2>["entries"]["current"] | null = null;
   const queue: z.output<typeof QueueV3_1>["entries"]["queue"] = [];
   const waiting: z.output<typeof QueueV3_1>["waiting"] = [];
   const upgrade: Record<string, ((user: User) => void)[]> = {};
@@ -1051,7 +1118,19 @@ async function upgradeQueueV2ToV3(
   // create upgrades
   if (value.currentLevel != null) {
     addEntryUpgrade(value.currentLevel, (entry) => {
-      current = entry;
+      current = {
+        ...entry,
+        playTime: {
+          submitter: {
+            minutes: 0,
+            milliseconds: 0,
+          },
+          entry: {
+            minutes: 0,
+            milliseconds: 0,
+          },
+        },
+      };
     });
   }
   for (const entry of value.queue) {
@@ -1140,7 +1219,7 @@ const createCustomCodesFileContent = (
 };
 
 export const saveQueueSync = (
-  data: Omit<z.input<typeof QueueV3_1>, "version">
+  data: Omit<z.input<typeof QueueV3_2>, "version">
 ) => {
   try {
     writeFileAtomicSync(VERSIONED_FILE_NAME, createSaveFileContent(data), {
