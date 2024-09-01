@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import eslint from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import jest from "eslint-plugin-jest";
@@ -20,6 +21,9 @@ export default tseslint.config(
       parserOptions: {
         project: "./tsconfig.json",
         tsconfigRootDir: __dirname,
+      },
+      globals: {
+        ...globals.node,
       },
     },
     rules: {
