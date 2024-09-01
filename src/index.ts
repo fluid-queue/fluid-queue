@@ -14,6 +14,8 @@ import i18next from "i18next";
 import { log } from "./chalk-print.js";
 
 import { channelPointManager } from "./channel-points.js";
+import { Duration } from "@js-joda/core";
+import humanizeDuration from "humanize-duration";
 
 const quesoqueue = queue();
 const aliases = aliasManagement.aliases();
@@ -102,11 +104,46 @@ function weightednext_level_message(
   return i18next.t("nowPlayingWeightedNext", { level, percentSuffix, offline });
 }
 
-function current_level_message(level: QueueEntry | undefined) {
+function current_level_message({
+  level,
+  levelTime,
+  submitterTime,
+}: {
+  level: QueueEntry | undefined;
+  levelTime: Duration;
+  submitterTime: Duration;
+}) {
   if (level === undefined) {
     return i18next.t("noCurrent");
   }
-  return i18next.t("currentLevel", { level });
+  let smallerTime = levelTime;
+  let biggerTime = submitterTime;
+  const compare = smallerTime.compareTo(biggerTime);
+  if (compare === 0) {
+    return i18next.t("currentLevel1", {
+      level,
+      time: humanizeDuration(smallerTime.toMillis(), {
+        language: settings.language,
+        fallbacks: ["en"],
+      }),
+    });
+  }
+
+  if (compare > 0) {
+    [smallerTime, biggerTime] = [biggerTime, smallerTime];
+  }
+
+  return i18next.t("currentLevel2", {
+    level,
+    smallerTime: humanizeDuration(smallerTime.toMillis(), {
+      language: settings.language,
+      fallbacks: ["en"],
+    }),
+    biggerTime: humanizeDuration(biggerTime.toMillis(), {
+      language: settings.language,
+      fallbacks: ["en"],
+    }),
+  });
 }
 
 const hasPosition = () => {
