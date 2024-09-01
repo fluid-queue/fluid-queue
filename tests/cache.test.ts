@@ -2,7 +2,6 @@ import { jest } from "@jest/globals";
 import { ConcurrentLoader, SingleValueCache } from "fluid-queue/cache.js";
 import { BroadcastOnce } from "fluid-queue/sync.js";
 import { Duration } from "@js-joda/core";
-import { expectErrorMessage } from "./simulation.js";
 
 test("BroadcastOnce:value", async () => {
   jest.useRealTimers();
@@ -74,13 +73,13 @@ test("BroadcastOnce:Promise:reject", async () => {
   const recv1 = channel.recv();
   const recv2 = channel.recv();
   const recv3 = channel.recv();
-  const value = "owo";
+  const value = new Error("owo");
   // sending a promise with an rejection
   channel.send(Promise.reject(value));
   // will make every subscriber reject!
-  await expect(recv1).rejects.toBe(value);
-  await expect(recv2).rejects.toBe(value);
-  await expect(recv3).rejects.toBe(value);
+  await expect(recv1).rejects.toThrow(value);
+  await expect(recv2).rejects.toThrow(value);
+  await expect(recv3).rejects.toThrow(value);
 });
 
 test("ConcurrentLoader:fetch-concurrently", async () => {
@@ -127,24 +126,24 @@ test("ConcurrentLoader:fetch-concurrently-throw", async () => {
   const fetch2 = loader.fetch();
   const fetch3 = loader.fetch();
   // every promise rejects with the same error
-  await expectErrorMessage(fetch1).toMatch(
+  await expect(fetch1).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-throw 42/
   );
-  await expectErrorMessage(fetch2).toMatch(
+  await expect(fetch2).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-throw 42/
   );
-  await expectErrorMessage(fetch3).toMatch(
+  await expect(fetch3).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-throw 42/
   );
   expect(fetchMethod).toHaveBeenCalledTimes(1);
   // next fetch returns new result
-  await expectErrorMessage(loader.fetch()).toMatch(
+  await expect(loader.fetch()).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-throw 43/
   );
   expect(fetchMethod).toHaveBeenCalledTimes(2);
   // calling fetchMethod does not throw immediatly!
   const result = fetchMethod();
-  await expectErrorMessage(result).toMatch(
+  await expect(result).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-throw 44/
   );
 });
@@ -157,7 +156,9 @@ test("ConcurrentLoader:fetch-concurrently-reject", async () => {
     return new Promise((resolve) => setTimeout(resolve, 100)).then(
       // then reject
       () =>
-        Promise.reject(`ConcurrentLoader:fetch-concurrently-reject ${number++}`)
+        Promise.reject(
+          new Error(`ConcurrentLoader:fetch-concurrently-reject ${number++}`)
+        )
     );
   });
   const loader = new ConcurrentLoader(fetchMethod);
@@ -166,18 +167,18 @@ test("ConcurrentLoader:fetch-concurrently-reject", async () => {
   const fetch2 = loader.fetch();
   const fetch3 = loader.fetch();
   // every promise rejects with the same error
-  await expect(fetch1).rejects.toMatch(
+  await expect(fetch1).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-reject 42/
   );
-  await expect(fetch2).rejects.toMatch(
+  await expect(fetch2).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-reject 42/
   );
-  await expect(fetch3).rejects.toMatch(
+  await expect(fetch3).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-reject 42/
   );
   expect(fetchMethod).toHaveBeenCalledTimes(1);
   // next fetch returns new result
-  await expect(loader.fetch()).rejects.toMatch(
+  await expect(loader.fetch()).rejects.toThrow(
     /ConcurrentLoader:fetch-concurrently-reject 43/
   );
   expect(fetchMethod).toHaveBeenCalledTimes(2);
@@ -191,7 +192,7 @@ test("ConcurrentLoader:fetch-method-throws", async () => {
   };
   const loader = new ConcurrentLoader(fetchMethod);
   // loader.fetch() does not throw, but rejects!
-  await expectErrorMessage(loader.fetch()).toMatch(
+  await expect(loader.fetch()).rejects.toThrow(
     /ConcurrentLoader:fetch-method-throws/
   );
   // fetchMethod does throw immediatly

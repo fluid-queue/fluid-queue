@@ -10,7 +10,6 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
-  expectErrorMessage,
 } from "../simulation.js";
 import { fileURLToPath } from "url";
 import { Settings } from "fluid-queue/settings-type.js";
@@ -415,7 +414,7 @@ async function throwingIndex(
     }
   };
   // should error!
-  await expectErrorMessage(index()).toMatch(/.*/); // TODO regex of expected error message
+  await expect(index()).rejects.toThrow(/.*/); // TODO regex of expected error message
 
   if (mockFs === undefined) {
     throw new Error("expected error thrown containing file system");

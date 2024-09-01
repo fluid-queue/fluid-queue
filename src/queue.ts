@@ -1162,7 +1162,7 @@ const queue = {
         result: "duration",
         durationMilliseconds: timestring(what, "milliseconds"),
       };
-    } catch (e) {
+    } catch {
       return { result: "invalid", reason: "format" };
     }
   },

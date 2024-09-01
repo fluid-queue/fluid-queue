@@ -68,7 +68,7 @@ async function setupMocks() {
       return "fs module mock";
     },
   }));
-  (await import("fs")).default;
+  void (await import("fs")).default;
 
   // mock needed for ttlcache
   jest.spyOn(global.performance, "now").mockImplementation(() => {
@@ -103,11 +103,8 @@ async function setupMocks() {
 test("online users", async () => {
   const { settings, twitch, twitchApi } = await setupMocks();
 
-  if (settings === undefined || twitch === undefined) {
-    expect(settings).not.toBeUndefined();
-    expect(twitch).not.toBeUndefined();
-    throw new Error("unreachable");
-  }
+  expect(settings).not.toBeUndefined();
+  expect(twitch).not.toBeUndefined();
 
   expect(settings.channel).toBe("queso_queue_test_channel");
 

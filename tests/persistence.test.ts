@@ -3,7 +3,6 @@ import {
   DEFAULT_TEST_SETTINGS,
   asMock,
   createMockVolume,
-  expectErrorMessage,
   mockTwitchApi,
 } from "./simulation.js";
 import { User } from "fluid-queue/extensions-api/queue-entry.js";
@@ -214,8 +213,8 @@ test("loadResultActions:data", async () => {
     verify
   );
   expect(result).toEqual("data");
-  expect(save).toBeCalledTimes(0);
-  expect(verify).toBeCalledTimes(0);
+  expect(save).toHaveBeenCalledTimes(0);
+  expect(verify).toHaveBeenCalledTimes(0);
 });
 
 test("loadResultActions:save-and-verify", async () => {
@@ -232,8 +231,8 @@ test("loadResultActions:save-and-verify", async () => {
     verify
   );
   expect(result).toEqual("data");
-  expect(save).toBeCalledTimes(1);
-  expect(verify).toBeCalledTimes(1);
+  expect(save).toHaveBeenCalledTimes(1);
+  expect(verify).toHaveBeenCalledTimes(1);
   expect(save.mock.calls[0][0]).toEqual("data");
 });
 
@@ -256,12 +255,12 @@ test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
     save,
     verify
   );
-  await expectErrorMessage(promise).toMatch(
+  await expect(promise).rejects.toThrow(
     /Creating save file from an old version failed!/
   );
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
-  expect(save).toBeCalledTimes(1);
-  expect(verify).toBeCalledTimes(1);
+  expect(save).toHaveBeenCalledTimes(1);
+  expect(verify).toHaveBeenCalledTimes(1);
   expect(save.mock.calls[0][0]).toEqual("data");
 });
 
@@ -286,10 +285,10 @@ test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
     save,
     verify
   );
-  await expectErrorMessage(promise).toMatch(/Loading failed!/);
+  await expect(promise).rejects.toThrow(/Loading failed!/);
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
-  expect(save).toBeCalledTimes(1);
-  expect(verify).toBeCalledTimes(1);
+  expect(save).toHaveBeenCalledTimes(1);
+  expect(verify).toHaveBeenCalledTimes(1);
   expect(save.mock.calls[0][0]).toEqual("data");
 });
 
@@ -312,12 +311,12 @@ test("loadResultActions:save-and-verify-hooks-abort-save-off", async () => {
     verify,
     { save: false }
   );
-  await expectErrorMessage(promise).toMatch(
+  await expect(promise).rejects.toThrow(
     /Can not upgrade save file while saving is turned off!/
   );
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
-  expect(save).toBeCalledTimes(0);
-  expect(verify).toBeCalledTimes(0);
+  expect(save).toHaveBeenCalledTimes(0);
+  expect(verify).toHaveBeenCalledTimes(0);
 });
 
 test("loadResultActions:save-and-verify-save-off", async () => {
@@ -337,8 +336,8 @@ test("loadResultActions:save-and-verify-save-off", async () => {
     { save: false }
   );
   expect(result).toEqual("data");
-  expect(save).toBeCalledTimes(0);
-  expect(verify).toBeCalledTimes(0);
+  expect(save).toHaveBeenCalledTimes(0);
+  expect(verify).toHaveBeenCalledTimes(0);
   expect(consoleWarnMock).toHaveBeenCalledWith(
     expect.stringContaining(
       "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
@@ -491,7 +490,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
   expect(hookCalls).toEqual([2]);
   hookCalls = [];
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
-  await expectErrorMessage(newestResult).toMatch(
+  await expect(newestResult).rejects.toThrow(
     /Save file version 2 is incompatible with version 3./
   );
   const upgradeData = "data";
@@ -550,7 +549,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
   expect(hookCalls).toEqual([1, 2]);
   hookCalls = [];
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
-  await expectErrorMessage(newestResult).toMatch(
+  await expect(newestResult).rejects.toThrow(
     /Save file version 1 is incompatible with version 3./
   );
   const upgradeData = "data";
@@ -596,11 +595,11 @@ test("VersionedFile:version-too-big", async () => {
     { encoding: "utf-8" }
   );
   const result = versionedFile.load(TEST_FILE_NAME);
-  await expectErrorMessage(result).toMatch(
+  await expect(result).rejects.toThrow(
     /Save file version 10 is incompatible with versions 1, 2, 3./
   );
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
-  await expectErrorMessage(newestResult).toMatch(
+  await expect(newestResult).rejects.toThrow(
     /Save file version 10 is incompatible with version 3./
   );
 });
@@ -639,11 +638,11 @@ test("VersionedFile:version-too-small", async () => {
     { encoding: "utf-8" }
   );
   const result = versionedFile.load(TEST_FILE_NAME);
-  await expectErrorMessage(result).toMatch(
+  await expect(result).rejects.toThrow(
     /Save file version 0 is incompatible with versions 1, 2, 3./
   );
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
-  await expectErrorMessage(newestResult).toMatch(
+  await expect(newestResult).rejects.toThrow(
     /Save file version 0 is incompatible with version 3./
   );
 });
