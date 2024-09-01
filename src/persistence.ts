@@ -290,14 +290,8 @@ export const QueueV3_2 = z.object({
   entries: z.object({
     current: SubmittedEntryV3_1.extend({
       playTime: z.object({
-        submitter: z.object({
-          minutes: z.number().int().nonnegative(),
-          milliseconds: z.number().int().gte(0).lt(60000),
-        }),
-        entry: z.object({
-          minutes: z.number().int().nonnegative(),
-          milliseconds: z.number().int().gte(0).lt(60000),
-        }),
+        minutes: z.number().int().nonnegative(),
+        milliseconds: z.number().int().gte(0).lt(60000),
       }),
     })
       .nullable()
@@ -525,14 +519,8 @@ const loadQueueV3 = (
   ): z.output<typeof QueueV3_2>["entries"]["current"] => ({
     ...entry,
     playTime: {
-      submitter: {
-        minutes: 0,
-        milliseconds: 0,
-      },
-      entry: {
-        minutes: 0,
-        milliseconds: 0,
-      },
+      minutes: 0,
+      milliseconds: 0,
     },
   });
   if (versions.success && versions.data.length >= 2) {
@@ -1121,14 +1109,8 @@ async function upgradeQueueV2ToV3(
       current = {
         ...entry,
         playTime: {
-          submitter: {
-            minutes: 0,
-            milliseconds: 0,
-          },
-          entry: {
-            minutes: 0,
-            milliseconds: 0,
-          },
+          minutes: 0,
+          milliseconds: 0,
         },
       };
     });
