@@ -52,7 +52,7 @@ const printBanner = () => {
       );
       warn("(Use `npm run build` to build the current version)\n");
     }
-  } catch (e) {
+  } catch {
     // ignore error
   }
 };

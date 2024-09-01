@@ -338,8 +338,8 @@ test("weight rename test", async () => {
     buildChatter("broadcaster", "Broadcaster", true, true, true),
     responder
   );
-  expect(responder).toBeCalledTimes(1);
-  expect(responder).toBeCalledWith(
+  expect(responder).toHaveBeenCalledTimes(1);
+  expect(responder).toHaveBeenCalledWith(
     "Your custom code Kamek for 2PV-J29-2PF (maker code) has been added."
   );
 

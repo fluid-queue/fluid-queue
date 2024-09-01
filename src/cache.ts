@@ -43,7 +43,12 @@ export class ConcurrentLoader<T> {
     };
     return await this.fetchMethod().then(
       (value) => completeWith(Promise.resolve(value)),
-      (reason) => completeWith(Promise.reject(reason))
+      (reason) =>
+        completeWith(
+          Promise.reject(
+            reason instanceof Error ? reason : new Error(String(reason))
+          )
+        )
     );
   }
 }
