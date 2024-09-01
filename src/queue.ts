@@ -19,6 +19,7 @@ import humanizeDuration from "humanize-duration";
 import { twitchApi } from "./twitch-api.js";
 import { log, warn } from "./chalk-print.js";
 import { channelPointManager } from "./channel-points.js";
+import { Duration, Instant } from "@js-joda/core";
 
 const extensions = new Extensions();
 
@@ -50,13 +51,26 @@ let loaded = false;
 let persist = true; // if false the queue will not save automatically
 let streamLastOnline: boolean | null = null;
 
+type Measurement = {
+  duration: Duration;
+  // if this is not null then it means that we are currently measuring and this needs to be added to the duration
+  start: Instant | null;
+};
+
 interface QueueDataAccessor {
+  startTimer(): void;
+  stopTimer(): void;
+  getDuration(measurement: Measurement | null): Duration;
   get current_level(): QueueEntry | undefined;
   set current_level(value: QueueEntry | undefined);
   get levels(): QueueEntry[];
   set levels(value: QueueEntry[]);
   get waitingByUserId(): Record<string, Waiting>;
   set waitingByUserId(value: Record<string, Waiting>);
+  get currentLevelTime(): Measurement | null;
+  get currentSubmitterTime(): Measurement | null;
+  set currentLevelTime(value: Measurement | null);
+  set currentSubmitterTime(value: Measurement | null);
 
   /**
    * Saves at the end of the critical section
@@ -87,6 +101,9 @@ interface QueueDataAccessor {
 export type QueueDataMap<T> = (data: QueueDataAccessor) => T;
 
 class QueueData {
+  private isMeasuring: boolean = false;
+  private currentLevelTime: Measurement | null = null;
+  private currentSubmitterTime: Measurement | null = null;
   private currentLevel: QueueEntry | null = null;
   private levels: QueueEntry[] = [];
   private waitingByUserId: Record<string, Waiting> = {};
@@ -94,15 +111,61 @@ class QueueData {
     | (QueueDataAccessor & { save: false | { force: boolean } })
     | null = null;
 
+  private getMeasurement(
+    playTime:
+      | {
+          minutes: number;
+          milliseconds: number;
+        }
+      | Duration
+  ): Measurement {
+    return {
+      duration:
+        playTime instanceof Duration
+          ? playTime
+          : Duration.ofSeconds(
+              playTime.minutes * 60 + playTime.milliseconds / 1000,
+              (playTime.milliseconds % 1000) * 1_000_000
+            ),
+      start: data.isMeasuring ? Instant.now() : null,
+    };
+  }
+
   private accessor(): QueueDataAccessor & { save: false | { force: boolean } } {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const data = this;
     return {
       save: false,
+      getDuration(measurement: Measurement | null): Duration {
+        if (measurement == null) {
+          return Duration.ZERO;
+        }
+        if (measurement.start == null) {
+          return measurement.duration;
+        }
+        return measurement.duration.plus(
+          Duration.between(measurement.start, Instant.now())
+        );
+      },
       get current_level() {
         return data.currentLevel ?? undefined;
       },
       set current_level(value) {
+        if (value == null) {
+          // there is no current level any longer
+          data.currentLevelTime = null;
+          data.currentSubmitterTime = null;
+        } else {
+          if (data.currentLevel == null || data.currentLevel.id != value.id) {
+            data.currentLevelTime = data.getMeasurement(Duration.ZERO);
+          }
+          if (
+            data.currentLevel == null ||
+            data.currentLevel.submitter.id != value.submitter.id
+          ) {
+            data.currentSubmitterTime = data.getMeasurement(Duration.ZERO);
+          }
+        }
         data.currentLevel = value ?? null;
       },
       get levels() {
@@ -120,6 +183,12 @@ class QueueData {
       set waitingByUserId(value) {
         data.waitingByUserId = value;
       },
+      get currentLevelTime() {
+        return data.currentLevelTime;
+      },
+      get currentSubmitterTime() {
+        return data.currentLevelTime;
+      },
       saveLater(options) {
         const force = options?.force ?? false;
         if (this.save !== false) {
@@ -132,9 +201,31 @@ class QueueData {
         if (persist || options.force === true) {
           const serializedCurrentLevel: PersistedQueueEntry | null =
             this.current_level?.serializePersistedQueueEntry() ?? null;
+          const persistMeasurement = (measurement: Measurement | null) => {
+            const duration = this.getDuration(measurement);
+            const seconds = duration.seconds();
+            const minutes = seconds / 60;
+            const milliseconds =
+              (seconds % 60) * 1000 + duration.nano() / 1_000_000;
+            return {
+              minutes,
+              milliseconds,
+            };
+          };
           return persistence.saveQueueSync({
             entries: {
-              current: serializedCurrentLevel,
+              current:
+                serializedCurrentLevel !== null
+                  ? {
+                      ...serializedCurrentLevel,
+                      playTime: {
+                        submitter: persistMeasurement(
+                          this.currentSubmitterTime
+                        ),
+                        entry: persistMeasurement(this.currentLevelTime),
+                      },
+                    }
+                  : null,
               queue: this.levels.map((level) =>
                 level.serializePersistedQueueEntry()
               ),
@@ -148,14 +239,50 @@ class QueueData {
         }
       },
 
-      override(state: z.output<typeof persistence.QueueV3_1>) {
+      startTimer() {
+        data.isMeasuring = true;
+        if (data.currentLevelTime != null) {
+          if (data.currentLevelTime.start == null) {
+            data.currentLevelTime.start = Instant.now();
+          }
+        }
+        if (data.currentSubmitterTime != null) {
+          if (data.currentSubmitterTime.start == null) {
+            data.currentSubmitterTime.start = Instant.now();
+          }
+        }
+      },
+
+      stopTimer() {
+        data.isMeasuring = false;
+        if (data.currentLevelTime != null) {
+          if (data.currentLevelTime.start != null) {
+            data.currentLevelTime.duration = this.getDuration(
+              data.currentLevelTime
+            );
+            data.currentLevelTime.start = null;
+          }
+        }
+        if (data.currentSubmitterTime != null) {
+          if (data.currentSubmitterTime.start != null) {
+            data.currentSubmitterTime.duration = this.getDuration(
+              data.currentSubmitterTime
+            );
+            data.currentSubmitterTime.start = null;
+          }
+        }
+      },
+
+      override(state: z.output<typeof persistence.QueueV3_2>) {
         let save = false;
         // override queue bindings
         extensions.overrideQueueBindings(state.extensions);
 
         // upgrade levels that do not have their type set
         const allPersistedEntries = (
-          state.entries.current == null ? [] : [state.entries.current]
+          state.entries.current == null
+            ? []
+            : [state.entries.current as PersistedQueueEntry]
         ).concat(state.entries.queue);
         save = extensions.upgradeEntries(allPersistedEntries) || save;
 
@@ -164,6 +291,12 @@ class QueueData {
           this.current_level = undefined;
         } else {
           this.current_level = extensions.deserialize(state.entries.current);
+          this.currentLevelTime = data.getMeasurement(
+            state.entries.current.playTime.entry
+          );
+          this.currentSubmitterTime = data.getMeasurement(
+            state.entries.current.playTime.submitter
+          );
         }
         this.levels = state.entries.queue.map((level) =>
           extensions.deserialize(level)
@@ -716,7 +849,11 @@ const queue = {
   },
 
   current: () => {
-    return data.access((data) => data.current_level);
+    return data.access((data) => ({
+      level: data.current_level,
+      levelTime: data.getDuration(data.currentLevelTime),
+      submitterTime: data.getDuration(data.currentLevelTime),
+    }));
   },
 
   random: async (
@@ -1092,12 +1229,20 @@ const queue = {
     void twitch.updateModsAndSubscribers();
     channelPointManager.onStreamOnline();
     log(i18next.t("streamIsOnline"));
+    data.access((data) => {
+      data.startTimer();
+      data.saveLater();
+    });
   },
 
   onStreamOffline: () => {
     streamLastOnline = false;
     channelPointManager.onStreamOffline();
     log(i18next.t("streamIsOffline"));
+    data.access((data) => {
+      data.stopTimer();
+      data.saveLater();
+    });
   },
 
   waitingTimerTick: async () => {
