@@ -39,7 +39,7 @@ await build({
         {
           from: [
             "./node_modules/@electric-sql/pglite/dist/postgres.wasm",
-            "./node_modules/@electric-sql/pglite/dist/share.data",
+            "./node_modules/@electric-sql/pglite/dist/postgres.data",
           ],
           to: ".",
         },
