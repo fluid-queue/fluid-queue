@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1722708356333,
+      "tag": "0000_premium_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1722708451338,
+      "tag": "0001_queue_current_check_constraint",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1722871227979,
+      "tag": "0002_past_secret_warriors",
+      "breakpoints": true
+    }
+  ]
+}
