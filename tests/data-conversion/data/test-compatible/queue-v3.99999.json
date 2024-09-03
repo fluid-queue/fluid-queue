@@ -20,7 +20,11 @@
         "displayName": "FurretWalkBot"
       },
       "id": "382b4cff-2c66-4c7e-98b3-7a329fd306ef",
-      "submitted": "2023-06-02T20:08:15.000Z"
+      "submitted": "2023-06-02T20:08:15.000Z",
+      "playTime": {
+        "minutes": 42,
+        "milliseconds": 12345
+      }
     },
     "queue": [
       {

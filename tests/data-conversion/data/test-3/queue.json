@@ -1,5 +1,5 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "extensions": {
     "customlevel": {
       "data": {},
@@ -16,7 +16,11 @@
         "displayName": "${user(\"liquidnya\").displayName}"
       },
       "id": "133ac751-70fa-4974-ba4e-89438016126b",
-      "submitted": "2022-04-21T00:00:00.000Z"
+      "submitted": "2022-04-21T00:00:00.000Z",
+      "playTime": {
+        "minutes": 0,
+        "milliseconds": 0
+      }
     },
     "queue": [
       {

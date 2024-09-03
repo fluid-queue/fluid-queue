@@ -379,6 +379,7 @@ for (const file of testFiles) {
   );
   test(`${fileName}`, async () => {
     jest.setTimeout(10_000); // <- this might not work
-    await expect(chatLogTest(fileName)).resolves.toBeTruthy();
+    const result = await chatLogTest(fileName);
+    expect(result).toBeTruthy();
   }, 10_000); // <- setting timeout here as well
 }
