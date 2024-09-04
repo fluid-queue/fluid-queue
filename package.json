@@ -35,7 +35,7 @@
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./tests/jest.config.json --verbose",
-    "migrate": "node ./build/migrate.js",
+    "migrate": "node --enable-source-maps ./build/migrate.js",
     "start": "node --enable-source-maps ./build/index.js",
     "start:swc": "node --import ./register-swc.js ./src/index.ts",
     "prepare": "husky",
@@ -67,6 +67,7 @@
     "@types/write-file-atomic": "^4.0.0",
     "archiver": "^7.0.1",
     "assert": "^2.0.0",
+    "async-mutex": "^0.5.0",
     "drizzle-kit": "^0.24.2",
     "drizzle-orm": "^0.32.2",
     "esbuild": "0.23.1",
