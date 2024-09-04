@@ -6,7 +6,7 @@ import {
   timestamp,
   boolean,
   interval,
-  json,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 import { relations } from "drizzle-orm";
@@ -30,7 +30,7 @@ export const LevelTable = pgTable("levels", {
   id: uuid("id").primaryKey(),
   type: varchar("type").notNull(),
   code: varchar("code"),
-  extension_data: json("extension_data"),
+  extension_data: jsonb("extension_data"),
 });
 
 // queue.json: entries[current] and entries[queue]
@@ -46,7 +46,6 @@ export const QueueTable = pgTable("queue", {
     .references(() => LevelTable.id)
     .notNull(),
   current: boolean("current").unique(), // check constraint is unimplemented in drizzle-orm, but we created it ourselves in a custom migration
-  weight: interval("weight").notNull(),
 });
 
 // queue.json: extensions
@@ -54,7 +53,7 @@ export const QueueTable = pgTable("queue", {
 export const ExtensionDataTable = pgTable("extension_data", {
   id: uuid("id").primaryKey(),
   version: decimal("version"),
-  data: json("data"),
+  data: jsonb("data"),
 });
 
 // *********

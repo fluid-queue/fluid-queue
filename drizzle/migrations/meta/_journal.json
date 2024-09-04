@@ -15,6 +15,20 @@
       "when": 1725397425871,
       "tag": "0001_queue_current_check_constraint",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1725446449096,
+      "tag": "0002_noisy_onslaught",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1725455720701,
+      "tag": "0003_volatile_mentor",
+      "breakpoints": true
     }
   ]
 }
