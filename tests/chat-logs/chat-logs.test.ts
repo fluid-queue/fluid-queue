@@ -21,6 +21,10 @@ import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
 import YAML from "yaml";
+import _ from "lodash";
+import { execSync } from "child_process";
+import writeFileAtomic from "write-file-atomic";
+import jsonOrder from "json-order";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
@@ -114,10 +118,20 @@ const parseChatter = (chatter: string) => {
   );
 };
 
-const chatLogTest = async (fileName: string): Promise<boolean> => {
+type FixInstruction = {
+  contents: string;
+  json?: boolean | undefined;
+  position: SourceLocation;
+};
+
+const chatLogTest = async (
+  fileName: string,
+  fixingTests: boolean
+): Promise<FixInstruction[]> => {
   let test = await simRequireIndex();
   let chatbot = null;
   let settingsInput: z.input<typeof Settings> | undefined = undefined;
+  const fixInstructions: FixInstruction[] = [];
 
   const replyMessageQueue: Array<{ message: string; error: Error }> = [];
   let accuracy = 0;
@@ -214,7 +228,17 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
               ];
             }
           }
-          expect(jsonData).toEqual(JSON.parse(rest));
+          if (fixingTests) {
+            if (!_.isEqual(jsonData, JSON.parse(rest))) {
+              fixInstructions.push({
+                contents: JSON.stringify(jsonData),
+                json: true,
+                position,
+              });
+            }
+          } else {
+            expect(jsonData).toEqual(JSON.parse(rest));
+          }
         } catch (error: unknown) {
           if (error instanceof Error) {
             throw new Error(error.message + errorMessage(position), {
@@ -316,7 +340,16 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
             }
           }
           try {
-            expect(shift?.message).toBe(chat.message);
+            if (fixingTests && shift !== undefined) {
+              if (!_.isEqual(shift.message, chat.message)) {
+                fixInstructions.push({
+                  contents: shift.message,
+                  position,
+                });
+              }
+            } else {
+              expect(shift?.message).toBe(chat.message);
+            }
           } catch (error: unknown) {
             if (error instanceof Error) {
               error.stack = shift?.error.stack?.replace(
@@ -363,7 +396,7 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
   } finally {
     await clearAllTimers();
   }
-  return true;
+  return fixInstructions;
 };
 
 const testFiles = fs
@@ -372,6 +405,24 @@ const testFiles = fs
   )
   .filter((file: string) => file.endsWith(".test.log"));
 
+function isFixingTests() {
+  if (
+    !["true", "yes", "1", "y"].includes(process.env.FIX?.toLowerCase() ?? "no")
+  ) {
+    return false;
+  }
+  try {
+    execSync("git diff-files --quiet");
+    return true;
+  } catch (error) {
+    console.error(error);
+    console.error(`Ignoring FIX`);
+    return false;
+  }
+}
+
+const fixingTests = isFixingTests();
+
 for (const file of testFiles) {
   const fileName = path.relative(
     ".",
@@ -379,7 +430,71 @@ for (const file of testFiles) {
   );
   test(`${fileName}`, async () => {
     jest.setTimeout(10_000); // <- this might not work
-    const result = await chatLogTest(fileName);
+    const result = await chatLogTest(fileName, fixingTests);
+    if (result.length > 0) {
+      const replacements = new Map(
+        result.map((v) => [
+          v.position.start.line,
+          {
+            contents: v.contents,
+            start: v.position.start.column,
+            end: v.position.end?.column,
+            json: v.json ?? false,
+          },
+        ])
+      );
+      const input = fs.createReadStream(fileName);
+      let output = "";
+      const rl = readline.createInterface({
+        input,
+        crlfDelay: Infinity,
+      });
+      let lineno = 0;
+      for await (const line of rl) {
+        lineno++;
+        const replace = replacements.get(lineno);
+        if (
+          replace === undefined ||
+          replace.start === undefined ||
+          replace.end === undefined
+        ) {
+          output += `${line}\n`;
+          continue;
+        }
+        let m;
+        if (replace.json) {
+          const oldOrder = jsonOrder.default.parse(
+            line.substring(replace.start - 1, replace.end + 1)
+          );
+          const newOrder = jsonOrder.default.parse(replace.contents);
+          for (const key in newOrder.map) {
+            if (key in oldOrder.map) {
+              const propertyOrder = oldOrder.map[key];
+              for (const propertyKey of propertyOrder) {
+                if (!newOrder.map[key].includes(propertyKey)) {
+                  propertyOrder.splice(propertyOrder.indexOf(propertyKey));
+                }
+              }
+              for (const propertyKey of newOrder.map[key]) {
+                if (!propertyOrder.includes(propertyKey)) {
+                  propertyOrder.push(propertyKey);
+                }
+              }
+              newOrder.map[key] = propertyOrder;
+            }
+          }
+          m = jsonOrder.default.stringify(newOrder.object, newOrder.map);
+        } else {
+          m = replace.contents;
+        }
+        const r =
+          line.substring(0, replace.start - 1) +
+          m +
+          line.substring(replace.end + 1);
+        output += `${r}\n`;
+      }
+      await writeFileAtomic(fileName, output, { encoding: "utf-8" });
+    }
     expect(result).toBeTruthy();
   }, 10_000); // <- setting timeout here as well
 }
