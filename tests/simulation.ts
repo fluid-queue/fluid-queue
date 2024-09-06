@@ -1,4 +1,5 @@
 // imports
+import { MethodLikeKeys } from "jest-mock";
 import { jest } from "@jest/globals";
 import * as jestChance from "jest-chance";
 import { FunctionLike } from "jest-mock";
@@ -23,6 +24,7 @@ import { Twitch } from "fluid-queue/twitch.js";
 import * as timers from "timers";
 import { fileURLToPath } from "url";
 import YAML from "yaml";
+import { codeFrameColumns, SourceLocation } from "@babel/code-frame";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -674,7 +676,254 @@ const replace = (
   Object.assign(settings, newSettings);
 };
 
+type SimulationMeta = {
+  fileName?: string | undefined;
+  fileContents?: string | undefined;
+  lineNo?: number | undefined;
+  position?: SourceLocation | undefined;
+  response?:
+    | { message: string; error: Error }
+    | (() => { message: string; error: Error } | undefined)
+    | undefined;
+};
+
+class Simulation {
+  #index: Index;
+  #settingsInput: z.input<typeof Settings> | undefined = undefined;
+  #responses: Array<{ message: string; error: Error }> = [];
+  #accuracy: number = 0;
+  #meta: SimulationMeta[] = [];
+  #errors: Set<Error> = new Set();
+
+  public constructor(index: Index) {
+    this.#index = index;
+    this.updateChatBinding();
+  }
+
+  private updateChatBinding() {
+    const responses = this.#responses;
+    function pushMessage(message: string) {
+      const error = new Error("<Stack Trace Capture>");
+      Error.captureStackTrace(error, pushMessage);
+      responses.push({ message, error });
+    }
+    asMock(this.#index.chatbot_helper, "say").mockImplementation(pushMessage);
+  }
+
+  public static async load(): Promise<Simulation> {
+    const index = await simRequireIndex();
+    return new Simulation(index);
+  }
+
+  public async restart() {
+    const time = new Date();
+    await clearAllTimers();
+    await clearAllTimers();
+    this.#index = await simRequireIndex(
+      this.#index.volume,
+      this.#settingsInput,
+      time
+    );
+    this.updateChatBinding();
+  }
+
+  public set accuracy(value: number) {
+    this.#accuracy = value;
+  }
+
+  public get accuracy() {
+    return this.#accuracy;
+  }
+
+  public isSettings(data: unknown): data is z.input<typeof Settings> {
+    return Settings.safeParse(data).success;
+  }
+
+  public set settings(data: z.input<typeof Settings> | undefined) {
+    // TODO: ideally new settings would be written to settings.yml
+    //       and settings.js could be reloaded instead to validate settings
+    replace(
+      this.#index.settings,
+      Settings.parse(data ?? DEFAULT_TEST_SETTINGS)
+    );
+    this.#settingsInput = data;
+    if (this.#settingsInput === undefined) {
+      console.log("reset settings to test defaults");
+    } else {
+      console.log("set settings to: " + YAML.stringify(this.#settingsInput));
+    }
+  }
+
+  public get settings(): z.input<typeof Settings> | undefined {
+    return this.#settingsInput;
+  }
+
+  public set chatters(value: User[]) {
+    // TODO: do not use global state
+    simSetChatters(value);
+  }
+
+  public get chatters(): User[] {
+    return mockChatters;
+  }
+
+  public readQueueData(): unknown {
+    return JSON.parse(
+      this.#index.fs.readFileSync(
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../data/queue.json"
+        ),
+        "utf-8"
+      )
+    );
+  }
+
+  public writeQueueData(data: unknown) {
+    this.#index.fs.writeFileSync(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "../data/queue.json"
+      ),
+      JSON.stringify(data)
+    );
+  }
+
+  public readExtensionData(extensionName: string): unknown {
+    return JSON.parse(
+      this.#index.fs.readFileSync(
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          `../data/extensions/${extensionName}.json`
+        ),
+        "utf-8"
+      )
+    );
+  }
+
+  public writeExtensionData(extensionName: string, data: unknown) {
+    this.#index.fs.writeFileSync(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        `../data/extensions/${extensionName}.json`
+      ),
+      JSON.stringify(data)
+    );
+  }
+
+  public async setTime(time: string | Date, runTimers = true) {
+    await simSetTime(time, runTimers ? this.#accuracy : 0);
+  }
+
+  public nextRandom(value: number) {
+    this.#index.random.mockImplementationOnce(() => value);
+  }
+
+  public nextUuid(value: string) {
+    this.#index.uuidv4.mockImplementationOnce(() => value);
+  }
+
+  public isFsFunction(name: string): name is MethodLikeKeys<Index["fs"]> {
+    return (
+      name in this.#index.fs &&
+      typeof (this.#index.fs as Record<string, unknown>)[name] === "function"
+    );
+  }
+
+  public nextFsFail(name: MethodLikeKeys<Index["fs"]>) {
+    jest
+      .spyOn(jest.requireMock<typeof fs>("fs"), name)
+      .mockImplementationOnce(() => {
+        throw new Error("fail on purpose in test");
+      });
+    jest.spyOn(this.#index.fs, name).mockImplementationOnce(() => {
+      throw new Error("fail on purpose in test");
+    });
+  }
+
+  public async sendMessage(message: string, sender: Chatter) {
+    await this.#index.handle_func(
+      message,
+      sender,
+      this.#index.chatbot_helper.say
+    );
+  }
+
+  public get responses() {
+    return this.#responses;
+  }
+
+  public set responses(value: Array<{ message: string; error: Error }>) {
+    this.#responses = value;
+  }
+
+  private get currentMeta(): SimulationMeta {
+    if (this.#meta.length == 0) {
+      return {};
+    }
+    return this.#meta[this.#meta.length - 1];
+  }
+
+  public async test<R>(test: () => PromiseLike<R> | R): Promise<R> {
+    try {
+      return await test();
+    } catch (error) {
+      if (error instanceof Error && !this.#errors.has(error)) {
+        this.#errors.add(error);
+        let message = "";
+        if (this.currentMeta.fileName !== undefined) {
+          message += "\n" + `in test file ${this.currentMeta.fileName}`;
+          if (this.currentMeta.lineNo !== undefined) {
+            message += `:${this.currentMeta.lineNo}`;
+          }
+        }
+        if (
+          this.currentMeta.fileContents !== undefined &&
+          this.currentMeta.position !== undefined
+        ) {
+          message +=
+            "\n" +
+            codeFrameColumns(
+              this.currentMeta.fileContents,
+              this.currentMeta.position
+            );
+        }
+        if (message !== "") {
+          message = "\n" + message;
+        }
+        let response = this.currentMeta.response;
+        if (typeof response === "function") {
+          response = response();
+        }
+        if (response !== undefined) {
+          error.stack = response.error.stack?.replace(
+            response.error.message,
+            error.message + message
+          );
+        } else {
+          error.stack = error.stack?.replace(
+            error.message,
+            error.message + message
+          );
+        }
+      }
+      throw error;
+    }
+  }
+
+  public async withMeta<R>(
+    meta: Partial<SimulationMeta>,
+    f: (simulation: Simulation) => PromiseLike<R> | R
+  ): Promise<R> {
+    this.#meta.push({ ...this.currentMeta, ...meta });
+    const result = await this.test(async () => f(this));
+    this.#meta.pop();
+    return result;
+  }
+}
+
 export {
+  Simulation,
   asMock,
   simRequireIndex,
   simAdvanceTime,

@@ -1,26 +1,20 @@
 // imports
-import { MethodLikeKeys } from "jest-mock";
 import { jest } from "@jest/globals";
 import readline from "readline";
 import path from "path";
 import fs from "fs";
-import { SourceLocation, codeFrameColumns } from "@babel/code-frame";
+import { SourceLocation } from "@babel/code-frame";
 import {
   simRequireIndex,
-  simSetTime,
   simSetChatters,
   buildChatter,
-  replace,
-  flushPromises,
   clearAllTimers,
   START_TIME,
   EMPTY_CHATTERS,
-  asMock,
+  Simulation,
 } from "../simulation.js";
-import { Settings } from "../../src/settings-type.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
-import YAML from "yaml";
 import _ from "lodash";
 import { execSync } from "child_process";
 import writeFileAtomic from "write-file-atomic";
@@ -128,271 +122,195 @@ const chatLogTest = async (
   fileName: string,
   fixingTests: boolean
 ): Promise<FixInstruction[]> => {
-  let test = await simRequireIndex();
-  let chatbot = null;
-  let settingsInput: z.input<typeof Settings> | undefined = undefined;
+  const simulation = await Simulation.load();
+  let chatbot: string | null = null;
   const fixInstructions: FixInstruction[] = [];
 
-  const replyMessageQueue: Array<{ message: string; error: Error }> = [];
-  let accuracy = 0;
-
-  function pushMessageWithStack(message: string) {
-    const error = new Error("<Stack Trace Capture>");
-    Error.captureStackTrace(error, pushMessageWithStack);
-    replyMessageQueue.push({ message, error });
-  }
-
   try {
-    asMock(test.chatbot_helper, "say").mockImplementation(pushMessageWithStack);
+    const fileContents = fs.readFileSync(fileName, { encoding: "utf-8" });
+    await simulation.withMeta(
+      {
+        fileName,
+        fileContents,
+      },
+      async () => {
+        const fileStream = fs.createReadStream(fileName);
 
-    const fileStream = fs.createReadStream(fileName);
-
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity,
-    });
-
-    const errorMessage = (position: SourceLocation) => {
-      const contents = codeFrameColumns(
-        fs.readFileSync(fileName).toString(),
-        position
-      );
-      return (
-        "\n\n" + `given in test file ${fileName}:${lineno}` + "\n" + contents
-      );
-    };
-
-    let lineno = 0;
-    for await (const line of rl) {
-      lineno++;
-      if (
-        line.trim().startsWith("#") ||
-        line.trim().startsWith("//") ||
-        !line
-      ) {
-        continue;
-      }
-      // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
-      const idx = line.indexOf(" ");
-      const command = idx == -1 ? line : line.substring(0, idx);
-      const rest = idx == -1 ? "" : line.substring(idx + 1);
-      let position = {
-        start: { column: idx + 2, line: lineno },
-        end: { column: line.length + 1, line: lineno },
-      };
-      if (command == "restart") {
-        const time = new Date();
-        await clearAllTimers();
-        await clearAllTimers();
-        test = await simRequireIndex(test.volume, settingsInput, time);
-        asMock(test.chatbot_helper, "say").mockImplementation(
-          pushMessageWithStack
-        );
-      } else if (command == "accuracy") {
-        accuracy = parseInt(rest);
-      } else if (command == "chatbot") {
-        chatbot = rest.trim().toLowerCase();
-      } else if (command == "settings") {
-        // TODO: ideally new settings would be written to settings.yml
-        //       and settings.js could be reloaded instead to validate settings
-        const data: unknown = JSON.parse(rest);
-        replace(test.settings, Settings.parse(data));
-        // this cast is okay, because Settings.parse would throw if data was not of type z.input<typeof Settings>
-        settingsInput = data as z.input<typeof Settings>;
-        console.log("set settings to: " + YAML.stringify(settingsInput));
-      } else if (command == "chatters") {
-        const users = rest.split(",");
-        simSetChatters(
-          users
-            .map((user) => user.trim())
-            .filter((user) => user !== "")
-            .map((user) => parseChatter(user))
-        );
-      } else if (command.startsWith("queue.json")) {
-        try {
-          const memberIdx = command.indexOf("/");
-          let jsonData: unknown = JSON.parse(
-            test.fs.readFileSync(
-              path.resolve(
-                path.dirname(fileURLToPath(import.meta.url)),
-                "../../data/queue.json"
-              ),
-              "utf-8"
-            )
-          );
-          if (memberIdx != -1) {
-            const members = command.substring(memberIdx + 1).split("/");
-            for (const member of members) {
-              jsonData = z.object({ [member]: z.unknown() }).parse(jsonData)[
-                member
-              ];
-            }
-          }
-          if (fixingTests) {
-            if (!_.isEqual(jsonData, JSON.parse(rest))) {
-              fixInstructions.push({
-                contents: JSON.stringify(jsonData),
-                json: true,
-                position,
-              });
-            }
-          } else {
-            expect(jsonData).toEqual(JSON.parse(rest));
-          }
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            throw new Error(error.message + errorMessage(position), {
-              cause: error,
-            });
-          }
-          throw error;
-        }
-      } else if (command.startsWith("extensions")) {
-        try {
-          const args = command.split("/");
-          let jsonData: unknown = JSON.parse(
-            test.fs.readFileSync(
-              path.resolve(
-                path.dirname(fileURLToPath(import.meta.url)),
-                `../../data/extensions/${args[1]}.json`
-              ),
-              "utf-8"
-            )
-          );
-          if (2 in args) {
-            const member = args[2];
-            jsonData = z.object({ [member]: z.unknown() }).parse(jsonData)[
-              member
-            ];
-          }
-          expect(jsonData).toEqual(JSON.parse(rest));
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            throw new Error(error.message + errorMessage(position), {
-              cause: error,
-            });
-          }
-          throw error;
-        }
-      } else if (command.startsWith("save")) {
-        const fileName = command.substring(command.indexOf(":") + 1);
-        test.fs.writeFileSync(
-          path.resolve(
-            path.dirname(fileURLToPath(import.meta.url)),
-            "../..",
-            fileName
-          ),
-          rest
-        );
-      } else if (command == "flushPromises") {
-        await flushPromises();
-      } else if (command == "random") {
-        test.random.mockImplementationOnce(() => parseFloat(rest));
-      } else if (command == "uuidv4") {
-        test.uuidv4.mockImplementationOnce(() => rest.trim());
-      } else if (command == "fs-fail") {
-        if (
-          !(
-            rest in test.fs &&
-            typeof (test.fs as Record<string, unknown>)[rest] === "function"
-          )
-        ) {
-          throw new Error(
-            `The function ${rest} is not part of the file system!`
-          );
-        }
-        const key: MethodLikeKeys<typeof test.fs> = rest as MethodLikeKeys<
-          typeof test.fs
-        >;
-        jest
-          .spyOn(jest.requireMock<typeof fs>("fs"), key)
-          .mockImplementationOnce(() => {
-            throw new Error("fail on purpose in test");
-          });
-        jest.spyOn(test.fs, key).mockImplementationOnce(() => {
-          throw new Error("fail on purpose in test");
+        const rl = readline.createInterface({
+          input: fileStream,
+          crlfDelay: Infinity,
         });
-      } else if (command == "time") {
-        await simSetTime(new Date(Date.parse(rest)));
-      } else if (command.startsWith("[") && command.endsWith("]")) {
-        await simSetTime(command.substring(1, command.length - 1), accuracy);
-        // const time = new Date();
-        const chat = parseMessage(rest);
-        position = {
-          start: { column: idx + 1 + chat.column, line: lineno },
-          end: { column: line.length + 1 - chat.trimLen, line: lineno },
-        };
-        // console.log(`${time}`, chat.sender, 'sends', chat.message);
-        // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
-        if (chatbot != null && chat.sender.name == chatbot.toLowerCase()) {
-          // this is a message by the chat bot, check replyMessageQueue
-          const shift = replyMessageQueue.shift();
-          if (shift === undefined) {
-            try {
-              expect(replyMessageQueue).toContain(chat.message);
-            } catch (error: unknown) {
-              if (error instanceof Error) {
-                throw new Error(error.message + errorMessage(position), {
-                  cause: error,
-                });
-              }
-              throw error;
-            }
-          }
-          try {
-            if (fixingTests && shift !== undefined) {
-              if (!_.isEqual(shift.message, chat.message)) {
-                fixInstructions.push({
-                  contents: shift.message,
-                  position,
-                });
-              }
-            } else {
-              expect(shift?.message).toBe(chat.message);
-            }
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              error.stack = shift?.error.stack?.replace(
-                shift.error.message,
-                error.message + errorMessage(position)
-              );
-            }
-            throw error;
-          }
-        } else {
-          try {
-            await test.handle_func(
-              chat.message,
-              chat.sender,
-              test.chatbot_helper.say
-            );
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              throw new Error(error.message + errorMessage(position), {
-                cause: error,
-              });
-            }
-            throw error;
-          }
-        }
-      } else {
-        throw Error(`unexpected line "${line}" in file ${fileName}`);
-      }
-    }
 
-    // replyMessageQueue should be empty now!
-    try {
-      expect(replyMessageQueue.map((m) => m.message)).toEqual([]);
-    } catch (error: unknown) {
-      const shift = replyMessageQueue.shift();
-      if (error instanceof Error) {
-        error.stack = shift?.error.stack?.replace(
-          shift.error.message,
-          error.message + "\n\n" + `not given in test file ${fileName}`
+        let lineNo = 0;
+        for await (const line of rl) {
+          lineNo++;
+
+          if (
+            line.trim().startsWith("#") ||
+            line.trim().startsWith("//") ||
+            !line
+          ) {
+            continue;
+          }
+
+          const idx = line.indexOf(" ");
+          const command = idx == -1 ? line : line.substring(0, idx);
+          const rest = idx == -1 ? "" : line.substring(idx + 1);
+          const position = {
+            start: { column: idx + 2, line: lineNo },
+            end: { column: line.length + 1, line: lineNo },
+          };
+
+          await simulation.withMeta(
+            {
+              lineNo,
+              position,
+            },
+            async () => {
+              // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
+
+              if (command == "restart") {
+                await simulation.restart();
+              } else if (command == "accuracy") {
+                simulation.accuracy = parseInt(rest);
+              } else if (command == "chatbot") {
+                chatbot = rest.trim().toLowerCase();
+              } else if (command == "settings") {
+                const data: unknown = JSON.parse(rest);
+                if (simulation.isSettings(data)) {
+                  simulation.settings = data;
+                } else {
+                  throw new Error("Invalid settings");
+                }
+              } else if (command == "chatters") {
+                const users = rest.split(",");
+                simulation.chatters = users
+                  .map((user) => user.trim())
+                  .filter((user) => user !== "")
+                  .map((user) => parseChatter(user));
+              } else if (command.startsWith("queue.json")) {
+                let jsonData: unknown = simulation.readQueueData();
+                const memberIdx = command.indexOf("/");
+                if (memberIdx != -1) {
+                  const members = command.substring(memberIdx + 1).split("/");
+                  for (const member of members) {
+                    jsonData = z
+                      .object({ [member]: z.unknown() })
+                      .parse(jsonData)[member];
+                  }
+                }
+                if (fixingTests) {
+                  if (!_.isEqual(jsonData, JSON.parse(rest))) {
+                    fixInstructions.push({
+                      contents: JSON.stringify(jsonData),
+                      json: true,
+                      position,
+                    });
+                  }
+                } else {
+                  expect(jsonData).toEqual(JSON.parse(rest));
+                }
+              } else if (command.startsWith("extensions")) {
+                const args = command.split("/");
+                let jsonData: unknown = simulation.readExtensionData(args[1]);
+                if (2 in args) {
+                  const member = args[2];
+                  jsonData = z
+                    .object({ [member]: z.unknown() })
+                    .parse(jsonData)[member];
+                }
+                expect(jsonData).toEqual(JSON.parse(rest));
+              } else if (command.startsWith("save")) {
+                const fileName = command.substring(command.indexOf(":") + 1);
+                if (fileName === "data/queue.json") {
+                  simulation.writeQueueData(JSON.parse(rest));
+                } else if (fileName === "data/extensions/customcode.json") {
+                  simulation.writeExtensionData("customcode", JSON.parse(rest));
+                } else {
+                  throw new Error(`Unsupported file path: ${fileName}`);
+                }
+              } else if (command == "random") {
+                simulation.nextRandom(parseFloat(rest));
+              } else if (command == "uuidv4") {
+                simulation.nextUuid(rest.trim());
+              } else if (command == "fs-fail") {
+                if (simulation.isFsFunction(rest)) {
+                  simulation.nextFsFail(rest);
+                } else {
+                  throw new Error(
+                    `The function ${rest} is not part of the file system!`
+                  );
+                }
+              } else if (command == "time") {
+                await simulation.setTime(new Date(Date.parse(rest)), false);
+              } else if (command.startsWith("[") && command.endsWith("]")) {
+                await simulation.setTime(
+                  command.substring(1, command.length - 1)
+                );
+                // const time = new Date();
+                const chat = parseMessage(rest);
+
+                await simulation.withMeta(
+                  {
+                    position: {
+                      start: { column: idx + 1 + chat.column, line: lineNo },
+                      end: {
+                        column: line.length + 1 - chat.trimLen,
+                        line: lineNo,
+                      },
+                    },
+                  },
+                  async () => {
+                    // console.log(`${time}`, chat.sender, 'sends', chat.message);
+                    // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
+                    if (
+                      chatbot != null &&
+                      chat.sender.name == chatbot.toLowerCase()
+                    ) {
+                      // this is a message by the chat bot, check replyMessageQueue
+                      const shift = simulation.responses.shift();
+                      if (shift === undefined) {
+                        expect(simulation.responses).toContain(chat.message);
+                      }
+                      if (fixingTests && shift !== undefined) {
+                        if (!_.isEqual(shift.message, chat.message)) {
+                          fixInstructions.push({
+                            contents: shift.message,
+                            position,
+                          });
+                        }
+                      } else {
+                        await simulation.withMeta(
+                          {
+                            response: shift,
+                          },
+                          () => {
+                            expect(shift?.message).toBe(chat.message);
+                          }
+                        );
+                      }
+                    } else {
+                      await simulation.sendMessage(chat.message, chat.sender);
+                    }
+                  }
+                );
+              } else {
+                throw Error(`unexpected line "${line}" in file ${fileName}`);
+              }
+            }
+          );
+        }
+
+        await simulation.withMeta(
+          {
+            response: () => simulation.responses.shift(),
+          },
+          () => {
+            expect(simulation.responses.map((m) => m.message)).toEqual([]);
+          }
         );
       }
-      throw error;
-    }
+    );
   } finally {
     await clearAllTimers();
   }
