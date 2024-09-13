@@ -58,7 +58,7 @@ save:data/queue.json {"version":"2.2","currentLevel":null,"extensions":{"customl
 [12:19:29] @^helperblock: Now playing a white flag level submitted by liquidnya.
 
 [12:19:29] ~%?liquidnya: !current
-[12:19:29] @^helperblock: Currently playing a white flag level submitted by liquidnya.
+[12:19:29] @^helperblock: Currently playing a white flag level submitted by liquidnya. (0 seconds)
 
 # you can use !customcode to add aliases for custom level types
 [12:19:29] ~%?liquidnya: !customcode add 🏳️ a white flag level
