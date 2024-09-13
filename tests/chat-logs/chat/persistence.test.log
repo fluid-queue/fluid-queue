@@ -81,13 +81,14 @@ save:data/queue.json {"version":"2.0","currentLevel":{"code":"BW2-G2R-CMG","subm
 # note that the upgrade from 2.0 to 3.1 will add this UUID to liquidnya's level
 uuidv4 35e09575-c9b0-4e81-bdfe-9413b21adaa8
 [12:15:48] ~%?liquidnya: !persistence load
-[12:15:49] @^helperblock: @liquidnya Reloaded queue state from disk.
+[12:15:48] @^helperblock: @liquidnya Reloaded queue state from disk.
 
 [12:15:50] ~%?liquidnya: !list
 [12:15:51] @^helperblock: 1 online: ${user("liquidnya").displayName} (current) (0 offline)
 
 [12:19:17] ~%?liquidnya: !current
-[12:19:18] @^helperblock: Currently playing BW2-G2R-CMG submitted by ${user("liquidnya").displayName}.
+# note: the playTime is 3 minutes and 29 seconds, because that is the time when the queue was loaded and loading it set the time to 0, because the save file was an old version
+[12:19:17] @^helperblock: Currently playing BW2-G2R-CMG submitted by ${user("liquidnya").displayName}. (3 minutes, 29 seconds)
 
 # autosave is still off -> same file
 # do not upgrade version to 2.x or 3.x here
@@ -103,6 +104,7 @@ uuidv4 44bd0563-7fef-45b7-ab87-0f7cfb4942db
 [12:19:28] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
 # it was automatically saved
-queue.json/entries/current {"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"${user(\"liquidnya\").displayName}"},"id":"35e09575-c9b0-4e81-bdfe-9413b21adaa8","submitted":"2022-04-22T12:15:48.000Z"}
+# the playTime is from 12:15:48 to 12:19:28
+queue.json/entries/current {"code":"BW2-G2R-CMG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"${user(\"liquidnya\").displayName}"},"id":"35e09575-c9b0-4e81-bdfe-9413b21adaa8","submitted":"2022-04-22T12:15:48.000Z","playTime":{"minutes":3,"milliseconds":40000}}
 queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"44bd0563-7fef-45b7-ab87-0f7cfb4942db","submitted":"2022-04-22T12:19:28.000Z"}]
 queue.json/waiting [{"user":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"waiting":{"minutes":1},"weight":{"minutes":1,"milliseconds":0},"lastOnline":"2022-04-22T12:19:28.000Z"}]
