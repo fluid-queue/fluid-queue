@@ -50,11 +50,11 @@ uuidv4 8d913f2e-1fcb-4043-a9af-170d07546148
 [02:25:13] @^helperblock: Sorry, the level queue is full!
 
 [02:25:29] ~%?liquidnya: !next
-[02:25:31] @^helperblock: Now playing NB0-1MD-SLG (maker code) submitted by liquidnya.
+[02:25:29] @^helperblock: Now playing NB0-1MD-SLG (maker code) submitted by liquidnya.
 
 uuidv4 f38f33bf-efc9-4202-840e-8685f7f48069
 [02:25:38] @^FurretWalkBot: !add MY2-H2M-DSG
-[02:25:39] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
+[02:25:38] @^helperblock: FurretWalkBot, MY2-H2M-DSG has been added to the queue.
 
 # Even though queue size is set to 1, there are now 2 levels in the queue!
 # TODO: is this a bug?
@@ -62,7 +62,8 @@ uuidv4 f38f33bf-efc9-4202-840e-8685f7f48069
 [02:25:49] @^FurretWalkBot: !list
 [02:25:50] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"8d913f2e-1fcb-4043-a9af-170d07546148","submitted":"2022-04-21T02:24:35.000Z"}
+# note: the playTime is 9 seconds, because a level was added 9 seconds after `!next` was used which caused the queue to write a save file
+queue.json/entries/current {"code":"NB0-1MD-SLG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"8d913f2e-1fcb-4043-a9af-170d07546148","submitted":"2022-04-21T02:24:35.000Z","playTime":{"minutes":0,"milliseconds":9000}}
 queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"f38f33bf-efc9-4202-840e-8685f7f48069","submitted":"2022-04-21T02:25:38.000Z"}]
 
 [02:19:13] ~%?liquidnya: !clear
