@@ -24,7 +24,8 @@ uuidv4 73f991b8-c561-42be-860f-26cd253c8a32
 [23:58:31] ~%?liquidnya: !list
 [23:58:32] @^helperblock: Scroll up to see the queue.
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z"}
+# note: the playTime is 0 because the queue was not written to disk after being picked
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"73f991b8-c561-42be-860f-26cd253c8a32","submitted":"2022-04-21T23:58:08.000Z"}]
 
 restart
@@ -35,7 +36,8 @@ settings {"channel":"liquidnya","clientId":"","clientSecret":"","max_size":50,"l
 [23:58:35] ~%?liquidnya: !list
 [23:58:36] @^helperblock: 2 online: liquidnya (current), FurretWalkBot (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z"}
+# note: the queue was not written to disk again in the meantime
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"98c4024c-aeb9-4b74-a0ff-bd920638d2b7","submitted":"2022-04-21T23:57:55.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"73f991b8-c561-42be-860f-26cd253c8a32","submitted":"2022-04-21T23:58:08.000Z"}]
 
 [00:00:35] ~%?liquidnya: !punt
