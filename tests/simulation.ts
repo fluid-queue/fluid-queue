@@ -56,6 +56,7 @@ const AsyncFunction = (async () => {
 let mockChatters: User[] = [];
 let mockSubscribers: User[] = [];
 let mockModerators: User[] = [];
+let mockStreamOnline: boolean = true;
 
 let clearAllTimersIntern: (() => Promise<void>) | null = null;
 
@@ -355,7 +356,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         }
       );
 
-      isStreamOnline = jest.fn(() => Promise.resolve(true));
+      isStreamOnline = jest.fn(() => Promise.resolve(mockStreamOnline));
       botTokenScopes = ["chat:read", "chat:edit", "moderator:read:chatters"];
       broadcasterTokenScopes = [
         "channel:read:subscriptions",
@@ -856,6 +857,16 @@ class Simulation {
       sender,
       this.#index.chatbot_helper.say
     );
+  }
+
+  public offline() {
+    mockStreamOnline = false;
+    this.#index.quesoqueue.onStreamOffline();
+  }
+
+  public online() {
+    mockStreamOnline = true;
+    this.#index.quesoqueue.onStreamOnline();
   }
 
   public get responses() {

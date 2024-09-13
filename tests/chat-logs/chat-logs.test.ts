@@ -202,6 +202,10 @@ const chatLogTest = async (
                     }
                   }
                 );
+              } else if (type === "online") {
+                simulation.online();
+              } else if (type === "offline") {
+                simulation.offline();
               } else if (type !== "comment") {
                 throw new Error(
                   `Unsupported instruction type: ${type as string}`
