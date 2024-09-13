@@ -36,7 +36,8 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [20:08:40] ~%?liquidnya: !list
 [20:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"e9f0e98a-7927-4f81-9573-3de05d93aab6","submitted":"2022-04-21T20:08:22.000Z"}
+# note: playTime is 0 because the queue was not persisted since `!next`
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name":"furretwalkbot","displayName":"FurretWalkBot"},"id":"e9f0e98a-7927-4f81-9573-3de05d93aab6","submitted":"2022-04-21T20:08:22.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"4a780f97-082f-42cf-96ad-599e1321dfec","submitted":"2022-04-21T20:08:32.000Z"}]
 
 [20:08:46] ~%?liquidnya: !dismiss
@@ -80,7 +81,8 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [21:08:40] ~%?liquidnya: !list
 [21:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"3fae59e3-1d72-48f4-8fee-20c0659d08ca","submitted":"2022-04-21T21:08:22.000Z"}
+# note: playTime is 0 because the queue was not persisted since `!next`
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name":"furretwalkbot","displayName":"FurretWalkBot"},"id":"3fae59e3-1d72-48f4-8fee-20c0659d08ca","submitted":"2022-04-21T21:08:22.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"1b3dea78-00c2-4bb3-864e-f18b82bfaa79","submitted":"2022-04-21T21:08:32.000Z"}]
 
 [21:08:46] ~%?liquidnya: !skip
@@ -124,7 +126,8 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [22:08:40] ~%?liquidnya: !list
 [22:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"6b59a9be-f6d6-4d44-be8d-f87504ef744c","submitted":"2022-04-21T22:08:22.000Z"}
+# note: playTime is 0 because the queue was not persisted since `!next`
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name":"furretwalkbot","displayName":"FurretWalkBot"},"id":"6b59a9be-f6d6-4d44-be8d-f87504ef744c","submitted":"2022-04-21T22:08:22.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"b98c4443-d554-4c63-823a-6b9079185c66","submitted":"2022-04-21T22:08:32.000Z"}]
 
 [22:08:46] ~%?liquidnya: !complete
@@ -168,7 +171,8 @@ queue.json/entries/queue [{"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":
 [23:08:40] ~%?liquidnya: !list
 [23:08:41] @^helperblock: 2 online: FurretWalkBot (current), liquidnya (0 offline)
 
-queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name": "furretwalkbot","displayName":"FurretWalkBot"},"id":"dc90816b-4624-441c-b5b8-79d67560d695","submitted":"2022-04-21T23:08:22.000Z"}
+# note: playTime is 0 because the queue was not persisted since `!next`
+queue.json/entries/current {"code":"MY2-H2M-DSG","type":"smm2","submitter":{"id":"${user(\"furretwalkbot\").id}","name":"furretwalkbot","displayName":"FurretWalkBot"},"id":"dc90816b-4624-441c-b5b8-79d67560d695","submitted":"2022-04-21T23:08:22.000Z","playTime":{"minutes":0,"milliseconds":0}}
 queue.json/entries/queue [{"code":"9V1-4TX-9WG","type":"smm2","submitter":{"id":"${user(\"liquidnya\").id}","name":"liquidnya","displayName":"liquidnya"},"id":"c7bc9995-f806-4374-8289-29d61a2dc941","submitted":"2022-04-21T23:08:32.000Z"}]
 
 [23:08:46] ~%?liquidnya: !completed
