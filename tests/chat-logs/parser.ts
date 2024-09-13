@@ -280,6 +280,8 @@ function anyInstruction() {
   return comment().pipe(
     or(
       instruction("restart"),
+      instruction("online"),
+      instruction("offline"),
       argumentInstruction(
         "accuracy",
         int({
