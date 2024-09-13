@@ -25,6 +25,7 @@ import * as timers from "timers";
 import { fileURLToPath } from "url";
 import YAML from "yaml";
 import { codeFrameColumns, SourceLocation } from "@babel/code-frame";
+import { ParjsParsingFailure } from "parjs";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -680,7 +681,13 @@ type SimulationMeta = {
   fileName?: string | undefined;
   fileContents?: string | undefined;
   lineNo?: number | undefined;
-  position?: SourceLocation | undefined;
+  sourceLocation?: SourceLocation | undefined;
+  position?:
+    | {
+        start: number;
+        end: number;
+      }
+    | undefined;
   response?:
     | { message: string; error: Error }
     | (() => { message: string; error: Error } | undefined)
@@ -864,6 +871,34 @@ class Simulation {
     return this.#meta[this.#meta.length - 1];
   }
 
+  private toSourceLocation(
+    fileContents: string,
+    { start, end }: { start: number; end: number }
+  ): SourceLocation {
+    const prev = fileContents.substring(0, start);
+    const lines = fileContents.substring(start, end).split("\n");
+    let lineIndex = prev.lastIndexOf("\n");
+    if (lineIndex == -1) {
+      lineIndex = 0;
+    } else {
+      lineIndex++;
+    }
+    const lineNo = prev.split("\n").length;
+    const contentLines = lines.length - 1;
+    return {
+      start: {
+        line: lineNo,
+        column: start - lineIndex + 1,
+      },
+      end: {
+        line: lineNo + contentLines,
+        column:
+          (contentLines != 0 ? 0 : start - lineIndex + 1) +
+          lines[lines.length - 1].length,
+      },
+    };
+  }
+
   public async test<R>(test: () => PromiseLike<R> | R): Promise<R> {
     try {
       return await test();
@@ -871,22 +906,43 @@ class Simulation {
       if (error instanceof Error && !this.#errors.has(error)) {
         this.#errors.add(error);
         let message = "";
+        let frame: [string, SourceLocation] | undefined;
+        if (this.currentMeta.fileContents !== undefined) {
+          if (this.currentMeta.position !== undefined) {
+            frame = [
+              this.currentMeta.fileContents,
+              this.toSourceLocation(
+                this.currentMeta.fileContents,
+                this.currentMeta.position
+              ),
+            ];
+          } else if (this.currentMeta.sourceLocation !== undefined) {
+            frame = [
+              this.currentMeta.fileContents,
+              this.currentMeta.sourceLocation,
+            ];
+          } else if (error instanceof ParjsParsingFailure) {
+            frame = [
+              this.currentMeta.fileContents,
+              {
+                start: {
+                  line: error.failure.trace.location.line + 1,
+                  column: error.failure.trace.location.column + 1,
+                },
+              },
+            ];
+          }
+        }
         if (this.currentMeta.fileName !== undefined) {
           message += "\n" + `in test file ${this.currentMeta.fileName}`;
-          if (this.currentMeta.lineNo !== undefined) {
+          if (frame !== undefined) {
+            message += `:${frame[1].start.line}`;
+          } else if (this.currentMeta.lineNo !== undefined) {
             message += `:${this.currentMeta.lineNo}`;
           }
         }
-        if (
-          this.currentMeta.fileContents !== undefined &&
-          this.currentMeta.position !== undefined
-        ) {
-          message +=
-            "\n" +
-            codeFrameColumns(
-              this.currentMeta.fileContents,
-              this.currentMeta.position
-            );
+        if (frame !== undefined) {
+          message += "\n" + codeFrameColumns(...frame);
         }
         if (message !== "") {
           message = "\n" + message;

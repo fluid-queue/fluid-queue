@@ -1,9 +1,7 @@
 // imports
 import { jest } from "@jest/globals";
-import readline from "readline";
 import path from "path";
 import fs from "fs";
-import { SourceLocation } from "@babel/code-frame";
 import {
   simRequireIndex,
   simSetChatters,
@@ -15,14 +13,11 @@ import {
 } from "../simulation.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
-import _ from "lodash";
 import { execSync } from "child_process";
 import writeFileAtomic from "write-file-atomic";
 import jsonOrder from "json-order";
-
-const isPronoun = (text: string) => {
-  return text == "Any" || text == "Other" || text.includes("/");
-};
+import { instructions } from "./parser.js";
+import _ from "lodash";
 
 // fake timers
 jest.useFakeTimers();
@@ -39,83 +34,13 @@ test("setup", async () => {
   await expect(simRequireIndex()).resolves.toBeTruthy();
 });
 
-const parseMessage = (line: string) => {
-  const idx = line.indexOf(":");
-  const user = line.substring(0, idx).trim();
-  let message = line.substring(idx + 1);
-  const sender = parseChatter(user);
-  let column = message.length;
-  message = message.trimStart();
-  column -= message.length;
-  let trimLen = message.length;
-  message = message.trimEnd();
-  trimLen -= message.length;
-  return {
-    message: message.trim(),
-    sender,
-    column: idx + 2 + column,
-    trimLen: trimLen,
-  };
-};
-
-const parseChatter = (chatter: string) => {
-  let user = chatter.trim();
-  let isBroadcaster = false;
-  let isMod = false;
-  let isSubscriber = false;
-  let username;
-  for (;;) {
-    if (user.startsWith("~")) {
-      isBroadcaster = true;
-    } else if (user.startsWith("@")) {
-      isMod = true;
-    } else if (user.startsWith("%")) {
-      isSubscriber = true;
-    } else if (
-      user.startsWith("+") ||
-      user.startsWith("$") ||
-      user.startsWith("^") ||
-      user.startsWith("*") ||
-      user.startsWith("!") ||
-      user.startsWith("&") ||
-      user.startsWith("'") ||
-      user.startsWith("?")
-    ) {
-      // nothing to set
-    } else {
-      break;
-    }
-    user = user.substring(1);
-  }
-  // find username
-  while (user.endsWith(")")) {
-    const idx = user.lastIndexOf("(");
-    const maybeUsername = user.substring(idx + 1, user.length - 1).trim();
-    user = user.substring(0, idx).trim();
-    if (!isPronoun(maybeUsername)) {
-      // found username!
-      username = maybeUsername;
-    }
-  }
-  const displayName = user;
-  if (username === undefined) {
-    username = displayName.toLowerCase();
-  }
-  expect(username).toBeDefined();
-  expect(displayName).toBeDefined();
-  return buildChatter(
-    username,
-    displayName,
-    isSubscriber,
-    isMod,
-    isBroadcaster
-  );
-};
-
 type FixInstruction = {
   contents: string;
   json?: boolean | undefined;
-  position: SourceLocation;
+  position: {
+    start: number;
+    end: number;
+  };
 };
 
 const chatLogTest = async (
@@ -134,149 +59,129 @@ const chatLogTest = async (
         fileContents,
       },
       async () => {
-        const fileStream = fs.createReadStream(fileName);
-
-        const rl = readline.createInterface({
-          input: fileStream,
-          crlfDelay: Infinity,
-        });
-
-        let lineNo = 0;
-        for await (const line of rl) {
-          lineNo++;
-
-          if (
-            line.trim().startsWith("#") ||
-            line.trim().startsWith("//") ||
-            !line
-          ) {
-            continue;
-          }
-
-          const idx = line.indexOf(" ");
-          const command = idx == -1 ? line : line.substring(0, idx);
-          const rest = idx == -1 ? "" : line.substring(idx + 1);
-          const position = {
-            start: { column: idx + 2, line: lineNo },
-            end: { column: line.length + 1, line: lineNo },
-          };
-
+        const toChatter = (chatter: {
+          username: string;
+          displayName: string;
+          isSubscriber: boolean;
+          isMod: boolean;
+          isBroadcaster: boolean;
+        }) =>
+          buildChatter(
+            chatter.username,
+            chatter.displayName,
+            chatter.isSubscriber,
+            chatter.isMod,
+            chatter.isBroadcaster
+          );
+        const allInstructions = instructions().parse(
+          fs.readFileSync(fileName, { encoding: "utf-8" })
+        );
+        for (const instruction of allInstructions.value) {
           await simulation.withMeta(
             {
-              lineNo,
-              position,
+              position: instruction.position,
             },
             async () => {
-              // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
-
-              if (command == "restart") {
+              const type = instruction.type;
+              if (type === "restart") {
                 await simulation.restart();
-              } else if (command == "accuracy") {
-                simulation.accuracy = parseInt(rest);
-              } else if (command == "chatbot") {
-                chatbot = rest.trim().toLowerCase();
-              } else if (command == "settings") {
-                const data: unknown = JSON.parse(rest);
+              } else if (type === "accuracy") {
+                simulation.accuracy = instruction.accuracy;
+              } else if (type === "chatbot") {
+                chatbot = instruction.chatbot;
+              } else if (type === "settings") {
+                const data: unknown = JSON.parse(instruction.settings);
                 if (simulation.isSettings(data)) {
                   simulation.settings = data;
                 } else {
                   throw new Error("Invalid settings");
                 }
-              } else if (command == "chatters") {
-                const users = rest.split(",");
-                simulation.chatters = users
-                  .map((user) => user.trim())
-                  .filter((user) => user !== "")
-                  .map((user) => parseChatter(user));
-              } else if (command.startsWith("queue.json")) {
-                let jsonData: unknown = simulation.readQueueData();
-                const memberIdx = command.indexOf("/");
-                if (memberIdx != -1) {
-                  const members = command.substring(memberIdx + 1).split("/");
-                  for (const member of members) {
-                    jsonData = z
-                      .object({ [member]: z.unknown() })
-                      .parse(jsonData)[member];
-                  }
-                }
-                if (fixingTests) {
-                  if (!_.isEqual(jsonData, JSON.parse(rest))) {
-                    fixInstructions.push({
-                      contents: JSON.stringify(jsonData),
-                      json: true,
-                      position,
-                    });
-                  }
-                } else {
-                  expect(jsonData).toEqual(JSON.parse(rest));
-                }
-              } else if (command.startsWith("extensions")) {
-                const args = command.split("/");
-                let jsonData: unknown = simulation.readExtensionData(args[1]);
-                if (2 in args) {
-                  const member = args[2];
-                  jsonData = z
-                    .object({ [member]: z.unknown() })
-                    .parse(jsonData)[member];
-                }
-                expect(jsonData).toEqual(JSON.parse(rest));
-              } else if (command.startsWith("save")) {
-                const fileName = command.substring(command.indexOf(":") + 1);
-                if (fileName === "data/queue.json") {
-                  simulation.writeQueueData(JSON.parse(rest));
-                } else if (fileName === "data/extensions/customcode.json") {
-                  simulation.writeExtensionData("customcode", JSON.parse(rest));
-                } else {
-                  throw new Error(`Unsupported file path: ${fileName}`);
-                }
-              } else if (command == "random") {
-                simulation.nextRandom(parseFloat(rest));
-              } else if (command == "uuidv4") {
-                simulation.nextUuid(rest.trim());
-              } else if (command == "fs-fail") {
-                if (simulation.isFsFunction(rest)) {
-                  simulation.nextFsFail(rest);
-                } else {
-                  throw new Error(
-                    `The function ${rest} is not part of the file system!`
-                  );
-                }
-              } else if (command == "time") {
-                await simulation.setTime(new Date(Date.parse(rest)), false);
-              } else if (command.startsWith("[") && command.endsWith("]")) {
-                await simulation.setTime(
-                  command.substring(1, command.length - 1)
-                );
-                // const time = new Date();
-                const chat = parseMessage(rest);
-
+              } else if (type === "chatters") {
+                simulation.chatters = instruction.chatters.map(toChatter);
+              } else if (type === "queue.json" || type === "extensions") {
                 await simulation.withMeta(
                   {
-                    position: {
-                      start: { column: idx + 1 + chat.column, line: lineNo },
-                      end: {
-                        column: line.length + 1 - chat.trimLen,
-                        line: lineNo,
-                      },
-                    },
+                    position: instruction.jsonPosition,
+                  },
+                  () => {
+                    let jsonData: unknown;
+                    if (type === "queue.json") {
+                      jsonData = simulation.readQueueData();
+                    } else if (type === "extensions") {
+                      const extension = instruction.path.shift();
+                      expect(extension).not.toBeUndefined();
+                      jsonData = simulation.readExtensionData(extension!);
+                    } else {
+                      throw new Error(
+                        `Unsupported instruction type: ${type as string}`
+                      );
+                    }
+                    for (const member of instruction.path) {
+                      jsonData = z
+                        .object({ [member]: z.unknown() })
+                        .parse(jsonData)[member];
+                    }
+                    if (fixingTests) {
+                      if (!_.isEqual(jsonData, JSON.parse(instruction.json))) {
+                        fixInstructions.push({
+                          contents: JSON.stringify(jsonData),
+                          json: true,
+                          position: instruction.jsonPosition,
+                        });
+                      }
+                    } else {
+                      expect(jsonData).toEqual(JSON.parse(instruction.json));
+                    }
+                  }
+                );
+              } else if (type === "save") {
+                const path = instruction.path;
+                if (path === "data/queue.json") {
+                  simulation.writeQueueData(JSON.parse(instruction.json));
+                } else if (path === "data/extensions/customcode.json") {
+                  simulation.writeExtensionData(
+                    "customcode",
+                    JSON.parse(instruction.json)
+                  );
+                } else {
+                  throw new Error(`Unsupported save path: ${path as string}`);
+                }
+              } else if (type === "random") {
+                simulation.nextRandom(instruction.random);
+              } else if (type === "uuidv4") {
+                simulation.nextUuid(instruction.uuidv4);
+              } else if (type === "fs-fail") {
+                if (simulation.isFsFunction(instruction["fs-fail"])) {
+                  simulation.nextFsFail(instruction["fs-fail"]);
+                } else {
+                  throw new Error(
+                    `The function ${instruction["fs-fail"]} is not part of the file system!`
+                  );
+                }
+              } else if (type === "time") {
+                await simulation.setTime(instruction.time, false);
+              } else if (type === "chat") {
+                await simulation.setTime(instruction.time);
+                await simulation.withMeta(
+                  {
+                    position: instruction.messagePosition,
                   },
                   async () => {
-                    // console.log(`${time}`, chat.sender, 'sends', chat.message);
-                    // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
                     if (
                       chatbot != null &&
-                      chat.sender.name == chatbot.toLowerCase()
+                      instruction.chatter.displayName == chatbot.toLowerCase()
                     ) {
-                      // this is a message by the chat bot, check replyMessageQueue
                       const shift = simulation.responses.shift();
                       if (shift === undefined) {
-                        expect(simulation.responses).toContain(chat.message);
+                        expect(simulation.responses).toContain(
+                          instruction.message
+                        );
                       }
                       if (fixingTests && shift !== undefined) {
-                        if (!_.isEqual(shift.message, chat.message)) {
+                        if (!_.isEqual(shift.message, instruction.message)) {
                           fixInstructions.push({
                             contents: shift.message,
-                            position,
+                            position: instruction.messagePosition,
                           });
                         }
                       } else {
@@ -285,17 +190,22 @@ const chatLogTest = async (
                             response: shift,
                           },
                           () => {
-                            expect(shift?.message).toBe(chat.message);
+                            expect(shift?.message).toBe(instruction.message);
                           }
                         );
                       }
                     } else {
-                      await simulation.sendMessage(chat.message, chat.sender);
+                      await simulation.sendMessage(
+                        instruction.message,
+                        toChatter(instruction.chatter)
+                      );
                     }
                   }
                 );
-              } else {
-                throw Error(`unexpected line "${line}" in file ${fileName}`);
+              } else if (type !== "comment") {
+                throw new Error(
+                  `Unsupported instruction type: ${type as string}`
+                );
               }
             }
           );
@@ -341,6 +251,51 @@ function isFixingTests() {
 
 const fixingTests = isFixingTests();
 
+function jsonWithOrder(json: string, orderJson: string) {
+  const oldOrder = jsonOrder.default.parse(orderJson);
+  const newOrder = jsonOrder.default.parse(json);
+  for (const key in newOrder.map) {
+    if (key in oldOrder.map) {
+      const propertyOrder = oldOrder.map[key];
+      for (const propertyKey of propertyOrder) {
+        if (!newOrder.map[key].includes(propertyKey)) {
+          propertyOrder.splice(propertyOrder.indexOf(propertyKey));
+        }
+      }
+      for (const propertyKey of newOrder.map[key]) {
+        if (!propertyOrder.includes(propertyKey)) {
+          propertyOrder.push(propertyKey);
+        }
+      }
+      newOrder.map[key] = propertyOrder;
+    }
+  }
+  return jsonOrder.default.stringify(newOrder.object, newOrder.map);
+}
+
+async function fixContents(fileName: string, result: FixInstruction[]) {
+  result.sort((a, b) => b.position.start - a.position.start);
+  let contents = fs.readFileSync(fileName, { encoding: "utf-8" });
+  for (const replace of result) {
+    const newContents = () => {
+      if (replace.json) {
+        const previousContents = contents.substring(
+          replace.position.start - 1,
+          replace.position.end + 1
+        );
+        return jsonWithOrder(replace.contents, previousContents);
+      } else {
+        return replace.contents;
+      }
+    };
+    contents =
+      contents.substring(0, replace.position.start) +
+      newContents() +
+      contents.substring(replace.position.end);
+  }
+  await writeFileAtomic(fileName, contents, { encoding: "utf-8" });
+}
+
 for (const file of testFiles) {
   const fileName = path.relative(
     ".",
@@ -350,68 +305,7 @@ for (const file of testFiles) {
     jest.setTimeout(10_000); // <- this might not work
     const result = await chatLogTest(fileName, fixingTests);
     if (result.length > 0) {
-      const replacements = new Map(
-        result.map((v) => [
-          v.position.start.line,
-          {
-            contents: v.contents,
-            start: v.position.start.column,
-            end: v.position.end?.column,
-            json: v.json ?? false,
-          },
-        ])
-      );
-      const input = fs.createReadStream(fileName);
-      let output = "";
-      const rl = readline.createInterface({
-        input,
-        crlfDelay: Infinity,
-      });
-      let lineno = 0;
-      for await (const line of rl) {
-        lineno++;
-        const replace = replacements.get(lineno);
-        if (
-          replace === undefined ||
-          replace.start === undefined ||
-          replace.end === undefined
-        ) {
-          output += `${line}\n`;
-          continue;
-        }
-        let m;
-        if (replace.json) {
-          const oldOrder = jsonOrder.default.parse(
-            line.substring(replace.start - 1, replace.end + 1)
-          );
-          const newOrder = jsonOrder.default.parse(replace.contents);
-          for (const key in newOrder.map) {
-            if (key in oldOrder.map) {
-              const propertyOrder = oldOrder.map[key];
-              for (const propertyKey of propertyOrder) {
-                if (!newOrder.map[key].includes(propertyKey)) {
-                  propertyOrder.splice(propertyOrder.indexOf(propertyKey));
-                }
-              }
-              for (const propertyKey of newOrder.map[key]) {
-                if (!propertyOrder.includes(propertyKey)) {
-                  propertyOrder.push(propertyKey);
-                }
-              }
-              newOrder.map[key] = propertyOrder;
-            }
-          }
-          m = jsonOrder.default.stringify(newOrder.object, newOrder.map);
-        } else {
-          m = replace.contents;
-        }
-        const r =
-          line.substring(0, replace.start - 1) +
-          m +
-          line.substring(replace.end + 1);
-        output += `${r}\n`;
-      }
-      await writeFileAtomic(fileName, output, { encoding: "utf-8" });
+      await fixContents(fileName, result);
     }
     expect(result).toBeTruthy();
   }, 10_000); // <- setting timeout here as well
