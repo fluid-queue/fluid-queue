@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 # We're building, this needs to be development
 ENV NODE_ENV=development
@@ -17,7 +17,7 @@ COPY . /build
 
 RUN sh -c "npm run build && cp -R /build/package.json /build/build /build/locales /home/node"
 
-FROM node:20-alpine AS app
+FROM node:22-alpine AS app
 
 # For version information
 ARG SOURCE_COMMIT
