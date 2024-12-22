@@ -67,17 +67,19 @@ export class TypedBindings {
       if (value != null) {
         return description.deserialize(value);
       }
-      if (typeof description.empty === "function") {
-        return description.empty() as Data;
+      const empty = description.empty;
+      if (typeof empty === "function") {
+        return (empty as () => Data)();
       } else {
-        return description.empty as Data;
+        return empty as Data;
       }
     };
     const buildTransient = (data: Data): Transient => {
-      if (typeof description.initialize === "function") {
-        return description.initialize(data) as Transient;
+      const initialize = description.initialize;
+      if (typeof initialize === "function") {
+        return (initialize as (data: Data) => Transient)(data);
       } else {
-        return description.initialize as Transient;
+        return initialize as Transient;
       }
     };
     return {
