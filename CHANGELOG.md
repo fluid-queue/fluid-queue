@@ -1,5 +1,9 @@
 # [Unreleased]
 
+## Breaking changes
+
+- The minimum node version is now `22.12.0` and the docker image is now build with node version `21`.
+
 ## New features
 
 - Added an option (default off) to automatically start the level timer when pulling a level (#140).

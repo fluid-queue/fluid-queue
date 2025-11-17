@@ -151,8 +151,10 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
       return module.v4(
         options ?? {
           rng: () => {
-            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
-              () => Math.floor(mt.random() * 256)
+            return new Uint8Array(
+              [...(Array(16) as undefined[])].map(() =>
+                Math.floor(mt.random() * 256)
+              )
             );
           },
         }
