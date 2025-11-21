@@ -60,10 +60,7 @@ type Measurement = {
 interface QueueDataAccessor {
   startTimer(): void;
   stopTimer(): void;
-  getDuration(
-    measurement: Measurement | null,
-    now?: Instant | undefined
-  ): Duration;
+  getDuration(measurement: Measurement | null, now?: Instant): Duration;
   get current_level(): QueueEntry | undefined;
   set current_level(value: QueueEntry | undefined);
   get levels(): QueueEntry[];
@@ -137,10 +134,7 @@ class QueueData {
     const data = this;
     return {
       save: false,
-      getDuration(
-        measurement: Measurement | null,
-        now?: Instant | undefined
-      ): Duration {
+      getDuration(measurement: Measurement | null, now?: Instant): Duration {
         if (measurement == null) {
           return Duration.ZERO;
         }
