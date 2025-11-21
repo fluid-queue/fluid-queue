@@ -7,6 +7,7 @@
 ## New features
 
 - Added an option (default off) to automatically start the level timer when pulling a level (#140).
+- Added a play time to the current level that will be shown when `!current` is used.
 
 ## Other changes
 
