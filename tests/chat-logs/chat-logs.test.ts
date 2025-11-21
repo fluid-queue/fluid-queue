@@ -217,6 +217,7 @@ const chatLogTest = async (
 
         await simulation.withMeta(
           {
+            // TODO: add multiple responses to the stack trace
             response: () => simulation.responses.shift(),
           },
           () => {
