@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import settings from "./settings.js";
 import { z } from "zod";
@@ -9,7 +9,7 @@ const ALIASES_FILE = {
   fileName: "./settings/aliases.json",
 };
 
-const AliasesScheme = z.record(z.string().array());
+const AliasesScheme = z.record(z.string(), z.string().array());
 
 const defaultAliases: Record<string, string[]> = {
   add: ["!add"],
@@ -57,7 +57,9 @@ const Aliases = {
     writeFileAtomicSync(
       ALIASES_FILE.fileName,
       JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0),
-      "utf-8"
+      {
+        encoding: "utf-8",
+      }
     );
   },
   loadAliases: (create = false) => {
@@ -70,7 +72,9 @@ const Aliases = {
       if (!fs.existsSync(ALIASES_FILE.directory)) {
         fs.mkdirSync(ALIASES_FILE.directory, { recursive: true });
       }
-      writeFileAtomicSync(ALIASES_FILE.fileName, defaults, "utf-8");
+      writeFileAtomicSync(ALIASES_FILE.fileName, defaults, {
+        encoding: "utf-8",
+      });
       aliases = defaultAliases;
     }
     if (!create && !fs.existsSync(ALIASES_FILE.fileName)) {

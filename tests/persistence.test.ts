@@ -1,13 +1,21 @@
-import { jest } from "@jest/globals";
+import { vi, test, expect } from "vitest";
 import {
   DEFAULT_TEST_SETTINGS,
-  asMock,
   createMockVolume,
   mockTwitchApi,
 } from "./simulation.js";
-import { User } from "fluid-queue/extensions-api/queue-entry.js";
-import { Volume, createFsFromVolume } from "memfs";
-import path from "path";
+import type { User } from "fluid-queue/extensions-api/queue-entry.js";
+import { Volume, vol, fs } from "memfs";
+import path from "node:path";
+
+vi.stubGlobal("console", {
+  log: vi.fn(console.log),
+  trace: vi.fn(console.trace),
+  debug: vi.fn(console.debug),
+  info: vi.fn(console.info),
+  warn: vi.fn(console.warn),
+  error: vi.fn(console.error),
+});
 
 const mockChatters: User[] = [];
 const TEST_FILE_NAME = "./data/tests/versioned-file.json";
@@ -15,32 +23,29 @@ const TEST_FILE_NAME = "./data/tests/versioned-file.json";
 async function setupMocks(
   volume?: InstanceType<typeof Volume>
 ): Promise<typeof fs> {
-  jest.resetModules();
+  vi.resetModules();
+  vi.restoreAllMocks();
+  vi.useFakeTimers();
+  vi.mock("node:fs", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs)
+      .then((fs) => ({ ...fs, default: fs }))
+  );
+  vi.mock("node:fs/promises", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs.promises)
+      .then((promises) => ({ ...promises, default: promises }))
+  );
   const { twitchApi } = await mockTwitchApi();
-  asMock(twitchApi, "getChatters").mockImplementation(() =>
+  vi.mocked(twitchApi["getChatters"]).mockImplementation(() =>
     Promise.resolve(mockChatters)
   );
   if (volume == null) {
-    volume = createMockVolume(DEFAULT_TEST_SETTINGS);
+    volume = await createMockVolume(DEFAULT_TEST_SETTINGS);
   }
   // setup virtual file system
-  const mockFs = createFsFromVolume(volume);
-  jest.mock("fs", () => ({
-    __esModule: true, // Use it when dealing with esModules
-    ...mockFs,
-    default: mockFs,
-    toString() {
-      return "fs mock";
-    },
-  }));
-  jest.unstable_mockModule("fs", () => ({
-    ...mockFs,
-    default: mockFs,
-    toString() {
-      return "fs module mock";
-    },
-  }));
-  const fs = (await import("fs")).default;
+  vol.reset();
+  vol.fromJSON(volume.toJSON(), path.resolve("."));
   return fs;
 }
 
@@ -182,10 +187,10 @@ class SaveAndVerify<T> {
 
   constructor() {
     this.data = null;
-    this.save = jest.fn((value: T) => {
+    this.save = vi.fn((value: T) => {
       this.data = value;
     });
-    this.verify = jest.fn(() => {
+    this.verify = vi.fn(() => {
       return this.data;
     });
   }
@@ -193,8 +198,8 @@ class SaveAndVerify<T> {
   static create<T>() {
     const saveAndVerify = new SaveAndVerify<T>();
     return {
-      save: asMock(saveAndVerify, "save"),
-      verify: asMock(saveAndVerify, "verify"),
+      save: vi.mocked(saveAndVerify["save"]),
+      verify: vi.mocked(saveAndVerify["verify"]),
     };
   }
 }
@@ -320,7 +325,6 @@ test("loadResultActions:save-and-verify-hooks-abort-save-off", async () => {
 });
 
 test("loadResultActions:save-and-verify-save-off", async () => {
-  const consoleWarnMock = jest.spyOn(global.console, "warn");
   // this works because there are no hooks
   await setupMocks();
   const { loadResultActions } = await import("fluid-queue/persistence.js");
@@ -338,7 +342,7 @@ test("loadResultActions:save-and-verify-save-off", async () => {
   expect(result).toEqual("data");
   expect(save).toHaveBeenCalledTimes(0);
   expect(verify).toHaveBeenCalledTimes(0);
-  expect(consoleWarnMock).toHaveBeenCalledWith(
+  expect(console.warn).toHaveBeenCalledWith(
     expect.stringContaining(
       "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
     )

@@ -1,28 +1,27 @@
 // imports
-import { jest } from "@jest/globals";
+import { expect, vi } from "vitest";
 import * as jestChance from "jest-chance";
-import { FunctionLike } from "jest-mock";
-import { Volume, createFsFromVolume } from "memfs";
-import path from "path";
-import fs from "fs";
-import * as twitchApiModule from "fluid-queue/twitch-api.js";
+import { Volume } from "memfs";
+import path from "node:path";
 import {
   SetIntervalAsyncHandler,
   SetIntervalAsyncTimer,
 } from "set-interval-async";
-import { Settings } from "fluid-queue/settings-type.js";
-import { Chatter, Responder } from "fluid-queue/extensions-api/command.js";
-import { Chatbot, helper } from "fluid-queue/chatbot.js";
+import type { Settings } from "fluid-queue/settings-type.js";
+import type { Chatter, Responder } from "fluid-queue/extensions-api/command.js";
 import { z } from "zod";
-import {
+import type {
   QueueSubmitter,
   User,
 } from "fluid-queue/extensions-api/queue-entry.js";
-import { Queue } from "fluid-queue/queue.js";
-import { Twitch } from "fluid-queue/twitch.js";
-import * as timers from "timers";
-import { fileURLToPath } from "url";
+import * as timers from "node:timers";
+import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { vol } from "memfs";
+import type { Queue } from "fluid-queue/queue.js";
+import type { Chatbot } from "fluid-queue/chatbot.js";
+import type { Twitch } from "fluid-queue/twitch.js";
+import type { helper } from "fluid-queue/chatbot.js";
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -50,35 +49,21 @@ const AsyncFunction = (async () => {
 }).constructor;
 
 // mock variables
-let mockChatters: User[] = [];
-let mockSubscribers: User[] = [];
-let mockModerators: User[] = [];
+const mockChatters: User[] = vi.hoisted(() => []);
+const mockSubscribers: User[] = vi.hoisted(() => []);
+const mockModerators: User[] = vi.hoisted(() => []);
 
-let clearAllTimersIntern: (() => Promise<void>) | null = null;
+const clearAllTimersIntern: (() => Promise<void>)[] = vi.hoisted(() => []);
 
 const mockModules = async (chanceSeed?: Chance.Seed) => {
   // mocks
-  const twitchApi = (await mockTwitchApi()).twitchApi;
-  jest.unstable_mockModule("fluid-queue/chatbot.js", () => {
-    const chatbot_helper = jest.fn((): Chatbot => {
-      return {
-        client: null, // do not mock client, since it is not used outside
-        handle_func: null, // not used outside either
-        connect: jest.fn<Chatbot["connect"]>(),
-        setup: jest.fn<Chatbot["setup"]>(() => undefined),
-        say: jest.fn<Chatbot["say"]>(() => undefined),
-      };
-    });
-    return {
-      helper: chatbot_helper,
-    };
-  });
-  jest.mock("node-fetch", () => jest.fn());
-
-  jest.unstable_mockModule("set-interval-async/dynamic", async () => {
+  clearAllTimersIntern.splice(0, clearAllTimersIntern.length);
+  const mock = async () => {
     // using fixed timers instead of dynamic timers
     // TODO: why do these work with tests? why are dynamic timers not working?
-    const timers = await import("set-interval-async/fixed");
+    const timers = (await vi.importActual(
+      "set-interval-async/fixed"
+    )) satisfies typeof import("set-interval-async/dynamic");
     const asyncTimers: SetIntervalAsyncTimer<unknown[]>[] = [];
     const result = {
       setIntervalAsync<HandlerArgs extends unknown[]>(
@@ -112,43 +97,46 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
         }
       },
     };
-    clearAllTimersIntern = result.clearAllTimers.bind(result);
     return {
-      __esModule: true, // Use it when dealing with esModules
       ...timers,
       ...result,
+      clearAllTimers: result.clearAllTimers.bind(result),
+    };
+  };
+  vi.doMock("set-interval-async/dynamic", mock);
+  await import("set-interval-async");
+  await mockTwitchApi();
+  vi.doMock("fluid-queue/chatbot.js", () => {
+    const chatbot_helper = vi.fn((): Chatbot => {
+      return {
+        client: null, // do not mock client, since it is not used outside
+        handle_func: null, // not used outside either
+        connect: vi.fn<Chatbot["connect"]>(),
+        setup: vi.fn<Chatbot["setup"]>(() => undefined),
+        say: vi.fn<Chatbot["say"]>(() => undefined),
+      };
+    });
+    return {
+      helper: chatbot_helper,
     };
   });
+  vi.doMock("node-fetch", () => vi.fn());
 
-  await import("set-interval-async/dynamic");
+  const { clearAllTimers } = (await vi.importMock(
+    "set-interval-async/dynamic"
+  )) as Awaited<ReturnType<typeof mock>>;
+  clearAllTimersIntern.push(clearAllTimers);
 
-  // mock chatters
-  asMock(twitchApi, "getChatters").mockImplementation(() =>
-    Promise.resolve(mockChatters)
-  );
-
-  // mock needed for ttlcache
-  jest.spyOn(global.performance, "now").mockImplementation(() => {
-    let result;
-    if (typeof global.performance.timeOrigin === "number") {
-      const origin = Math.floor(global.performance.timeOrigin);
-      result = Math.max(new Date().getTime() - origin, 0);
-    } else {
-      result = new Date().getTime();
-    }
-    return result;
-  });
-
-  const module = await import("uuid");
   const chance = jestChance.getChance(chanceSeed);
   const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
     random: () => number;
   };
 
-  jest.unstable_mockModule("uuid", () => {
+  vi.doMock("uuid", async (importOriginal) => {
+    const mod = (await importOriginal()) satisfies typeof import("uuid");
     // using seeded random values in tests
-    const v4 = jest.fn((options?: Parameters<typeof module.v4>[0]) => {
-      return module.v4(
+    const v4 = vi.fn((options?: Parameters<typeof mod.v4>[0]) => {
+      return mod.v4(
         options ?? {
           rng: () => {
             return new Uint8Array(
@@ -161,23 +149,25 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
       );
     });
     return {
-      __esModule: true, // Use it when dealing with esModules
-      ...module,
+      ...mod,
       v4,
     };
   });
 };
 
 const simSetChatters = (newChatters: User[]) => {
-  mockChatters = newChatters;
+  mockChatters.splice(0, mockChatters.length);
+  mockChatters.push(...newChatters);
 };
 
 const simSetSubscribers = (newSubscribers: User[]) => {
-  mockSubscribers = newSubscribers;
+  mockSubscribers.splice(0, mockSubscribers.length);
+  mockSubscribers.push(...newSubscribers);
 };
 
 const simSetModerators = (newMods: User[]) => {
-  mockModerators = newMods;
+  mockModerators.splice(0, mockModerators.length);
+  mockModerators.push(...newMods);
 };
 
 /**
@@ -188,12 +178,15 @@ const simSetModerators = (newMods: User[]) => {
  * @param {*} srcPath
  * @param {boolean} emptyFiles
  */
-const populateMockVolume = (
+const populateMockVolume = async (
   volume: InstanceType<typeof Volume>,
   srcPath: string,
   emptyFiles = true
 ) => {
   const result: Record<string, string> = {};
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
   const files = fs.readdirSync(
     path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", srcPath)
   );
@@ -211,7 +204,7 @@ const populateMockVolume = (
         )
         .isDirectory()
     ) {
-      populateMockVolume(volume, srcFile, emptyFiles);
+      await populateMockVolume(volume, srcFile, emptyFiles);
     } else {
       if (emptyFiles) {
         // files are just empty files in the mock volume
@@ -224,15 +217,14 @@ const populateMockVolume = (
   volume.fromJSON(result, path.resolve("."));
 };
 
-const createMockVolume = (
+const createMockVolume = async (
   settings?: z.input<typeof Settings>
-): InstanceType<typeof Volume> => {
+): Promise<InstanceType<typeof Volume>> => {
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
-  populateMockVolume(volume, "./src");
-  populateMockVolume(volume, "./locales", false);
+  await populateMockVolume(volume, "./src");
+  await populateMockVolume(volume, "./locales", false);
   if (settings !== undefined) {
-    console.log("./settings/settings.yml: " + YAML.stringify(settings));
     volume.fromJSON(
       { "./settings/settings.yml": YAML.stringify(settings) },
       path.resolve(".")
@@ -242,12 +234,12 @@ const createMockVolume = (
 };
 
 type Index = {
-  fs: typeof fs;
+  fs: typeof import("node:fs");
   volume: InstanceType<typeof Volume>;
   settings: z.output<typeof Settings>;
   chatbot: { helper: typeof helper };
   chatbot_helper: ReturnType<typeof helper>;
-  random: jest.Spied<() => number>;
+  random: () => number;
   quesoqueue: Queue;
   handle_func: (
     message: string,
@@ -255,22 +247,13 @@ type Index = {
     respond: Responder
   ) => Promise<void>;
   twitch: Twitch;
-  uuidv4: jest.Mock<() => string>;
+  uuidv4: () => string;
 };
 
-function asMock<T, K extends keyof T>(
-  obj: T,
-  key: K
-): T[K] extends FunctionLike ? jest.Mock<T[K]> : never {
-  const result = obj[key];
-  if (typeof result !== "function") {
-    throw new Error(`Not a function!`);
-  }
-  return <T[K] extends FunctionLike ? jest.Mock<T[K]> : never>result;
-}
-
-export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
-  jest.unstable_mockModule("fluid-queue/twitch-api.js", () => {
+export async function mockTwitchApi(): Promise<
+  typeof import("fluid-queue/twitch-api.js")
+> {
+  vi.doMock("fluid-queue/twitch-api.js", () => {
     class TwitchApi {
       async setup() {
         // do nothing
@@ -280,11 +263,15 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
           "This should never be called from tests -> Use the chatbot.js mock instead!"
         );
       }
-      getChatters = jest.fn((): Promise<User[]> => {
-        return Promise.resolve([]);
+      getChatters = vi.fn((): Promise<User[]> => {
+        return Promise.resolve(
+          mockChatters.map((chatter) => {
+            return chatter;
+          })
+        );
       });
 
-      getUsers = jest.fn((users: string[]): Promise<User[]> => {
+      getUsers = vi.fn((users: string[]): Promise<User[]> => {
         return Promise.resolve(
           users
             .filter((user) => {
@@ -298,7 +285,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         );
       });
 
-      getUsersById = jest.fn((ids: string[]): Promise<User[]> => {
+      getUsersById = vi.fn((ids: string[]): Promise<User[]> => {
         return Promise.resolve(
           ids
             .filter((ids) => {
@@ -318,7 +305,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         );
       });
 
-      getSubscribers = jest.fn(
+      getSubscribers = vi.fn(
         async (): Promise<
           {
             id: string;
@@ -335,7 +322,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         }
       );
 
-      getModerators = jest.fn(
+      getModerators = vi.fn(
         async (): Promise<
           {
             id: string;
@@ -352,13 +339,13 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
         }
       );
 
-      isStreamOnline = jest.fn(() => Promise.resolve(true));
+      isStreamOnline = vi.fn(() => Promise.resolve(true));
       botTokenScopes = ["chat:read", "chat:edit", "moderator:read:chatters"];
       broadcasterTokenScopes = [
         "channel:read:subscriptions",
         "moderation:read",
       ];
-      registerStreamCallbacks = jest.fn(() => {
+      registerStreamCallbacks = vi.fn(() => {
         // These can be tested without being registered
         return;
       });
@@ -369,7 +356,7 @@ export async function mockTwitchApi(): Promise<typeof twitchApiModule> {
     };
   });
   return await import("fluid-queue/twitch-api.js");
-  //return jest.requireMock<typeof twitchApiModule>("fluid-queue/twitch-api.js");
+  //return requireMock<typeof twitchApiModule>("fluid-queue/twitch-api.js");
 }
 
 /**
@@ -386,34 +373,65 @@ const simRequireIndex = async (
   let settings: z.output<typeof Settings> | undefined;
   let chatbot: { helper: typeof helper } | undefined;
   let chatbot_helper: ReturnType<typeof helper> | undefined;
-  let random: jest.Spied<() => number> | undefined;
+  let random: (() => number) | undefined;
   let quesoqueue: Queue | undefined;
   let handle_func:
     | ((message: string, sender: Chatter, respond: Responder) => Promise<void>)
     | undefined;
   let twitch: Twitch | undefined;
-  let uuidv4: jest.Mock<() => string> | undefined;
+  let uuidv4: (() => string) | undefined;
 
   try {
-    await clearAllTimers();
-    jest.clearAllTimers();
-    jest.runAllTicks();
-    jest.resetModules();
+    vi.clearAllTimers();
+    vi.clearAllTimers();
+    if (vi.isFakeTimers()) {
+      vi.runAllTicks();
+    }
+    vi.resetModules();
+    vi.restoreAllMocks();
+    vi.useFakeTimers();
+    vi.mock("node:fs", () =>
+      import("memfs")
+        .then((memfs) => memfs.fs)
+        .then((fs) => ({ ...fs, default: fs }))
+    );
+    vi.mock("node:fs/promises", () =>
+      import("memfs")
+        .then((memfs) => memfs.fs.promises)
+        .then((promises) => ({ ...promises, default: promises }))
+    );
+    vi.resetModules();
     await mockModules(chanceSeed);
     if (setupMocks !== undefined) {
       await setupMocks();
     }
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     // remove timers
-    jest.clearAllTimers();
+    await clearAllTimers();
 
     // setup time
-    jest.useFakeTimers();
+    vi.useFakeTimers();
+
+    vi.mock("node:perf_hooks", async (importModule) => {
+      const module =
+        (await importModule()) satisfies typeof import("node:perf_hooks");
+      const performance = {
+        ...module.performance,
+        now: vi.fn(() => {
+          return Date.now();
+        }),
+        timeOrigin: 0,
+      };
+      return {
+        ...module,
+        performance: performance,
+      };
+    });
 
     if (mockTime !== undefined) {
-      jest.setSystemTime(mockTime);
+      vi.setSystemTime(mockTime);
     } else {
-      jest.setSystemTime(START_TIME);
+      vi.setSystemTime(START_TIME);
     }
 
     // setup random mock
@@ -421,12 +439,12 @@ const simRequireIndex = async (
     const mt = chance.mersenne_twister(chanceSeed ?? chance.seed) as {
       random: () => number;
     };
-    random = jest.spyOn(global.Math, "random").mockImplementation(() => {
+    random = vi.spyOn(Math, "random").mockImplementation(() => {
       return mt.random();
     });
 
     const uuid = await import("uuid");
-    uuidv4 = asMock(uuid, "v4");
+    uuidv4 = uuid["v4"];
 
     // prepare settings
     if (mockSettings === undefined) {
@@ -435,38 +453,25 @@ const simRequireIndex = async (
 
     // create virtual file system
     if (volume === undefined) {
-      volume = createMockVolume(mockSettings);
+      volume = await createMockVolume(mockSettings);
     } else {
       // copy files
       const files = volume.toJSON();
       volume = new Volume();
-      volume.fromJSON(files);
-      console.log("./settings/settings.yml: " + YAML.stringify(settings));
+      volume.fromJSON(files, path.resolve("."));
       volume.fromJSON(
         { "./settings/settings.yml": YAML.stringify(mockSettings) },
         path.resolve(".")
       );
-      populateMockVolume(volume, "./locales", false);
+      await populateMockVolume(volume, "./locales", false);
     }
 
     // setup virtual file system
-    const mockFs = createFsFromVolume(volume);
-    jest.mock("fs", () => ({
-      __esModule: true, // Use it when dealing with esModules
-      ...mockFs,
-      default: mockFs,
-      toString() {
-        return "fs mock";
-      },
-    }));
-    jest.unstable_mockModule("fs", () => ({
-      ...mockFs,
-      default: mockFs,
-      toString() {
-        return "fs module mock";
-      },
-    }));
-    fs = (await import("fs")).default;
+    vol.reset();
+    vol.fromJSON(volume.toJSON(), path.resolve("."));
+    fs = (await import("memfs")).fs as unknown as typeof import("node:fs");
+    volume = vol;
+    require.cache.fs = { exports: fs } as never;
 
     // import settings
     settings = (await import("fluid-queue/settings.js")).default;
@@ -484,8 +489,8 @@ const simRequireIndex = async (
     }
 
     // get hold of chatbot_helper
-    expect(asMock(chatbot, "helper")).toHaveBeenCalledTimes(1);
-    const result = asMock(chatbot, "helper").mock.results[0];
+    expect(vi.mocked(chatbot["helper"])).toHaveBeenCalledTimes(1);
+    const result = vi.mocked(chatbot["helper"]).mock.results[0];
     if (result.type === "return") {
       chatbot_helper = result.value;
     }
@@ -500,10 +505,10 @@ const simRequireIndex = async (
 
     // get hold of the handle function
     // the first argument of setup has to be an AsyncFunction
-    expect(asMock(chatbot_helper, "setup").mock.calls[0][0]).toBeInstanceOf(
+    expect(vi.mocked(chatbot_helper["setup"]).mock.calls[0][0]).toBeInstanceOf(
       AsyncFunction
     );
-    handle_func = asMock(chatbot_helper, "setup").mock.calls[0][0];
+    handle_func = vi.mocked(chatbot_helper["setup"]).mock.calls[0][0];
   } catch (err) {
     console.warn(err);
     if (err != null && typeof err === "object") {
@@ -544,6 +549,9 @@ const simRequireIndex = async (
   if (uuidv4 === undefined) {
     throw new Error("uuidv4 was not loaded correctly");
   }
+  if (handle_func === undefined) {
+    throw new Error("handle_func was not loaded correctly");
+  }
 
   return {
     fs,
@@ -560,16 +568,17 @@ const simRequireIndex = async (
 };
 
 const flushPromises = async () => {
-  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
+  const realTimers = await vi.importActual<typeof timers>("node:timers");
+  await new Promise((resolve) => realTimers.setImmediate(resolve));
 };
 
 const clearAllTimers = async () => {
   const time = new Date();
-  jest.clearAllTimers();
-  if (clearAllTimersIntern != null) {
-    await clearAllTimersIntern();
+  vi.clearAllTimers();
+  for (const clear of clearAllTimersIntern) {
+    await clear();
   }
-  jest.setSystemTime(time);
+  vi.setSystemTime(time);
 };
 
 /**
@@ -587,11 +596,11 @@ const simAdvanceTime = async (ms: number, accuracy = 0) => {
   if (accuracy > 0) {
     for (let i = 0; i < ms; i += accuracy) {
       const advance = Math.min(accuracy, ms - i);
-      jest.advanceTimersByTime(advance);
+      vi.advanceTimersByTime(advance);
       await flushPromises();
     }
   } else {
-    jest.advanceTimersByTime(ms);
+    vi.advanceTimersByTime(ms);
     await flushPromises();
   }
   expect(new Date().getTime() - currentTime.getTime()).toEqual(ms);
@@ -677,7 +686,6 @@ const replace = (
 };
 
 export {
-  asMock,
   simRequireIndex,
   simAdvanceTime,
   simSetTime,

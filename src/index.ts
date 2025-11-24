@@ -1,10 +1,10 @@
 (await import("./banner.js")).printBanner();
 (await import("./persistence.js")).setup();
 import { quesoqueue as queue } from "./queue.js";
-import { twitch } from "./twitch.js";
 import { timer, Timer } from "./timer.js";
 import * as aliasManagement from "./aliases.js";
 import { twitchApi } from "./twitch-api.js";
+import { twitch } from "./twitch.js";
 import settings from "./settings.js";
 import { helper } from "./chatbot.js";
 import { QueueEntry, QueueSubmitter } from "./extensions-api/queue-entry.js";
@@ -597,7 +597,7 @@ async function HandleMessage(
       | undefined;
     let selection_mode;
     // Check for a queue skip
-    let skip = await channelPointManager.getNextSubmitter();
+    let skip = await channelPointManager.getNextSubmitter(quesoqueue);
     if ((skip as QueueSubmitter).name) {
       selection_mode = "skip";
     } else {
@@ -614,7 +614,7 @@ async function HandleMessage(
     }
     next_level = await pickLevel(selection_mode, respond, skip);
     if (skip == "not yet" && next_level == undefined) {
-      skip = await channelPointManager.getNextSubmitter(true);
+      skip = await channelPointManager.getNextSubmitter(quesoqueue, true);
       next_level = await pickLevel(selection_mode, respond, skip);
     }
     if (settings.level_timeout && level_timer != null) {
@@ -957,7 +957,12 @@ chatbot_helper.setup(HandleMessage);
 
 // run async code
 // setup the twitch api
-await twitchApi.setup();
+await twitchApi.setup({
+  handleMod: twitch.handleMod,
+  handleUnmod: twitch.handleUnmod,
+  handleSub: twitch.handleSub,
+  handleUnsub: twitch.handleUnsub,
+});
 
 // loading the queue
 await quesoqueue.load();
@@ -967,7 +972,10 @@ twitchApi.registerStreamCallbacks(
 );
 
 // setting up channel point rewards needs to happen after the queue is loaded
-await channelPointManager.init(chatbot_helper.say.bind(chatbot_helper));
+await channelPointManager.init(
+  chatbot_helper.say.bind(chatbot_helper),
+  quesoqueue
+);
 
 // connect to the Twitch channel.
 await chatbot_helper.connect();

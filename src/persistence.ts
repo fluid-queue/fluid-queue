@@ -1,9 +1,9 @@
 import settings from "./settings.js";
-import fs from "fs";
+import fs from "node:fs";
 import gracefulFs from "graceful-fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { WaitingSchemeV3 } from "./waiting.js";
-import path from "path";
+import path from "node:path";
 import { z } from "zod";
 import { twitchApi } from "./twitch-api.js";
 import { User } from "./extensions-api/queue-entry.js";
@@ -1090,7 +1090,10 @@ async function upgradeQueueV2ToV3(
         { lostLevels, lostWaiting },
         null,
         settings.prettySaveFiles ? 2 : 0
-      )
+      ),
+      {
+        encoding: "utf-8",
+      }
     );
     warn(`${lostUsers} users in your queue could not be found!`);
     warn("This means that they deleted their account or renamed themselves.");
