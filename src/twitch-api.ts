@@ -9,20 +9,22 @@ import {
 import { RefreshingAuthProvider } from "@twurple/auth";
 import * as tmi from "@twurple/auth-tmi";
 import { settings, fileName as settingsFile } from "./settings.js";
-import fs from "fs";
+import fs from "node:fs";
 import { Options as TmiOptions, Client as TmiClient } from "tmi.js";
 import { SingleValueCache } from "./cache.js";
 import { Duration } from "@js-joda/core";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { User } from "./extensions-api/queue-entry.js";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
-import { twitch } from "./twitch.js";
 import i18next from "i18next";
 import { z } from "zod";
 import { warn } from "./chalk-print.js";
 import {
+  EventSubChannelModeratorEvent,
   EventSubChannelRedemptionAddEvent,
   EventSubChannelRedemptionUpdateEvent,
+  EventSubChannelSubscriptionEndEvent,
+  EventSubChannelSubscriptionEvent,
   EventSubStreamOfflineEvent,
   EventSubStreamOnlineEvent,
 } from "@twurple/eventsub-base";
@@ -92,7 +94,17 @@ class TwitchApi {
   /**
    * Setup authentication.
    */
-  async setup() {
+  async setup({
+    handleMod,
+    handleUnmod,
+    handleSub,
+    handleUnsub,
+  }: {
+    handleMod: (event: EventSubChannelModeratorEvent) => void;
+    handleUnmod: (event: EventSubChannelModeratorEvent) => void;
+    handleSub: (event: EventSubChannelSubscriptionEvent) => void;
+    handleUnsub: (event: EventSubChannelSubscriptionEndEvent) => void;
+  }) {
     if (
       settings.clientId == null ||
       settings.clientId == "" ||
@@ -269,11 +281,11 @@ class TwitchApi {
       // set up the eventsub listeners for subs
       this.#esListener.onChannelSubscription(
         this.#broadcasterUser.id,
-        twitch.handleSub
+        handleSub
       );
       this.#esListener.onChannelSubscriptionEnd(
         this.#broadcasterUser.id,
-        twitch.handleUnsub
+        handleUnsub
       );
       startListener = true;
     }
@@ -281,11 +293,11 @@ class TwitchApi {
       // Set up the eventsub listeners for mods
       this.#esListener.onChannelModeratorAdd(
         this.#broadcasterUser.id,
-        twitch.handleMod
+        handleMod
       );
       this.#esListener.onChannelModeratorRemove(
         this.#broadcasterUser.id,
-        twitch.handleUnmod
+        handleUnmod
       );
       startListener = true;
     }

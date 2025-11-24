@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 import YAML from "yaml";
 import { z } from "zod";
 import {
@@ -19,9 +19,7 @@ import {
   EventSubChannelRedemptionAddEvent,
   EventSubChannelRedemptionUpdateEvent,
 } from "@twurple/eventsub-base";
-import { Queue, quesoqueue as queue } from "./queue.js";
-
-let quesoqueue: Queue;
+import type { Queue } from "./queue.js";
 
 const DATA_FILE_NAME = "data/channel-points.json";
 const CONFIG_FILE_NAME = "settings/channel-points.yml";
@@ -219,7 +217,7 @@ class ChannelPointManager {
     }
   }
 
-  async updateSkipQueueFromTwitch() {
+  async updateSkipQueueFromTwitch(quesoqueue: Queue) {
     const reward = this.#customRewards.find((data) => {
       return data.type == "skip_queue";
     });
@@ -267,7 +265,10 @@ class ChannelPointManager {
     }
   }
 
-  handleRedemptionAdd(event: EventSubChannelRedemptionAddEvent) {
+  handleRedemptionAdd(
+    event: EventSubChannelRedemptionAddEvent,
+    quesoqueue: Queue
+  ) {
     const redeemer = redemptionToQueueSkipper(event);
     // Make sure the user is actually in the queue
     quesoqueue.position(redeemer).then(
@@ -385,7 +386,7 @@ class ChannelPointManager {
     }
   }
 
-  public async init(say_func: (message: string) => void) {
+  public async init(say_func: (message: string) => void, quesoqueue: Queue) {
     if (!this.#enabled) {
       return;
     }
@@ -394,7 +395,6 @@ class ChannelPointManager {
     }
     this.#initialized = true;
     this.#say_func = say_func;
-    quesoqueue = queue();
     if (
       !twitchApi.broadcasterTokenScopes.includes("channel:manage:redemptions")
     ) {
@@ -496,8 +496,8 @@ class ChannelPointManager {
         // Set up the eventsub handlers
         twitchApi.registerRedemptionCallbacks(
           reward.id,
-          this.handleRedemptionAdd.bind(this),
-          this.handleRedemptionUpdate.bind(this)
+          (e) => this.handleRedemptionAdd(e, quesoqueue),
+          (e) => this.handleRedemptionUpdate(e)
         );
       }
     } finally {
@@ -513,10 +513,11 @@ class ChannelPointManager {
       );
     }
 
-    void this.updateSkipQueueFromTwitch();
+    void this.updateSkipQueueFromTwitch(quesoqueue);
   }
 
   public async getNextSubmitter(
+    quesoqueue: Queue,
     force = false
   ): Promise<QueueSubmitter | "none" | "not yet"> {
     if (!this.#config.skip_spacing) {

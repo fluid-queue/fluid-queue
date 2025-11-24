@@ -1,9 +1,8 @@
 // imports
-import { MethodLikeKeys } from "jest-mock";
-import { jest } from "@jest/globals";
+import { vi, beforeEach, test, describe } from "vitest";
+import { expect } from "vitest";
 import readline from "readline";
-import path from "path";
-import fs from "fs";
+import path from "node:path";
 import { SourceLocation, codeFrameColumns } from "@babel/code-frame";
 import {
   simRequireIndex,
@@ -15,26 +14,21 @@ import {
   clearAllTimers,
   START_TIME,
   EMPTY_CHATTERS,
-  asMock,
 } from "../simulation.js";
-import { Settings } from "../../src/settings-type.js";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
-import YAML from "yaml";
+import type { Settings } from "fluid-queue/settings-type.js";
 
 const isPronoun = (text: string) => {
   return text == "Any" || text == "Other" || text.includes("/");
 };
-
-// fake timers
-jest.useFakeTimers();
 
 beforeEach(() => {
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
-  jest.setSystemTime(START_TIME);
+  vi.setSystemTime(START_TIME);
 });
 
 test("setup", async () => {
@@ -115,6 +109,9 @@ const parseChatter = (chatter: string) => {
 };
 
 const chatLogTest = async (fileName: string): Promise<boolean> => {
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
   let test = await simRequireIndex();
   let chatbot = null;
   let settingsInput: z.input<typeof Settings> | undefined = undefined;
@@ -129,7 +126,9 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
   }
 
   try {
-    asMock(test.chatbot_helper, "say").mockImplementation(pushMessageWithStack);
+    vi.mocked(test.chatbot_helper["say"]).mockImplementation(
+      pushMessageWithStack
+    );
 
     const fileStream = fs.createReadStream(fileName);
 
@@ -158,7 +157,6 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
       ) {
         continue;
       }
-      // console.log(`[${new Date().toISOString()}] ${fileName}:${lineno} ${line}`);
       const idx = line.indexOf(" ");
       const command = idx == -1 ? line : line.substring(0, idx);
       const rest = idx == -1 ? "" : line.substring(idx + 1);
@@ -168,10 +166,10 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
       };
       if (command == "restart") {
         const time = new Date();
-        await clearAllTimers();
-        await clearAllTimers();
+        vi.clearAllTimers();
+        vi.clearAllTimers();
         test = await simRequireIndex(test.volume, settingsInput, time);
-        asMock(test.chatbot_helper, "say").mockImplementation(
+        vi.mocked(test.chatbot_helper["say"]).mockImplementation(
           pushMessageWithStack
         );
       } else if (command == "accuracy") {
@@ -182,10 +180,10 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
         // TODO: ideally new settings would be written to settings.yml
         //       and settings.js could be reloaded instead to validate settings
         const data: unknown = JSON.parse(rest);
+        const { Settings } = await import("fluid-queue/settings-type.js");
         replace(test.settings, Settings.parse(data));
         // this cast is okay, because Settings.parse would throw if data was not of type z.input<typeof Settings>
         settingsInput = data as z.input<typeof Settings>;
-        console.log("set settings to: " + YAML.stringify(settingsInput));
       } else if (command == "chatters") {
         const users = rest.split(",");
         simSetChatters(
@@ -263,9 +261,9 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
       } else if (command == "flushPromises") {
         await flushPromises();
       } else if (command == "random") {
-        test.random.mockImplementationOnce(() => parseFloat(rest));
+        vi.mocked(test.random).mockImplementationOnce(() => parseFloat(rest));
       } else if (command == "uuidv4") {
-        test.uuidv4.mockImplementationOnce(() => rest.trim());
+        vi.mocked(test.uuidv4).mockImplementationOnce(() => rest.trim());
       } else if (command == "fs-fail") {
         if (
           !(
@@ -277,17 +275,11 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
             `The function ${rest} is not part of the file system!`
           );
         }
-        const key: MethodLikeKeys<typeof test.fs> = rest as MethodLikeKeys<
-          typeof test.fs
-        >;
-        jest
-          .spyOn(jest.requireMock<typeof fs>("fs"), key)
-          .mockImplementationOnce(() => {
+        vi.spyOn(test.fs, rest as unknown as "exists").mockImplementationOnce(
+          () => {
             throw new Error("fail on purpose in test");
-          });
-        jest.spyOn(test.fs, key).mockImplementationOnce(() => {
-          throw new Error("fail on purpose in test");
-        });
+          }
+        );
       } else if (command == "time") {
         await simSetTime(new Date(Date.parse(rest)));
       } else if (command.startsWith("[") && command.endsWith("]")) {
@@ -298,8 +290,6 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
           start: { column: idx + 1 + chat.column, line: lineno },
           end: { column: line.length + 1 - chat.trimLen, line: lineno },
         };
-        // console.log(`${time}`, chat.sender, 'sends', chat.message);
-        // console.log("sender", chat.sender.username, "settings", index.settings.username.toLowerCase());
         if (chatbot != null && chat.sender.name == chatbot.toLowerCase()) {
           // this is a message by the chat bot, check replyMessageQueue
           const shift = replyMessageQueue.shift();
@@ -366,19 +356,24 @@ const chatLogTest = async (fileName: string): Promise<boolean> => {
   return true;
 };
 
-const testFiles = fs
-  .readdirSync(
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
-  )
-  .filter((file: string) => file.endsWith(".test.log"));
+describe("chat-logs", async () => {
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
 
-for (const file of testFiles) {
-  const fileName = path.relative(
-    ".",
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
-  );
-  test(`${fileName}`, async () => {
-    jest.setTimeout(10_000); // <- this might not work
-    await expect(chatLogTest(fileName)).resolves.toBeTruthy();
-  }, 10_000); // <- setting timeout here as well
-}
+  const testFiles = fs
+    .readdirSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
+    )
+    .filter((file: string) => file.endsWith(".test.log"));
+
+  for (const file of testFiles) {
+    const fileName = path.relative(
+      ".",
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
+    );
+    test(`${fileName}`, { timeout: 10_000 }, async () => {
+      await expect(chatLogTest(fileName)).resolves.toBeTruthy();
+    });
+  }
+});

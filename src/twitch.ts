@@ -2,12 +2,12 @@ import { Duration } from "@js-joda/core";
 import { Chatter } from "./extensions-api/command.js";
 import { QueueSubmitter, User } from "./extensions-api/queue-entry.js";
 import { twitchApi } from "./twitch-api.js";
-import TTLCache from "@isaacs/ttlcache";
 import {
   EventSubChannelModeratorEvent,
   EventSubChannelSubscriptionEndEvent,
   EventSubChannelSubscriptionEvent,
 } from "@twurple/eventsub-base";
+import { TTLCache } from "./ttlcache.js";
 
 const RECENT_CHATTERS_TTL = Duration.parse("PT5M").toMillis();
 const LURKERS_TTL = Duration.parse("PT12H").toMillis();

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { vi, beforeEach, test, expect } from "vitest";
 import {
   simAdvanceTime,
   simRequireIndex,
@@ -11,30 +11,45 @@ import {
   simSetSubscribers,
   simSetModerators,
 } from "./simulation.js";
-import { Queue, QueueDataMap, OnlineOfflineList } from "fluid-queue/queue.js";
+import type {
+  Queue,
+  QueueDataMap,
+  OnlineOfflineList,
+} from "fluid-queue/queue.js";
 import {
   EventSubChannelSubscriptionEvent,
   EventSubChannelSubscriptionEndEvent,
   EventSubChannelModeratorEvent,
 } from "@twurple/eventsub-base";
-import { QueueSubmitter } from "fluid-queue/extensions-api/queue-entry.js";
-
-// Set up the fake timers
-jest.useFakeTimers();
+import type { QueueSubmitter } from "fluid-queue/extensions-api/queue-entry.js";
 
 // Basic pre-setup stolen from weight.test.ts
 const setupMocks = () => {
+  vi.resetModules();
+  vi.resetAllMocks();
+  vi.mock("node:fs", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs)
+      .then((fs) => ({ ...fs, default: fs }))
+  );
+  vi.mock("node:fs/promises", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs.promises)
+      .then((promises) => ({ ...promises, default: promises }))
+  );
+  vi.useFakeTimers();
+
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
-  jest.setSystemTime(START_TIME);
+  vi.setSystemTime(START_TIME);
 };
 
 beforeEach(setupMocks);
 
 async function setupQueue() {
-  const volume = createMockVolume();
+  const volume = await createMockVolume();
   const index = await simRequireIndex(
     volume,
     DEFAULT_TEST_SETTINGS,
@@ -150,8 +165,8 @@ test("send eventsub for new sub", async () => {
     throw new Error("testAccess is undefined");
   }
 
-  jest.mock("@twurple/api");
-  jest.mock("@twurple/auth");
+  vi.doMock("@twurple/api");
+  vi.doMock("@twurple/auth");
 
   // Add our mock users to chat
   simSetChatters([chatter1, chatter2, chatter3]);
@@ -194,8 +209,8 @@ test("send eventsub for ended sub", async () => {
     throw new Error("testAccess is undefined");
   }
 
-  jest.mock("@twurple/api");
-  jest.mock("@twurple/auth");
+  vi.doMock("@twurple/api");
+  vi.doMock("@twurple/auth");
 
   // Make chatter 3 a sub
   chatter3.isSubscriber = true;
@@ -240,8 +255,8 @@ test("send eventsub for new mod", async () => {
     throw new Error("testAccess is undefined");
   }
 
-  jest.mock("@twurple/api");
-  jest.mock("@twurple/auth");
+  vi.doMock("@twurple/api");
+  vi.doMock("@twurple/auth");
 
   // Add our mock users to chat
   simSetChatters([chatter1, chatter2, chatter3]);
@@ -282,8 +297,8 @@ test("send eventsub for demoted mod", async () => {
     throw new Error("testAccess is undefined");
   }
 
-  jest.mock("@twurple/api");
-  jest.mock("@twurple/auth");
+  vi.doMock("@twurple/api");
+  vi.doMock("@twurple/auth");
 
   // Make chatter 3 a mod
   chatter3.isMod = true;

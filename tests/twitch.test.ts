@@ -1,15 +1,14 @@
-import { jest } from "@jest/globals";
+import { vi, beforeEach, test, expect } from "vitest";
 import {
-  asMock,
   buildChatter,
-  replace,
   mockTwitchApi,
   createMockVolume,
+  simAdvanceTime,
+  simSetChatters,
 } from "./simulation.js";
-import { Settings } from "fluid-queue/settings-type.js";
-import { User } from "fluid-queue/extensions-api/queue-entry.js";
-import * as timers from "timers";
-import { createFsFromVolume } from "memfs";
+import type { User } from "fluid-queue/extensions-api/queue-entry.js";
+import { vol } from "memfs";
+import path from "node:path";
 
 // constants
 const defaultTestChatters: User[] = [];
@@ -18,7 +17,7 @@ const defaultTestSettings = {
   clientId: "",
   clientSecret: "",
   max_size: 50,
-  level_timeout: 10,
+  level_timeout: "10 minutes",
   level_selection: [
     "next",
     "subnext",
@@ -27,75 +26,45 @@ const defaultTestSettings = {
     "subrandom",
     "modrandom",
   ],
-  message_cooldown: 5,
-};
-
-// mock variables
-let mockChatters: User[] = [];
-
-// fake timers
-jest.useFakeTimers();
-
-const setChatters = (newChatters: User[]) => {
-  mockChatters = newChatters;
+  message_cooldown: "5 seconds",
 };
 
 beforeEach(() => {
+  vi.useFakeTimers();
+
   // reset chatters
-  setChatters(defaultTestChatters);
+  simSetChatters(defaultTestChatters);
 
   // reset time
-  jest.setSystemTime(new Date("2022-04-21T00:00:00Z"));
+  vi.setSystemTime(new Date("2022-04-21T00:00:00Z"));
 });
 
 async function setupMocks() {
-  jest.resetModules();
+  vi.resetModules();
+  vi.restoreAllMocks();
+  vi.useFakeTimers();
+  vi.mock("node:fs", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs)
+      .then((fs) => ({ ...fs, default: fs }))
+  );
+  vi.mock("node:fs/promises", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs.promises)
+      .then((promises) => ({ ...promises, default: promises }))
+  );
 
-  const volume = createMockVolume();
-  const mockFs = createFsFromVolume(volume);
-  jest.mock("fs", () => ({
-    __esModule: true, // Use it when dealing with esModules
-    ...mockFs,
-    default: mockFs,
-    toString() {
-      return "fs mock";
-    },
-  }));
-  jest.unstable_mockModule("fs", () => ({
-    ...mockFs,
-    default: mockFs,
-    toString() {
-      return "fs module mock";
-    },
-  }));
-  void (await import("fs")).default;
+  const volume = await createMockVolume(defaultTestSettings);
+  // setup virtual file system
+  vol.reset();
+  vol.fromJSON(volume.toJSON(), path.resolve("."));
 
-  // mock needed for ttlcache
-  jest.spyOn(global.performance, "now").mockImplementation(() => {
-    let result;
-    if (typeof global.performance.timeOrigin === "number") {
-      const origin = Math.floor(global.performance.timeOrigin);
-      result = Math.max(new Date().getTime() - origin, 0);
-    } else {
-      result = new Date().getTime();
-    }
-    return result;
-  });
+  const settings = (await import("fluid-queue/settings.js")).default;
 
   // mocks
   const twitchApi = (await mockTwitchApi()).twitchApi;
 
   const twitch = (await import("fluid-queue/twitch.js")).twitch;
-
-  // mock chatters
-  asMock(twitchApi, "getChatters").mockImplementation(() =>
-    Promise.resolve(mockChatters)
-  );
-  jest.unstable_mockModule("../src/settings", () => {
-    return { default: {} };
-  });
-  const settings = (await import("fluid-queue/settings.js")).default;
-  replace(settings, Settings.parse(defaultTestSettings));
 
   return { settings, twitch, twitchApi };
 }
@@ -119,7 +88,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ displayName: "liquidnya" })).toBe(false);
 
   // change chatters mock and compare with result
-  setChatters([
+  simSetChatters([
     {
       id: '${user("liquidnya").id}',
       name: "liquidnya",
@@ -145,8 +114,6 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
-  jest.setSystemTime(new Date("2022-04-21T00:00:00Z"));
-  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
   // notice chatter
   twitch.noticeChatter(
     buildChatter("helperblock", "helperblock", false, true, false)
@@ -170,8 +137,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(true);
 
   // after 4 minutes still online!
-  jest.setSystemTime(new Date("2022-04-21T00:04:00Z"));
-  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
+  await simAdvanceTime(4 * 60_000, 1000);
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
     [
@@ -191,8 +157,8 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(true);
 
   // after 5 minutes not online any longer
-  jest.setSystemTime(new Date("2022-04-21T00:05:00Z"));
-  await new Promise(jest.requireActual<typeof timers>("timers").setImmediate);
+  await simAdvanceTime(5 * 60_000);
+
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
     ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
@@ -267,7 +233,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
 
   // the twitch api has been called 8 times
-  expect(asMock(twitchApi, "getChatters").mock.calls.length).toBe(8);
+  expect(vi.mocked(twitchApi["getChatters"]).mock.calls.length).toBe(8);
 });
 
 test("createOnlineUsers:empty", async () => {
