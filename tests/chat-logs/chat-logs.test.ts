@@ -1,7 +1,9 @@
 // imports
-import { jest } from "@jest/globals";
-import path from "path";
-import fs from "fs";
+import { vi, beforeEach, test, describe } from "vitest";
+import { expect } from "vitest";
+import readline from "readline";
+import path from "node:path";
+import { SourceLocation, codeFrameColumns } from "@babel/code-frame";
 import {
   simRequireIndex,
   simSetChatters,
@@ -9,7 +11,6 @@ import {
   clearAllTimers,
   START_TIME,
   EMPTY_CHATTERS,
-  Simulation,
 } from "../simulation.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
@@ -19,15 +20,12 @@ import jsonOrder from "json-order";
 import { instructions } from "./parser.js";
 import _ from "lodash";
 
-// fake timers
-jest.useFakeTimers();
-
 beforeEach(() => {
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
-  jest.setSystemTime(START_TIME);
+  vi.setSystemTime(START_TIME);
 });
 
 test("setup", async () => {
@@ -232,11 +230,10 @@ const chatLogTest = async (
   return fixInstructions;
 };
 
-const testFiles = fs
-  .readdirSync(
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
-  )
-  .filter((file: string) => file.endsWith(".test.log"));
+describe("chat-logs", async () => {
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
 
 function isFixingTests() {
   if (
@@ -301,17 +298,19 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
   await writeFileAtomic(fileName, contents, { encoding: "utf-8" });
 }
 
-for (const file of testFiles) {
-  const fileName = path.relative(
-    ".",
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
-  );
-  test(`${fileName}`, async () => {
-    jest.setTimeout(10_000); // <- this might not work
-    const result = await chatLogTest(fileName, fixingTests);
-    if (result.length > 0) {
-      await fixContents(fileName, result);
-    }
-    expect(result).toBeTruthy();
-  }, 10_000); // <- setting timeout here as well
-}
+  const testFiles = fs
+    .readdirSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
+    )
+    .filter((file: string) => file.endsWith(".test.log"));
+
+  for (const file of testFiles) {
+    const fileName = path.relative(
+      ".",
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
+    );
+    test(`${fileName}`, { timeout: 10_000 }, async () => {
+      await expect(chatLogTest(fileName, fixingTests)).resolves.toBeTruthy();
+    });
+  }
+});

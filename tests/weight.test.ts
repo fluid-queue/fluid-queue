@@ -1,5 +1,5 @@
 // imports
-import { jest } from "@jest/globals";
+import { vi, beforeEach, test, expect } from "vitest";
 import {
   simAdvanceTime,
   simRequireIndex,
@@ -9,31 +9,48 @@ import {
   START_TIME,
   EMPTY_CHATTERS,
   DEFAULT_TEST_SETTINGS,
+  mockTwitchApi,
 } from "./simulation.js";
-import { Queue, QueueDataMap, WeightedList } from "fluid-queue/queue.js";
+import type { Queue, QueueDataMap, WeightedList } from "fluid-queue/queue.js";
 
-// console checks
-const consoleWarnMock = jest.spyOn(global.console, "warn");
-const consoleErrorMock = jest.spyOn(global.console, "error");
+vi.stubGlobal("console", {
+  log: vi.fn(console.log),
+  trace: vi.fn(console.trace),
+  debug: vi.fn(console.debug),
+  info: vi.fn(console.info),
+  warn: vi.fn(console.warn),
+  error: vi.fn(console.error),
+});
 
-jest.useFakeTimers();
+const setupMocks = async () => {
+  vi.mock("node:fs", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs)
+      .then((fs) => ({ ...fs, default: fs }))
+  );
+  vi.mock("node:fs/promises", () =>
+    import("memfs")
+      .then((memfs) => memfs.fs.promises)
+      .then((promises) => ({ ...promises, default: promises }))
+  );
 
-const setupMocks = () => {
+  await mockTwitchApi();
+
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
-  jest.setSystemTime(START_TIME);
+  vi.setSystemTime(START_TIME);
 
   // reset console
-  consoleWarnMock.mockClear();
-  consoleErrorMock.mockClear();
+  vi.mocked(console.warn).mockClear();
+  vi.mocked(console.error).mockClear();
 };
 
 beforeEach(setupMocks);
 
 async function setupQueue() {
-  const volume = createMockVolume();
+  const volume = await createMockVolume();
   const index = await simRequireIndex(
     volume,
     DEFAULT_TEST_SETTINGS,
@@ -332,7 +349,7 @@ test("weight rename test", async () => {
   });
 
   // one last thing! renaming users from a custom code has its extra logic for renaming (implementation detail)
-  const responder = jest.fn();
+  const responder = vi.fn();
   await handle_func(
     "!customcode add Kamek 2PV-J29-2PF",
     buildChatter("broadcaster", "Broadcaster", true, true, true),

@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node22/tsconfig.json",
+  "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
     "allowJs": false,
@@ -8,6 +8,6 @@
       "fluid-queue/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "tests/**/*", "build.ts", "dist.ts"],
+  "include": ["src/**/*", "tests/**/*", "vite.config.ts", "vitest.setup.ts"],
   "exclude": []
 }
