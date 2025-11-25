@@ -18,15 +18,16 @@ jobs:
       matrix:
         node-version: [24.x, 25.x]
     steps:
-      - uses: actions/checkout@v3
-      - name: Run eslint and prettier --check with Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - run: npm install --only=dev
-      - run: npx prettier --check .
-      - run: npm run check
+      - name: Install dependencies
+        run: npm ci
+      - name: Run eslint (with eslint-plugin-prettier)
+        run: npm run check
 
   build:
     runs-on: ubuntu-latest
@@ -37,12 +38,15 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm run test
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build --if-present
+      - name: Run tests
+        run: npm test
