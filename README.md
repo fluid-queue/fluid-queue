@@ -47,20 +47,20 @@ To run tests:
 $ npm test
 ```
 
-If you get `TypeError: Converting circular structure to JSON`, try:
-
-```sh
-$ npm test -- --detectOpenHandles
-```
-
 To run tests without log output:
 
 ```sh
 $ npm test -- --silent
 ```
 
+To run tests where only failing tests are logged:
+
+```sh
+$ npm test -- --silent=passed-only
+```
+
 To run a single test:
 
 ```sh
-$ npm test -- -t custom-levels-v2.1-to-v2.2
+$ npm test -- -t custom-levels-v2.1-to-v3.1
 ```
