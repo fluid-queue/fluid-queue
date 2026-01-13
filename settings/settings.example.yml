@@ -56,11 +56,15 @@ resolvers: # will resolve what users type after `!add` to a level type. You can 
   - smm2-lenient # use this to allow for using `!add` with a sentence/emotes and still containing a SMM2 level code
   # - ocw-lenient # use this to allow for using `!add` with a sentence/emotes and still containing an OCW level code
   - customlevel-name # use this for being able to add a custom level by its name and not just its code
+  # - quest-master # use this for the game Quest Maker
 
 # extensions settings
 extensionOptions:
   ocw:
     removeDashes: true # if set to true will remove dashes from level codes for easier copying.
+  quest-master:
+    minLength: 7
+    maxLength: 20
 
 # Use the default option for `!clear`
 # `!clear all` clears all levels in the queue.
