@@ -1,13 +1,13 @@
 // imports
-import { expect, vi } from "vitest";
+import { expect, Mock, vi } from "vitest";
 import * as jestChance from "jest-chance";
-import { Volume } from "memfs";
+import { createFsFromVolume, Volume } from "memfs";
 import path from "node:path";
 import {
   SetIntervalAsyncHandler,
   SetIntervalAsyncTimer,
 } from "set-interval-async";
-import type { Settings } from "fluid-queue/settings-type.js";
+import { Settings } from "fluid-queue/settings-type.js";
 import type { Chatter, Responder } from "fluid-queue/extensions-api/command.js";
 import { z } from "zod";
 import type {
@@ -17,11 +17,32 @@ import type {
 import * as timers from "node:timers";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
-import { vol } from "memfs";
 import type { Queue } from "fluid-queue/queue.js";
 import type { Chatbot } from "fluid-queue/chatbot.js";
 import type { Twitch } from "fluid-queue/twitch.js";
 import type { helper } from "fluid-queue/chatbot.js";
+import { codeFrameColumns } from "@babel/code-frame";
+import { ParjsParsingFailure } from "parjs";
+import type fs from "node:fs";
+
+type FsFunctionName = keyof {
+  [
+    K in keyof typeof fs as (typeof fs)[K] extends (
+      ...args: unknown[]
+    ) => unknown
+      ? K
+      : never
+  ]: (typeof fs)[K];
+};
+
+type Location = {
+  column: number;
+  line: number;
+};
+type SourceLocation = {
+  end?: Location;
+  start: Location;
+};
 
 // constants
 const START_TIME = new Date("2022-04-21T00:00:00Z"); // every test will start with this time
@@ -359,6 +380,52 @@ export async function mockTwitchApi(): Promise<
   //return requireMock<typeof twitchApiModule>("fluid-queue/twitch-api.js");
 }
 
+const mockPerformance = () => {
+  vi.doMock("node:perf_hooks", async (importModule) => {
+    const module =
+      (await importModule()) satisfies typeof import("node:perf_hooks");
+    const performance = {
+      ...module.performance,
+      now: vi.fn(() => {
+        return Date.now();
+      }),
+      timeOrigin: 0,
+    };
+    return {
+      ...module,
+      performance: performance,
+    };
+  });
+};
+
+const setupVirtualFileSystem = (
+  volume: InstanceType<typeof Volume>
+): {
+  vol: Index["volume"];
+  fs: Index["fs"];
+} => {
+  const fs = createFsFromVolume(volume);
+  vi.doMock("graceful-fs", () => ({ default: { gracefulify() {} } }));
+  vi.doMock("node:fs", () => ({ ...fs, default: fs }));
+  vi.doMock("node:fs/promises", () => ({
+    ...fs.promises,
+    default: fs.promises,
+  }));
+  vi.doMock("write-file-atomic", async () => {
+    const { createRequire } = await import("node:module");
+    const require = createRequire(import.meta.url);
+    const proxyquire = (require("proxyquire") as typeof import("proxyquire"))
+      .noCallThru()
+      .noPreserveCache();
+    const module = proxyquire("write-file-atomic", {
+      fs: fs,
+      "node:fs": fs,
+    }) as typeof import("write-file-atomic");
+    return { ...module, default: module };
+  });
+  return { vol: volume, fs: fs as unknown as Index["fs"] };
+};
+
 /**
  * load `index.js` and test it being setup correctly
  */
@@ -390,21 +457,9 @@ const simRequireIndex = async (
     vi.resetModules();
     vi.restoreAllMocks();
     vi.useFakeTimers();
-    vi.mock("node:fs", () =>
-      import("memfs")
-        .then((memfs) => memfs.fs)
-        .then((fs) => ({ ...fs, default: fs }))
-    );
-    vi.mock("node:fs/promises", () =>
-      import("memfs")
-        .then((memfs) => memfs.fs.promises)
-        .then((promises) => ({ ...promises, default: promises }))
-    );
     vi.resetModules();
     await mockModules(chanceSeed);
-    if (setupMocks !== undefined) {
-      await setupMocks();
-    }
+
     vi.useFakeTimers();
     // remove timers
     await clearAllTimers();
@@ -412,21 +467,7 @@ const simRequireIndex = async (
     // setup time
     vi.useFakeTimers();
 
-    vi.mock("node:perf_hooks", async (importModule) => {
-      const module =
-        (await importModule()) satisfies typeof import("node:perf_hooks");
-      const performance = {
-        ...module.performance,
-        now: vi.fn(() => {
-          return Date.now();
-        }),
-        timeOrigin: 0,
-      };
-      return {
-        ...module,
-        performance: performance,
-      };
-    });
+    mockPerformance();
 
     if (mockTime !== undefined) {
       vi.setSystemTime(mockTime);
@@ -467,11 +508,12 @@ const simRequireIndex = async (
     }
 
     // setup virtual file system
-    vol.reset();
-    vol.fromJSON(volume.toJSON(), path.resolve("."));
-    fs = (await import("memfs")).fs as unknown as typeof import("node:fs");
-    volume = vol;
-    require.cache.fs = { exports: fs } as never;
+    fs = setupVirtualFileSystem(volume).fs;
+
+    // setup all other mocks
+    if (setupMocks !== undefined) {
+      await setupMocks();
+    }
 
     // import settings
     settings = (await import("fluid-queue/settings.js")).default;
@@ -722,7 +764,9 @@ class Simulation {
       Error.captureStackTrace(error, pushMessage);
       responses.push({ message, error });
     }
-    asMock(this.#index.chatbot_helper, "say").mockImplementation(pushMessage);
+    vi.mocked(this.#index.chatbot_helper["say"]).mockImplementation(
+      pushMessage
+    );
   }
 
   public static async load(): Promise<Simulation> {
@@ -831,27 +875,23 @@ class Simulation {
   }
 
   public nextRandom(value: number) {
-    this.#index.random.mockImplementationOnce(() => value);
+    vi.mocked(this.#index.random).mockImplementationOnce(() => value);
   }
 
   public nextUuid(value: string) {
-    this.#index.uuidv4.mockImplementationOnce(() => value);
+    vi.mocked(this.#index.uuidv4).mockImplementationOnce(() => value);
   }
 
-  public isFsFunction(name: string): name is MethodLikeKeys<Index["fs"]> {
+  public isFsFunction(name: string): name is FsFunctionName {
     return (
       name in this.#index.fs &&
       typeof (this.#index.fs as Record<string, unknown>)[name] === "function"
     );
   }
 
-  public nextFsFail(name: MethodLikeKeys<Index["fs"]>) {
-    jest
-      .spyOn(jest.requireMock<typeof fs>("fs"), name)
-      .mockImplementationOnce(() => {
-        throw new Error("fail on purpose in test");
-      });
-    jest.spyOn(this.#index.fs, name).mockImplementationOnce(() => {
+  public nextFsFail(name: FsFunctionName) {
+    const mock = vi.spyOn(this.#index.fs, name) as Mock<() => unknown>;
+    mock.mockImplementationOnce(() => {
       throw new Error("fail on purpose in test");
     });
   }
@@ -865,12 +905,10 @@ class Simulation {
   }
 
   public offline() {
-    mockStreamOnline = false;
     this.#index.quesoqueue.onStreamOffline();
   }
 
   public online() {
-    mockStreamOnline = true;
     this.#index.quesoqueue.onStreamOnline();
   }
 
@@ -1003,6 +1041,8 @@ export {
   simSetChatters,
   simSetSubscribers,
   simSetModerators,
+  setupVirtualFileSystem,
+  mockPerformance,
   buildChatter,
   createMockVolume,
   replace,
@@ -1012,4 +1052,5 @@ export {
   DEFAULT_TEST_SETTINGS,
   EMPTY_CHATTERS,
   populateMockVolume,
+  Simulation,
 };

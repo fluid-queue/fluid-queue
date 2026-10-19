@@ -3,9 +3,10 @@ import {
   DEFAULT_TEST_SETTINGS,
   createMockVolume,
   mockTwitchApi,
+  setupVirtualFileSystem,
 } from "./simulation.js";
 import type { User } from "fluid-queue/extensions-api/queue-entry.js";
-import { Volume, vol, fs } from "memfs";
+import { Volume } from "memfs";
 import path from "node:path";
 
 vi.stubGlobal("console", {
@@ -22,20 +23,10 @@ const TEST_FILE_NAME = "./data/tests/versioned-file.json";
 
 async function setupMocks(
   volume?: InstanceType<typeof Volume>
-): Promise<typeof fs> {
+): Promise<typeof import("node:fs")> {
   vi.resetModules();
   vi.restoreAllMocks();
   vi.useFakeTimers();
-  vi.mock("node:fs", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs)
-      .then((fs) => ({ ...fs, default: fs }))
-  );
-  vi.mock("node:fs/promises", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs.promises)
-      .then((promises) => ({ ...promises, default: promises }))
-  );
   const { twitchApi } = await mockTwitchApi();
   vi.mocked(twitchApi["getChatters"]).mockImplementation(() =>
     Promise.resolve(mockChatters)
@@ -44,9 +35,7 @@ async function setupMocks(
     volume = await createMockVolume(DEFAULT_TEST_SETTINGS);
   }
   // setup virtual file system
-  vol.reset();
-  vol.fromJSON(volume.toJSON(), path.resolve("."));
-  return fs;
+  return setupVirtualFileSystem(volume).fs;
 }
 
 async function runHooks(hooks: (() => Promise<void> | void)[]): Promise<void> {

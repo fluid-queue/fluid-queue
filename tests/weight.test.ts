@@ -23,17 +23,6 @@ vi.stubGlobal("console", {
 });
 
 const setupMocks = async () => {
-  vi.mock("node:fs", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs)
-      .then((fs) => ({ ...fs, default: fs }))
-  );
-  vi.mock("node:fs/promises", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs.promises)
-      .then((promises) => ({ ...promises, default: promises }))
-  );
-
   await mockTwitchApi();
 
   // reset chatters

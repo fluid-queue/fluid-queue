@@ -1,8 +1,7 @@
 export type EmptyObject = Omit<{ empty: never }, "empty">;
 
 export type Result<Data extends object, Error extends object = EmptyObject> =
-  | (Data & { success: true })
-  | (Error & { success: false });
+  (Data & { success: true }) | (Error & { success: false });
 
 export type FunctionOrData<
   Type,

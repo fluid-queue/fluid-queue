@@ -62,8 +62,7 @@ function next_level_message(
 
 function weightedrandom_level_message(
   level:
-    | (QueueEntry & { selectionChance: string; online: boolean })
-    | undefined,
+    (QueueEntry & { selectionChance: string; online: boolean }) | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
@@ -86,8 +85,7 @@ function weightedrandom_level_message(
 
 function weightednext_level_message(
   level:
-    | (QueueEntry & { selectionChance: string; online: boolean })
-    | undefined,
+    (QueueEntry & { selectionChance: string; online: boolean }) | undefined,
   percentSuffix = ""
 ) {
   if (level === undefined) {
@@ -345,7 +343,7 @@ async function pickLevel(
       next_level = { ...dip_level, online: true };
       break;
     default:
-      selection_mode = "default";
+      // selection_mode = "default";
       next_level = await quesoqueue.next();
   }
   return next_level;

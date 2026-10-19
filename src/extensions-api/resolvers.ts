@@ -63,8 +63,10 @@ export type QueueEntryApi<T extends Stage = CreateStage> = Omit<
   typeof stageMarker
 >;
 
-export interface RegisterStage<T extends object, U extends object = T>
-  extends Stage {
+export interface RegisterStage<
+  T extends object,
+  U extends object = T,
+> extends Stage {
   registerResolver(
     name: string,
     resolve: (levelCode: string) => T | null,

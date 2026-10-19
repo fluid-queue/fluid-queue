@@ -49,10 +49,7 @@ interface ExtensionModule<T = Promise<void> | void> {
 }
 
 export default interface ExtensionsApi
-  extends BindingsApi,
-    CommandsApi,
-    QueueHandlersApi,
-    QueueEntryApi {
+  extends BindingsApi, CommandsApi, QueueHandlersApi, QueueEntryApi {
   resolve(
     levelCode: string
   ): Result<

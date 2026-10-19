@@ -395,7 +395,6 @@ function getFsFromError(err: unknown): typeof import("node:fs") {
     err != null &&
     typeof err === "object" &&
     "simIndex" in err &&
-    typeof (err as { simIndex: unknown }).simIndex === "object" &&
     ("node:fs" in (err as { simIndex: object }).simIndex ||
       "fs" in (err as { simIndex: object }).simIndex) &&
     typeof ((err as { simIndex: object }).simIndex as { fs: unknown }).fs ===

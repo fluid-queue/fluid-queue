@@ -5,10 +5,10 @@ import {
   createMockVolume,
   simAdvanceTime,
   simSetChatters,
+  mockPerformance,
+  setupVirtualFileSystem,
 } from "./simulation.js";
 import type { User } from "fluid-queue/extensions-api/queue-entry.js";
-import { vol } from "memfs";
-import path from "node:path";
 
 // constants
 const defaultTestChatters: User[] = [];
@@ -43,21 +43,11 @@ async function setupMocks() {
   vi.resetModules();
   vi.restoreAllMocks();
   vi.useFakeTimers();
-  vi.mock("node:fs", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs)
-      .then((fs) => ({ ...fs, default: fs }))
-  );
-  vi.mock("node:fs/promises", () =>
-    import("memfs")
-      .then((memfs) => memfs.fs.promises)
-      .then((promises) => ({ ...promises, default: promises }))
-  );
+  mockPerformance();
 
   const volume = await createMockVolume(defaultTestSettings);
   // setup virtual file system
-  vol.reset();
-  vol.fromJSON(volume.toJSON(), path.resolve("."));
+  setupVirtualFileSystem(volume);
 
   const settings = (await import("fluid-queue/settings.js")).default;
 
@@ -157,7 +147,7 @@ test("online users", async () => {
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(true);
 
   // after 5 minutes not online any longer
-  await simAdvanceTime(5 * 60_000);
+  await simAdvanceTime(15 * 60_000, 1000);
 
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(

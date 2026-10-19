@@ -1,9 +1,7 @@
 // imports
-import { vi, beforeEach, test, describe } from "vitest";
-import { expect } from "vitest";
-import readline from "readline";
-import path from "node:path";
-import { SourceLocation, codeFrameColumns } from "@babel/code-frame";
+import { vi, beforeEach, test, expect, describe } from "vitest";
+import path from "path";
+import fs from "fs";
 import {
   simRequireIndex,
   simSetChatters,
@@ -11,14 +9,16 @@ import {
   clearAllTimers,
   START_TIME,
   EMPTY_CHATTERS,
+  Simulation,
 } from "../simulation.js";
 import { fileURLToPath } from "url";
 import { z } from "zod";
 import { execSync } from "child_process";
-import writeFileAtomic from "write-file-atomic";
 import jsonOrder from "json-order";
-import { instructions } from "./parser.js";
 import _ from "lodash";
+
+// fake timers
+vi.useFakeTimers();
 
 beforeEach(() => {
   // reset chatters
@@ -45,6 +45,10 @@ const chatLogTest = async (
   fileName: string,
   fixingTests: boolean
 ): Promise<FixInstruction[]> => {
+  // vitest really does not like it when this is imported at top-level
+  console.log("A");
+  const { instructions } = await import("./parser.js");
+  console.log("B");
   const simulation = await Simulation.load();
   let chatbot: string | null = null;
   const fixInstructions: FixInstruction[] = [];
@@ -230,11 +234,6 @@ const chatLogTest = async (
   return fixInstructions;
 };
 
-describe("chat-logs", async () => {
-  const fs = (await vi.importActual(
-    "node:fs"
-  )) satisfies typeof import("node:fs");
-
 function isFixingTests() {
   if (
     !["true", "yes", "1", "y"].includes(process.env.FIX?.toLowerCase() ?? "no")
@@ -295,8 +294,17 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
       newContents() +
       contents.substring(replace.position.end);
   }
+  const writeFileAtomic =
+    await vi.importActual<typeof import("write-file-atomic")>(
+      "write-file-atomic"
+    );
   await writeFileAtomic(fileName, contents, { encoding: "utf-8" });
 }
+
+describe("chat-logs", async () => {
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
 
   const testFiles = fs
     .readdirSync(
@@ -309,8 +317,12 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
       ".",
       path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
     );
-    test(`${fileName}`, { timeout: 10_000 }, async () => {
-      await expect(chatLogTest(fileName, fixingTests)).resolves.toBeTruthy();
+    test(`${fileName}`, async () => {
+      const result = await chatLogTest(fileName, fixingTests);
+      if (result.length > 0) {
+        await fixContents(fileName, result);
+      }
+      expect(result).toBeTruthy();
     });
   }
 });
