@@ -5,7 +5,7 @@ import settings from "./settings.js";
 
 export const options: InitOptions<FsBackendOptions> = {
   debug: settings.i18next_debug,
-  initImmediate: false,
+  initAsync: false,
   lng: settings.language,
   fallbackLng: "en",
   ns: "fluid-queue",

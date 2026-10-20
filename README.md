@@ -32,7 +32,7 @@ We test against the current LTS Node.JS version, and target the latest LTS versi
 $ git clone https://github.com/fluid-queue/fluid-queue.git
 $ cd fluid-queue
 $ git checkout develop # Only necessary if you're working on the develop branch
-$ npm install --include=optional # Optional dependencies are needed for the build and the tests
+$ npm clean-install --include=optional # Optional dependencies are needed for the build and the tests
 $ npm run build
 $ npm run clean # If you need to clean up the build directory
 ```
@@ -44,23 +44,23 @@ We use `esbuild` to build and bundle the code, so you'll end up with a single `i
 To run tests:
 
 ```sh
-$ npm test
-```
-
-If you get `TypeError: Converting circular structure to JSON`, try:
-
-```sh
-$ npm test -- --detectOpenHandles
+$ npm test -- --run
 ```
 
 To run tests without log output:
 
 ```sh
-$ npm test -- --silent
+$ npm test -- --run --silent
+```
+
+To run tests where only failing tests are logged:
+
+```sh
+$ npm test -- --run --silent=passed-only
 ```
 
 To run a single test:
 
 ```sh
-$ npm test -- -t custom-levels-v2.1-to-v2.2
+$ npm test -- --run -t custom-levels-v2.1-to-v3.1
 ```

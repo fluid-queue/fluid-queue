@@ -42,19 +42,18 @@ const Options = z
     removeDashes: z
       .boolean()
       .or(
-        z.string().transform((value, ctx) => {
+        z.string().transform((value) => {
           const newValue = value == "true" || value == "yes";
           deprecatedValue(
             JSON.stringify(value),
-            `${JSON.stringify(newValue)} (without the quotes)`,
-            ctx
+            `${JSON.stringify(newValue)} (without the quotes)`
           );
           return newValue;
         })
       )
       .default(false),
   })
-  .default({});
+  .default({ removeDashes: false });
 
 function display(code: string, options: z.output<typeof Options>) {
   let codeDisplay = code;

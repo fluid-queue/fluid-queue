@@ -1,13 +1,4 @@
 // note: this file is used by the build.ts script and the queue src
-
-// TODO: find a way to allow var for global declarations
-declare global {
-  // eslint-disable-next-line no-var
-  var __build_version: string | undefined;
-  // eslint-disable-next-line no-var
-  var __build_tag: string | undefined;
-}
-
 export function buildVersion(): string | null {
   if (
     (process.env.DOCKER_TAG == "this" || process.env.DOCKER_TAG == "develop") &&
@@ -18,15 +9,15 @@ export function buildVersion(): string | null {
     // Otherwise users will always see an error.
     return version();
   }
-  if (globalThis.__build_version != null && globalThis.__build_version != "") {
-    return globalThis.__build_version;
+  if (__build_version != null && __build_version != "") {
+    return __build_version;
   }
   return null;
 }
 
 export function buildTag(): string | null {
-  if (globalThis.__build_tag != null && globalThis.__build_tag != "") {
-    return globalThis.__build_tag;
+  if (__build_tag != null && __build_tag != "") {
+    return __build_tag;
   }
   return null;
 }
