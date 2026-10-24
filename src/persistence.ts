@@ -1,9 +1,9 @@
 import settings from "./settings.js";
-import fs from "fs";
+import fs from "node:fs";
 import gracefulFs from "graceful-fs";
 import { sync as writeFileAtomicSync } from "write-file-atomic";
 import { WaitingSchemeV3 } from "./waiting.js";
-import path from "path";
+import path from "node:path";
 import { z } from "zod";
 import { twitchApi } from "./twitch-api.js";
 import { User } from "./extensions-api/queue-entry.js";
@@ -915,7 +915,7 @@ export class VersionedFile<T, P = T> {
       throw err;
     }
     const fileContents = await fs.promises.readFile(fileName, {
-      encoding: "utf-8",
+      encoding: "utf8",
     });
     const object = await VersionedObjectScheme.parseAsync(
       JSON.parse(fileContents)
@@ -1151,7 +1151,10 @@ async function upgradeQueueV2ToV3(
         { lostLevels, lostWaiting },
         null,
         settings.prettySaveFiles ? 2 : 0
-      )
+      ),
+      {
+        encoding: "utf8",
+      }
     );
     warn(`${lostUsers} users in your queue could not be found!`);
     warn("This means that they deleted their account or renamed themselves.");
@@ -1205,7 +1208,7 @@ export const saveQueueSync = (
 ) => {
   try {
     writeFileAtomicSync(VERSIONED_FILE_NAME, createSaveFileContent(data), {
-      encoding: "utf-8",
+      encoding: "utf8",
     });
     return true;
   } catch (err) {
@@ -1285,7 +1288,7 @@ export const saveCustomCodesSync = (
       CUSTOM_CODES_V2.fileName,
       createCustomCodesFileContent(data),
       {
-        encoding: "utf-8",
+        encoding: "utf8",
       }
     );
   } catch (err) {

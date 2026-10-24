@@ -1,5 +1,5 @@
-import * as path from "path";
-import { promises as fsPromises } from "fs";
+import * as path from "node:path";
+import { promises as fsPromises } from "node:fs";
 import settings from "./settings.js";
 import {
   BindingsApi,
@@ -34,14 +34,14 @@ import {
   QueueEntryApi,
 } from "./extensions-api/resolvers.js";
 import { BroadcastOnce, SendOnce } from "./sync.js";
-import { fileURLToPath, pathToFileURL } from "url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import i18next from "i18next";
 import { log, warn, error } from "./chalk-print.js";
 import { z } from "zod";
 import { ZodTypeUnknown } from "./zod.js";
 
 // jest runs on the source, not the build, so this needs to load extensions as typescript too
-const fileEnding: string[] = [".js", ".ts"];
+const fileEnding: string[] = [".mjs", ".js", ".ts"];
 
 // internal interface
 interface ExtensionModule<T = Promise<void> | void> {
@@ -49,10 +49,7 @@ interface ExtensionModule<T = Promise<void> | void> {
 }
 
 export default interface ExtensionsApi
-  extends BindingsApi,
-    CommandsApi,
-    QueueHandlersApi,
-    QueueEntryApi {
+  extends BindingsApi, CommandsApi, QueueHandlersApi, QueueEntryApi {
   resolve(
     levelCode: string
   ): Result<

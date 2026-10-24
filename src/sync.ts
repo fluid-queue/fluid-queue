@@ -1,27 +1,9 @@
-// TODO: find a better name for this
-function channel<T>(): [
-  promise: Promise<T>,
-  resolve: (value: T | PromiseLike<T>) => void,
-  reject: (reason?: unknown) => void,
-] {
-  let captureResolve;
-  let captureReject;
-  const promise = new Promise<T>((resolve, reject) => {
-    captureResolve = resolve;
-    captureReject = reject;
-  });
-  if (captureResolve === undefined || captureReject === undefined) {
-    throw new Error("unreachable");
-  }
-  return [promise, captureResolve, captureReject];
-}
-
 export class SendOnce<T> {
   private promise: Promise<T>;
   private resolve: (value: T | PromiseLike<T>) => void;
 
   constructor() {
-    const [promise, resolve] = channel<T>();
+    const { promise, resolve } = Promise.withResolvers<T>();
     this.promise = promise;
     this.resolve = resolve;
   }
@@ -70,7 +52,7 @@ export class BroadcastOnce<T> {
     if (this.subscribers == null) {
       throw new Error(`${this.constructor.name}: value has already been sent.`);
     }
-    const [promise, resolve] = channel<T>();
+    const { promise, resolve } = Promise.withResolvers<T>();
     this.subscribers.push(resolve);
     return promise;
   }

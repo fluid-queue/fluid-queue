@@ -106,8 +106,7 @@ class QueueData {
   private levels: QueueEntry[] = [];
   private waitingByUserId: Record<string, Waiting> = {};
   private currentAccessor:
-    | (QueueDataAccessor & { save: false | { force: boolean } })
-    | null = null;
+    (QueueDataAccessor & { save: false | { force: boolean } }) | null = null;
 
   private getMeasurement(
     playTime:

@@ -72,7 +72,7 @@ const CustomLevelV1 = z.object({
   enabled: z.boolean(),
 });
 type CustomLevelV1 = z.infer<typeof CustomLevelV1>;
-const CustomDataV1 = z.record(CustomLevelV1);
+const CustomDataV1 = z.record(z.string(), CustomLevelV1);
 type CustomDataV1 = z.infer<typeof CustomDataV1>;
 
 class CustomTransient {

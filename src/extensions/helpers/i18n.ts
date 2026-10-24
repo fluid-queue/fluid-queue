@@ -1,8 +1,8 @@
 import i18next from "i18next";
 import FsBackend, { FsBackendOptions } from "i18next-fs-backend";
-import { join, dirname as pathDirname } from "path";
-import { fileURLToPath } from "url";
-import { readdirSync, lstatSync } from "fs";
+import { join, dirname as pathDirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readdirSync, lstatSync } from "node:fs";
 import { log } from "../../chalk-print.js";
 
 /**

@@ -1,5 +1,5 @@
 // imports
-import { jest } from "@jest/globals";
+import { vi, beforeEach, test, expect, describe } from "vitest";
 import path from "path";
 import fs from "fs";
 import {
@@ -14,20 +14,18 @@ import {
 import { fileURLToPath } from "url";
 import { z } from "zod";
 import { execSync } from "child_process";
-import writeFileAtomic from "write-file-atomic";
 import jsonOrder from "json-order";
-import { instructions } from "./parser.js";
 import _ from "lodash";
 
 // fake timers
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 beforeEach(() => {
   // reset chatters
   simSetChatters(EMPTY_CHATTERS);
 
   // reset time
-  jest.setSystemTime(START_TIME);
+  vi.setSystemTime(START_TIME);
 });
 
 test("setup", async () => {
@@ -47,12 +45,16 @@ const chatLogTest = async (
   fileName: string,
   fixingTests: boolean
 ): Promise<FixInstruction[]> => {
+  // vitest really does not like it when this is imported at top-level
+  console.log("A");
+  const { instructions } = await import("./parser.js");
+  console.log("B");
   const simulation = await Simulation.load();
   let chatbot: string | null = null;
   const fixInstructions: FixInstruction[] = [];
 
   try {
-    const fileContents = fs.readFileSync(fileName, { encoding: "utf-8" });
+    const fileContents = fs.readFileSync(fileName, { encoding: "utf8" });
     await simulation.withMeta(
       {
         fileName,
@@ -74,7 +76,7 @@ const chatLogTest = async (
             chatter.isBroadcaster
           );
         const allInstructions = instructions().parse(
-          fs.readFileSync(fileName, { encoding: "utf-8" })
+          fs.readFileSync(fileName, { encoding: "utf8" })
         );
         for (const instruction of allInstructions.value) {
           await simulation.withMeta(
@@ -232,12 +234,6 @@ const chatLogTest = async (
   return fixInstructions;
 };
 
-const testFiles = fs
-  .readdirSync(
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
-  )
-  .filter((file: string) => file.endsWith(".test.log"));
-
 function isFixingTests() {
   if (
     !["true", "yes", "1", "y"].includes(process.env.FIX?.toLowerCase() ?? "no")
@@ -280,7 +276,7 @@ function jsonWithOrder(json: string, orderJson: string) {
 
 async function fixContents(fileName: string, result: FixInstruction[]) {
   result.sort((a, b) => b.position.start - a.position.start);
-  let contents = fs.readFileSync(fileName, { encoding: "utf-8" });
+  let contents = fs.readFileSync(fileName, { encoding: "utf8" });
   for (const replace of result) {
     const newContents = () => {
       if (replace.json) {
@@ -298,20 +294,35 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
       newContents() +
       contents.substring(replace.position.end);
   }
-  await writeFileAtomic(fileName, contents, { encoding: "utf-8" });
+  const writeFileAtomic =
+    await vi.importActual<typeof import("write-file-atomic")>(
+      "write-file-atomic"
+    );
+  await writeFileAtomic(fileName, contents, { encoding: "utf8" });
 }
 
-for (const file of testFiles) {
-  const fileName = path.relative(
-    ".",
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
-  );
-  test(`${fileName}`, async () => {
-    jest.setTimeout(10_000); // <- this might not work
-    const result = await chatLogTest(fileName, fixingTests);
-    if (result.length > 0) {
-      await fixContents(fileName, result);
-    }
-    expect(result).toBeTruthy();
-  }, 10_000); // <- setting timeout here as well
-}
+describe("chat-logs", async () => {
+  const fs = (await vi.importActual(
+    "node:fs"
+  )) satisfies typeof import("node:fs");
+
+  const testFiles = fs
+    .readdirSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
+    )
+    .filter((file: string) => file.endsWith(".test.log"));
+
+  for (const file of testFiles) {
+    const fileName = path.relative(
+      ".",
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
+    );
+    test(`${fileName}`, async () => {
+      const result = await chatLogTest(fileName, fixingTests);
+      if (result.length > 0) {
+        await fixContents(fileName, result);
+      }
+      expect(result).toBeTruthy();
+    });
+  }
+});

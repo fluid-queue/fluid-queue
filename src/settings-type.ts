@@ -1,5 +1,5 @@
 import timestring from "timestring";
-import { RefinementCtx, z } from "zod";
+import { z } from "zod";
 import { warn } from "./chalk-print.js";
 import { Duration } from "@js-joda/core";
 
@@ -23,15 +23,9 @@ const list_options: readonly [string, ...string[]] = [
   "none",
 ];
 
-export function deprecatedValue<V, N>(
-  value: V,
-  newValue: N,
-  ctx: RefinementCtx
-) {
+export function deprecatedValue<V, N>(value: V, newValue: N) {
   warn(
-    `Setting ${String(value)} for ${ctx.path.join(
-      "."
-    )} is deprected, please replace the value with ${String(newValue)}.`
+    `Setting ${String(value)} is deprected, please replace the value with ${String(newValue)}.`
   );
 }
 
@@ -49,20 +43,20 @@ export const TimeValue = z.string().transform((value) => {
 const DeprectedMinutesValue = z
   .number()
   .safe()
-  .transform((value, ctx) => {
+  .transform((value) => {
     // do not translate this newValue as configuration is only done in english
     const newValue = JSON.stringify(`${value} minute${value == 1 ? "" : "s"}`);
-    deprecatedValue(value, newValue, ctx);
+    deprecatedValue(value, newValue);
     return value * 1000 * 60;
   })
   .or(TimeValue);
 const DeprectedSecondsValue = z
   .number()
   .safe()
-  .transform((value, ctx) => {
+  .transform((value) => {
     // do not translate this newValue as configuration is only done in english
     const newValue = JSON.stringify(`${value} second${value == 1 ? "" : "s"}`);
-    deprecatedValue(value, newValue, ctx);
+    deprecatedValue(value, newValue);
     return value * 1000;
   })
   .or(TimeValue);

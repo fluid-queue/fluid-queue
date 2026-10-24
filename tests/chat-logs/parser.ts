@@ -1,9 +1,14 @@
-import {
+import { createRequire } from "node:module";
+import type { Parjser } from "parjs";
+
+// https://github.com/GregRos/parjs/issues/59
+const require = createRequire(import.meta.url);
+const {
   string,
   anyStringOf,
   spaces1,
   space,
-  Parjser,
+
   regexp,
   position,
   noCharOf,
@@ -13,8 +18,8 @@ import {
   uniLetter,
   uniDecimal,
   float,
-} from "parjs";
-import {
+} = require("parjs") as typeof import("parjs");
+const {
   many,
   map,
   or,
@@ -29,7 +34,7 @@ import {
   between,
   exactly,
   maybe,
-} from "parjs/combinators";
+} = require("parjs/combinators") as typeof import("parjs/combinators");
 
 type Instruction<Type extends string> = {
   type: Type;
@@ -99,16 +104,14 @@ function comment() {
         between(spaces0())
       )
     ),
-    map(
-      ([[start, value], end]): Comment => ({
-        type: "comment",
-        comment: value,
-        position: {
-          start,
-          end,
-        },
-      })
-    )
+    map(([[start, value], end]): Comment => ({
+      type: "comment",
+      comment: value,
+      position: {
+        start,
+        end,
+      },
+    }))
   );
 }
 
@@ -117,12 +120,10 @@ function instruction<T extends string>(name: T) {
     qthen(
       position().pipe(then(string(name)), then(position()), between(spaces0()))
     ),
-    map(
-      ([[start, value], end]): Instruction<T> => ({
-        type: value,
-        position: { start, end },
-      })
-    )
+    map(([[start, value], end]): Instruction<T> => ({
+      type: value,
+      position: { start, end },
+    }))
   );
 }
 
@@ -170,16 +171,14 @@ function chatLine() {
           between(spaces0())
         )
     ),
-    map(
-      ([[[[[start, time], chatter], messageStart], message], end]): Chat => ({
-        type: "chat",
-        time,
-        chatter,
-        message,
-        position: { start, end },
-        messagePosition: { start: messageStart, end },
-      })
-    )
+    map(([[[[[start, time], chatter], messageStart], message], end]): Chat => ({
+      type: "chat",
+      time,
+      chatter,
+      message,
+      position: { start, end },
+      messagePosition: { start: messageStart, end },
+    }))
   );
 }
 
@@ -202,18 +201,16 @@ function jsonPath<T extends string>(name: T) {
         )
         .pipe(between(spaces0()))
     ),
-    map(
-      ([[[[[start, value], path], jsonStart], json], end]): JsonPath<T> => ({
-        type: value,
-        json,
-        path: path ?? [],
-        position: { start, end },
-        jsonPosition: {
-          start: jsonStart,
-          end,
-        },
-      })
-    )
+    map(([[[[[start, value], path], jsonStart], json], end]): JsonPath<T> => ({
+      type: value,
+      json,
+      path: path ?? [],
+      position: { start, end },
+      jsonPosition: {
+        start: jsonStart,
+        end,
+      },
+    }))
   );
 }
 
@@ -229,14 +226,12 @@ function save<T extends string>(path: T) {
         between(spaces0())
       )
     ),
-    map(
-      ([[[start, path], json], end]): Save<T> => ({
-        type: "save",
-        json,
-        path,
-        position: { start, end },
-      })
-    )
+    map(([[[start, path], json], end]): Save<T> => ({
+      type: "save",
+      json,
+      path,
+      position: { start, end },
+    }))
   );
 }
 

@@ -1,8 +1,9 @@
-import fs from "fs";
+import fs from "node:fs";
 import { z } from "zod";
 import { Settings } from "./settings-type.js";
 import YAML from "yaml";
 import { warn } from "./chalk-print.js";
+import path from "node:path";
 
 export type Settings = z.infer<typeof Settings>;
 /**
@@ -23,7 +24,7 @@ const fileNames = [
 for (const value of fileNames) {
   fileName = value;
   try {
-    fileContents = fs.readFileSync(fileName, {
+    fileContents = fs.readFileSync(path.resolve(fileName), {
       encoding: "utf8",
     });
     if (value.endsWith(".json")) {

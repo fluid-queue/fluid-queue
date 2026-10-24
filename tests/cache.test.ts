@@ -1,10 +1,11 @@
-import { jest } from "@jest/globals";
-import { ConcurrentLoader, SingleValueCache } from "fluid-queue/cache.js";
-import { BroadcastOnce } from "fluid-queue/sync.js";
+//import { ConcurrentLoader, SingleValueCache } from "fluid-queue/cache.js";
+//import { BroadcastOnce } from "fluid-queue/sync.js";
 import { Duration } from "@js-joda/core";
+import { vi, test, expect } from "vitest";
 
 test("BroadcastOnce:value", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { BroadcastOnce } = await import("fluid-queue/sync.js");
   const channel = new BroadcastOnce();
   const recv1 = channel.recv();
   const recv2 = channel.recv();
@@ -19,7 +20,8 @@ test("BroadcastOnce:value", async () => {
 });
 
 test("BroadcastOnce:value:send-twice", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { BroadcastOnce } = await import("fluid-queue/sync.js");
   const channel = new BroadcastOnce();
   const recv1 = channel.recv();
   const recv2 = channel.recv();
@@ -36,7 +38,8 @@ test("BroadcastOnce:value:send-twice", async () => {
 });
 
 test("BroadcastOnce:value:recv-after-send", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { BroadcastOnce } = await import("fluid-queue/sync.js");
   const channel = new BroadcastOnce();
   const recv1 = channel.recv();
   const recv2 = channel.recv();
@@ -53,7 +56,8 @@ test("BroadcastOnce:value:recv-after-send", async () => {
 });
 
 test("BroadcastOnce:Promise:resolve", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { BroadcastOnce } = await import("fluid-queue/sync.js");
   const channel = new BroadcastOnce();
   const recv1 = channel.recv();
   const recv2 = channel.recv();
@@ -68,7 +72,8 @@ test("BroadcastOnce:Promise:resolve", async () => {
 });
 
 test("BroadcastOnce:Promise:reject", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { BroadcastOnce } = await import("fluid-queue/sync.js");
   const channel = new BroadcastOnce();
   const recv1 = channel.recv();
   const recv2 = channel.recv();
@@ -83,9 +88,10 @@ test("BroadcastOnce:Promise:reject", async () => {
 });
 
 test("ConcurrentLoader:fetch-concurrently", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { ConcurrentLoader } = await import("fluid-queue/cache.js");
   let number = 42;
-  const fetchMethod = jest.fn(async () => {
+  const fetchMethod = vi.fn(async () => {
     // sleep 100ms
     await new Promise((resolve) => setTimeout(resolve, 100));
     // increment number and return previous number
@@ -112,9 +118,10 @@ test("ConcurrentLoader:fetch-concurrently", async () => {
 });
 
 test("ConcurrentLoader:fetch-concurrently-throw", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { ConcurrentLoader } = await import("fluid-queue/cache.js");
   let number = 42;
-  const fetchMethod = jest.fn(async () => {
+  const fetchMethod = vi.fn(async () => {
     // sleep 100ms
     await new Promise((resolve) => setTimeout(resolve, 100));
     // throw error in async function, so calling fetchMethod does not throw immediatly
@@ -149,9 +156,10 @@ test("ConcurrentLoader:fetch-concurrently-throw", async () => {
 });
 
 test("ConcurrentLoader:fetch-concurrently-reject", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { ConcurrentLoader } = await import("fluid-queue/cache.js");
   let number = 42;
-  const fetchMethod = jest.fn(() => {
+  const fetchMethod = vi.fn(() => {
     // sleep 100ms
     return new Promise((resolve) => setTimeout(resolve, 100)).then(
       // then reject
@@ -185,7 +193,8 @@ test("ConcurrentLoader:fetch-concurrently-reject", async () => {
 });
 
 test("ConcurrentLoader:fetch-method-throws", async () => {
-  jest.useRealTimers();
+  vi.useRealTimers();
+  const { ConcurrentLoader } = await import("fluid-queue/cache.js");
   const fetchMethod = () => {
     // ConcurrentLoader can deal with errors thrown in the fetchMethod
     throw new Error("ConcurrentLoader:fetch-method-throws");
@@ -200,8 +209,9 @@ test("ConcurrentLoader:fetch-method-throws", async () => {
 });
 
 test("SingleValueCache:ttl", async () => {
-  jest.useFakeTimers();
-  const fetchMethod = jest.fn((): Promise<string | null> => {
+  vi.useFakeTimers();
+  const { SingleValueCache } = await import("fluid-queue/cache.js");
+  const fetchMethod = vi.fn((): Promise<string | null> => {
     return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
@@ -223,14 +233,14 @@ test("SingleValueCache:ttl", async () => {
   expect(cache.get()).toEqual("new value");
 
   // wait for 10s, cache is not stale yet! so fetch doesn't reload
-  jest.advanceTimersByTime(10_000);
+  vi.advanceTimersByTime(10_000);
   await expect(cache.fetch()).resolves.toEqual("new value");
   expect(fetchMethod).toHaveBeenCalledTimes(1); // not realoaded yet!
   expect(cache.isStale).toBe(false);
   expect(cache.get()).toEqual("new value");
 
   // wait for 20 more seconds
-  jest.advanceTimersByTime(20_000);
+  vi.advanceTimersByTime(20_000);
   // value is now stale
   expect(cache.isStale).toBe(true);
   // cache is still returned
@@ -243,16 +253,17 @@ test("SingleValueCache:ttl", async () => {
   expect(cache.get()).toEqual("next value");
 
   // wait 29_999 ms
-  jest.advanceTimersByTime(29_999);
+  vi.advanceTimersByTime(29_999);
   expect(cache.isStale).toBe(false);
   // wait 1 more ms
-  jest.advanceTimersByTime(1);
+  vi.advanceTimersByTime(1);
   expect(cache.isStale).toBe(true);
 });
 
 test("SingleValueCache:error", async () => {
-  jest.useFakeTimers();
-  const fetchMethod = jest.fn((): Promise<string | null> => {
+  vi.useFakeTimers();
+  const { SingleValueCache } = await import("fluid-queue/cache.js");
+  const fetchMethod = vi.fn((): Promise<string | null> => {
     return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
@@ -272,7 +283,7 @@ test("SingleValueCache:error", async () => {
   expect(cache.get()).toEqual("value");
 
   // wait for 30 seconds
-  jest.advanceTimersByTime(30_000);
+  vi.advanceTimersByTime(30_000);
   // value is now stale
   expect(cache.isStale).toBe(true);
   // cache is still returned
@@ -287,8 +298,9 @@ test("SingleValueCache:error", async () => {
 });
 
 test("SingleValueCache:fetch-concurrently", async () => {
-  jest.useFakeTimers();
-  const fetchMethod = jest.fn((): Promise<string | null> => {
+  vi.useFakeTimers();
+  const { SingleValueCache } = await import("fluid-queue/cache.js");
+  const fetchMethod = vi.fn((): Promise<string | null> => {
     return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
@@ -314,7 +326,7 @@ test("SingleValueCache:fetch-concurrently", async () => {
   expect(cache.get()).toEqual("value");
 
   // wait for 30 seconds
-  jest.advanceTimersByTime(30_000);
+  vi.advanceTimersByTime(30_000);
   // value is now stale
   expect(cache.isStale).toBe(true);
   // cache is still returned
@@ -326,7 +338,7 @@ test("SingleValueCache:fetch-concurrently", async () => {
   const fetch3 = cache.fetch();
   // advance time, so value can be loaded
   // there is a sleep in the fetch method
-  jest.advanceTimersByTime(100);
+  vi.advanceTimersByTime(100);
   const [result1, result2, result3] = await Promise.all([
     fetch1,
     fetch2,
@@ -341,8 +353,9 @@ test("SingleValueCache:fetch-concurrently", async () => {
 });
 
 test("SingleValueCache:long-load", async () => {
-  jest.useFakeTimers();
-  const fetchMethod = jest.fn((): Promise<string | null> => {
+  vi.useFakeTimers();
+  const { SingleValueCache } = await import("fluid-queue/cache.js");
+  const fetchMethod = vi.fn((): Promise<string | null> => {
     return Promise.resolve(null);
   });
   const cache = new SingleValueCache(
@@ -368,7 +381,7 @@ test("SingleValueCache:long-load", async () => {
   expect(cache.get()).toEqual("value");
 
   // wait for 30 seconds
-  jest.advanceTimersByTime(30_000);
+  vi.advanceTimersByTime(30_000);
   // value is now stale
   expect(cache.isStale).toBe(true);
   // cache is still returned
@@ -377,9 +390,9 @@ test("SingleValueCache:long-load", async () => {
   // value is realoaded
   const fetch = cache.fetch();
   // wait for 30s
-  jest.advanceTimersByTime(30_000);
+  vi.advanceTimersByTime(30_000);
   // wait for 30s again
-  jest.advanceTimersByTime(30_000);
+  vi.advanceTimersByTime(30_000);
   // the value should resolve now
   await expect(fetch).resolves.toEqual("meow");
   expect(fetchMethod).toHaveBeenCalledTimes(2);
