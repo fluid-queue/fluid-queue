@@ -144,6 +144,9 @@ const copyPlugin = ({
 
 export default defineConfig({
   publicDir: false,
+  server: {
+    hmr: false,
+  },
   build: {
     ssr: true,
     target: buildTarget.vite,
@@ -151,12 +154,12 @@ export default defineConfig({
     outDir: "./dist",
     sourcemap: "inline",
     rolldownOptions: {
+      platform: "node",
       input: ["./src/index.ts", ...extensions],
       output: {
         chunkFileNames: "shared/[name]-[hash].mjs",
-        format: "esm",
+        format: "es",
         banner,
-
         entryFileNames({ exports, name }) {
           if (exports.includes("setup")) {
             return `extensions/${name}.mjs`;
@@ -173,7 +176,7 @@ export default defineConfig({
     },
   },
   ssr: {
-    external: true,
+    noExternal: true,
   },
   define: {
     __build_version: JSON.stringify(buildVersion),
