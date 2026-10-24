@@ -114,7 +114,7 @@ class QueueData {
           minutes: number;
           milliseconds: number;
         }
-      | Duration
+      | Duration,
   ): Measurement {
     return {
       duration:
@@ -122,7 +122,7 @@ class QueueData {
           ? playTime
           : Duration.ofSeconds(
               playTime.minutes * 60 + Math.floor(playTime.milliseconds / 1000),
-              (playTime.milliseconds % 1000) * 1_000_000
+              (playTime.milliseconds % 1000) * 1_000_000,
             ),
       start: data.isMeasuring ? Instant.now() : null,
     };
@@ -141,7 +141,7 @@ class QueueData {
           return measurement.duration;
         }
         return measurement.duration.plus(
-          Duration.between(measurement.start, now ?? Instant.now())
+          Duration.between(measurement.start, now ?? Instant.now()),
         );
       },
       get current_level() {
@@ -219,7 +219,7 @@ class QueueData {
                     }
                   : null,
               queue: this.levels.map((level) =>
-                level.serializePersistedQueueEntry()
+                level.serializePersistedQueueEntry(),
               ),
             },
             waiting: Waiting.recordToJson(this.waitingByUserId),
@@ -250,7 +250,7 @@ class QueueData {
         if (data.currentLevelTime != null) {
           if (data.currentLevelTime.start != null) {
             data.currentLevelTime.duration = this.getDuration(
-              data.currentLevelTime
+              data.currentLevelTime,
             );
             data.currentLevelTime.start = null;
           }
@@ -258,7 +258,7 @@ class QueueData {
         if (data.currentSubmitterTime != null) {
           if (data.currentSubmitterTime.start != null) {
             data.currentSubmitterTime.duration = this.getDuration(
-              data.currentSubmitterTime
+              data.currentSubmitterTime,
             );
             data.currentSubmitterTime.start = null;
           }
@@ -284,11 +284,11 @@ class QueueData {
         } else {
           this.current_level = extensions.deserialize(state.entries.current);
           this.currentLevelTime = data.getMeasurement(
-            state.entries.current.playTime
+            state.entries.current.playTime,
           );
         }
         this.levels = state.entries.queue.map((level) =>
-          extensions.deserialize(level)
+          extensions.deserialize(level),
         );
 
         // create object from waiting list
@@ -300,11 +300,11 @@ class QueueData {
           .filter((level) => !(level.submitter.id in this.waitingByUserId))
           .forEach((level) => {
             warn(
-              `User ${level.submitter.toString()} didn't have a waiting time!`
+              `User ${level.submitter.toString()} didn't have a waiting time!`,
             );
             this.waitingByUserId[level.submitter.id] = Waiting.create(
               level.submitter,
-              now
+              now,
             );
             save = true;
           });
@@ -340,7 +340,7 @@ class QueueData {
         if (
           Object.prototype.hasOwnProperty.call(
             data.waitingByUserId,
-            this.current_level.submitter.id
+            this.current_level.submitter.id,
           )
         ) {
           delete this.waitingByUserId[this.current_level.submitter.id];
@@ -373,7 +373,7 @@ class QueueData {
   ): T {
     if (this.currentAccessor != null) {
       throw new Error(
-        "Accessing queue state while it is already being accessed"
+        "Accessing queue state while it is already being accessed",
       );
     }
     const accessor = this.accessor();
@@ -400,7 +400,7 @@ const data = new QueueData();
 function partition<T>(
   list: T[],
   predicate: (value: T, index: number, array: T[]) => boolean,
-  thisArg?: unknown
+  thisArg?: unknown,
 ): [T[], T[]] {
   const listTrue = [];
   const listFalse = [];
@@ -458,7 +458,7 @@ const queue = {
       }
 
       const level = data.levels.find(
-        queue.matchUsernameArgument(usernameArgument)
+        queue.matchUsernameArgument(usernameArgument),
       );
       if (!level) {
         const usernameOrDisplayName = usernameArgument.trim().replace(/^@/, "");
@@ -473,7 +473,7 @@ const queue = {
       let removedLevels;
       [removedLevels, data.levels] = partition(
         data.levels,
-        queue.matchSubmitter(submitter)
+        queue.matchSubmitter(submitter),
       );
       data.onRemove(removedLevels);
       data.saveLater();
@@ -492,7 +492,7 @@ const queue = {
       let removedLevels;
       [removedLevels, data.levels] = partition(
         data.levels,
-        queue.matchSubmitter(submitter)
+        queue.matchSubmitter(submitter),
       );
       if (removedLevels.length === 0) {
         return i18next.t("submitterNotFound", { submitter });
@@ -531,7 +531,7 @@ const queue = {
 
   position: async (
     submitter: QueueSubmitter,
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ): Promise<number> => {
     let getList: QueueDataMap<OnlineOfflineList>;
     if (list === undefined) {
@@ -577,13 +577,13 @@ const queue = {
           return index + 1 + (data.current_level != undefined ? 1 : 0);
         }
         return -1;
-      })
+      }),
     );
   },
 
   weightedPosition: async (
     submitter: QueueSubmitter,
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ): Promise<number> => {
     const getWeightedList = await queue.weightedList(true, list);
     return data.access((data) => {
@@ -611,7 +611,7 @@ const queue = {
   },
 
   modSubmittedLevel: (
-    submitter: string
+    submitter: string,
   ):
     | { result: "no-submitter" | "not-found" }
     | { result: "current" | "level"; level: QueueEntry } => {
@@ -684,23 +684,23 @@ const queue = {
         log(
           i18next.t("eligibleUsers", {
             users: weightedList.entries.map((entry) =>
-              entry.level.submitter.toString()
+              entry.level.submitter.toString(),
             ),
             style: "short",
             type: "unit",
-          })
+          }),
         );
         log(
           i18next.t("eligibleUsersTime", {
             weights: weightedList.entries.map((entry) => entry.weight()),
             style: "short",
             type: "unit",
-          })
+          }),
         );
         const weight = weightedList.entries[index].weight();
         const totalWeight = weightedList.totalWeight;
         log(
-          i18next.t("consolePrintWeight", { submitter, weight, totalWeight })
+          i18next.t("consolePrintWeight", { submitter, weight, totalWeight }),
         );
         const percent = weight / totalWeight;
         return i18next.t("genericPercentage", {
@@ -728,16 +728,16 @@ const queue = {
         if (
           !Object.prototype.hasOwnProperty.call(
             data.waitingByUserId,
-            top.submitter.id
+            top.submitter.id,
           )
         ) {
           data.waitingByUserId[top.submitter.id] = Waiting.create(
-            top.submitter
+            top.submitter,
           );
         }
         data.saveLater();
         return i18next.t("puntPunted");
-      })
+      }),
     );
   },
 
@@ -754,7 +754,7 @@ const queue = {
         data.onRemove(removedLevels);
         data.saveLater();
         return response;
-      })
+      }),
     );
   },
 
@@ -767,7 +767,7 @@ const queue = {
   },
 
   next: async (
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ) => {
     let getList: QueueDataMap<OnlineOfflineList>;
     if (list === undefined) {
@@ -794,7 +794,7 @@ const queue = {
         data.removeWaiting();
       }
       const index = data.levels.findIndex(
-        (level) => level === data.current_level
+        (level) => level === data.current_level,
       );
       if (index == -1 || data.current_level == undefined) {
         // data.current_level should never be undefined by this point
@@ -821,7 +821,7 @@ const queue = {
   dip: (usernameArgument: string) => {
     return data.access((data) => {
       const index = data.levels.findIndex(
-        queue.matchUsernameArgument(usernameArgument)
+        queue.matchUsernameArgument(usernameArgument),
       );
       if (index != -1) {
         const removedLevels =
@@ -846,7 +846,7 @@ const queue = {
   },
 
   random: async (
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ) => {
     let getList: QueueDataMap<OnlineOfflineList>;
     if (list === undefined) {
@@ -874,7 +874,7 @@ const queue = {
       const random_index = Math.floor(Math.random() * eligible_levels.length);
       data.current_level = eligible_levels[random_index];
       const index = data.levels.findIndex(
-        (level) => level === data.current_level
+        (level) => level === data.current_level,
       );
       if (index == -1) {
         throw new Error("unreachable");
@@ -898,7 +898,7 @@ const queue = {
   },
 
   weightedrandom: async (
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ) => {
     const getWeightedList = await queue.weightedList(false, list, true);
     const online = true; // Always true with the current setup
@@ -922,18 +922,18 @@ const queue = {
       log(
         i18next.t("eligibleUsers", {
           users: weightedList.entries.map((entry) =>
-            entry.level.submitter.toString()
+            entry.level.submitter.toString(),
           ),
           style: "short",
           type: "unit",
-        })
+        }),
       );
       log(
         i18next.t("eligibleUsersTime", {
           weights: weightedList.entries.map((entry) => entry.weight()),
           style: "short",
           type: "unit",
-        })
+        }),
       );
 
       log(i18next.t("randomNumber", { randomNumber }));
@@ -949,7 +949,7 @@ const queue = {
       data.current_level = weightedList.entries[levelIndex].level;
 
       const index = data.levels.findIndex(
-        (level) => level === data.current_level
+        (level) => level === data.current_level,
       );
       if (index == -1) {
         throw new Error("unreachable");
@@ -977,7 +977,7 @@ const queue = {
   weightedList: async (
     sorted: boolean | undefined = undefined,
     list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<QueueDataMap<WeightedList>> => {
     let getList: QueueDataMap<OnlineOfflineList>;
     if (list === undefined) {
@@ -1003,8 +1003,8 @@ const queue = {
         .filter((level) =>
           Object.prototype.hasOwnProperty.call(
             data.waitingByUserId,
-            level.submitter.id
-          )
+            level.submitter.id,
+          ),
         )
         .map((level, position) => {
           return {
@@ -1016,13 +1016,13 @@ const queue = {
 
       if (sorted === undefined || sorted) {
         entries = entries.sort(
-          (a, b) => b.weight() - a.weight() || a.position - b.position
+          (a, b) => b.weight() - a.weight() || a.position - b.position,
         );
       }
 
       const totalWeight = entries.reduce(
         (sum, entry) => sum + entry.weight(),
-        0
+        0,
       );
 
       return {
@@ -1042,7 +1042,7 @@ const queue = {
   },
 
   weightednext: async (
-    list: QueueDataMap<OnlineOfflineList> | undefined = undefined
+    list: QueueDataMap<OnlineOfflineList> | undefined = undefined,
   ): Promise<
     (QueueEntry & { selectionChance: string; online: boolean }) | undefined
   > => {
@@ -1064,7 +1064,7 @@ const queue = {
 
       // index of the level can be different than 0
       const index = data.levels.findIndex(
-        (level) => level === data.current_level
+        (level) => level === data.current_level,
       );
       if (index == -1) {
         throw new Error("unreachable");
@@ -1101,7 +1101,7 @@ const queue = {
   },
 
   renameAndPartition: (
-    onlineUsers: OnlineUsers
+    onlineUsers: OnlineUsers,
   ): QueueDataMap<OnlineOfflineList> => {
     return (data: QueueDataAccessor) => {
       const [online, offline] = partition(data.levels, (level) => {
@@ -1117,21 +1117,21 @@ const queue = {
   },
 
   list: async (
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
     return queue.renameAndPartition(onlineUsers);
   },
 
   sublist: async (
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineSubscribers(forceRefresh);
     return queue.renameAndPartition(onlineUsers);
   },
 
   modlist: async (
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<QueueDataMap<OnlineOfflineList>> => {
     const onlineUsers = await twitch.getOnlineMods(forceRefresh);
     return queue.renameAndPartition(onlineUsers);
@@ -1188,7 +1188,7 @@ const queue = {
   handleCommands: async (
     message: string,
     sender: Chatter,
-    respond: Responder
+    respond: Responder,
   ) => {
     return await extensions.handleCommands(message, sender, respond);
   },
@@ -1256,7 +1256,7 @@ const queue = {
           if (
             Object.prototype.hasOwnProperty.call(
               data.waitingByUserId,
-              submitter.id
+              submitter.id,
             )
           ) {
             const waiting = data.waitingByUserId[submitter.id];
@@ -1273,7 +1273,7 @@ const queue = {
   },
 
   parseClearArgument: (
-    what: string | null
+    what: string | null,
   ):
     | { result: "invalid"; reason: "empty" | "format" }
     | { result: "all" | "deleted" }
@@ -1334,7 +1334,7 @@ const queue = {
       }
       if (respond !== undefined) {
         respond(
-          i18next.t("queueClearDeletedInfo", { users: lookupIds.length })
+          i18next.t("queueClearDeletedInfo", { users: lookupIds.length }),
         );
       }
       // create all requests
@@ -1342,7 +1342,7 @@ const queue = {
       while (lookupIds.length > 0) {
         const upgradeNumber = Math.min(100, lookupIds.length);
         log(
-          `Checking ${upgradeNumber} out of ${lookupIds.length} users for deletion...`
+          `Checking ${upgradeNumber} out of ${lookupIds.length} users for deletion...`,
         );
         const next100: string[] = lookupIds.splice(0, upgradeNumber);
         const users = await twitchApi.getUsersById(next100);
@@ -1372,7 +1372,7 @@ const queue = {
         };
         [removedLevels, data.levels] = partition(
           data.levels,
-          removeLevelOrRename
+          removeLevelOrRename,
         );
         if (
           data.current_level !== undefined &&

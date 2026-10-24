@@ -54,11 +54,11 @@ const packageJsonPlugin = (): Plugin => {
             engines: buildTarget.packageJson,
           },
           null,
-          2
+          2,
         ),
         {
           encoding: "utf8",
-        }
+        },
       );
     },
   };
@@ -76,14 +76,14 @@ const licensePlugin = (options: GetLicenseFileTextOptions): Plugin => {
     async writeBundle() {
       const licenseFileText: string = await getLicenseFileText(
         "./package.json",
-        options
+        options,
       );
       await this.fs.writeFile(
         path.join(outputDir, "COPYING"),
         licenseFileText,
         {
           encoding: "utf8",
-        }
+        },
       );
     },
   };
@@ -108,7 +108,7 @@ const copyPlugin = ({
         .add(
           await fsPromises.readFile(".gitignore", {
             encoding: "utf8",
-          })
+          }),
         )
         .createFilter();
       const files = await glob(patterns, {
@@ -122,7 +122,7 @@ const copyPlugin = ({
           try {
             if (!(await fsPromises.stat(parentDir)).isDirectory()) {
               throw new Error(
-                `${parentDir} already exists and is not a directory`
+                `${parentDir} already exists and is not a directory`,
               );
             }
           } catch {

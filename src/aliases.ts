@@ -59,7 +59,7 @@ const Aliases = {
       JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0),
       {
         encoding: "utf8",
-      }
+      },
     );
   },
   loadAliases: (create = false) => {
@@ -67,7 +67,7 @@ const Aliases = {
       const defaults = JSON.stringify(
         defaultAliases,
         null,
-        settings.prettySaveFiles ? 2 : 0
+        settings.prettySaveFiles ? 2 : 0,
       );
       if (!fs.existsSync(ALIASES_FILE.directory)) {
         fs.mkdirSync(ALIASES_FILE.directory, { recursive: true });
@@ -82,7 +82,9 @@ const Aliases = {
     }
     try {
       const data = AliasesScheme.parse(
-        JSON.parse(fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }))
+        JSON.parse(
+          fs.readFileSync(ALIASES_FILE.fileName, { encoding: "utf8" }),
+        ),
       );
       // override defaults
       aliases = { ...defaultAliases, ...data };
@@ -94,7 +96,7 @@ const Aliases = {
         return String(err);
       })();
       error(
-        `An error occurred when trying to load ${ALIASES_FILE.fileName}. ${errMessage}`
+        `An error occurred when trying to load ${ALIASES_FILE.fileName}. ${errMessage}`,
       );
       throw err;
     }
@@ -105,7 +107,7 @@ const Aliases = {
     }
     if (
       Object.values(aliases).filter((x) =>
-        x.includes(alias.startsWith("!") ? alias : "!" + alias)
+        x.includes(alias.startsWith("!") ? alias : "!" + alias),
       ).length > 0
     ) {
       return false;

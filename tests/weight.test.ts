@@ -45,7 +45,7 @@ async function setupQueue() {
     DEFAULT_TEST_SETTINGS,
     START_TIME,
     setupMocks,
-    7
+    7,
   );
   const queue: Queue = index.quesoqueue;
   if (queue.testAccess === undefined) {
@@ -218,7 +218,7 @@ test("weight rename test", async () => {
     false,
     false,
     false,
-    testUser1.id
+    testUser1.id,
   );
 
   simSetChatters([testUser1Update1, testUser2, testUser3]);
@@ -239,7 +239,7 @@ test("weight rename test", async () => {
     false,
     false,
     false,
-    testUser1.id
+    testUser1.id,
   );
 
   twitch.noticeChatter(testUser1Update2);
@@ -250,13 +250,13 @@ test("weight rename test", async () => {
     const queueList = list(data);
     expect(queueList.online.length).toEqual(3);
     expect(queueList.online[0].submitter.name).toEqual(
-      "test_user_renamed_again_1"
+      "test_user_renamed_again_1",
     );
     expect(queueList.online[0].submitter.displayName).toEqual(
-      "にゃんにゃんにゃん"
+      "にゃんにゃんにゃん",
     );
     expect(queueList.online[0].submitter.toString()).toEqual(
-      "にゃんにゃんにゃん"
+      "にゃんにゃんにゃん",
     );
     // even waiting is renamed, but just because it has the same user object (and not a copy)
     expect(data.waitingByUserId[testUser1.id].toJson()).toEqual({
@@ -288,7 +288,7 @@ test("weight rename test", async () => {
     false,
     false,
     false,
-    testUser2.id
+    testUser2.id,
   );
   simSetChatters([testUser1Update2, testUser2Update1, testUser3]);
 
@@ -342,11 +342,11 @@ test("weight rename test", async () => {
   await handle_func(
     "!customcode add Kamek 2PV-J29-2PF",
     buildChatter("broadcaster", "Broadcaster", true, true, true),
-    responder
+    responder,
   );
   expect(responder).toHaveBeenCalledTimes(1);
   expect(responder).toHaveBeenCalledWith(
-    "Your custom code Kamek for 2PV-J29-2PF (maker code) has been added."
+    "Your custom code Kamek for 2PV-J29-2PF (maker code) has been added.",
   );
 
   const testUser4 = buildChatter(
@@ -354,7 +354,7 @@ test("weight rename test", async () => {
     "TestUser4",
     false,
     false,
-    false
+    false,
   );
 
   const added = queue.add("Kamek", testUser4);
@@ -410,7 +410,7 @@ test("weight rename test", async () => {
     false,
     false,
     false,
-    testUser4.id
+    testUser4.id,
   );
   simSetChatters([
     testUser1Update2,

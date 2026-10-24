@@ -4,17 +4,17 @@ import { createHmac } from "crypto";
 const delim = "[-. ]?";
 const code = "[0-9a-fA-F]{4}";
 const levelCodeRegex = new RegExp(
-  `^(${code})${delim}0000${delim}(${code})${delim}(${code})$`
+  `^(${code})${delim}0000${delim}(${code})${delim}(${code})$`,
 );
 const firstId = 1008512; // inclusive
 const lastId = 69559301; // inclusive
 const key = Uint8Array.from(
-  Buffer.from("9ce21c9e046e85f0cf6ca00d1eaaaf5f", "hex")
+  Buffer.from("9ce21c9e046e85f0cf6ca00d1eaaaf5f", "hex"),
 );
 
 function courseIdValidity(checksum: string, courseIdString: string) {
   const levelId = new DataView(
-    Uint8Array.from(Buffer.from(courseIdString, "hex")).buffer
+    Uint8Array.from(Buffer.from(courseIdString, "hex")).buffer,
   ).getInt32(0, false);
   if (levelId < firstId || levelId > lastId) {
     // level id outside of range of valid ids

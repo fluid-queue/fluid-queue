@@ -72,7 +72,7 @@ function _courseIdValidity(courseIdString: string) {
         courseBitsString
           .substring(32, 44)
           .concat(courseBitsString.substring(10, 30)),
-        2
+        2,
       ) ^ arbitraryXorValue;
   } else {
     // we can set the dataId to 0 for OCW codes, since it's only used for NSO codes

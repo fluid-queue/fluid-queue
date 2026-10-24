@@ -16,7 +16,7 @@ await i18next
     new Pseudo({
       enabled: options.debug,
       languageToPseudo: "en",
-    })
+    }),
   )
   .init<FsBackendOptions>({
     ...options,

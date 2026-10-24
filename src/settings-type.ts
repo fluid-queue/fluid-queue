@@ -25,7 +25,7 @@ const list_options: readonly [string, ...string[]] = [
 
 export function deprecatedValue<V, N>(value: V, newValue: N) {
   warn(
-    `Setting ${String(value)} is deprected, please replace the value with ${String(newValue)}.`
+    `Setting ${String(value)} is deprected, please replace the value with ${String(newValue)}.`,
   );
 }
 
@@ -102,7 +102,7 @@ export const Settings = z
     offline_message: z
       .boolean()
       .describe(
-        "whether to print a message when a level's submitter is offline"
+        "whether to print a message when a level's submitter is offline",
       )
       .default(false),
     custom_codes_enabled: z
@@ -124,7 +124,7 @@ export const Settings = z
      * configured as a timestring (with the deprected fallback of setting minutes), but resolves to milliseconds
      */
     level_timeout: DeprectedMinutesValue.describe(
-      "number of minutes on one level before timer goes off"
+      "number of minutes on one level before timer goes off",
     )
       .nullable()
       .default(null),
@@ -140,7 +140,7 @@ export const Settings = z
      * configured as a timestring (with the deprected fallback of setting seconds), but resolves to milliseconds
      */
     message_cooldown: DeprectedSecondsValue.describe(
-      "number of seconds between list commands"
+      "number of seconds between list commands",
     )
       .nullable()
       .default(null),
@@ -159,7 +159,7 @@ export const Settings = z
     prettySaveFiles: z
       .boolean()
       .describe(
-        "true if and only if the save files in ./data/**.json should be formatted"
+        "true if and only if the save files in ./data/**.json should be formatted",
       )
       .default(() => {
         if (!process || !process.env) {
@@ -174,21 +174,21 @@ export const Settings = z
       .finite()
       .gte(1)
       .describe(
-        "the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute"
+        "the multiplier value for subs, has to be equal to or greater than 1, e.g. a value of `1.2` will add `1.2` minutes of wait time per minute",
       )
       .nullable()
       .default(null),
     position: z
       .enum(list_options)
       .describe(
-        'which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise'
+        'which position is displayed: show the "position", or the "weight" position or display "both" positions, or do not show positions "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise',
       )
       .nullable()
       .default(null),
     list: z
       .enum(list_options)
       .describe(
-        'how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise'
+        'how the list is displayed: sort by "position", or "weight" or display list twice "both", or do not list levels "none"; default is "both" if `order_options` contains "weightednext" and "next"; "weight" if `order_options` contains "weightednext" but not "next"; "position" otherwise',
       )
       .nullable()
       .default(null),
@@ -200,7 +200,7 @@ export const Settings = z
       .string()
       .array()
       .describe(
-        "the resolver names that are enabled, see src/extensions.ts for options"
+        "the resolver names that are enabled, see src/extensions.ts for options",
       )
       .nullable()
       .default(null),
@@ -216,7 +216,7 @@ export const Settings = z
     clear: z
       .string()
       .describe(
-        'The default argument for !clear. Set this to "all" to clear all levels by default.'
+        'The default argument for !clear. Set this to "all" to clear all levels by default.',
       )
       .nonempty() // can not be empty -> use null instead
       .nullable()

@@ -22,14 +22,14 @@ const mockChatters: User[] = [];
 const TEST_FILE_NAME = "./data/tests/versioned-file.json";
 
 async function setupMocks(
-  volume?: InstanceType<typeof Volume>
+  volume?: InstanceType<typeof Volume>,
 ): Promise<typeof import("node:fs")> {
   vi.resetModules();
   vi.restoreAllMocks();
   vi.useFakeTimers();
   const { twitchApi } = await mockTwitchApi();
   vi.mocked(twitchApi["getChatters"]).mockImplementation(() =>
-    Promise.resolve(mockChatters)
+    Promise.resolve(mockChatters),
   );
   if (volume == null) {
     volume = await createMockVolume(DEFAULT_TEST_SETTINGS);
@@ -79,7 +79,7 @@ test("UpgradeEngine:upgrade", async () => {
         },
       ],
     }),
-    () => null
+    () => null,
   );
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("upgraded(loaded)");
@@ -103,7 +103,7 @@ test("UpgradeEngine:create-with-upgrade", async () => {
         },
       ],
     }),
-    () => null
+    () => null,
   );
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("created");
@@ -124,7 +124,7 @@ test("UpgradeEngine:load-with-upgrade", async () => {
         },
       ],
     }),
-    () => "loaded-newest"
+    () => "loaded-newest",
   );
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("loaded-newest");
@@ -147,7 +147,7 @@ test("UpgradeEngine:upgrade-twice", async () => {
           },
         ],
       }),
-      () => null
+      () => null,
     )
     .upgrade(
       (value) => ({
@@ -158,7 +158,7 @@ test("UpgradeEngine:upgrade-twice", async () => {
           },
         ],
       }),
-      () => null
+      () => null,
     );
   const result = await engine.load(() => "created");
   expect(result.data).toEqual("upgraded2(upgraded(loaded))");
@@ -204,7 +204,7 @@ test("loadResultActions:data", async () => {
       upgradeHooks: [],
     },
     save,
-    verify
+    verify,
   );
   expect(result).toEqual("data");
   expect(save).toHaveBeenCalledTimes(0);
@@ -222,7 +222,7 @@ test("loadResultActions:save-and-verify", async () => {
       upgradeHooks: [],
     },
     save,
-    verify
+    verify,
   );
   expect(result).toEqual("data");
   expect(save).toHaveBeenCalledTimes(1);
@@ -247,10 +247,10 @@ test("loadResultActions:save-and-verify-hooks-abort-null", async () => {
       ],
     },
     save,
-    verify
+    verify,
   );
   await expect(promise).rejects.toThrow(
-    /Creating save file from an old version failed!/
+    /Creating save file from an old version failed!/,
   );
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
   expect(save).toHaveBeenCalledTimes(1);
@@ -277,7 +277,7 @@ test("loadResultActions:save-and-verify-hooks-abort-throws", async () => {
       ],
     },
     save,
-    verify
+    verify,
   );
   await expect(promise).rejects.toThrow(/Loading failed!/);
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
@@ -303,10 +303,10 @@ test("loadResultActions:save-and-verify-hooks-abort-save-off", async () => {
     },
     save,
     verify,
-    { save: false }
+    { save: false },
   );
   await expect(promise).rejects.toThrow(
-    /Can not upgrade save file while saving is turned off!/
+    /Can not upgrade save file while saving is turned off!/,
   );
   expect(hookCalls).toEqual([]); // none of the hooks have been called!
   expect(save).toHaveBeenCalledTimes(0);
@@ -326,15 +326,15 @@ test("loadResultActions:save-and-verify-save-off", async () => {
     },
     save,
     verify,
-    { save: false }
+    { save: false },
   );
   expect(result).toEqual("data");
   expect(save).toHaveBeenCalledTimes(0);
   expect(verify).toHaveBeenCalledTimes(0);
   expect(console.warn).toHaveBeenCalledWith(
     expect.stringContaining(
-      "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
-    )
+      "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost.",
+    ),
   );
 });
 
@@ -365,7 +365,7 @@ test("VersionedFile:version-one", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "1.0.0", test: [1, "A"] }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -399,7 +399,7 @@ test("VersionedFile:version-three", async () => {
       2,
       (object) => {
         return { data: `loadedV2(${JSON.stringify(object)})` };
-      }
+      },
     )
     .upgrade(
       (value) => ({
@@ -409,13 +409,13 @@ test("VersionedFile:version-three", async () => {
       3,
       (object) => {
         return { data: `loadedV3(${JSON.stringify(object)})` };
-      }
+      },
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "3.9.12", cat: "=^.^=" }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -451,7 +451,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
       2,
       (object) => {
         return { data: `loadedV2(${JSON.stringify(object)})` };
-      }
+      },
     )
     .upgrade(
       (value) => ({
@@ -461,13 +461,13 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
       3,
       (object) => {
         return { data: `loadedV3(${JSON.stringify(object)})` };
-      }
+      },
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "2.11.2", data: { value: 42 } }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -475,7 +475,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
     throw new Error("unreachable");
   }
   expect(result.data).toEqual(
-    `upgradedV3(loadedV2({"version":"2.11.2","data":{"value":42}}))`
+    `upgradedV3(loadedV2({"version":"2.11.2","data":{"value":42}}))`,
   );
   expect(result.save).toEqual(true);
   expect(result.upgradeHooks.length).toEqual(1);
@@ -484,7 +484,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
   hookCalls = [];
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
   await expect(newestResult).rejects.toThrow(
-    /Save file version 2 is incompatible with version 3./
+    /Save file version 2 is incompatible with version 3./,
   );
   const upgradeData = "data";
   const upgradeAll = await versionedFile.upgradeAll(upgradeData);
@@ -510,7 +510,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
       2,
       (object) => {
         return { data: `loadedV2(${JSON.stringify(object)})` };
-      }
+      },
     )
     .upgrade(
       (value) => ({
@@ -520,13 +520,13 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
       3,
       (object) => {
         return { data: `loadedV3(${JSON.stringify(object)})` };
-      }
+      },
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "1" }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -534,7 +534,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
     throw new Error("unreachable");
   }
   expect(result.data).toEqual(
-    `upgradedV3(upgradedV2(loaded({"version":"1"})))`
+    `upgradedV3(upgradedV2(loaded({"version":"1"})))`,
   );
   expect(result.save).toEqual(true);
   expect(result.upgradeHooks.length).toEqual(2);
@@ -543,7 +543,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
   hookCalls = [];
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
   await expect(newestResult).rejects.toThrow(
-    /Save file version 1 is incompatible with version 3./
+    /Save file version 1 is incompatible with version 3./,
   );
   const upgradeData = "data";
   const upgradeAll = await versionedFile.upgradeAll(upgradeData);
@@ -569,7 +569,7 @@ test("VersionedFile:version-too-big", async () => {
       2,
       (object) => {
         return { data: `loadedV2(${JSON.stringify(object)})` };
-      }
+      },
     )
     .upgrade(
       (value) => ({
@@ -579,21 +579,21 @@ test("VersionedFile:version-too-big", async () => {
       3,
       (object) => {
         return { data: `loadedV3(${JSON.stringify(object)})` };
-      }
+      },
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "10" }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = versionedFile.load(TEST_FILE_NAME);
   await expect(result).rejects.toThrow(
-    /Save file version 10 is incompatible with versions 1, 2, 3./
+    /Save file version 10 is incompatible with versions 1, 2, 3./,
   );
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
   await expect(newestResult).rejects.toThrow(
-    /Save file version 10 is incompatible with version 3./
+    /Save file version 10 is incompatible with version 3./,
   );
 });
 
@@ -612,7 +612,7 @@ test("VersionedFile:version-too-small", async () => {
       2,
       (object) => {
         return { data: `loadedV2(${JSON.stringify(object)})` };
-      }
+      },
     )
     .upgrade(
       (value) => ({
@@ -622,20 +622,20 @@ test("VersionedFile:version-too-small", async () => {
       3,
       (object) => {
         return { data: `loadedV3(${JSON.stringify(object)})` };
-      }
+      },
     );
   await fs.promises.mkdir(path.dirname(TEST_FILE_NAME), { recursive: true });
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "0" }),
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
   const result = versionedFile.load(TEST_FILE_NAME);
   await expect(result).rejects.toThrow(
-    /Save file version 0 is incompatible with versions 1, 2, 3./
+    /Save file version 0 is incompatible with versions 1, 2, 3./,
   );
   const newestResult = versionedFile.loadNewest(TEST_FILE_NAME);
   await expect(newestResult).rejects.toThrow(
-    /Save file version 0 is incompatible with version 3./
+    /Save file version 0 is incompatible with version 3./,
   );
 });

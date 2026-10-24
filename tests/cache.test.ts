@@ -134,24 +134,24 @@ test("ConcurrentLoader:fetch-concurrently-throw", async () => {
   const fetch3 = loader.fetch();
   // every promise rejects with the same error
   await expect(fetch1).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-throw 42/
+    /ConcurrentLoader:fetch-concurrently-throw 42/,
   );
   await expect(fetch2).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-throw 42/
+    /ConcurrentLoader:fetch-concurrently-throw 42/,
   );
   await expect(fetch3).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-throw 42/
+    /ConcurrentLoader:fetch-concurrently-throw 42/,
   );
   expect(fetchMethod).toHaveBeenCalledTimes(1);
   // next fetch returns new result
   await expect(loader.fetch()).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-throw 43/
+    /ConcurrentLoader:fetch-concurrently-throw 43/,
   );
   expect(fetchMethod).toHaveBeenCalledTimes(2);
   // calling fetchMethod does not throw immediatly!
   const result = fetchMethod();
   await expect(result).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-throw 44/
+    /ConcurrentLoader:fetch-concurrently-throw 44/,
   );
 });
 
@@ -165,8 +165,8 @@ test("ConcurrentLoader:fetch-concurrently-reject", async () => {
       // then reject
       () =>
         Promise.reject(
-          new Error(`ConcurrentLoader:fetch-concurrently-reject ${number++}`)
-        )
+          new Error(`ConcurrentLoader:fetch-concurrently-reject ${number++}`),
+        ),
     );
   });
   const loader = new ConcurrentLoader(fetchMethod);
@@ -176,18 +176,18 @@ test("ConcurrentLoader:fetch-concurrently-reject", async () => {
   const fetch3 = loader.fetch();
   // every promise rejects with the same error
   await expect(fetch1).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-reject 42/
+    /ConcurrentLoader:fetch-concurrently-reject 42/,
   );
   await expect(fetch2).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-reject 42/
+    /ConcurrentLoader:fetch-concurrently-reject 42/,
   );
   await expect(fetch3).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-reject 42/
+    /ConcurrentLoader:fetch-concurrently-reject 42/,
   );
   expect(fetchMethod).toHaveBeenCalledTimes(1);
   // next fetch returns new result
   await expect(loader.fetch()).rejects.toThrow(
-    /ConcurrentLoader:fetch-concurrently-reject 43/
+    /ConcurrentLoader:fetch-concurrently-reject 43/,
   );
   expect(fetchMethod).toHaveBeenCalledTimes(2);
 });
@@ -202,7 +202,7 @@ test("ConcurrentLoader:fetch-method-throws", async () => {
   const loader = new ConcurrentLoader(fetchMethod);
   // loader.fetch() does not throw, but rejects!
   await expect(loader.fetch()).rejects.toThrow(
-    /ConcurrentLoader:fetch-method-throws/
+    /ConcurrentLoader:fetch-method-throws/,
   );
   // fetchMethod does throw immediatly
   expect(() => fetchMethod()).toThrow();
@@ -217,7 +217,7 @@ test("SingleValueCache:ttl", async () => {
   const cache = new SingleValueCache(
     fetchMethod,
     "init",
-    Duration.ofSeconds(30)
+    Duration.ofSeconds(30),
   );
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
@@ -269,7 +269,7 @@ test("SingleValueCache:error", async () => {
   const cache = new SingleValueCache(
     fetchMethod,
     "init",
-    Duration.ofSeconds(30)
+    Duration.ofSeconds(30),
   );
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
@@ -306,7 +306,7 @@ test("SingleValueCache:fetch-concurrently", async () => {
   const cache = new SingleValueCache(
     fetchMethod,
     "init",
-    Duration.ofSeconds(30)
+    Duration.ofSeconds(30),
   );
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);
@@ -361,7 +361,7 @@ test("SingleValueCache:long-load", async () => {
   const cache = new SingleValueCache(
     fetchMethod,
     "init",
-    Duration.ofSeconds(30)
+    Duration.ofSeconds(30),
   );
   // cache is stale if fetch was not used even if it has an initial value
   expect(cache.isStale).toBe(true);

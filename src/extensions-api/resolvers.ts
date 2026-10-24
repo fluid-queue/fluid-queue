@@ -28,7 +28,7 @@ export interface QueueEntryResolver {
   resolve(levelCode: string): Result<{ entry: Entry }>;
   resolve(
     levelCode: string,
-    submitter: QueueSubmitter
+    submitter: QueueSubmitter,
   ): Result<{ entry: QueueEntry }>;
 }
 
@@ -38,7 +38,7 @@ export interface QueueEntryDeserializer {
   deserialize(
     code: string | undefined,
     data: unknown,
-    queueData: QueueData
+    queueData: QueueData,
   ): QueueEntry;
 }
 
@@ -70,10 +70,10 @@ export interface RegisterStage<
   registerResolver(
     name: string,
     resolve: (levelCode: string) => T | null,
-    description?: string
+    description?: string,
   ): QueueEntryApi<RegisterStage<T, U>>;
   registerUpgrade(
-    upgrade: (code: string) => U | null
+    upgrade: (code: string) => U | null,
   ): QueueEntryApi<RegisterStage<T, U>>;
 }
 
@@ -101,11 +101,11 @@ export interface UsingDataStage<
 > extends Stage {
   usingData<Data>(
     deserializer: Deserialize<Data>,
-    serializer?: Serialize<Data>
+    serializer?: Serialize<Data>,
   ): QueueEntryApi<AdjustStages<S, T & { data: Data }, [...A, Data]>>;
   usingData<Schema extends ZodTypeUnknown>(
     schema: Schema,
-    serializer?: Serialize<z.input<Schema>>
+    serializer?: Serialize<z.input<Schema>>,
   ): QueueEntryApi<
     AdjustStages<S, T & { data: z.output<Schema> }, [...A, z.output<Schema>]>
   >;
@@ -126,10 +126,10 @@ type QueueEntryStage = UsingCodeStage<UsingDataStage<BuildStage> & BuildStage> &
 export interface CreateStage extends Stage {
   queueEntry<Type extends string>(
     type: Type,
-    description?: string
+    description?: string,
   ): QueueEntryApi<QueueEntryStage>;
   anyQueueEntry(
-    description?: string
+    description?: string,
   ): QueueEntryApi<RegisterStage<Entry, PersistedEntry>>;
 }
 
@@ -145,7 +145,7 @@ export class RegisterResolvers {
   registerResolver(name: string, resolver: QueueEntryResolver) {
     if (this.frozen) {
       throw new Error(
-        "Resolvers have to be registered within the setup function!"
+        "Resolvers have to be registered within the setup function!",
       );
     }
     if (name in this.resolvers) {
@@ -157,7 +157,7 @@ export class RegisterResolvers {
   registerDeserializer(type: string, deserializer: QueueEntryDeserializer) {
     if (this.frozen) {
       throw new Error(
-        "Deserializers have to be registered within the setup function!"
+        "Deserializers have to be registered within the setup function!",
       );
     }
     if (type in this.deserializers) {
@@ -169,7 +169,7 @@ export class RegisterResolvers {
   registerUpgrade(upgrade: QueueEntryUpgrade) {
     if (this.frozen) {
       throw new Error(
-        "Upgrades have to be registered within the setup function!"
+        "Upgrades have to be registered within the setup function!",
       );
     }
     this.upgrades.push(upgrade);
@@ -194,19 +194,19 @@ export class RegisterResolvers {
   get api(): QueueEntryApi {
     return {
       anyQueueEntry: (
-        globalDescription?: string
+        globalDescription?: string,
       ): QueueEntryApi<RegisterStage<Entry, PersistedEntry>> => {
         const registerResolver = this.registerResolver.bind(this);
         const registerUpgrade = this.registerUpgrade.bind(this);
         return createAnyResolversApi(
           globalDescription,
           registerResolver,
-          registerUpgrade
+          registerUpgrade,
         );
       },
       queueEntry: <Type extends string>(
         type: Type,
-        globalDescription?: string
+        globalDescription?: string,
       ): QueueEntryApi<QueueEntryStage> => {
         const registerResolver = this.registerResolver.bind(this);
         const registerDeserializer = this.registerDeserializer.bind(this);
@@ -227,12 +227,12 @@ export class RegisterResolvers {
                   },
                   ({ code }) => {
                     return { code, data: undefined };
-                  }
+                  },
                 );
               },
               usingData<Data>(
                 deserializer: Deserialize<Data> | z.ZodType<Data>,
-                serializer: Serialize<Data> | undefined
+                serializer: Serialize<Data> | undefined,
               ) {
                 return {
                   build(display: (code: string, data: Data) => string) {
@@ -260,7 +260,7 @@ export class RegisterResolvers {
                           code: code,
                           data: serializer?.(data) ?? data,
                         };
-                      }
+                      },
                     );
                   },
                 };
@@ -269,7 +269,7 @@ export class RegisterResolvers {
           },
           usingData<Data>(
             deserializer: Deserialize<Data> | z.ZodType<Data>,
-            serializer: Serialize<Data> | undefined
+            serializer: Serialize<Data> | undefined,
           ) {
             return {
               build(display: (data: Data) => string) {
@@ -293,7 +293,7 @@ export class RegisterResolvers {
                       code: undefined,
                       data: serializer?.(data) ?? data,
                     };
-                  }
+                  },
                 );
               },
               usingCode() {
@@ -323,7 +323,7 @@ export class RegisterResolvers {
                           code: code,
                           data: serializer?.(data) ?? data,
                         };
-                      }
+                      },
                     );
                   },
                 };
@@ -343,7 +343,7 @@ export class RegisterResolvers {
               },
               () => {
                 return { code: undefined, data: undefined };
-              }
+              },
             );
           },
         };
@@ -359,7 +359,7 @@ export class ConfiguredResolvers implements Iterable<QueueEntryResolver> {
 
   constructor(
     registeredResolvers: Record<string, QueueEntryResolver>,
-    configuredResolvers: string[] | null | undefined
+    configuredResolvers: string[] | null | undefined,
   ) {
     if (configuredResolvers != null) {
       this.activatedOrder = configuredResolvers;
@@ -368,17 +368,17 @@ export class ConfiguredResolvers implements Iterable<QueueEntryResolver> {
     }
     this.available = registeredResolvers;
     this.activatedOrder = this.activatedOrder.filter(
-      (activated) => activated in this.available
+      (activated) => activated in this.available,
     );
     this.activatedOrder.forEach((activated) =>
-      this.activatedSet.add(activated)
+      this.activatedSet.add(activated),
     );
     log(
       i18next.t("resolversList", {
         activatedOrder: this.activatedOrder,
         style: "short",
         type: "unit",
-      })
+      }),
     );
   }
 
@@ -401,26 +401,26 @@ export class ConfiguredResolvers implements Iterable<QueueEntryResolver> {
 function createAnyResolversApi(
   globalDescription: string | undefined,
   registerResolver: (name: string, resolver: QueueEntryResolver) => void,
-  registerUpgrade: (upgrade: QueueEntryUpgrade) => void
+  registerUpgrade: (upgrade: QueueEntryUpgrade) => void,
 ): QueueEntryApi<RegisterStage<Entry, PersistedEntry>> {
   const api = {
     registerResolver(
       name: string,
       resolve: (levelCode: string) => Entry | null,
-      description: string | undefined
+      description: string | undefined,
     ): QueueEntryApi<RegisterStage<Entry, PersistedEntry>> {
       registerResolver(
         name,
         new QueueEntryAnyResolver(
           name,
           description ?? globalDescription ?? null,
-          resolve
-        )
+          resolve,
+        ),
       );
       return api;
     },
     registerUpgrade(
-      upgrade: (code: string) => PersistedEntry | null
+      upgrade: (code: string) => PersistedEntry | null,
     ): QueueEntryApi<RegisterStage<Entry, PersistedEntry>> {
       registerUpgrade({
         upgrade(levelCode: string) {
@@ -449,7 +449,7 @@ function createGenericResolversApi<T extends object>(
   registerResolver: (name: string, resolver: QueueEntryResolver) => void,
   registerDeserializer: (
     type: string,
-    deserializer: QueueEntryDeserializer
+    deserializer: QueueEntryDeserializer,
   ) => void,
   registerUpgrade: (upgrade: QueueEntryUpgrade) => void,
   display: (value: T) => string,
@@ -457,7 +457,7 @@ function createGenericResolversApi<T extends object>(
   serialize: (value: T) => {
     code: string | undefined;
     data: unknown;
-  }
+  },
 ): QueueEntryApi<RegisterStage<T>> {
   function queueEntry(value: T): Entry;
   function queueEntry(value: T, queueData: QueueData): QueueEntry;
@@ -535,14 +535,14 @@ function createGenericResolversApi<T extends object>(
       type,
       deserialize,
       queueEntry,
-      queueEntry
-    )
+      queueEntry,
+    ),
   );
   const api = {
     registerResolver(
       name: string,
       resolve: (levelCode: string) => T | null,
-      description: string | undefined
+      description: string | undefined,
     ): QueueEntryApi<RegisterStage<T>> {
       registerResolver(
         name,
@@ -551,13 +551,13 @@ function createGenericResolversApi<T extends object>(
           description ?? globalDescription ?? null,
           resolve,
           queueEntry,
-          queueEntry
-        )
+          queueEntry,
+        ),
       );
       return api;
     },
     registerUpgrade(
-      upgrade: (code: string) => T | null
+      upgrade: (code: string) => T | null,
     ): QueueEntryApi<RegisterStage<T>> {
       registerUpgrade({
         upgrade(levelCode) {
@@ -590,7 +590,7 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
   constructor(
     name: string,
     description: string | null,
-    resolveFn: (levelCode: string) => Entry | null
+    resolveFn: (levelCode: string) => Entry | null,
   ) {
     this.name = name;
     this.description = description;
@@ -600,11 +600,11 @@ class QueueEntryAnyResolver implements QueueEntryResolver {
   resolve(levelCode: string): Result<{ entry: Entry }>;
   resolve(
     levelCode: string,
-    submitter: QueueSubmitter
+    submitter: QueueSubmitter,
   ): Result<{ entry: QueueEntry }>;
   resolve(
     levelCode: string,
-    submitter?: QueueSubmitter
+    submitter?: QueueSubmitter,
   ): Result<{ entry: QueueEntry | Entry }> {
     const resolved = this.resolveFn(levelCode);
     if (resolved != null) {
@@ -679,7 +679,7 @@ class QueueEntryGenericResolver<T> implements QueueEntryResolver {
     description: string | null,
     resolveFn: (levelCode: string) => T | null,
     entry: (value: T) => Entry,
-    queueEntry: (value: T, queueData: QueueData) => QueueEntry
+    queueEntry: (value: T, queueData: QueueData) => QueueEntry,
   ) {
     this.name = name;
     this.description = description;
@@ -691,11 +691,11 @@ class QueueEntryGenericResolver<T> implements QueueEntryResolver {
   resolve(levelCode: string): Result<{ entry: Entry }>;
   resolve(
     levelCode: string,
-    submitter: QueueSubmitter
+    submitter: QueueSubmitter,
   ): Result<{ entry: QueueEntry }>;
   resolve(
     levelCode: string,
-    submitter?: QueueSubmitter
+    submitter?: QueueSubmitter,
   ): Result<{ entry: QueueEntry | Entry }> {
     const resolved = this.resolveFn(levelCode);
     if (resolved != null) {
@@ -727,7 +727,7 @@ class QueueEntryGenericDeserializer<T> implements QueueEntryDeserializer {
     type: string,
     deserializeFn: (value: { code: string | undefined; data: unknown }) => T,
     entry: (value: T) => Entry,
-    queueEntry: (value: T, queueData: QueueData) => QueueEntry
+    queueEntry: (value: T, queueData: QueueData) => QueueEntry,
   ) {
     this.type = type;
     this.deserializeFn = deserializeFn;
@@ -739,7 +739,7 @@ class QueueEntryGenericDeserializer<T> implements QueueEntryDeserializer {
   deserialize(
     code: string | undefined,
     data: unknown,
-    queueData: QueueData
+    queueData: QueueData,
   ): QueueEntry;
   deserialize(code: string | undefined, data: unknown, queueData?: QueueData) {
     const value = this.deserializeFn({ code, data });

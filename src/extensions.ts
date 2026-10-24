@@ -51,7 +51,7 @@ interface ExtensionModule<T = Promise<void> | void> {
 export default interface ExtensionsApi
   extends BindingsApi, CommandsApi, QueueHandlersApi, QueueEntryApi {
   resolve(
-    levelCode: string
+    levelCode: string,
   ): Result<
     { entry: Entry; description: string | null },
     { descriptions: string[] }
@@ -63,7 +63,7 @@ export default interface ExtensionsApi
    */
   resolve(
     levelCode: string,
-    submitter: QueueSubmitter
+    submitter: QueueSubmitter,
   ): Result<
     { entry: QueueEntry; description: string | null },
     { descriptions: string[] }
@@ -97,18 +97,18 @@ export default interface ExtensionsApi
    */
   options<Schema extends ZodTypeUnknown>(
     name: string,
-    schema: Schema
+    schema: Schema,
   ): z.output<Schema>;
 }
 
 function instanceOfExtensionModule(
-  module: object
+  module: object,
 ): module is ExtensionModule<unknown> {
   return "setup" in module && typeof module.setup === "function";
 }
 
 function mapAnyExtensionModule(
-  module: ExtensionModule<unknown>
+  module: ExtensionModule<unknown>,
 ): ExtensionModule {
   return {
     setup(api): Promise<void> | void {
@@ -121,7 +121,7 @@ function mapAnyExtensionModule(
 }
 
 const loadExtensionModules = async (
-  directory: string
+  directory: string,
 ): Promise<Record<string, ExtensionModule>> => {
   const result: Record<string, ExtensionModule> = {};
 
@@ -157,7 +157,7 @@ const loadExtensionModules = async (
       result[module.name] = mapAnyExtensionModule(module.module);
     } else {
       warn(
-        `Extension ${module.name} does not declare a setup function and will be ignored.`
+        `Extension ${module.name} does not declare a setup function and will be ignored.`,
       );
     }
   }
@@ -165,7 +165,7 @@ const loadExtensionModules = async (
 };
 
 function isPersistedQueueEntry(
-  entry: PersistedEntry | PersistedQueueEntry
+  entry: PersistedEntry | PersistedQueueEntry,
 ): entry is PersistedQueueEntry {
   return "submitter" in entry;
 }
@@ -192,7 +192,7 @@ export class Extensions {
   async handleCommands(
     message: string,
     sender: Chatter,
-    respond: Responder
+    respond: Responder,
   ): Promise<void> {
     return await this.commands.handle(message, sender, respond);
   }
@@ -237,7 +237,7 @@ export class Extensions {
     // load extensions
     const extensionsPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      "extensions"
+      "extensions",
     );
     this.extensions = await loadExtensionModules(extensionsPath);
     // setup extensions
@@ -256,7 +256,7 @@ export class Extensions {
         };
         // either setup function resolves or `complete()` was called inside the setup function
         return Promise.any([extension.setup(api), extensionCompleted.recv()]);
-      })
+      }),
     );
 
     log(
@@ -264,7 +264,7 @@ export class Extensions {
         extensions: Object.keys(this.extensions),
         style: "short",
         type: "unit",
-      })
+      }),
     );
     // load resolvers
     this.registeredResolvers.freeze();
@@ -272,7 +272,7 @@ export class Extensions {
     this.upgrades = this.registeredResolvers.getUpgrades();
     this.configuredResolvers = new ConfiguredResolvers(
       this.registeredResolvers.getRegisteredResolvers(),
-      settings.resolvers
+      settings.resolvers,
     );
     allCompleted.send(void 0);
   }
@@ -289,7 +289,7 @@ export class Extensions {
   deserialize(entry: PersistedQueueEntry): QueueEntry;
   deserialize(entry: PersistedEntry): Entry;
   deserialize(
-    entryOrEntries: PersistedEntry | PersistedQueueEntry
+    entryOrEntries: PersistedEntry | PersistedQueueEntry,
   ): Entry | QueueEntry {
     if (this.deserializers == null) {
       throw new Error("Extensions not loaded yet!");
@@ -358,20 +358,20 @@ export class Extensions {
   }
   resolve(
     levelCode: string,
-    submitter: QueueSubmitter
+    submitter: QueueSubmitter,
   ): Result<
     { entry: QueueEntry; description: string | null },
     { descriptions: string[] }
   >;
   resolve(
-    levelCode: string
+    levelCode: string,
   ): Result<
     { entry: Entry; description: string | null },
     { descriptions: string[] }
   >;
   resolve(
     levelCode: string,
-    submitter?: QueueSubmitter
+    submitter?: QueueSubmitter,
   ): Result<
     { entry: QueueEntry | Entry; description: string | null },
     { descriptions: string[] }
@@ -433,7 +433,7 @@ export class Extensions {
 
   options<Schema extends ZodTypeUnknown>(
     name: string,
-    schema?: Schema
+    schema?: Schema,
   ): z.output<Schema> | Record<string, string> {
     let options: unknown = undefined;
     if (

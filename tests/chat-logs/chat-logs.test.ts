@@ -43,7 +43,7 @@ type FixInstruction = {
 
 const chatLogTest = async (
   fileName: string,
-  fixingTests: boolean
+  fixingTests: boolean,
 ): Promise<FixInstruction[]> => {
   // vitest really does not like it when this is imported at top-level
   console.log("A");
@@ -73,10 +73,10 @@ const chatLogTest = async (
             chatter.displayName,
             chatter.isSubscriber,
             chatter.isMod,
-            chatter.isBroadcaster
+            chatter.isBroadcaster,
           );
         const allInstructions = instructions().parse(
-          fs.readFileSync(fileName, { encoding: "utf8" })
+          fs.readFileSync(fileName, { encoding: "utf8" }),
         );
         for (const instruction of allInstructions.value) {
           await simulation.withMeta(
@@ -115,7 +115,7 @@ const chatLogTest = async (
                       jsonData = simulation.readExtensionData(extension!);
                     } else {
                       throw new Error(
-                        `Unsupported instruction type: ${type as string}`
+                        `Unsupported instruction type: ${type as string}`,
                       );
                     }
                     for (const member of instruction.path) {
@@ -134,7 +134,7 @@ const chatLogTest = async (
                     } else {
                       expect(jsonData).toEqual(JSON.parse(instruction.json));
                     }
-                  }
+                  },
                 );
               } else if (type === "save") {
                 const path = instruction.path;
@@ -143,7 +143,7 @@ const chatLogTest = async (
                 } else if (path === "data/extensions/customcode.json") {
                   simulation.writeExtensionData(
                     "customcode",
-                    JSON.parse(instruction.json)
+                    JSON.parse(instruction.json),
                   );
                 } else {
                   throw new Error(`Unsupported save path: ${path as string}`);
@@ -157,7 +157,7 @@ const chatLogTest = async (
                   simulation.nextFsFail(instruction["fs-fail"]);
                 } else {
                   throw new Error(
-                    `The function ${instruction["fs-fail"]} is not part of the file system!`
+                    `The function ${instruction["fs-fail"]} is not part of the file system!`,
                   );
                 }
               } else if (type === "time") {
@@ -176,7 +176,7 @@ const chatLogTest = async (
                       const shift = simulation.responses.shift();
                       if (shift === undefined) {
                         expect(simulation.responses).toContain(
-                          instruction.message
+                          instruction.message,
                         );
                       }
                       if (fixingTests && shift !== undefined) {
@@ -193,16 +193,16 @@ const chatLogTest = async (
                           },
                           () => {
                             expect(shift?.message).toBe(instruction.message);
-                          }
+                          },
                         );
                       }
                     } else {
                       await simulation.sendMessage(
                         instruction.message,
-                        toChatter(instruction.chatter)
+                        toChatter(instruction.chatter),
                       );
                     }
-                  }
+                  },
                 );
               } else if (type === "online") {
                 simulation.online();
@@ -210,10 +210,10 @@ const chatLogTest = async (
                 simulation.offline();
               } else if (type !== "comment") {
                 throw new Error(
-                  `Unsupported instruction type: ${type as string}`
+                  `Unsupported instruction type: ${type as string}`,
                 );
               }
-            }
+            },
           );
         }
 
@@ -224,9 +224,9 @@ const chatLogTest = async (
           },
           () => {
             expect(simulation.responses.map((m) => m.message)).toEqual([]);
-          }
+          },
         );
-      }
+      },
     );
   } finally {
     await clearAllTimers();
@@ -282,7 +282,7 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
       if (replace.json) {
         const previousContents = contents.substring(
           replace.position.start - 1,
-          replace.position.end + 1
+          replace.position.end + 1,
         );
         return jsonWithOrder(replace.contents, previousContents);
       } else {
@@ -296,26 +296,29 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
   }
   const writeFileAtomic =
     await vi.importActual<typeof import("write-file-atomic")>(
-      "write-file-atomic"
+      "write-file-atomic",
     );
   await writeFileAtomic(fileName, contents, { encoding: "utf8" });
 }
 
 describe("chat-logs", async () => {
   const fs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
 
   const testFiles = fs
     .readdirSync(
-      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat")
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "chat"),
     )
     .filter((file: string) => file.endsWith(".test.log"));
 
   for (const file of testFiles) {
     const fileName = path.relative(
       ".",
-      path.resolve(path.dirname(fileURLToPath(import.meta.url)), `chat/${file}`)
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        `chat/${file}`,
+      ),
     );
     test(`${fileName}`, async () => {
       const result = await chatLogTest(fileName, fixingTests);
