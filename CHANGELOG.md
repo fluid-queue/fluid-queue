@@ -2,12 +2,15 @@
 
 ## Breaking changes
 
-- The minimum node version is now `22.12.0` and the docker image is now build with node version `21`.
+- The minimum node version for building the queue is `24.15.0` or `26.0.0`.
+- The minimum node version for running the queue is `24.0.0`.
+- Technical change: the built files are now in the `dist` folder and the file to be run is `dist/index.mjs` or `index.mjs` if you are running the queue from within the `dist` folder (recommended).
 
 ## New features
 
 - Added an option (default off) to automatically start the level timer when pulling a level (#140).
 - Added a play time to the current level that will be shown when `!current` is used.
+- Added support for the game Quest Maker. Make sure to add `quest-master` to your list of `resolvers` in `settings/settings.yml`.
 
 ## Other changes
 
