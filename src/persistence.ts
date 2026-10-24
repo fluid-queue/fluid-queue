@@ -915,7 +915,7 @@ export class VersionedFile<T, P = T> {
       throw err;
     }
     const fileContents = await fs.promises.readFile(fileName, {
-      encoding: "utf-8",
+      encoding: "utf8",
     });
     const object = await VersionedObjectScheme.parseAsync(
       JSON.parse(fileContents)
@@ -1153,7 +1153,7 @@ async function upgradeQueueV2ToV3(
         settings.prettySaveFiles ? 2 : 0
       ),
       {
-        encoding: "utf-8",
+        encoding: "utf8",
       }
     );
     warn(`${lostUsers} users in your queue could not be found!`);
@@ -1208,7 +1208,7 @@ export const saveQueueSync = (
 ) => {
   try {
     writeFileAtomicSync(VERSIONED_FILE_NAME, createSaveFileContent(data), {
-      encoding: "utf-8",
+      encoding: "utf8",
     });
     return true;
   } catch (err) {
@@ -1288,7 +1288,7 @@ export const saveCustomCodesSync = (
       CUSTOM_CODES_V2.fileName,
       createCustomCodesFileContent(data),
       {
-        encoding: "utf-8",
+        encoding: "utf8",
       }
     );
   } catch (err) {

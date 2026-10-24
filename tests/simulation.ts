@@ -833,7 +833,7 @@ class Simulation {
           path.dirname(fileURLToPath(import.meta.url)),
           "../data/queue.json"
         ),
-        "utf-8"
+        "utf8"
       )
     );
   }
@@ -855,7 +855,7 @@ class Simulation {
           path.dirname(fileURLToPath(import.meta.url)),
           `../data/extensions/${extensionName}.json`
         ),
-        "utf-8"
+        "utf8"
       )
     );
   }

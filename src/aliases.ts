@@ -58,7 +58,7 @@ const Aliases = {
       ALIASES_FILE.fileName,
       JSON.stringify(aliases, null, settings.prettySaveFiles ? 2 : 0),
       {
-        encoding: "utf-8",
+        encoding: "utf8",
       }
     );
   },
@@ -73,7 +73,7 @@ const Aliases = {
         fs.mkdirSync(ALIASES_FILE.directory, { recursive: true });
       }
       writeFileAtomicSync(ALIASES_FILE.fileName, defaults, {
-        encoding: "utf-8",
+        encoding: "utf8",
       });
       aliases = defaultAliases;
     }

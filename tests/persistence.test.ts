@@ -365,7 +365,7 @@ test("VersionedFile:version-one", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "1.0.0", test: [1, "A"] }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -415,7 +415,7 @@ test("VersionedFile:version-three", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "3.9.12", cat: "=^.^=" }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -467,7 +467,7 @@ test("VersionedFile:version-two-upgrade-to-three", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "2.11.2", data: { value: 42 } }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -526,7 +526,7 @@ test("VersionedFile:version-one-upgrade-to-three", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "1" }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = await versionedFile.load(TEST_FILE_NAME);
   expect(result).not.toBeNull();
@@ -585,7 +585,7 @@ test("VersionedFile:version-too-big", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "10" }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = versionedFile.load(TEST_FILE_NAME);
   await expect(result).rejects.toThrow(
@@ -628,7 +628,7 @@ test("VersionedFile:version-too-small", async () => {
   await fs.promises.writeFile(
     TEST_FILE_NAME,
     JSON.stringify({ version: "0" }),
-    { encoding: "utf-8" }
+    { encoding: "utf8" }
   );
   const result = versionedFile.load(TEST_FILE_NAME);
   await expect(result).rejects.toThrow(

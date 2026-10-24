@@ -65,7 +65,7 @@ const copy = async (
   )) satisfies typeof import("node:fs");
   if (realFs.existsSync(realFileName)) {
     volume.fromJSON(
-      { [mockFileName]: realFs.readFileSync(realFileName, "utf-8") },
+      { [mockFileName]: realFs.readFileSync(realFileName, "utf8") },
       path.resolve(".")
     );
   }
@@ -120,7 +120,7 @@ const checkResult = async (
   version?: string
 ) => {
   const queue_real: unknown = JSON.parse(
-    mockFs.readFileSync("./data/queue.json", { encoding: "utf-8" })
+    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" })
   );
   const realFs = (await vi.importActual(
     "node:fs"
@@ -133,7 +133,7 @@ const checkResult = async (
           path.dirname(fileURLToPath(import.meta.url)),
           `data/${testFolder}/queue.json`
         ),
-        "utf-8"
+        "utf8"
       )
     );
   } else {
@@ -143,7 +143,7 @@ const checkResult = async (
           path.dirname(fileURLToPath(import.meta.url)),
           `data/${testFolder}/queue-v${version}.json`
         ),
-        "utf-8"
+        "utf8"
       )
     );
   }
@@ -159,7 +159,7 @@ const checkLostLevels = async (
     "node:fs"
   )) satisfies typeof import("node:fs");
   const lostLevelsReal: unknown = JSON.parse(
-    mockFs.readFileSync(fileName, "utf-8")
+    mockFs.readFileSync(fileName, "utf8")
   );
   const lostLevelsExpect: unknown = JSON.parse(
     realFs.readFileSync(
@@ -167,7 +167,7 @@ const checkLostLevels = async (
         path.dirname(fileURLToPath(import.meta.url)),
         `data/${testFolder}/${path.basename(fileName)}`
       ),
-      "utf-8"
+      "utf8"
     )
   );
   expect(lostLevelsReal).toEqual(lostLevelsExpect);
@@ -182,7 +182,7 @@ const checkCustomCodes = async (
     "node:fs"
   )) satisfies typeof import("node:fs");
   const queue_real: unknown = JSON.parse(
-    mockFs.readFileSync("./data/extensions/customcode.json", "utf-8")
+    mockFs.readFileSync("./data/extensions/customcode.json", "utf8")
   );
   let queue_expect: unknown;
   if (version === undefined) {
@@ -192,7 +192,7 @@ const checkCustomCodes = async (
           path.dirname(fileURLToPath(import.meta.url)),
           `data/${testFolder}/customcode.json`
         ),
-        "utf-8"
+        "utf8"
       )
     );
   } else {
@@ -202,7 +202,7 @@ const checkCustomCodes = async (
           path.dirname(fileURLToPath(import.meta.url)),
           `data/${testFolder}/customcode-v${version}.json`
         ),
-        "utf-8"
+        "utf8"
       )
     );
   }
@@ -607,7 +607,7 @@ test("test-incompatible-v4.9.9.9", async () => {
   // check file system -> old file still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./data/queue.json")).toBe(true);
   const data: unknown = JSON.parse(
-    mockFs.readFileSync("./data/queue.json", { encoding: "utf-8" })
+    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" })
   );
   expect(data).toEqual({
     version: "4.9.9.9",

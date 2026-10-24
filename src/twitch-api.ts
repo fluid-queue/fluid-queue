@@ -123,7 +123,7 @@ class TwitchApi {
     }
     // validation is done before setting anything up to help users figure out problems early
     const tokenData = InitialTokenScheme.parse(
-      JSON.parse(fs.readFileSync(tokensFileName, "utf-8"))
+      JSON.parse(fs.readFileSync(tokensFileName, "utf8"))
     );
     if (
       tokenData.accessToken == null ||
@@ -165,7 +165,7 @@ class TwitchApi {
         );
       }
       writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
-        encoding: "utf-8",
+        encoding: "utf8",
       });
     });
 
@@ -215,7 +215,7 @@ class TwitchApi {
       let tokenData;
       try {
         tokenData = InitialTokenScheme.parse(
-          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf-8"))
+          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf8"))
         );
       } catch (err) {
         if (

@@ -54,7 +54,7 @@ const chatLogTest = async (
   const fixInstructions: FixInstruction[] = [];
 
   try {
-    const fileContents = fs.readFileSync(fileName, { encoding: "utf-8" });
+    const fileContents = fs.readFileSync(fileName, { encoding: "utf8" });
     await simulation.withMeta(
       {
         fileName,
@@ -76,7 +76,7 @@ const chatLogTest = async (
             chatter.isBroadcaster
           );
         const allInstructions = instructions().parse(
-          fs.readFileSync(fileName, { encoding: "utf-8" })
+          fs.readFileSync(fileName, { encoding: "utf8" })
         );
         for (const instruction of allInstructions.value) {
           await simulation.withMeta(
@@ -276,7 +276,7 @@ function jsonWithOrder(json: string, orderJson: string) {
 
 async function fixContents(fileName: string, result: FixInstruction[]) {
   result.sort((a, b) => b.position.start - a.position.start);
-  let contents = fs.readFileSync(fileName, { encoding: "utf-8" });
+  let contents = fs.readFileSync(fileName, { encoding: "utf8" });
   for (const replace of result) {
     const newContents = () => {
       if (replace.json) {
@@ -298,7 +298,7 @@ async function fixContents(fileName: string, result: FixInstruction[]) {
     await vi.importActual<typeof import("write-file-atomic")>(
       "write-file-atomic"
     );
-  await writeFileAtomic(fileName, contents, { encoding: "utf-8" });
+  await writeFileAtomic(fileName, contents, { encoding: "utf8" });
 }
 
 describe("chat-logs", async () => {
