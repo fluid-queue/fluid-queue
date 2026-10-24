@@ -181,6 +181,9 @@ export default defineConfig({
   define: {
     __build_version: JSON.stringify(buildVersion),
     __build_tag: JSON.stringify(buildTag),
+    // FIXME: this needs to be set, because node_modules/write-file-atomic/lib/index.js uses this
+    //        using an invalid file name to cause errors if other code uses __filename and expects it to work
+    __filename: JSON.stringify("\0"),
   },
   plugins: [
     packageJsonPlugin(),
