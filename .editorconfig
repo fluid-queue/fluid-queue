@@ -12,3 +12,13 @@ charset = utf-8
 [*.{js,json,ts,yml}]
 intent_style = space
 indent_size = 2
+
+# ignore currupted files in tests
+[{queso.save,userWaitTime.txt,waitingUsers.txt}]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+# ignore LICENSE
+[LICENSE]
+insert_final_newline = false
+trim_trailing_whitespace = false
