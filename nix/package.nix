@@ -52,7 +52,7 @@ buildNpmPackage (finalAttrs: {
       )
     );
   };
-  doCheck = false;
+  doCheck = true;
   preInstall = ''
     # only package dist
     cp -r ./dist "$dist"
