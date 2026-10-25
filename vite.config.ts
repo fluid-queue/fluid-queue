@@ -50,6 +50,9 @@ const packageJsonPlugin = (): Plugin => {
             scripts: {
               run: "node --enable-source-maps ./index.mjs",
             },
+            bin: {
+              "fluid-queue": "./index.mjs",
+            },
             devDependencies: {},
             engines: buildTarget.packageJson,
           },
