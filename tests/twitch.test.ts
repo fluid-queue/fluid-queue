@@ -92,13 +92,13 @@ test("online users", async () => {
   ]);
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
-    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot"].sort()
+    ["liquidnya", "furretwalkbot"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot"].sort()
+    ["liquidnya", "FurretWalkBot"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
@@ -106,7 +106,7 @@ test("online users", async () => {
 
   // notice chatter
   twitch.noticeChatter(
-    buildChatter("helperblock", "helperblock", false, true, false)
+    buildChatter("helperblock", "helperblock", false, true, false),
   );
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
@@ -114,13 +114,13 @@ test("online users", async () => {
       '${user("liquidnya").id}',
       '${user("furretwalkbot").id}',
       '${user("helperblock").id}',
-    ].sort()
+    ].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot", "helperblock"].sort()
+    ["liquidnya", "furretwalkbot", "helperblock"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot", "helperblock"].sort()
+    ["liquidnya", "FurretWalkBot", "helperblock"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
@@ -134,13 +134,13 @@ test("online users", async () => {
       '${user("liquidnya").id}',
       '${user("furretwalkbot").id}',
       '${user("helperblock").id}',
-    ].sort()
+    ].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot", "helperblock"].sort()
+    ["liquidnya", "furretwalkbot", "helperblock"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot", "helperblock"].sort()
+    ["liquidnya", "FurretWalkBot", "helperblock"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
@@ -151,13 +151,13 @@ test("online users", async () => {
 
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
-    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot"].sort()
+    ["liquidnya", "furretwalkbot"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot"].sort()
+    ["liquidnya", "FurretWalkBot"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
@@ -165,43 +165,43 @@ test("online users", async () => {
 
   // test the lurking feature
   twitch.setToLurk(
-    buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
+    buildChatter("furretwalkbot", "FurretWalkBot", false, true, false),
   );
   onlineUsers = await twitch.getOnlineUsers();
   // note that FurretWalkBot is in the list, even though they are lurking
   expect([...onlineUsers.users.keys()].sort()).toEqual(
-    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot"].sort()
+    ["liquidnya", "furretwalkbot"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot"].sort()
+    ["liquidnya", "FurretWalkBot"].sort(),
   );
   // ...but the online status of FurretWalkBot is offline!
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(false);
   expect(onlineUsers.getOnlineUser({ name: "furretwalkbot" }).online).toBe(
-    false
+    false,
   );
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
   // even when they still chat, they are not online
   twitch.noticeChatter(
-    buildChatter("furretwalkbot", "FurretWalkBot", false, true, false)
+    buildChatter("furretwalkbot", "FurretWalkBot", false, true, false),
   );
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
-    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot"].sort()
+    ["liquidnya", "furretwalkbot"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot"].sort()
+    ["liquidnya", "FurretWalkBot"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(false);
   expect(onlineUsers.getOnlineUser({ name: "furretwalkbot" }).online).toBe(
-    false
+    false,
   );
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "helperblock" })).toBe(false);
@@ -210,13 +210,13 @@ test("online users", async () => {
   twitch.notLurkingAnymore({ name: "furretwalkbot" });
   onlineUsers = await twitch.getOnlineUsers();
   expect([...onlineUsers.users.keys()].sort()).toEqual(
-    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort()
+    ['${user("liquidnya").id}', '${user("furretwalkbot").id}'].sort(),
   );
   expect([...onlineUsers.names.keys()].sort()).toEqual(
-    ["liquidnya", "furretwalkbot"].sort()
+    ["liquidnya", "furretwalkbot"].sort(),
   );
   expect([...onlineUsers.displayNames.keys()].sort()).toEqual(
-    ["liquidnya", "FurretWalkBot"].sort()
+    ["liquidnya", "FurretWalkBot"].sort(),
   );
   expect(onlineUsers.isOnline({ name: "furretwalkbot" })).toBe(true);
   expect(onlineUsers.isOnline({ name: "liquidnya" })).toBe(true);
@@ -258,13 +258,13 @@ test("createOnlineUsers:users", async () => {
   const users: User[] = Array.from({ length: 25 }, (_, i) => createUser(i));
   const result = createOnlineUsers(users);
   expect(result.users).toEqual(
-    new Map(users.map((user) => [user.id, { user, online: true }]))
+    new Map(users.map((user) => [user.id, { user, online: true }])),
   );
   expect(result.names).toEqual(
-    new Map(users.map((user) => [user.name, user.id]))
+    new Map(users.map((user) => [user.name, user.id])),
   );
   expect(result.displayNames).toEqual(
-    new Map(users.map((user) => [user.displayName, user.id]))
+    new Map(users.map((user) => [user.displayName, user.id])),
   );
   expect(result.getOnlineUser({})).toEqual({ online: false });
   expect(result.getOnlineUser({ id: "0" })).toEqual({
@@ -302,13 +302,13 @@ test("createOnlineUsers:users-with-lurkers", async () => {
   const filter = (user: User) => !lurkers(user);
   const result = createOnlineUsers(users, filter);
   expect(result.users).toEqual(
-    new Map(users.map((user) => [user.id, { user, online: filter(user) }]))
+    new Map(users.map((user) => [user.id, { user, online: filter(user) }])),
   );
   expect(result.names).toEqual(
-    new Map(users.map((user) => [user.name, user.id]))
+    new Map(users.map((user) => [user.name, user.id])),
   );
   expect(result.displayNames).toEqual(
-    new Map(users.map((user) => [user.displayName, user.id]))
+    new Map(users.map((user) => [user.displayName, user.id])),
   );
   expect(result.getOnlineUser({})).toEqual({ online: false });
   expect(result.getOnlineUser({ id: "0" })).toEqual({
@@ -371,14 +371,14 @@ test("createOnlineUsers:users-with-lurkers-and-subscribers", async () => {
       users.map((user) => [
         user.id,
         { user, online: filter0(user) && filter1(user) },
-      ])
-    )
+      ]),
+    ),
   );
   expect(result1.names).toEqual(
-    new Map(users.map((user) => [user.name, user.id]))
+    new Map(users.map((user) => [user.name, user.id])),
   );
   expect(result1.displayNames).toEqual(
-    new Map(users.map((user) => [user.displayName, user.id]))
+    new Map(users.map((user) => [user.displayName, user.id])),
   );
   expect(result1.getOnlineUser({})).toEqual({ online: false });
   expect(result1.getOnlineUser({ id: "0" })).toEqual({

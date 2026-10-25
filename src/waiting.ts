@@ -59,7 +59,7 @@ export class Waiting {
     return Object.fromEntries(
       waiting.map((value) => {
         return [value.user.id, Waiting.from(value)];
-      })
+      }),
     );
   }
   static recordToJson(waiting: Record<string, Waiting>): WaitingV3[] {

@@ -46,9 +46,9 @@ export class ConcurrentLoader<T> {
       (reason) =>
         completeWith(
           Promise.reject(
-            reason instanceof Error ? reason : new Error(String(reason))
-          )
-        )
+            reason instanceof Error ? reason : new Error(String(reason)),
+          ),
+        ),
     );
   }
 }
@@ -62,7 +62,7 @@ export class SingleValueCache<T> {
   constructor(
     fetchMethod: () => T | PromiseLike<T>,
     initialValue: T,
-    timeToLive: Duration
+    timeToLive: Duration,
   ) {
     this.loader = new ConcurrentLoader(() => this.updateCache(fetchMethod));
     this.value = initialValue;

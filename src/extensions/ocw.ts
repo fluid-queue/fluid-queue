@@ -17,11 +17,11 @@ const delim = "[-. ]?";
 const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
 const levelCodeRegexStrict = new RegExp(
   `^(${code})${delim}(${code})${delim}(${code})$`,
-  "g"
+  "g",
 );
 const levelCodeRegex = new RegExp(
   `(?=(${code})${delim}(${code})${delim}(${code}))`,
-  "g"
+  "g",
 );
 
 function courseIdValidity(courseIdString: string) {
@@ -46,10 +46,10 @@ const Options = z
           const newValue = value == "true" || value == "yes";
           deprecatedValue(
             JSON.stringify(value),
-            `${JSON.stringify(newValue)} (without the quotes)`
+            `${JSON.stringify(newValue)} (without the quotes)`,
           );
           return newValue;
-        })
+        }),
       )
       .default(false),
   })

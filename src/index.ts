@@ -28,7 +28,7 @@ let level_timer: Timer | null = null;
 if (settings.level_timeout) {
   level_timer = timer(() => {
     chatbot_helper.say(
-      i18next.t("timerExpired", { channel: settings.channel })
+      i18next.t("timerExpired", { channel: settings.channel }),
     );
   }, settings.level_timeout);
 }
@@ -44,7 +44,7 @@ function get_remainder(x: string) {
 let can_list = true;
 
 function next_level_message(
-  level: (QueueEntry & { online: boolean }) | undefined
+  level: (QueueEntry & { online: boolean }) | undefined,
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
@@ -63,7 +63,7 @@ function next_level_message(
 function weightedrandom_level_message(
   level:
     (QueueEntry & { selectionChance: string; online: boolean }) | undefined,
-  percentSuffix = ""
+  percentSuffix = "",
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
@@ -86,7 +86,7 @@ function weightedrandom_level_message(
 function weightednext_level_message(
   level:
     (QueueEntry & { selectionChance: string; online: boolean }) | undefined,
-  percentSuffix = ""
+  percentSuffix = "",
 ) {
   if (level === undefined) {
     return i18next.t("queueEmptyNext");
@@ -162,7 +162,7 @@ const hasWeightList = () => {
 const position_message = async (
   position: number,
   weightedPosition: number,
-  sender: Chatter
+  sender: Chatter,
 ) => {
   if (position == -1) {
     return i18next.t("submitterNotFound", { submitter: sender });
@@ -214,7 +214,7 @@ const position_message = async (
 const weightedchance_message = (
   chance: string | number,
   multiplier: number,
-  sender: Chatter
+  sender: Chatter,
 ) => {
   if (chance == -1) {
     return i18next.t("submitterNotFound", { submitter: sender });
@@ -250,7 +250,7 @@ const submitted_mod_message = (
   submitted:
     | { result: "no-submitter" | "not-found" }
     | { result: "current" | "level"; level: QueueEntry },
-  usernameArgument: string
+  usernameArgument: string,
 ) => {
   if (submitted.result == "current") {
     return i18next.t("modSubmittedCurrent", { submitted });
@@ -266,7 +266,7 @@ const submitted_mod_message = (
 async function pickLevel(
   selection_mode: string,
   respond: Responder,
-  skip_user: QueueSubmitter | null | "none" | "not yet"
+  skip_user: QueueSubmitter | null | "none" | "not yet",
 ): Promise<
   | (QueueEntry & {
       online: boolean;
@@ -297,13 +297,13 @@ async function pickLevel(
     case "weightedrandom":
       next_level = await quesoqueue.weightedrandom();
       respond(
-        "(" + selection_mode + ") " + weightedrandom_level_message(next_level)
+        "(" + selection_mode + ") " + weightedrandom_level_message(next_level),
       );
       break;
     case "weightednext":
       next_level = await quesoqueue.weightednext();
       respond(
-        "(" + selection_mode + ") " + weightednext_level_message(next_level)
+        "(" + selection_mode + ") " + weightednext_level_message(next_level),
       );
       break;
     case "weightedsubrandom":
@@ -312,7 +312,7 @@ async function pickLevel(
         "(" +
           selection_mode +
           ") " +
-          weightedrandom_level_message(next_level, " (subscriber)")
+          weightedrandom_level_message(next_level, " (subscriber)"),
       );
       break;
     case "weightedsubnext":
@@ -321,18 +321,18 @@ async function pickLevel(
         "(" +
           selection_mode +
           ") " +
-          weightednext_level_message(next_level, " (subscriber)")
+          weightednext_level_message(next_level, " (subscriber)"),
       );
       break;
     case "skip":
       if (skip_user == null) {
         throw new Error(
-          "Trying to skip the queue without specifying a skip user"
+          "Trying to skip the queue without specifying a skip user",
         );
       }
       if (skip_user == "none" || skip_user == "not yet") {
         throw new Error(
-          "Trying to skip the queue but skip user is none/not yet"
+          "Trying to skip the queue but skip user is none/not yet",
         );
       }
       dip_level = quesoqueue.dip(skip_user.name);
@@ -356,7 +356,7 @@ async function pickLevel(
 async function HandleMessage(
   message: string,
   sender: Chatter,
-  respond: Responder
+  respond: Responder,
 ) {
   twitch.noticeChatter(sender);
 
@@ -380,14 +380,14 @@ async function HandleMessage(
           splitMessage[1].startsWith("!")
             ? splitMessage[1].toLowerCase().substring(1)
             : splitMessage[1].toLowerCase(),
-          splitMessage[2]
+          splitMessage[2],
         )
       ) {
         respond(
           i18next.t("addAliasAdded", {
             alias: splitMessage[2],
             command: splitMessage[1],
-          })
+          }),
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
@@ -397,11 +397,11 @@ async function HandleMessage(
               commands,
               style: "short",
               type: "unit",
-            })
+            }),
           );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
           respond(
-            i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
+            i18next.t("aliasCommandDisabled", { command: splitMessage[1] }),
           );
         } else {
           respond(i18next.t("addAliasDuplicate", { alias: splitMessage[2] }));
@@ -423,14 +423,14 @@ async function HandleMessage(
             : splitMessage[1].toLowerCase(),
           splitMessage[2].startsWith("!")
             ? splitMessage[2]
-            : "!" + splitMessage[2]
+            : "!" + splitMessage[2],
         )
       ) {
         respond(
           i18next.t("removeAliasRemoved", {
             alias: splitMessage[2],
             command: splitMessage[1],
-          })
+          }),
         );
       } else {
         if (!aliases.isCommand(splitMessage[1].toLowerCase())) {
@@ -440,18 +440,18 @@ async function HandleMessage(
               commands,
               style: "short",
               type: "unit",
-            })
+            }),
           );
         } else if (aliases.isDisabled(splitMessage[1].toLowerCase())) {
           respond(
-            i18next.t("aliasCommandDisabled", { command: splitMessage[1] })
+            i18next.t("aliasCommandDisabled", { command: splitMessage[1] }),
           );
         } else {
           respond(
             i18next.t("removeAliasNotFound", {
               alias: splitMessage[2],
               command: splitMessage[1],
-            })
+            }),
           );
         }
       }
@@ -471,7 +471,7 @@ async function HandleMessage(
           aliases.enableCommand(
             splitMessage[1].startsWith("!")
               ? splitMessage[1].toLowerCase().substring(1)
-              : splitMessage[1].toLowerCase()
+              : splitMessage[1].toLowerCase(),
           )
         ) {
           // if the command starts with "!" - remove the "!".
@@ -481,7 +481,7 @@ async function HandleMessage(
             !aliases.isCommand(
               splitMessage[1].startsWith("!")
                 ? splitMessage[1].toLowerCase().substring(1)
-                : splitMessage[1].toLowerCase()
+                : splitMessage[1].toLowerCase(),
             )
           ) {
             const commands = aliases.getCommands();
@@ -490,7 +490,7 @@ async function HandleMessage(
                 commands,
                 style: "short",
                 type: "unit",
-              })
+              }),
             );
           } else {
             i18next.t("commandAlreadyEnabled", { command: splitMessage[1] });
@@ -501,7 +501,7 @@ async function HandleMessage(
           aliases.disableCommand(
             splitMessage[1].startsWith("!")
               ? splitMessage[1].toLowerCase().substring(1)
-              : splitMessage[1].toLowerCase()
+              : splitMessage[1].toLowerCase(),
           )
         ) {
           // if the command starts with "!" - remove the "!".
@@ -511,7 +511,7 @@ async function HandleMessage(
             !aliases.isCommand(
               splitMessage[1].startsWith("!")
                 ? splitMessage[1].toLowerCase().substring(1)
-                : splitMessage[1].toLowerCase()
+                : splitMessage[1].toLowerCase(),
             )
           ) {
             const commands = aliases.getCommands();
@@ -520,11 +520,11 @@ async function HandleMessage(
                 commands,
                 style: "short",
                 type: "unit",
-              })
+              }),
             );
           } else {
             respond(
-              i18next.t("commandAlreadyDisabled", { command: splitMessage[1] })
+              i18next.t("commandAlreadyDisabled", { command: splitMessage[1] }),
             );
           }
         }
@@ -533,7 +533,7 @@ async function HandleMessage(
           aliases.resetCommand(
             splitMessage[1].startsWith("!")
               ? splitMessage[1].toLowerCase().substring(1)
-              : splitMessage[1].toLowerCase()
+              : splitMessage[1].toLowerCase(),
           )
         ) {
           // if the command starts with "!" - remove the "!".
@@ -543,7 +543,7 @@ async function HandleMessage(
             !aliases.isCommand(
               splitMessage[1].startsWith("!")
                 ? splitMessage[1].toLowerCase().substring(1)
-                : splitMessage[1].toLowerCase()
+                : splitMessage[1].toLowerCase(),
             )
           ) {
             const commands = aliases.getCommands();
@@ -552,7 +552,7 @@ async function HandleMessage(
                 commands,
                 style: "short",
                 type: "unit",
-              })
+              }),
             );
           }
         }
@@ -565,7 +565,7 @@ async function HandleMessage(
     respond(i18next.t("aliasHelp"));
     const commands = aliases.getCommands();
     respond(
-      i18next.t("aliasesList", { commands, style: "short", type: "unit" })
+      i18next.t("aliasesList", { commands, style: "short", type: "unit" }),
     );
   } else if (aliases.isAlias("open", message) && sender.isBroadcaster) {
     queue_open = true;
@@ -868,16 +868,16 @@ async function HandleMessage(
         hasWeightedPosition()
           ? await quesoqueue.weightedPosition(sender, list)
           : -3,
-        sender
-      )
+        sender,
+      ),
     );
   } else if (aliases.isAlias("weightedchance", message)) {
     respond(
       weightedchance_message(
         await quesoqueue.weightedchance(sender),
         quesoqueue.multiplier(sender),
-        sender
-      )
+        sender,
+      ),
     );
   } else if (aliases.isAlias("submitted", message)) {
     const usernameArgument = get_remainder(message);
@@ -885,12 +885,12 @@ async function HandleMessage(
       respond(
         submitted_mod_message(
           quesoqueue.modSubmittedLevel(usernameArgument),
-          usernameArgument
-        )
+          usernameArgument,
+        ),
       );
     } else {
       respond(
-        submitted_message(await quesoqueue.submittedlevel(sender), sender)
+        submitted_message(await quesoqueue.submittedlevel(sender), sender),
       );
     }
   } else if (
@@ -956,7 +956,7 @@ async function HandleMessage(
           order,
           style: "short",
           type: "unit",
-        })
+        }),
       );
     }
   } else {
@@ -981,13 +981,13 @@ await twitchApi.setup({
 await quesoqueue.load();
 twitchApi.registerStreamCallbacks(
   quesoqueue.onStreamOnline,
-  quesoqueue.onStreamOffline
+  quesoqueue.onStreamOffline,
 );
 
 // setting up channel point rewards needs to happen after the queue is loaded
 await channelPointManager.init(
   chatbot_helper.say.bind(chatbot_helper),
-  quesoqueue
+  quesoqueue,
 );
 
 // connect to the Twitch channel.

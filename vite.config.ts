@@ -50,15 +50,18 @@ const packageJsonPlugin = (): Plugin => {
             scripts: {
               run: "node --enable-source-maps ./index.mjs",
             },
+            bin: {
+              "fluid-queue": "./index.mjs",
+            },
             devDependencies: {},
             engines: buildTarget.packageJson,
           },
           null,
-          2
+          2,
         ),
         {
           encoding: "utf8",
-        }
+        },
       );
     },
   };
@@ -76,14 +79,14 @@ const licensePlugin = (options: GetLicenseFileTextOptions): Plugin => {
     async writeBundle() {
       const licenseFileText: string = await getLicenseFileText(
         "./package.json",
-        options
+        options,
       );
       await this.fs.writeFile(
         path.join(outputDir, "COPYING"),
         licenseFileText,
         {
           encoding: "utf8",
-        }
+        },
       );
     },
   };
@@ -108,7 +111,7 @@ const copyPlugin = ({
         .add(
           await fsPromises.readFile(".gitignore", {
             encoding: "utf8",
-          })
+          }),
         )
         .createFilter();
       const files = await glob(patterns, {
@@ -122,7 +125,7 @@ const copyPlugin = ({
           try {
             if (!(await fsPromises.stat(parentDir)).isDirectory()) {
               throw new Error(
-                `${parentDir} already exists and is not a directory`
+                `${parentDir} already exists and is not a directory`,
               );
             }
           } catch {
@@ -144,6 +147,9 @@ const copyPlugin = ({
 
 export default defineConfig({
   publicDir: false,
+  server: {
+    hmr: false,
+  },
   build: {
     ssr: true,
     target: buildTarget.vite,
@@ -151,12 +157,12 @@ export default defineConfig({
     outDir: "./dist",
     sourcemap: "inline",
     rolldownOptions: {
+      platform: "node",
       input: ["./src/index.ts", ...extensions],
       output: {
         chunkFileNames: "shared/[name]-[hash].mjs",
-        format: "esm",
+        format: "es",
         banner,
-
         entryFileNames({ exports, name }) {
           if (exports.includes("setup")) {
             return `extensions/${name}.mjs`;
@@ -173,11 +179,14 @@ export default defineConfig({
     },
   },
   ssr: {
-    external: true,
+    noExternal: true,
   },
   define: {
     __build_version: JSON.stringify(buildVersion),
     __build_tag: JSON.stringify(buildTag),
+    // FIXME: this needs to be set, because node_modules/write-file-atomic/lib/index.js uses this
+    //        using an invalid file name to cause errors if other code uses __filename and expects it to work
+    __filename: JSON.stringify("\0"),
   },
   plugins: [
     packageJsonPlugin(),

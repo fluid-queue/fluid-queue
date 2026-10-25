@@ -16,7 +16,7 @@ type ValidCodeResult = {
 export function extractValidCode(
   levelCode: string,
   regexp: RegExp,
-  validityFn: (code: string) => Omit<ValidCodeResult, "code">
+  validityFn: (code: string) => Omit<ValidCodeResult, "code">,
 ): ValidCodeResult {
   const matches = [...levelCode.matchAll(regexp)];
   for (const match of matches) {

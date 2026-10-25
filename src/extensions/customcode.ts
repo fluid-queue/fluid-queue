@@ -43,7 +43,7 @@ class CustomCodes {
   }
   fromObject(
     customCodesObject: persistence.CustomCodesV2,
-    deserialize: (level: PersistedEntry) => Entry
+    deserialize: (level: PersistedEntry) => Entry,
   ) {
     this.reload = () => {
       this.fromObject(customCodesObject, deserialize);
@@ -56,7 +56,7 @@ class CustomCodes {
         ] => [
           customCode.toUpperCase(),
           { customCode, entry: deserialize(entry) },
-        ]
+        ],
       );
     this.map = new Map(entries);
   }
@@ -65,7 +65,7 @@ class CustomCodes {
       [...this.map.values()].map((e) => [
         e.customCode,
         e.entry.serializePersistedEntry(),
-      ])
+      ]),
     );
   }
 }
@@ -81,19 +81,19 @@ function resolver(args: string): Entry | null {
 
 const commandHandler = (
   resolveLevel: (
-    levelCode: string
+    levelCode: string,
   ) => Result<
     { entry: Entry; description: string | null },
     { descriptions: string[] }
   >,
-  deserialize: (level: PersistedEntry) => Entry
+  deserialize: (level: PersistedEntry) => Entry,
 ) => {
   return {
     aliases: ["!customcode", "!customcodes"],
     handle(
       message: string,
       sender: Chatter,
-      respond: (message: string) => void
+      respond: (message: string) => void,
     ) {
       if (sender.isBroadcaster) {
         if (message == "") {
@@ -122,7 +122,7 @@ const commandHandler = (
       const save = (errorMessage: string) => {
         persistence.saveCustomCodesSync(
           { data: customCodes.toObject() },
-          errorMessage
+          errorMessage,
         );
       };
       const [command, ...rest] = codeArguments.split(" ");
@@ -199,7 +199,7 @@ export async function setup(api: ExtensionsApi): Promise<void> {
   api.anyQueueEntry("custom code").registerResolver("customcode", resolver);
   const handler = commandHandler(
     (levelCode: string) => api.resolve(levelCode),
-    (level: PersistedEntry): Entry => api.deserialize(level)
+    (level: PersistedEntry): Entry => api.deserialize(level),
   );
   api.registerCommand("customcode", handler);
   await api.complete();

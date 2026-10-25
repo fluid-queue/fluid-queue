@@ -14,11 +14,11 @@ const code = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{3}";
 const codeStrict = "[A-Ha-hJ-Nj-nP-Yp-y0-9]{2}[fghFGH]";
 const levelCodeRegexStrict = new RegExp(
   `^(${code})${delim}(${code})${delim}(${codeStrict})$`,
-  "g"
+  "g",
 );
 const levelCodeRegex = new RegExp(
   `(?=(${code})${delim}(${code})${delim}(${codeStrict}))`,
-  "g"
+  "g",
 );
 
 // This function returns true if the course id given to it is a valid course id. The optional parameter dataIdThresHold
@@ -32,7 +32,7 @@ const levelCodeRegex = new RegExp(
 function courseIdValidity(
   courseIdString: string,
   dataIdCourseThreshold?: number | null,
-  dataIdMakerThreshold?: number | null
+  dataIdMakerThreshold?: number | null,
 ) {
   const parsed = _courseIdValidity(courseIdString);
 
@@ -59,8 +59,8 @@ function display(code: string) {
       courseIdValidity(
         code,
         settings.dataIdCourseThreshold,
-        settings.dataIdMakerThreshold
-      )
+        settings.dataIdMakerThreshold,
+      ),
     ).makerCode === false
   ) {
     return i18next.t("levelCodeNoSuffix", { ns: "smm2", code });
@@ -74,8 +74,8 @@ function strictResolve(args: string) {
     courseIdValidity(
       code,
       settings.dataIdCourseThreshold,
-      settings.dataIdMakerThreshold
-    )
+      settings.dataIdMakerThreshold,
+    ),
   );
   if (result.valid) {
     return { code: result.code };
@@ -88,8 +88,8 @@ function resolve(args: string) {
     courseIdValidity(
       code,
       settings.dataIdCourseThreshold,
-      settings.dataIdMakerThreshold
-    )
+      settings.dataIdMakerThreshold,
+    ),
   );
   if (result.valid) {
     return { code: result.code };
@@ -101,7 +101,7 @@ function upgrade(code: string): { code: string } | null {
   const result = courseIdValidity(
     code,
     settings.dataIdCourseThreshold,
-    settings.dataIdMakerThreshold
+    settings.dataIdMakerThreshold,
   );
   if (result.valid) {
     return { code: code };

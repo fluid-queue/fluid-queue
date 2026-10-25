@@ -48,7 +48,7 @@ const ChannelPointReward = z.object({
     .nullable()
     .optional()
     .describe(
-      "A per-stream limit, enforced by the bot, of how many times this can be redeemed."
+      "A per-stream limit, enforced by the bot, of how many times this can be redeemed.",
     ),
   per_user_limit: z
     .number()
@@ -60,7 +60,7 @@ const ChannelPointReward = z.object({
     .nullable()
     .optional()
     .describe(
-      "A global cooldown on the reward, enforced by Twitch. Specified in seconds."
+      "A global cooldown on the reward, enforced by Twitch. Specified in seconds.",
     ),
 });
 
@@ -93,7 +93,7 @@ const ChannelPointData = z.array(
       .nullable()
       .describe("The ID of the award provided by Twitch."),
     data: ChannelPointReward.describe("The reward data itself, excluding ID."),
-  })
+  }),
 );
 
 /**
@@ -112,7 +112,7 @@ type ChannelPointDataType = z.infer<typeof ChannelPointData>;
  * @returns A ChannelPointRewardType object representing the same reward data.
  */
 function RewardFromHelixReward(
-  helixReward: HelixCustomReward
+  helixReward: HelixCustomReward,
 ): ChannelPointRewardType {
   return {
     enabled: true,
@@ -133,7 +133,7 @@ function RewardFromHelixReward(
  */
 function isChannelPointReward(
   first: ChannelPointRewardType,
-  second: ChannelPointRewardType
+  second: ChannelPointRewardType,
 ): boolean {
   const first_per_user_limit: number = first.per_user_limit
     ? first.per_user_limit
@@ -233,21 +233,21 @@ class ChannelPointManager {
       twitchRedemptions = await twitchApi.getCustomRewardRedemptions(reward.id);
     } catch (err) {
       error(
-        "Trying to get redemptions of a reward that doesn't exist. This shouldn't happen"
+        "Trying to get redemptions of a reward that doesn't exist. This shouldn't happen",
       );
       throw err;
     }
     this.#skipQueue = [];
     // Go through all the redemptions that aren't canceled and aren't fulfilled. Twitch doesn't usually return any rewards that are already closed, but sometimes it seems to.
     for (const redemption of twitchRedemptions.filter(
-      (value) => !value.isCanceled && !value.isFulfilled
+      (value) => !value.isCanceled && !value.isFulfilled,
     )) {
       if (this.#skipQueue.some((user) => user.id == redemption.userId)) {
         log(i18next.t("duplicateRedemptionRemoved", { redemption }));
         void twitchApi.updateCustomRewardRedemption(
           redemption.rewardId,
           redemption.id,
-          "CANCELED"
+          "CANCELED",
         );
         continue;
       }
@@ -257,7 +257,7 @@ class ChannelPointManager {
         void twitchApi.updateCustomRewardRedemption(
           redemption.rewardId,
           redemption.id,
-          "CANCELED"
+          "CANCELED",
         );
         continue;
       }
@@ -267,7 +267,7 @@ class ChannelPointManager {
 
   handleRedemptionAdd(
     event: EventSubChannelRedemptionAddEvent,
-    quesoqueue: Queue
+    quesoqueue: Queue,
   ) {
     const redeemer = redemptionToQueueSkipper(event);
     // Make sure the user is actually in the queue
@@ -286,7 +286,7 @@ class ChannelPointManager {
           void twitchApi.updateCustomRewardRedemption(
             event.rewardId,
             event.id,
-            "CANCELED"
+            "CANCELED",
           );
           // Make sure the reeward is paused
           void twitchApi.updateCustomReward(event.rewardId, {
@@ -300,7 +300,7 @@ class ChannelPointManager {
           void twitchApi.updateCustomRewardRedemption(
             event.rewardId,
             event.id,
-            "CANCELED"
+            "CANCELED",
           );
           return;
         }
@@ -310,7 +310,7 @@ class ChannelPointManager {
           void twitchApi.updateCustomRewardRedemption(
             event.rewardId,
             event.id,
-            "CANCELED"
+            "CANCELED",
           );
           return;
         }
@@ -318,7 +318,7 @@ class ChannelPointManager {
           i18next.t("skipRegistered", {
             redeemer,
             rewardTitle: event.rewardTitle,
-          })
+          }),
         );
         this.#skipQueue.push(redeemer);
         this.#streamCounter += 1;
@@ -334,7 +334,7 @@ class ChannelPointManager {
       (reason) => {
         error("Promise rejected: ");
         throw reason;
-      }
+      },
     );
   }
 
@@ -346,7 +346,7 @@ class ChannelPointManager {
       this.#skipQueue.some((user) => user.redemptionId == redeemer.redemptionId)
     ) {
       this.#skipQueue = this.#skipQueue.filter(
-        (user) => user.redemptionId != redeemer.redemptionId
+        (user) => user.redemptionId != redeemer.redemptionId,
       );
       this.#streamCounter -= 1; // Return the refunded redemption to the masses
       if (
@@ -422,7 +422,7 @@ class ChannelPointManager {
           if (
             !isChannelPointReward(
               this.#config.rewards[rewardType],
-              filteredData[0].data
+              filteredData[0].data,
             )
           ) {
             warn(i18next.t("savedRewardConflict", { type: rewardType }));
@@ -430,13 +430,13 @@ class ChannelPointManager {
           }
           if (filteredData[0].id != null) {
             const helixReward = await twitchApi.getCustomRewardById(
-              filteredData[0].id
+              filteredData[0].id,
             );
             if (helixReward != null) {
               if (
                 !isChannelPointReward(
                   RewardFromHelixReward(helixReward),
-                  filteredData[0].data
+                  filteredData[0].data,
                 )
               ) {
                 warn(i18next.t("helixRewardConflict", { type: rewardType }));
@@ -455,14 +455,14 @@ class ChannelPointManager {
                 };
                 await twitchApi.updateCustomReward(
                   filteredData[0].id,
-                  updateData
+                  updateData,
                 );
               }
             }
           }
         } else {
           throw new Error(
-            "Saved data has multiple rewards with the same type. This should not be possible."
+            "Saved data has multiple rewards with the same type. This should not be possible.",
           );
         }
       }
@@ -497,7 +497,7 @@ class ChannelPointManager {
         twitchApi.registerRedemptionCallbacks(
           reward.id,
           (e) => this.handleRedemptionAdd(e, quesoqueue),
-          (e) => this.handleRedemptionUpdate(e)
+          (e) => this.handleRedemptionUpdate(e),
         );
       }
     } finally {
@@ -507,9 +507,9 @@ class ChannelPointManager {
         JSON.stringify(
           this.#customRewards,
           null,
-          settings.prettySaveFiles ? 2 : 0
+          settings.prettySaveFiles ? 2 : 0,
         ),
-        { encoding: "utf8" }
+        { encoding: "utf8" },
       );
     }
 
@@ -518,7 +518,7 @@ class ChannelPointManager {
 
   public async getNextSubmitter(
     quesoqueue: Queue,
-    force = false
+    force = false,
   ): Promise<QueueSubmitter | "none" | "not yet"> {
     if (!this.#config.skip_spacing) {
       const nextSubmitter = this.#skipQueue.shift();
@@ -570,7 +570,7 @@ class ChannelPointManager {
       void twitchApi.updateCustomRewardRedemption(
         reward.id,
         nextSubmitter.redemptionId,
-        "FULFILLED"
+        "FULFILLED",
       );
 
       // Return the submitter
@@ -586,7 +586,7 @@ class ChannelPointManager {
 
   public removeFromSkipQueue(
     remove: QueueSubmitter,
-    status: "FULFILLED" | "CANCELED" = "CANCELED"
+    status: "FULFILLED" | "CANCELED" = "CANCELED",
   ) {
     const skipper = this.#skipQueue.find((user) => user.id == remove.id);
 
@@ -604,7 +604,7 @@ class ChannelPointManager {
       void twitchApi.updateCustomRewardRedemption(
         reward.id,
         skipper.redemptionId,
-        status
+        status,
       );
     }
   }

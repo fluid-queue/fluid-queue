@@ -13,7 +13,7 @@ const Options = z
 const extractValidCode = (
   levelCode: string,
   minLength: number,
-  maxLength: number
+  maxLength: number,
 ) => {
   const match = levelCode.trim().match(levelCodeRegex);
   if (match) {
@@ -38,7 +38,7 @@ function display(code: string) {
 
 function resolver(
   code: string,
-  { minLength, maxLength }: { minLength: number; maxLength: number }
+  { minLength, maxLength }: { minLength: number; maxLength: number },
 ): { code: string } | null {
   const result = extractValidCode(code.trim(), minLength, maxLength);
   if (result.valid) {

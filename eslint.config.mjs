@@ -48,5 +48,5 @@ export default defineConfig(
       "vitest/max-nested-describe": ["error", { max: 3 }], // you can also modify rules' behavior using option like this
       "@typescript-eslint/unbound-method": "off", // this is only turned off for test files to make vi.mocked work
     },
-  }
+  },
 );

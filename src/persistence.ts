@@ -27,7 +27,7 @@ const CUSTOM_CODES_V2 = {
 const lostLevelsFileName = (now: string) => {
   return path.join(
     DATA_DIRECTORY,
-    `lost-levels-${now.replaceAll(":", "").split(".")[0]}Z.json`
+    `lost-levels-${now.replaceAll(":", "").split(".")[0]}Z.json`,
   );
 };
 
@@ -57,7 +57,7 @@ const LevelV1 = z.object({
     .boolean()
     .default(false)
     .describe(
-      "boolean if it is the level that is currently being played (default is false)"
+      "boolean if it is the level that is currently being played (default is false)",
     ),
 });
 type LevelV1 = z.infer<typeof LevelV1>;
@@ -105,13 +105,13 @@ interface ExtensionDataV2<T> {
 }
 
 function ExtensionDataV2<ItemType extends ZodTypeUnknown>(
-  itemSchema: ItemType
+  itemSchema: ItemType,
 ) {
   return z.object({
     version: z
       .string()
       .describe(
-        "the version of the extension data; independant from the queue save file version and npm version"
+        "the version of the extension data; independant from the queue save file version and npm version",
       ),
     data: itemSchema.describe("the data associated with the extension"),
   });
@@ -132,14 +132,14 @@ export const WaitingSchemeV2 = z
       .gte(0)
       .lt(60000)
       .describe(
-        "the milliseconds part of the weight time, between 0 (inclusive) and 59999 (inclusive)"
+        "the milliseconds part of the weight time, between 0 (inclusive) and 59999 (inclusive)",
       )
       .optional(),
     lastOnlineTime: z
       .string()
       .datetime()
       .describe(
-        "the time someone was last online in the queue as ISO 8601 timestamp"
+        "the time someone was last online in the queue as ISO 8601 timestamp",
       ),
   })
   .transform((waiting) => {
@@ -153,19 +153,19 @@ const QueueV2 = z.object({
   version: z
     .string()
     .describe(
-      `will have the value "2.0" for now, but might change to "2.1", or "3.0", etc.; later the queue accepts anything starting with "2." and will reject the file otherwise (crash); this version is independant of the npm version`
+      `will have the value "2.0" for now, but might change to "2.1", or "3.0", etc.; later the queue accepts anything starting with "2." and will reject the file otherwise (crash); this version is independant of the npm version`,
     ),
   currentLevel: SubmittedEntryV2.nullable().describe(
-    "null or the current level"
+    "null or the current level",
   ),
   queue: SubmittedEntryV2.array().describe(
-    `list of levels (not including the current level)`
+    `list of levels (not including the current level)`,
   ),
   waiting: z.record(z.string().describe("waiting username"), WaitingSchemeV2),
   extensions: z
     .record(
       z.string().describe("the extension name"),
-      ExtensionDataV2(z.unknown())
+      ExtensionDataV2(z.unknown()),
     )
     .default({}),
 });
@@ -214,7 +214,7 @@ type SubmittedEntryV3_1 = z.infer<typeof SubmittedEntryV3_1>;
 type ExtensionDataV3<T> = ExtensionDataV2<T>;
 
 function ExtensionDataV3<ItemType extends ZodTypeUnknown>(
-  itemSchema: ItemType
+  itemSchema: ItemType,
 ) {
   return ExtensionDataV2(itemSchema);
 }
@@ -231,15 +231,15 @@ export const QueueV3_0 = z.object({
   version: z
     .string()
     .describe(
-      `the version of this save file which has to be starting with "3." or be "3"`
+      `the version of this save file which has to be starting with "3." or be "3"`,
     )
     .refine(
       (version) => version == "3" || version.startsWith("3."),
-      'version has to be starting with "3." or be "3"'
+      'version has to be starting with "3." or be "3"',
     ),
   entries: z.object({
     current: SubmittedEntryV3_0.nullable().describe(
-      "the currently selected queue entry or null"
+      "the currently selected queue entry or null",
     ),
     queue: SubmittedEntryV3_0.array().describe("entries in queue"),
   }),
@@ -247,7 +247,7 @@ export const QueueV3_0 = z.object({
   extensions: z
     .record(
       z.string().describe("the extension name"),
-      ExtensionDataV3(z.unknown().optional())
+      ExtensionDataV3(z.unknown().optional()),
     )
     .default({}),
 });
@@ -256,15 +256,15 @@ export const QueueV3_1 = z.object({
   version: z
     .string()
     .describe(
-      `the version of this save file which has to be starting with "3." or be "3"`
+      `the version of this save file which has to be starting with "3." or be "3"`,
     )
     .refine(
       (version) => version == "3" || version.startsWith("3."),
-      'version has to be starting with "3." or be "3"'
+      'version has to be starting with "3." or be "3"',
     ),
   entries: z.object({
     current: SubmittedEntryV3_1.nullable().describe(
-      "the currently selected queue entry or null"
+      "the currently selected queue entry or null",
     ),
     queue: SubmittedEntryV3_1.array().describe("entries in queue"),
   }),
@@ -272,7 +272,7 @@ export const QueueV3_1 = z.object({
   extensions: z
     .record(
       z.string().describe("the extension name"),
-      ExtensionDataV3(z.unknown().optional())
+      ExtensionDataV3(z.unknown().optional()),
     )
     .default({}),
 });
@@ -281,11 +281,11 @@ export const QueueV3_2 = z.object({
   version: z
     .string()
     .describe(
-      `the version of this save file which has to be starting with "3." or be "3"`
+      `the version of this save file which has to be starting with "3." or be "3"`,
     )
     .refine(
       (version) => version == "3" || version.startsWith("3."),
-      'version has to be starting with "3." or be "3"'
+      'version has to be starting with "3." or be "3"',
     ),
   entries: z.object({
     current: SubmittedEntryV3_1.extend({
@@ -302,7 +302,7 @@ export const QueueV3_2 = z.object({
   extensions: z
     .record(
       z.string().describe("the extension name"),
-      ExtensionDataV3(z.unknown().optional())
+      ExtensionDataV3(z.unknown().optional()),
     )
     .default({}),
 });
@@ -324,23 +324,23 @@ function loadFileDefault<T>(
   parse: (value: unknown) => T,
   fileName: string,
   newContent: T,
-  errorMessage?: string
+  errorMessage?: string,
 ): T {
   if (fs.existsSync(fileName)) {
     try {
       const fileContents: unknown = JSON.parse(
-        fs.readFileSync(fileName, { encoding: "utf8" })
+        fs.readFileSync(fileName, { encoding: "utf8" }),
       );
       log(`${fileName} has been successfully validated.`);
       return parse(fileContents);
     } catch (err) {
       if (errorMessage != null) {
         warn(
-          `An error occurred when trying to load ${fileName}. ${errorMessage}`
+          `An error occurred when trying to load ${fileName}. ${errorMessage}`,
         );
       } else {
         warn(
-          `An error occurred when trying to load ${fileName}. ${String(err)}`
+          `An error occurred when trying to load ${fileName}. ${String(err)}`,
         );
       }
       // let it crash!
@@ -361,12 +361,12 @@ const loadQueueV1 = (now: string): UpgradeResult<QueueV2> | null => {
     const levelsV1 = loadFileDefault<QueueV1>(
       QueueV1.parse.bind(QueueV1),
       QUEUE_V1.queso,
-      []
+      [],
     );
     if (levelsV1.some((level) => level.username == null)) {
       warn(`Usernames are not set in the file ${QUEUE_V1.queso}!`);
       warn(
-        "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
+        "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.",
       );
       warn("To be safe, clear the queue with !clear.");
     }
@@ -394,28 +394,28 @@ const loadQueueV1 = (now: string): UpgradeResult<QueueV2> | null => {
     WaitingUsersV1.parse.bind(WaitingUsersV1),
     QUEUE_V1.waitingUsers,
     [],
-    "Weighted chance will not function."
+    "Weighted chance will not function.",
   );
   const userWaitTime = loadFileDefault<UserWaitTimeV1>(
     UserWaitTimeV1.parse.bind(UserWaitTimeV1),
     QUEUE_V1.userWaitTime,
     [],
-    "Weighted chance will not function."
+    "Weighted chance will not function.",
   );
   if (waitingUsers.length != userWaitTime.length) {
     throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userWaitTime}.`
+      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userWaitTime}.`,
     );
   }
   const userOnlineTime = loadFileDefault<UserOnlineTimeV1>(
     UserOnlineTimeV1.parse.bind(UserOnlineTimeV1),
     QUEUE_V1.userOnlineTime,
     null,
-    "Online time will not be calculated correctly."
+    "Online time will not be calculated correctly.",
   );
   if (userOnlineTime != null && waitingUsers.length != userOnlineTime.length) {
     throw new Error(
-      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userOnlineTime}.`
+      `Data is corrupt: list lenght mismatch between files ${QUEUE_V1.waitingUsers} and ${QUEUE_V1.userOnlineTime}.`,
     );
   }
   // convert wait time to object
@@ -423,7 +423,7 @@ const loadQueueV1 = (now: string): UpgradeResult<QueueV2> | null => {
     waitingUsers,
     userWaitTime,
     userOnlineTime,
-    now
+    now,
   );
   // now add anyone who is in the queue, but not waiting
   // note: the current level does not have a wait time!
@@ -451,7 +451,7 @@ const loadQueueV1 = (now: string): UpgradeResult<QueueV2> | null => {
     filesDescription = "previous save files";
   }
   log(
-    `${VERSIONED_FILE_NAME} has been successfully created from ${filesDescription}.`
+    `${VERSIONED_FILE_NAME} has been successfully created from ${filesDescription}.`,
   );
   return {
     data: result,
@@ -479,7 +479,7 @@ const upgradeWaiting = (
   waitingUsers: WaitingUsersV1,
   userWaitTime: UserWaitTimeV1,
   userOnlineTime: UserOnlineTimeV1,
-  now: string
+  now: string,
 ): Record<string, WaitingV2> => {
   const waiting: Record<string, WaitingV2> = {};
   for (let index = 0; index < waitingUsers.length; index++) {
@@ -501,7 +501,7 @@ const loadQueueV2 = (object: object): InitialLoadResult<QueueV2> => {
   const state = QueueV2.parse(object);
   if (!QUEUE_V2.compatibility.test(state.version)) {
     throw new Error(
-      `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${QUEUE_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
+      `Queue save file ${fileName}: version in file "${state.version}" is not compatible with queue save file version "${QUEUE_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`,
     );
   }
   log(`${fileName} has been successfully validated.`);
@@ -510,12 +510,12 @@ const loadQueueV2 = (object: object): InitialLoadResult<QueueV2> => {
 
 const loadQueueV3 = (
   object: VersionedObject,
-  now: string
+  now: string,
 ): InitialLoadResult<z.output<typeof QueueV3_2>> => {
   const versionArray = object.version.split(".");
   const versions = z.coerce.number().int().array().safeParse(versionArray);
   const transformCurrent = (
-    entry: SubmittedEntryV3_1
+    entry: SubmittedEntryV3_1,
   ): z.output<typeof QueueV3_2>["entries"]["current"] => ({
     ...entry,
     playTime: {
@@ -594,9 +594,9 @@ export class UpgradeEngine<T> {
 
   private constructor(
     load: (
-      now: string
+      now: string,
     ) => PromiseLike<LoadResult<T> | null> | LoadResult<T> | null,
-    newestLoad: (now: string) => PromiseLike<T | null> | T | null
+    newestLoad: (now: string) => PromiseLike<T | null> | T | null,
   ) {
     this.loader = (now) => Promise.resolve(load(now));
     this.newestLoader = (now) => Promise.resolve(newestLoad(now));
@@ -618,17 +618,17 @@ export class UpgradeEngine<T> {
 
   upgrade<U>(
     upgrade: (value: T) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
-    load: () => PromiseLike<U | null> | U | null
+    load: () => PromiseLike<U | null> | U | null,
   ): UpgradeEngine<U>;
   upgrade<U, A>(
     upgrade: (value: T) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
     versionedFile: VersionedFile<A, U>,
-    fileName: string
+    fileName: string,
   ): UpgradeEngine<A>;
   upgrade<U, A>(
     upgrade: (value: T) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
     load: (() => PromiseLike<U | null> | U | null) | VersionedFile<A, U>,
-    fileName?: string
+    fileName?: string,
   ): UpgradeEngine<U> | UpgradeEngine<A> {
     if (load instanceof VersionedFile && fileName !== undefined) {
       return new UpgradeEngine(
@@ -640,11 +640,11 @@ export class UpgradeEngine<T> {
           const previousResult = await this.loader(now);
           if (previousResult != null) {
             const upgradeResult1 = await Promise.resolve(
-              upgrade(previousResult.data)
+              upgrade(previousResult.data),
             );
             const upgradeResult2 = await load.upgradeAll(
               upgradeResult1.data,
-              now
+              now,
             );
             return {
               data: upgradeResult2.data,
@@ -658,12 +658,12 @@ export class UpgradeEngine<T> {
           }
           return null;
         },
-        (now) => load.loadNewest(fileName, now)
+        (now) => load.loadNewest(fileName, now),
       );
     }
     if (typeof load !== "function") {
       throw new Error(
-        "Invalid arguments upgrade and load need to be functions."
+        "Invalid arguments upgrade and load need to be functions.",
       );
     }
     return new UpgradeEngine(async (now) => {
@@ -674,7 +674,7 @@ export class UpgradeEngine<T> {
       const previousResult = await this.loader(now);
       if (previousResult != null) {
         const upgradeResult = await Promise.resolve(
-          upgrade(previousResult.data)
+          upgrade(previousResult.data),
         );
         return {
           data: upgradeResult.data,
@@ -691,7 +691,7 @@ export class UpgradeEngine<T> {
 
   async load(
     create: () => PromiseLike<T> | T,
-    now?: string
+    now?: string,
   ): Promise<LoadResult<T>> {
     const result = await this.loader(now ?? new Date().toISOString());
     if (result != null) {
@@ -714,7 +714,7 @@ export async function loadResultActions<T>(
   result: LoadResult<T>,
   save: (value: T) => PromiseLike<void> | void,
   verify: () => PromiseLike<T | null> | T | null,
-  options = { save: true }
+  options = { save: true },
 ): Promise<T> {
   if (result.save || result.upgradeHooks.length > 0) {
     // upgrade happened
@@ -723,11 +723,11 @@ export async function loadResultActions<T>(
       // only allow this when there are no hooks
       if (result.upgradeHooks.length != 0) {
         throw new Error(
-          `Can not upgrade save file while saving is turned off!`
+          `Can not upgrade save file while saving is turned off!`,
         );
       }
       warn(
-        "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost."
+        "Upgraded save file while saving is turned off! Please make sure to save the changes manually or else the upgrade is lost.",
       );
       return result.data;
     }
@@ -769,12 +769,12 @@ export class VersionedFile<T, P = T> {
     fileMajorVersion: number,
     object: VersionedObject,
     versions: number[],
-    now: string
+    now: string,
   ) => Promise<LoadResult<T>>;
   readonly upgradeAll: (value: P, now?: string) => Promise<LoadResult<T>>;
   private newestLoader: (
     object: VersionedObject,
-    now: string
+    now: string,
   ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>;
   private newestMajorVersion: number;
 
@@ -783,14 +783,14 @@ export class VersionedFile<T, P = T> {
       fileMajorVersion: number,
       object: VersionedObject,
       versions: number[],
-      now: string
+      now: string,
     ) => Promise<LoadResult<T>>,
     upgradeAll: (value: P, now?: string) => Promise<LoadResult<T>>,
     newestLoader: (
       object: VersionedObject,
-      now: string
+      now: string,
     ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>,
-    newestMajorVersion: number
+    newestMajorVersion: number,
   ) {
     this.loader = load;
     this.upgradeAll = upgradeAll;
@@ -802,21 +802,21 @@ export class VersionedFile<T, P = T> {
     majorVersion: number,
     load: (
       object: VersionedObject,
-      now: string
-    ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>
+      now: string,
+    ) => PromiseLike<InitialLoadResult<T>> | InitialLoadResult<T>,
   ): VersionedFile<T> {
     return new VersionedFile(
       async (
         fileMajorVersion: number,
         object: VersionedObject,
         versions: number[],
-        now: string
+        now: string,
       ) => {
         if (fileMajorVersion != majorVersion) {
           throw new Error(
             `Save file version ${fileMajorVersion} is incompatible with version${
               versions.length > 0 ? "s" : ""
-            } ${[majorVersion, ...versions].join(", ")}.`
+            } ${[majorVersion, ...versions].join(", ")}.`,
           );
         }
         const result = await Promise.resolve(load(object, now));
@@ -829,37 +829,37 @@ export class VersionedFile<T, P = T> {
       (value) =>
         Promise.resolve({ data: value, save: false, upgradeHooks: [] }),
       load,
-      majorVersion
+      majorVersion,
     );
   }
 
   upgrade<U>(
     upgrade: (
       value: T,
-      now: string
+      now: string,
     ) => PromiseLike<UpgradeResult<U>> | UpgradeResult<U>,
     majorVersion: number,
     load: (
       object: VersionedObject,
-      now: string
-    ) => PromiseLike<InitialLoadResult<U>> | InitialLoadResult<U>
+      now: string,
+    ) => PromiseLike<InitialLoadResult<U>> | InitialLoadResult<U>,
   ): VersionedFile<U, P> {
     return new VersionedFile(
       async (
         fileMajorVersion: number,
         object: VersionedObject,
         versions: number[],
-        now: string
+        now: string,
       ) => {
         if (fileMajorVersion != majorVersion) {
           const result = await this.loader(
             fileMajorVersion,
             object,
             [majorVersion, ...versions],
-            now
+            now,
           );
           const upgradeResult = await Promise.resolve(
-            upgrade(result.data, now)
+            upgrade(result.data, now),
           );
           return {
             data: upgradeResult.data,
@@ -881,7 +881,7 @@ export class VersionedFile<T, P = T> {
         const nowPresent = now ?? new Date().toISOString();
         const result = await this.upgradeAll(value, nowPresent);
         const upgradeResult = await Promise.resolve(
-          upgrade(result.data, nowPresent)
+          upgrade(result.data, nowPresent),
         );
         return {
           data: upgradeResult.data,
@@ -890,7 +890,7 @@ export class VersionedFile<T, P = T> {
         };
       },
       load,
-      majorVersion
+      majorVersion,
     );
   }
 
@@ -918,13 +918,13 @@ export class VersionedFile<T, P = T> {
       encoding: "utf8",
     });
     const object = await VersionedObjectScheme.parseAsync(
-      JSON.parse(fileContents)
+      JSON.parse(fileContents),
     );
     const majorVersionString = object.version.split(".")[0];
     const majorVersion = z.coerce.number().int().safeParse(majorVersionString);
     if (!majorVersion.success) {
       throw new Error(
-        `Version in file ${fileName} does not start with a valid number.`
+        `Version in file ${fileName} does not start with a valid number.`,
       );
     }
     return { majorVersion: majorVersion.data, object };
@@ -939,7 +939,7 @@ export class VersionedFile<T, P = T> {
       result.majorVersion,
       result.object,
       [],
-      now ?? new Date().toISOString()
+      now ?? new Date().toISOString(),
     );
   }
 
@@ -950,7 +950,7 @@ export class VersionedFile<T, P = T> {
     }
     if (result.majorVersion != this.newestMajorVersion) {
       throw new Error(
-        `Save file version ${result.majorVersion} is incompatible with version ${this.newestMajorVersion}.`
+        `Save file version ${result.majorVersion} is incompatible with version ${this.newestMajorVersion}.`,
       );
     }
     return (
@@ -965,7 +965,7 @@ function loadSync<T>(
   saveVersion2: (data: T) => void,
   createVersion2: () => T,
   filesVersion1: Record<string, string>,
-  loadVersion1: () => T
+  loadVersion1: () => T,
 ) {
   // try to load version 2 if file exists
   if (fs.existsSync(descriptorVersion2.fileName)) {
@@ -989,7 +989,7 @@ function loadSync<T>(
       filesDescription = "previous save files";
     }
     log(
-      `${descriptorVersion2.fileName} has been successfully created from ${filesDescription}.`
+      `${descriptorVersion2.fileName} has been successfully created from ${filesDescription}.`,
     );
     const dataVersion2 = loadVersion2();
     // at this point assume everything was converted successfully (an error would have been thrown instead)
@@ -1015,32 +1015,32 @@ function loadSync<T>(
 }
 
 export async function loadQueue(
-  options = { save: true }
+  options = { save: true },
 ): Promise<z.output<typeof QueueV3_2>> {
   const now = new Date().toISOString();
   const versionedFile = VersionedFile.from(2, loadQueueV2).upgrade(
     upgradeQueueV2ToV3,
     3,
-    loadQueueV3
+    loadQueueV3,
   );
   const result = await UpgradeEngine.from<UpgradeResult<QueueV2>>(loadQueueV1)
     .upgrade<QueueV2, z.output<typeof QueueV3_2>>(
       (v2) => v2,
       versionedFile,
-      VERSIONED_FILE_NAME
+      VERSIONED_FILE_NAME,
     )
     .load(emptyQueue, now);
   return loadResultActions(
     result,
     (data) => void saveQueueSync(data),
     () => versionedFile.loadNewest(VERSIONED_FILE_NAME, now),
-    options
+    options,
   );
 }
 
 async function upgradeQueueV2ToV3(
   value: QueueV2,
-  now: string
+  now: string,
 ): Promise<UpgradeResult<z.output<typeof QueueV3_2>>> {
   const lostLevels: SubmittedEntryV2[] = [];
   const lostWaiting: (WaitingV2 & { username: string })[] = [];
@@ -1050,7 +1050,7 @@ async function upgradeQueueV2ToV3(
   const upgrade: Record<string, ((user: User) => void)[]> = {};
   const addUpgrade = (
     userName: string,
-    upgradeFn: (user: User | null) => void
+    upgradeFn: (user: User | null) => void,
   ) => {
     if (!(userName in upgrade)) {
       upgrade[userName] = [];
@@ -1059,7 +1059,7 @@ async function upgradeQueueV2ToV3(
   };
   const addEntryUpgrade = (
     entry: SubmittedEntryV2,
-    entryConsumer: (entry: z.output<typeof SubmittedEntryV3_1>) => void
+    entryConsumer: (entry: z.output<typeof SubmittedEntryV3_1>) => void,
   ) => {
     addUpgrade(entry.username, (user) => {
       if (user == null) {
@@ -1131,7 +1131,7 @@ async function upgradeQueueV2ToV3(
     const userNames = next100.map(([userName]) => userName);
     const users = await twitchApi.getUsers(userNames);
     const usersByUsername = Object.fromEntries(
-      users.map((user) => [user.name, user])
+      users.map((user) => [user.name, user]),
     );
     next100.forEach(([userName, upgrades]) => {
       const user = usersByUsername[userName] ?? null;
@@ -1150,16 +1150,16 @@ async function upgradeQueueV2ToV3(
       JSON.stringify(
         { lostLevels, lostWaiting },
         null,
-        settings.prettySaveFiles ? 2 : 0
+        settings.prettySaveFiles ? 2 : 0,
       ),
       {
         encoding: "utf8",
-      }
+      },
     );
     warn(`${lostUsers} users in your queue could not be found!`);
     warn("This means that they deleted their account or renamed themselves.");
     warn(
-      "All waiting times and queue entries of those users have been removed!"
+      "All waiting times and queue entries of those users have been removed!",
     );
     warn(`The data that could not be converted can be found here: ${fileName}`);
   }
@@ -1178,7 +1178,7 @@ async function upgradeQueueV2ToV3(
 }
 
 const createSaveFileContent = (
-  queue: Omit<z.input<typeof QueueV3_1>, "version">
+  queue: Omit<z.input<typeof QueueV3_1>, "version">,
 ) => {
   return JSON.stringify(
     {
@@ -1186,12 +1186,12 @@ const createSaveFileContent = (
       version: CURRENT_VERSION,
     },
     null,
-    settings.prettySaveFiles ? 2 : 0
+    settings.prettySaveFiles ? 2 : 0,
   );
 };
 
 const createCustomCodesFileContent = (
-  data: Omit<ExtensionDataV2<CustomCodesV2>, "version">
+  data: Omit<ExtensionDataV2<CustomCodesV2>, "version">,
 ) => {
   return JSON.stringify(
     {
@@ -1199,12 +1199,12 @@ const createCustomCodesFileContent = (
       version: CUSTOM_CODES_V2.version,
     },
     null,
-    settings.prettySaveFiles ? 2 : 0
+    settings.prettySaveFiles ? 2 : 0,
   );
 };
 
 export const saveQueueSync = (
-  data: Omit<z.input<typeof QueueV3_2>, "version">
+  data: Omit<z.input<typeof QueueV3_2>, "version">,
 ) => {
   try {
     writeFileAtomicSync(VERSIONED_FILE_NAME, createSaveFileContent(data), {
@@ -1214,8 +1214,8 @@ export const saveQueueSync = (
   } catch (err) {
     error(
       `${VERSIONED_FILE_NAME} could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart. ${String(
-        err
-      )}`
+        err,
+      )}`,
     );
     // ignore this error and keep going
     // hopefully this issue is gone on the next save
@@ -1231,7 +1231,7 @@ export const loadCustomCodesSync = (): ExtensionDataV2<CustomCodesV2> => {
     saveCustomCodesSync,
     emptyCustomCodes,
     CUSTOM_CODES_V1,
-    loadCustomCodesV1
+    loadCustomCodesV1,
   );
 };
 
@@ -1249,7 +1249,7 @@ const loadCustomCodesV1 = (): ExtensionDataV2<CustomCodesV2> => {
     CustomCodesV1.parse.bind(CustomCodesV1),
     codeListFilename,
     {},
-    "Custom codes will not function."
+    "Custom codes will not function.",
   );
   // remove custom levels from custom codes
   const data: CustomCodesV2 = Object.fromEntries(
@@ -1259,7 +1259,7 @@ const loadCustomCodesV1 = (): ExtensionDataV2<CustomCodesV2> => {
       .map(([customCode, levelCode]) => [
         customCode,
         { code: levelCode, type: "smm2" },
-      ])
+      ]),
   );
   const result = { data, version: CUSTOM_CODES_V2.version };
   return result;
@@ -1268,11 +1268,11 @@ const loadCustomCodesV1 = (): ExtensionDataV2<CustomCodesV2> => {
 const loadCustomCodesV2 = (): ExtensionDataV2<CustomCodesV2> => {
   const fileName = CUSTOM_CODES_V2.fileName;
   const state = ExtensionDataV2(CustomCodesV2).parse(
-    JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" }))
+    JSON.parse(fs.readFileSync(fileName, { encoding: "utf8" })),
   );
   if (!CUSTOM_CODES_V2.compatibility.test(state.version)) {
     throw new Error(
-      `Custom codes save file ${fileName}: version in file "${state.version}" is not compatible with custom codes save file version "${CUSTOM_CODES_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`
+      `Custom codes save file ${fileName}: version in file "${state.version}" is not compatible with custom codes save file version "${CUSTOM_CODES_V2.version}". Save file is assumed to be incompatible. Did you downgrade versions?`,
     );
   }
   log(`${fileName} has been successfully validated.`);
@@ -1281,7 +1281,7 @@ const loadCustomCodesV2 = (): ExtensionDataV2<CustomCodesV2> => {
 
 export const saveCustomCodesSync = (
   data: Omit<ExtensionDataV2<CustomCodesV2>, "version">,
-  errorMessage?: string
+  errorMessage?: string,
 ) => {
   try {
     writeFileAtomicSync(
@@ -1289,7 +1289,7 @@ export const saveCustomCodesSync = (
       createCustomCodesFileContent(data),
       {
         encoding: "utf8",
-      }
+      },
     );
   } catch (err) {
     if (errorMessage !== undefined) {
@@ -1299,8 +1299,8 @@ export const saveCustomCodesSync = (
       `${
         CUSTOM_CODES_V2.fileName
       } could not be saved. The queue will keep running, but the state is not persisted and might be lost on restart. ${String(
-        err
-      )}`
+        err,
+      )}`,
     );
     // ignore this error and keep going
     // hopefully this issue is gone on the next save
