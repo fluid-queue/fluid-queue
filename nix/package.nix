@@ -18,7 +18,7 @@ buildNpmPackage (finalAttrs: {
   nodejs = nodejs_26;
   pname = packageJson.name;
   inherit (packageJson) version;
-  npmDepsHash = "sha256-ACC8cBKQexXABCGiBF6Se49kks7wJYJUQ94C0U8iz8c=";
+  npmDepsHash = "sha256-i2kxyrbsDFvooWSHGepD7sZy36VGcJMCHSVXcA6dkSo=";
   nativeBuildInputs = [
     copyDesktopItems
     inkscape
