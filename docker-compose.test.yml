@@ -1,9 +1,0 @@
-services:
-  sut:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    environment:
-      - NODE_ENV=test
-      - DOCKER_TAG
-      - SOURCE_COMMIT

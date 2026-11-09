@@ -283,7 +283,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: custom.get(fromCode).codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
                 return;
               }
@@ -301,7 +301,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: value.codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
                 return;
               }
@@ -309,7 +309,7 @@ const customlevelCommand = (custom: CustomData) => {
                 i18next.t("customlevelNotFound", {
                   ns: "customlevel",
                   codeOrName,
-                })
+                }),
               );
               return;
             } else if (subcommand == "remove") {
@@ -317,7 +317,7 @@ const customlevelCommand = (custom: CustomData) => {
               if (fromCode != null) {
                 const value = custom.get(fromCode);
                 const newCodes = value.codes.filter(
-                  (c) => c.toUpperCase() != code.trim().toUpperCase()
+                  (c) => c.toUpperCase() != code.trim().toUpperCase(),
                 );
                 if (newCodes.length == 0) {
                   respond(
@@ -328,7 +328,7 @@ const customlevelCommand = (custom: CustomData) => {
                       codes: custom.get(fromCode).codes,
                       style: "short",
                       type: "unit",
-                    })
+                    }),
                   );
                   return;
                 }
@@ -344,7 +344,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: custom.get(fromCode).codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
                 return;
               }
@@ -352,7 +352,7 @@ const customlevelCommand = (custom: CustomData) => {
                 i18next.t("customlevelCodeNotFound", {
                   ns: "customlevel",
                   code,
-                })
+                }),
               );
               return;
             } else {
@@ -378,7 +378,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: value.codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
               } else {
                 respond(
@@ -388,7 +388,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: value.codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
               }
               return;
@@ -397,7 +397,7 @@ const customlevelCommand = (custom: CustomData) => {
               i18next.t("customlevelNotFound", {
                 ns: "customlevel",
                 codeOrName,
-              })
+              }),
             );
             return;
           } else if (command == "remove" && rest.length >= 1) {
@@ -414,7 +414,7 @@ const customlevelCommand = (custom: CustomData) => {
                   codes: value.codes,
                   style: "short",
                   type: "unit",
-                })
+                }),
               );
               return;
             }
@@ -422,7 +422,7 @@ const customlevelCommand = (custom: CustomData) => {
               i18next.t("customlevelNotFound", {
                 ns: "customlevel",
                 codeOrName,
-              })
+              }),
             );
             return;
           } else if (command == "export" && rest.length >= 1) {
@@ -431,7 +431,7 @@ const customlevelCommand = (custom: CustomData) => {
             if (fromArguments != null) {
               const value = custom.get(fromArguments);
               respond(
-                JSON.stringify([fromArguments, value.name, ...value.codes])
+                JSON.stringify([fromArguments, value.name, ...value.codes]),
               );
               return;
             }
@@ -439,7 +439,7 @@ const customlevelCommand = (custom: CustomData) => {
               i18next.t("customlevelNotFound", {
                 ns: "customlevel",
                 codeOrName,
-              })
+              }),
             );
             return;
           } else if (command == "add" && rest.length >= 2) {
@@ -454,7 +454,7 @@ const customlevelCommand = (custom: CustomData) => {
                   codes: custom.get(fromName).codes,
                   style: "short",
                   type: "unit",
-                })
+                }),
               );
               return;
             }
@@ -468,7 +468,7 @@ const customlevelCommand = (custom: CustomData) => {
                   codes: custom.get(fromCode).codes,
                   style: "short",
                   type: "unit",
-                })
+                }),
               );
               return;
             }
@@ -477,7 +477,7 @@ const customlevelCommand = (custom: CustomData) => {
             if (custom.has(uuid)) {
               // very very unlikely
               respond(
-                i18next.t("customlevelInternalError", { ns: "customlevel" })
+                i18next.t("customlevelInternalError", { ns: "customlevel" }),
               );
               return;
             }
@@ -492,15 +492,15 @@ const customlevelCommand = (custom: CustomData) => {
                 ns: "customlevel",
                 levelName,
                 code,
-              })
+              }),
             );
             return;
           } else if (command == "import" && rest.length >= 1) {
             log(
-              "codes:" + JSON.stringify(Object.fromEntries(custom.cache.codes))
+              "codes:" + JSON.stringify(Object.fromEntries(custom.cache.codes)),
             );
             log(
-              "names:" + JSON.stringify(Object.fromEntries(custom.cache.names))
+              "names:" + JSON.stringify(Object.fromEntries(custom.cache.names)),
             );
             const json = rest.join(" ");
             const UserDataScheme = z.string().array();
@@ -524,7 +524,7 @@ const customlevelCommand = (custom: CustomData) => {
                   codes: custom.get(fromName).codes,
                   style: "short",
                   type: "unit",
-                })
+                }),
               );
               return;
             }
@@ -544,7 +544,7 @@ const customlevelCommand = (custom: CustomData) => {
                     codes: custom.get(fromCode).codes,
                     style: "short",
                     type: "unit",
-                  })
+                  }),
                 );
                 return;
               }
@@ -558,7 +558,7 @@ const customlevelCommand = (custom: CustomData) => {
                   codes: custom.get(uuid).codes,
                   style: "short",
                   type: "unit",
-                })
+                }),
               );
               return;
             }
@@ -575,7 +575,7 @@ const customlevelCommand = (custom: CustomData) => {
                 codes,
                 style: "short",
                 type: "unit",
-              })
+              }),
             );
             return;
           } else {
@@ -639,7 +639,7 @@ const queueHandler = (custom: CustomData) => {
           i18next.t("romhackAdded", {
             ns: "customlevel",
             enabled: !!settings.romhacks_enabled,
-          })
+          }),
         );
       }
       if (
@@ -655,7 +655,7 @@ const queueHandler = (custom: CustomData) => {
           i18next.t("unclearedAdded", {
             ns: "customlevel",
             enabled: !!settings.uncleared_enabled,
-          })
+          }),
         );
       }
       return queueChanged;

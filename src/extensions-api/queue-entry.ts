@@ -125,7 +125,7 @@ export function queueSubmitter(entry: PersistedQueueEntry): QueueSubmitter {
 
 export function isQueueSubmitter(
   submitter: QueueSubmitter,
-  other: Partial<QueueSubmitter>
+  other: Partial<QueueSubmitter>,
 ): boolean {
   if (other.id !== undefined && submitter.id !== undefined) {
     return other.id == submitter.id;

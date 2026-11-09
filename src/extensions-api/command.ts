@@ -16,7 +16,7 @@ export interface CommandHandler {
   handle(
     message: string,
     sender: Chatter,
-    respond: Responder
+    respond: Responder,
   ): Promise<void> | void;
 }
 
@@ -40,7 +40,7 @@ export class Commands {
   async handle(
     message: string,
     sender: Chatter,
-    respond: Responder
+    respond: Responder,
   ): Promise<void> {
     for (const name in this.handlers) {
       if (aliases.isAlias(name, message)) {
@@ -48,7 +48,7 @@ export class Commands {
         return await handler.handle(
           this.getRemainder(message),
           sender,
-          respond
+          respond,
         );
       }
     }

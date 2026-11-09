@@ -16,7 +16,7 @@ export async function init(extension: string, url?: string) {
     const { options } = await import("../../i18next-options.js");
     const localesPath = join(
       pathDirname(fileURLToPath(url ?? import.meta.url)),
-      "../../locales"
+      "../../locales",
     );
 
     log(`Initializing i18next for extension ${extension}...`);

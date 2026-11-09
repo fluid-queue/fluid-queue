@@ -56,7 +56,7 @@ class TwitchApi {
     this.#chattersCache = new SingleValueCache(
       this.#loadChatters.bind(this),
       [],
-      Duration.ofSeconds(30)
+      Duration.ofSeconds(30),
     );
   }
 
@@ -123,7 +123,7 @@ class TwitchApi {
     }
     // validation is done before setting anything up to help users figure out problems early
     const tokenData = InitialTokenScheme.parse(
-      JSON.parse(fs.readFileSync(tokensFileName, "utf8"))
+      JSON.parse(fs.readFileSync(tokensFileName, "utf8")),
     );
     if (
       tokenData.accessToken == null ||
@@ -140,7 +140,7 @@ class TwitchApi {
       tokenData.refreshToken == "INITIAL_REFRESH_TOKEN"
     ) {
       throw new Error(
-        `Invalid ${tokensFileName} file: refreshToken not found.`
+        `Invalid ${tokensFileName} file: refreshToken not found.`,
       );
     }
 
@@ -161,7 +161,7 @@ class TwitchApi {
         fileName = broadcasterTokensFileName;
       } else {
         throw new Error(
-          `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`
+          `Unknown token with user id ${userId}. Does the channel setting differ from the token user?`,
         );
       }
       writeFileAtomicSync(fileName, JSON.stringify(newTokenData, null, 4), {
@@ -189,7 +189,7 @@ class TwitchApi {
       ["user-by-name"],
       async (ctx) => {
         return ctx.users.getUserByName(settings.channel);
-      }
+      },
     );
 
     // check to make sure we got the user ID successfully
@@ -199,7 +199,7 @@ class TwitchApi {
 
     // get the scopes
     this.#botTokenScopes = this.#authProvider.getCurrentScopesForUser(
-      this.#botUserId
+      this.#botUserId,
     );
     if (this.#broadcasterUser.id == this.#botUserId) {
       // if the bot is the broadcaster add intents to bot/broadcaster account
@@ -215,7 +215,7 @@ class TwitchApi {
       let tokenData;
       try {
         tokenData = InitialTokenScheme.parse(
-          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf8"))
+          JSON.parse(fs.readFileSync(broadcasterTokensFileName, "utf8")),
         );
       } catch (err) {
         if (
@@ -242,7 +242,7 @@ class TwitchApi {
           throw new Error(
             `Broadcaster id ${
               this.#broadcasterUser.id
-            } does not match token user id ${id}`
+            } does not match token user id ${id}`,
           );
         }
         this.#broadcasterTokenScopes =
@@ -281,11 +281,11 @@ class TwitchApi {
       // set up the eventsub listeners for subs
       this.#esListener.onChannelSubscription(
         this.#broadcasterUser.id,
-        handleSub
+        handleSub,
       );
       this.#esListener.onChannelSubscriptionEnd(
         this.#broadcasterUser.id,
-        handleUnsub
+        handleUnsub,
       );
       startListener = true;
     }
@@ -293,11 +293,11 @@ class TwitchApi {
       // Set up the eventsub listeners for mods
       this.#esListener.onChannelModeratorAdd(
         this.#broadcasterUser.id,
-        handleMod
+        handleMod,
       );
       this.#esListener.onChannelModeratorRemove(
         this.#broadcasterUser.id,
-        handleUnmod
+        handleUnmod,
       );
       startListener = true;
     }
@@ -354,7 +354,7 @@ class TwitchApi {
   async #isLimited(): Promise<boolean> {
     const rateLimiterStats = await this.apiClient.asIntent(
       ["chatters"],
-      (ctx) => Promise.resolve(ctx.rateLimiterStats)
+      (ctx) => Promise.resolve(ctx.rateLimiterStats),
     );
     return (
       rateLimiterStats != null &&
@@ -402,7 +402,7 @@ class TwitchApi {
   async getUsers(userNames: string[]): Promise<User[]> {
     return await this.apiClient.asIntent(["user-by-name"], async (ctx) => {
       return (await ctx.users.getUsersByNames(userNames)).map((user) =>
-        this.mapUser(user)
+        this.mapUser(user),
       );
     });
   }
@@ -410,7 +410,7 @@ class TwitchApi {
   async getUsersById(userIds: string[]): Promise<User[]> {
     return await this.apiClient.asIntent(["user-by-id"], async (ctx) => {
       return (await ctx.users.getUsersByIds(userIds)).map((user) =>
-        this.mapUser(user)
+        this.mapUser(user),
       );
     });
   }
@@ -425,7 +425,7 @@ class TwitchApi {
       ["subscribers-by-broadcaster"],
       async (ctx) => {
         return await ctx.subscriptions.getSubscriptions(broadcasterId);
-      }
+      },
     );
     if (subscribers == undefined) {
       // Not sure if this is because there was a problem, or just because the broadcaster has no subs
@@ -453,7 +453,7 @@ class TwitchApi {
       ["moderators-by-broadcaster"],
       async (ctx) => {
         return await ctx.moderation.getModerators(broadcasterId);
-      }
+      },
     );
     if (mods == undefined) {
       // Not sure if this is because there was a problem, or just because the broadcaster has no subs
@@ -481,7 +481,7 @@ class TwitchApi {
       ["custom-rewards"],
       async (ctx) => {
         return await ctx.channelPoints.getCustomRewards(broadcasterId, true);
-      }
+      },
     );
     return rewards;
   }
@@ -510,7 +510,7 @@ class TwitchApi {
             throw err;
           }
         }
-      }
+      },
     );
     return reward;
   }
@@ -524,14 +524,14 @@ class TwitchApi {
     return this.apiClient.asIntent(["custom-rewards"], async (ctx) => {
       return await ctx.channelPoints.createCustomReward(
         broadcasterId,
-        rewardData
+        rewardData,
       );
     });
   }
 
   async updateCustomReward(
     id: string,
-    rewardData: HelixUpdateCustomRewardData
+    rewardData: HelixUpdateCustomRewardData,
   ) {
     if (this.#broadcasterUser == null) {
       throw new Error("Trying to update reward without a broadcaster set");
@@ -542,7 +542,7 @@ class TwitchApi {
       return await ctx.channelPoints.updateCustomReward(
         broadcasterId,
         id,
-        rewardData
+        rewardData,
       );
     });
   }
@@ -558,7 +558,7 @@ class TwitchApi {
         broadcasterId,
         id,
         "UNFULFILLED",
-        { newestFirst: true }
+        { newestFirst: true },
       );
       return list.data.reverse();
     });
@@ -567,7 +567,7 @@ class TwitchApi {
   async updateCustomRewardRedemption(
     reward: string,
     redemption: string,
-    status: "FULFILLED" | "CANCELED"
+    status: "FULFILLED" | "CANCELED",
   ) {
     if (this.#broadcasterUser == null) {
       throw new Error("Trying to update reward without a broadcaster set");
@@ -579,7 +579,7 @@ class TwitchApi {
         broadcasterId,
         reward,
         [redemption],
-        status
+        status,
       );
     });
   }
@@ -587,32 +587,32 @@ class TwitchApi {
   registerRedemptionCallbacks(
     id: string,
     add: (data: EventSubChannelRedemptionAddEvent) => void,
-    update: (data: EventSubChannelRedemptionUpdateEvent) => void
+    update: (data: EventSubChannelRedemptionUpdateEvent) => void,
   ) {
     if (this.#esListener == null || this.#broadcasterUser == undefined) {
       throw new Error(
-        "Trying to register channel point redemptions before API set up"
+        "Trying to register channel point redemptions before API set up",
       );
     }
     this.#esListener.onChannelRedemptionAddForReward(
       this.#broadcasterUser.id,
       id,
-      add
+      add,
     );
     this.#esListener.onChannelRedemptionUpdateForReward(
       this.#broadcasterUser.id,
       id,
-      update
+      update,
     );
   }
 
   registerStreamCallbacks(
     onlineHandler: (event: EventSubStreamOnlineEvent) => void,
-    offlineHandler: (event: EventSubStreamOfflineEvent) => void
+    offlineHandler: (event: EventSubStreamOfflineEvent) => void,
   ) {
     if (this.#esListener == null || this.#broadcasterUser == undefined) {
       throw new Error(
-        "Trying to register online/offline handlers before API set up"
+        "Trying to register online/offline handlers before API set up",
       );
     }
 

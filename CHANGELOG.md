@@ -58,7 +58,7 @@
 ## Settings
 
 - The settings `level_timeout` and `message_cooldown` are now set using a duration which are multiple numbers followed by a unit (`min`, `hours`, `months`, etc. for a full list see [the documentation of timestring](https://github.com/mike182uk/timestring/tree/7.0.0#keywords)) or alternatively an [ISO-8601 duration format](https://js-joda.github.io/js-joda/class/packages/core/src/Duration.js~Duration.html#static-method-parse). (#125)
-  For example: `10 seconds`, `3 minutes`, and `10 minutes 30 seconds` etc.  
+  For example: `10 seconds`, `3 minutes`, and `10 minutes 30 seconds` etc.
   To convert the values `level_timeout` and `message_cooldown` to the new duration format add `minutes` to the number of `level_timeout` and `seconds` to the number of `message_cooldown`.
 - There is a new setting `clear` which can be set to the default argument of `!clear`. For example setting `clear` to `"all"` will make it so `!clear` will call `!clear all` or setting it to `6 months` would call `!clear 6 months` by default. Setting this to `null` (or not setting the value) will result into a usage message of the `!clear` command when using `!clear`. (#101)
 

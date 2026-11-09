@@ -33,7 +33,7 @@ export interface OnlineUsers {
 
 export function createOnlineUsers(
   usersArgument: User[] | OnlineUsers,
-  filter?: (submitter: User) => boolean
+  filter?: (submitter: User) => boolean,
 ): OnlineUsers {
   if (!Array.isArray(usersArgument)) {
     if (filter != null) {
@@ -48,16 +48,16 @@ export function createOnlineUsers(
   let users;
   if (filter != null) {
     users = new Map(
-      usersArgument.map((user) => [user.id, { user, online: filter(user) }])
+      usersArgument.map((user) => [user.id, { user, online: filter(user) }]),
     );
   } else {
     users = new Map(
-      usersArgument.map((user) => [user.id, { user, online: true }])
+      usersArgument.map((user) => [user.id, { user, online: true }]),
     );
   }
   const names = new Map(usersArgument.map((user) => [user.name, user.id]));
   const displayNames = new Map(
-    usersArgument.map((user) => [user.displayName, user.id])
+    usersArgument.map((user) => [user.displayName, user.id]),
   );
 
   return {
@@ -96,7 +96,7 @@ const twitch = {
     recentChatters.purgeStale(); // manually calling this because we are calling values()
     return createOnlineUsers(
       [...chatters, ...recentChatters.values()], // prefer recent chatters over chatters (items appearing later in the list override earlier items)
-      (user) => !lurkers.has(user.id)
+      (user) => !lurkers.has(user.id),
     );
   },
 
@@ -164,14 +164,14 @@ const twitch = {
   async getOnlineSubscribers(forceRefresh = false): Promise<OnlineUsers> {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
     return createOnlineUsers(onlineUsers, (submitter) =>
-      subscribers.has(submitter.id)
+      subscribers.has(submitter.id),
     );
   },
 
   async getOnlineMods(forceRefresh = false): Promise<OnlineUsers> {
     const onlineUsers = await twitch.getOnlineUsers(forceRefresh);
     return createOnlineUsers(onlineUsers, (submitter) =>
-      mods.has(submitter.id)
+      mods.has(submitter.id),
     );
   },
 

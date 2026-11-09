@@ -30,14 +30,14 @@ const simRequireIndexFixedSeed = async (
   mockSettings?: z.input<typeof Settings>,
   mockTime?: number | Date,
   setupMocks?: () => Promise<void> | void,
-  chanceSeed?: Chance.Seed
+  chanceSeed?: Chance.Seed,
 ): Promise<ReturnType<typeof simRequireIndex>> => {
   return await simRequireIndex(
     volume,
     mockSettings,
     mockTime,
     setupMocks,
-    chanceSeed ?? FIXED_SEED
+    chanceSeed ?? FIXED_SEED,
   );
 };
 
@@ -58,15 +58,15 @@ beforeEach(() => {
 const copy = async (
   volume: InstanceType<typeof Volume>,
   mockFileName: string,
-  realFileName: string
+  realFileName: string,
 ) => {
   const realFs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
   if (realFs.existsSync(realFileName)) {
     volume.fromJSON(
       { [mockFileName]: realFs.readFileSync(realFileName, "utf8") },
-      path.resolve(".")
+      path.resolve("."),
     );
   }
 };
@@ -78,24 +78,24 @@ const loadVolume = async (testFolder: string) => {
     "./queso.save",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${testFolder}/queso.save`
-    )
+      `data/${testFolder}/queso.save`,
+    ),
   );
   await copy(
     volume,
     "./userWaitTime.txt",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${testFolder}/userWaitTime.txt`
-    )
+      `data/${testFolder}/userWaitTime.txt`,
+    ),
   );
   await copy(
     volume,
     "./waitingUsers.txt",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${testFolder}/waitingUsers.txt`
-    )
+      `data/${testFolder}/waitingUsers.txt`,
+    ),
   );
   return volume;
 };
@@ -108,8 +108,8 @@ const loadVolumeV2 = async (testFolder: string, version = "2.0") => {
     "./data/queue.json",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${testFolder}/queue-v${version}.json`
-    )
+      `data/${testFolder}/queue-v${version}.json`,
+    ),
   );
   return volume;
 };
@@ -117,13 +117,13 @@ const loadVolumeV2 = async (testFolder: string, version = "2.0") => {
 const checkResult = async (
   mockFs: typeof import("node:fs"),
   testFolder: string,
-  version?: string
+  version?: string,
 ) => {
   const queue_real: unknown = JSON.parse(
-    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" })
+    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" }),
   );
   const realFs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
   let queue_expect: unknown;
   if (version === undefined) {
@@ -131,20 +131,20 @@ const checkResult = async (
       realFs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          `data/${testFolder}/queue.json`
+          `data/${testFolder}/queue.json`,
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   } else {
     queue_expect = JSON.parse(
       realFs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          `data/${testFolder}/queue-v${version}.json`
+          `data/${testFolder}/queue-v${version}.json`,
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   }
   expect(queue_real).toEqual(queue_expect);
@@ -153,22 +153,22 @@ const checkResult = async (
 const checkLostLevels = async (
   mockFs: typeof import("node:fs"),
   testFolder: string,
-  fileName: string
+  fileName: string,
 ) => {
   const realFs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
   const lostLevelsReal: unknown = JSON.parse(
-    mockFs.readFileSync(fileName, "utf8")
+    mockFs.readFileSync(fileName, "utf8"),
   );
   const lostLevelsExpect: unknown = JSON.parse(
     realFs.readFileSync(
       path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
-        `data/${testFolder}/${path.basename(fileName)}`
+        `data/${testFolder}/${path.basename(fileName)}`,
       ),
-      "utf8"
-    )
+      "utf8",
+    ),
   );
   expect(lostLevelsReal).toEqual(lostLevelsExpect);
 };
@@ -176,13 +176,13 @@ const checkLostLevels = async (
 const checkCustomCodes = async (
   mockFs: typeof import("node:fs"),
   testFolder: string,
-  version?: string
+  version?: string,
 ) => {
   const realFs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
   const queue_real: unknown = JSON.parse(
-    mockFs.readFileSync("./data/extensions/customcode.json", "utf8")
+    mockFs.readFileSync("./data/extensions/customcode.json", "utf8"),
   );
   let queue_expect: unknown;
   if (version === undefined) {
@@ -190,20 +190,20 @@ const checkCustomCodes = async (
       realFs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          `data/${testFolder}/customcode.json`
+          `data/${testFolder}/customcode.json`,
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   } else {
     queue_expect = JSON.parse(
       realFs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          `data/${testFolder}/customcode-v${version}.json`
+          `data/${testFolder}/customcode-v${version}.json`,
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   }
   expect(queue_real).toEqual(queue_expect);
@@ -265,8 +265,8 @@ test("custom-codes-v1a-to-v3.1", async () => {
     "./customCodes.json",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${test}/customCodes.json`
-    )
+      `data/${test}/customCodes.json`,
+    ),
   );
   // customCodes.json present
   const index = await simRequireIndexFixedSeed(volume, {
@@ -291,8 +291,8 @@ test("custom-codes-v1b-to-v3.1", async () => {
     "./customCodes.json",
     path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      `data/${test}/customCodes.json`
-    )
+      `data/${test}/customCodes.json`,
+    ),
   );
   // customCodes.json present
   const index = await simRequireIndexFixedSeed(volume, {
@@ -317,8 +317,8 @@ test("conversion-test-1", async () => {
   // should load without errors, but a warning in the console
   expect(console.warn).toHaveBeenCalledWith(
     expect.stringContaining(
-      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
-    )
+      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.",
+    ),
   );
   expect(console.error).toHaveBeenCalledTimes(0);
   await checkResult(mockFs, test);
@@ -407,7 +407,7 @@ function getFsFromError(err: unknown): typeof import("node:fs") {
 }
 
 async function throwingIndex(
-  volume: InstanceType<typeof Volume>
+  volume: InstanceType<typeof Volume>,
 ): Promise<typeof import("node:fs")> {
   let mockFs: typeof import("node:fs") | undefined;
 
@@ -523,8 +523,8 @@ test("custom-levels-v1a-to-v3.1", async () => {
   // should load without errors, but a warning in the console
   expect(console.warn).toHaveBeenCalledWith(
     expect.stringContaining(
-      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names."
-    )
+      "Assuming that usernames are lowercase Display Names, which does not work with Localized Display Names.",
+    ),
   );
   expect(console.error).toHaveBeenCalledTimes(0);
   await checkResult(mockFs, test);
@@ -607,7 +607,7 @@ test("test-incompatible-v4.9.9.9", async () => {
   // check file system -> old file still exists -> no loss of data on conversion error!
   expect(mockFs.existsSync("./data/queue.json")).toBe(true);
   const data: unknown = JSON.parse(
-    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" })
+    mockFs.readFileSync("./data/queue.json", { encoding: "utf8" }),
   );
   expect(data).toEqual({
     version: "4.9.9.9",
@@ -641,7 +641,7 @@ test("test-renamed-or-deleted", async () => {
   const index = await simRequireIndexFixedSeed(
     volume,
     undefined,
-    1683058095000
+    1683058095000,
   );
   const mockFs = index.fs;
   // should load without errors and no exception was thrown
@@ -649,16 +649,16 @@ test("test-renamed-or-deleted", async () => {
     "data",
     `lost-levels-${
       new Date().toISOString().replaceAll(":", "").split(".")[0]
-    }Z.json`
+    }Z.json`,
   );
   expect(console.warn).toHaveBeenCalledTimes(4);
   expect(console.warn).toHaveBeenCalledWith(
-    expect.stringContaining("4 users in your queue could not be found!")
+    expect.stringContaining("4 users in your queue could not be found!"),
   );
   expect(console.warn).toHaveBeenCalledWith(
     expect.stringContaining(
-      `The data that could not be converted can be found here: ${fileName}`
-    )
+      `The data that could not be converted can be found here: ${fileName}`,
+    ),
   );
   expect(console.error).toHaveBeenCalledTimes(0);
   // queue will be saved immediately

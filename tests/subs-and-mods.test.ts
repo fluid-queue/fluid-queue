@@ -44,7 +44,7 @@ async function setupQueue() {
     volume,
     DEFAULT_TEST_SETTINGS,
     START_TIME,
-    setupMocks
+    setupMocks,
   );
   const twitch = index.twitch;
   const queue: Queue = index.quesoqueue;
@@ -67,7 +67,7 @@ async function setupQueue() {
     false,
     false,
     false,
-    "chatter3"
+    "chatter3",
   );
 
   const level1 = "D36-010-5YF";

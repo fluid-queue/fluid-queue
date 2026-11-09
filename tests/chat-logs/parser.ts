@@ -89,7 +89,7 @@ function allArguments() {
   const spaceWord = spaces1().pipe(then(noCharOf(" \t\r\n")));
   const either = word.pipe(
     or(spaceWord),
-    recover(() => ({ kind: "Soft" }))
+    recover(() => ({ kind: "Soft" })),
   );
   return either.pipe(many(), stringify());
 }
@@ -101,8 +101,8 @@ function comment() {
       position().pipe(
         then(allArguments()),
         then(position()),
-        between(spaces0())
-      )
+        between(spaces0()),
+      ),
     ),
     map(([[start, value], end]): Comment => ({
       type: "comment",
@@ -111,25 +111,25 @@ function comment() {
         start,
         end,
       },
-    }))
+    })),
   );
 }
 
 function instruction<T extends string>(name: T) {
   return spaces0().pipe(
     qthen(
-      position().pipe(then(string(name)), then(position()), between(spaces0()))
+      position().pipe(then(string(name)), then(position()), between(spaces0())),
     ),
     map(([[start, value], end]): Instruction<T> => ({
       type: value,
       position: { start, end },
-    }))
+    })),
   );
 }
 
 function argumentInstruction<A, T extends string>(
   name: T,
-  argument: Parjser<A>
+  argument: Parjser<A>,
 ) {
   return spaces0().pipe(
     qthen(
@@ -138,8 +138,8 @@ function argumentInstruction<A, T extends string>(
         thenq(spaces1()),
         then(argument),
         then(position()),
-        between(spaces0())
-      )
+        between(spaces0()),
+      ),
     ),
     map(
       ([[[start, value], argument], end]): ArgumentInstruction<A, T> =>
@@ -147,8 +147,8 @@ function argumentInstruction<A, T extends string>(
           type: value,
           [name]: argument,
           position: { start, end },
-        }) as ArgumentInstruction<A, T>
-    )
+        }) as ArgumentInstruction<A, T>,
+    ),
   );
 }
 
@@ -162,14 +162,14 @@ function chatLine() {
           thenq("]"),
           thenq(spaces1()),
           then(chatter()),
-          thenq(": ")
+          thenq(": "),
         )
         .pipe(
           then(position()),
           then(noCharOf("\r\n").pipe(many(), stringify())),
           then(position()),
-          between(spaces0())
-        )
+          between(spaces0()),
+        ),
     ),
     map(([[[[[start, time], chatter], messageStart], message], end]): Chat => ({
       type: "chat",
@@ -178,7 +178,7 @@ function chatLine() {
       message,
       position: { start, end },
       messagePosition: { start: messageStart, end },
-    }))
+    })),
   );
 }
 
@@ -191,15 +191,15 @@ function jsonPath<T extends string>(name: T) {
           then(
             string("/").pipe(
               qthen(noCharOf(" \t/").pipe(many(), stringify(), manySepBy("/"))),
-              maybe()
-            )
+              maybe(),
+            ),
           ),
           thenq(spaces1()),
           then(position()),
           then(allArguments()),
-          then(position())
+          then(position()),
         )
-        .pipe(between(spaces0()))
+        .pipe(between(spaces0())),
     ),
     map(([[[[[start, value], path], jsonStart], json], end]): JsonPath<T> => ({
       type: value,
@@ -210,7 +210,7 @@ function jsonPath<T extends string>(name: T) {
         start: jsonStart,
         end,
       },
-    }))
+    })),
   );
 }
 
@@ -223,15 +223,15 @@ function save<T extends string>(path: T) {
         thenq(spaces1()),
         then(allArguments()),
         then(position()),
-        between(spaces0())
-      )
+        between(spaces0()),
+      ),
     ),
     map(([[[start, path], json], end]): Save<T> => ({
       type: "save",
       json,
       path,
       position: { start, end },
-    }))
+    })),
   );
 }
 
@@ -245,7 +245,7 @@ function date() {
     then(digits(2)),
     then("-"),
     then(digits(2)),
-    stringify()
+    stringify(),
   );
 }
 
@@ -267,7 +267,7 @@ function iso8601() {
     then("."),
     then(digits(3)),
     then("Z"),
-    stringify()
+    stringify(),
   );
 }
 
@@ -282,19 +282,19 @@ function anyInstruction() {
         int({
           allowSign: false,
           base: 10,
-        })
+        }),
       ),
       argumentInstruction(
         "chatbot",
-        argument().pipe(map((value) => value.toLowerCase()))
+        argument().pipe(map((value) => value.toLowerCase())),
       ),
       argumentInstruction("settings", allArguments()),
       argumentInstruction(
         "chatters",
         chatter().pipe(
           manySepBy(","),
-          map((value: Chatter[]): Chatter[] => value)
-        )
+          map((value: Chatter[]): Chatter[] => value),
+        ),
       ),
       jsonPath("queue.json"),
       jsonPath("extensions"),
@@ -305,10 +305,10 @@ function anyInstruction() {
       argumentInstruction("fs-fail", argument()),
       argumentInstruction(
         "time",
-        iso8601().pipe(map((s: string) => new Date(Date.parse(s))))
+        iso8601().pipe(map((s: string) => new Date(Date.parse(s)))),
       ),
-      chatLine()
-    )
+      chatLine(),
+    ),
   );
 }
 
@@ -327,12 +327,12 @@ function chatter(): Parjser<Chatter> {
       isSubscriber: values.includes("%"),
       isMod: values.includes("@"),
       isBroadcaster: values.includes("~"),
-    }))
+    })),
   );
   const displayName = uniLetter().pipe(
     then(uniLetter().pipe(or(uniDecimal())).pipe(many())),
     stringify(),
-    map((displayName) => ({ displayName }))
+    map((displayName) => ({ displayName })),
   );
   const pronouns = string("Any").pipe(
     or(
@@ -343,11 +343,11 @@ function chatter(): Parjser<Chatter> {
           (x) =>
             x.includes("/") || {
               kind: "Soft",
-            }
-        )
-      )
+            },
+        ),
+      ),
     ),
-    map(() => undefined)
+    map(() => undefined),
   );
   const username: RegExp = /[a-z0-9_]{2,}/;
   return spaces0()
@@ -358,14 +358,14 @@ function chatter(): Parjser<Chatter> {
           or(
             regexp(username).pipe(
               stringify(),
-              map((username) => ({ username }))
-            )
+              map((username) => ({ username })),
+            ),
           ),
           between("(", ")"),
           between(spaces0()),
           many(),
-          map((values) => values.filter((value) => value !== undefined))
-        )
+          map((values) => values.filter((value) => value !== undefined)),
+        ),
       ),
       map(([[roles, { displayName }], usernames]) => ({
         ...roles,
@@ -374,7 +374,7 @@ function chatter(): Parjser<Chatter> {
           usernames.length > 0
             ? usernames[0].username
             : displayName.toLowerCase(),
-      }))
+      })),
     );
 }
 
@@ -382,6 +382,6 @@ export function instructions() {
   return anyInstruction().pipe(
     or(spaces0().pipe(map(() => undefined))),
     manySepBy(/\r?\n/),
-    map((result) => result.filter((value) => value !== undefined))
+    map((result) => result.filter((value) => value !== undefined)),
   );
 }

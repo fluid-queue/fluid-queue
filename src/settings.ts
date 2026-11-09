@@ -29,7 +29,7 @@ for (const value of fileNames) {
     });
     if (value.endsWith(".json")) {
       warn(
-        `Loading ${fileName} is deprecated and may stop working in a future release.`
+        `Loading ${fileName} is deprecated and may stop working in a future release.`,
       );
       warn(`Please move '${fileName}' to '${fileNames[0]}'.`);
     }

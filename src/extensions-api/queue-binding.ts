@@ -32,7 +32,7 @@ export interface TypeBindingBuilder<Data, Transient> {
   build(value?: PersistedBinding): { data: Data; transient: Transient };
   update(
     binding: TypedBinding<Data, Transient>,
-    value?: PersistedBinding
+    value?: PersistedBinding,
   ): void;
 }
 
@@ -40,7 +40,7 @@ export type SaveHandler = (name?: string) => void;
 
 export interface BindingsApi {
   createQueueBinding<Data, Transient>(
-    description: BindingDescription<Data, Transient>
+    description: BindingDescription<Data, Transient>,
   ): TypedBinding<Data, Transient>;
 }
 
@@ -51,7 +51,7 @@ export class TypedBindings {
   private save(name: string) {
     if (this.saveHandler == null) {
       warn(
-        `extension ${name} requested to save, but no save handler is registered`
+        `extension ${name} requested to save, but no save handler is registered`,
       );
       return;
     }
@@ -61,7 +61,7 @@ export class TypedBindings {
     this.saveHandler = saveHandler;
   }
   createTypeBindingBuilder<Data, Transient>(
-    description: BindingDescription<Data, Transient>
+    description: BindingDescription<Data, Transient>,
   ): TypeBindingBuilder<Data, Transient> {
     const buildData = (value?: PersistedBinding): Data => {
       if (value != null) {
@@ -96,11 +96,11 @@ export class TypedBindings {
     };
   }
   createTypeBinding<Data, Transient>(
-    description: BindingDescription<Data, Transient>
+    description: BindingDescription<Data, Transient>,
   ): TypedBinding<Data, Transient> {
     if (description.name in this.typeBindings) {
       throw new Error(
-        `Type binding of name ${description.name} already exists!`
+        `Type binding of name ${description.name} already exists!`,
       );
     }
     const builder = this.createTypeBindingBuilder(description);

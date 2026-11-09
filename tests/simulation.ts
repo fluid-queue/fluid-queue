@@ -83,7 +83,7 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
     // using fixed timers instead of dynamic timers
     // TODO: why do these work with tests? why are dynamic timers not working?
     const timers = (await vi.importActual(
-      "set-interval-async/fixed"
+      "set-interval-async/fixed",
     )) satisfies typeof import("set-interval-async/dynamic");
     const asyncTimers: SetIntervalAsyncTimer<unknown[]>[] = [];
     const result = {
@@ -95,13 +95,13 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
         const timer = timers.setIntervalAsync(
           handler,
           intervalMs,
-          ...handlerArgs
+          ...handlerArgs,
         );
         asyncTimers.push(timer);
         return timer;
       },
       async clearIntervalAsync<HandlerArgs extends unknown[]>(
-        timer: SetIntervalAsyncTimer<HandlerArgs>
+        timer: SetIntervalAsyncTimer<HandlerArgs>,
       ): Promise<void> {
         const index = asyncTimers.findIndex((t) => t === timer);
         if (index != -1) {
@@ -144,7 +144,7 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
   vi.doMock("node-fetch", () => vi.fn());
 
   const { clearAllTimers } = (await vi.importMock(
-    "set-interval-async/dynamic"
+    "set-interval-async/dynamic",
   )) as Awaited<ReturnType<typeof mock>>;
   clearAllTimersIntern.push(clearAllTimers);
 
@@ -162,11 +162,11 @@ const mockModules = async (chanceSeed?: Chance.Seed) => {
           rng: () => {
             return new Uint8Array(
               [...(Array(16) as undefined[])].map(() =>
-                Math.floor(mt.random() * 256)
-              )
+                Math.floor(mt.random() * 256),
+              ),
             );
           },
-        }
+        },
       );
     });
     return {
@@ -202,14 +202,14 @@ const simSetModerators = (newMods: User[]) => {
 const populateMockVolume = async (
   volume: InstanceType<typeof Volume>,
   srcPath: string,
-  emptyFiles = true
+  emptyFiles = true,
 ) => {
   const result: Record<string, string> = {};
   const fs = (await vi.importActual(
-    "node:fs"
+    "node:fs",
   )) satisfies typeof import("node:fs");
   const files = fs.readdirSync(
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", srcPath)
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", srcPath),
   );
   for (const file of files) {
     const srcFile = path.join(srcPath, file);
@@ -220,8 +220,8 @@ const populateMockVolume = async (
             path.dirname(fileURLToPath(import.meta.url)),
             "..",
             srcPath,
-            file
-          )
+            file,
+          ),
         )
         .isDirectory()
     ) {
@@ -239,7 +239,7 @@ const populateMockVolume = async (
 };
 
 const createMockVolume = async (
-  settings?: z.input<typeof Settings>
+  settings?: z.input<typeof Settings>,
 ): Promise<InstanceType<typeof Volume>> => {
   const volume = new Volume();
   volume.mkdirSync(path.resolve("."), { recursive: true });
@@ -248,7 +248,7 @@ const createMockVolume = async (
   if (settings !== undefined) {
     volume.fromJSON(
       { "./settings/settings.yml": YAML.stringify(settings) },
-      path.resolve(".")
+      path.resolve("."),
     );
   }
   return volume;
@@ -265,7 +265,7 @@ type Index = {
   handle_func: (
     message: string,
     sender: Chatter,
-    respond: Responder
+    respond: Responder,
   ) => Promise<void>;
   twitch: Twitch;
   uuidv4: () => string;
@@ -281,14 +281,14 @@ export async function mockTwitchApi(): Promise<
       }
       createTmiClient() {
         throw new Error(
-          "This should never be called from tests -> Use the chatbot.js mock instead!"
+          "This should never be called from tests -> Use the chatbot.js mock instead!",
         );
       }
       getChatters = vi.fn((): Promise<User[]> => {
         return Promise.resolve(
           mockChatters.map((chatter) => {
             return chatter;
-          })
+          }),
         );
       });
 
@@ -302,7 +302,7 @@ export async function mockTwitchApi(): Promise<
               id: `\${user(${JSON.stringify(user)}).id}`,
               name: user,
               displayName: `\${user(${JSON.stringify(user)}).displayName}`,
-            }))
+            })),
         );
       });
 
@@ -322,7 +322,7 @@ export async function mockTwitchApi(): Promise<
                 name: `\${user(${name}).name}`,
                 displayName: `\${user(${name}).displayName}`,
               };
-            })
+            }),
         );
       });
 
@@ -338,9 +338,9 @@ export async function mockTwitchApi(): Promise<
           return Promise.resolve(
             mockSubscribers.map((chatter) => {
               return chatter;
-            })
+            }),
           );
-        }
+        },
       );
 
       getModerators = vi.fn(
@@ -355,9 +355,9 @@ export async function mockTwitchApi(): Promise<
           return Promise.resolve(
             mockModerators.map((chatter) => {
               return chatter;
-            })
+            }),
           );
-        }
+        },
       );
 
       isStreamOnline = vi.fn(() => Promise.resolve(true));
@@ -399,7 +399,7 @@ const mockPerformance = () => {
 };
 
 const setupVirtualFileSystem = (
-  volume: InstanceType<typeof Volume>
+  volume: InstanceType<typeof Volume>,
 ): {
   vol: Index["volume"];
   fs: Index["fs"];
@@ -434,7 +434,7 @@ const simRequireIndex = async (
   mockSettings?: z.input<typeof Settings>,
   mockTime?: number | Date,
   setupMocks?: () => Promise<void> | void,
-  chanceSeed?: Chance.Seed
+  chanceSeed?: Chance.Seed,
 ): Promise<Index> => {
   let fs: Index["fs"] | undefined;
   let settings: z.output<typeof Settings> | undefined;
@@ -502,7 +502,7 @@ const simRequireIndex = async (
       volume.fromJSON(files, path.resolve("."));
       volume.fromJSON(
         { "./settings/settings.yml": YAML.stringify(mockSettings) },
-        path.resolve(".")
+        path.resolve("."),
       );
       await populateMockVolume(volume, "./locales", false);
     }
@@ -548,7 +548,7 @@ const simRequireIndex = async (
     // get hold of the handle function
     // the first argument of setup has to be an AsyncFunction
     expect(vi.mocked(chatbot_helper["setup"]).mock.calls[0][0]).toBeInstanceOf(
-      AsyncFunction
+      AsyncFunction,
     );
     handle_func = vi.mocked(chatbot_helper["setup"]).mock.calls[0][0];
   } catch (err) {
@@ -679,7 +679,7 @@ const simSetTime = async (time: string | Date, accuracy = 0) => {
     throw Error(
       `Time went backwards, from ${prevTime.toISOString()} to ${newTime.toISOString()} (${
         typeof time === "string" ? time : time.toISOString()
-      })`
+      })`,
     );
   }
 };
@@ -690,7 +690,7 @@ const buildChatter = (
   isSubscriber: boolean,
   isMod: boolean,
   isBroadcaster: boolean,
-  id?: string
+  id?: string,
 ): Chatter => {
   return {
     id: id ?? `\${user(${JSON.stringify(username)}).id}`,
@@ -719,7 +719,7 @@ const buildChatter = (
 
 const replace = (
   settings: z.output<typeof Settings>,
-  newSettings: z.output<typeof Settings>
+  newSettings: z.output<typeof Settings>,
 ) => {
   Object.keys(settings).forEach((key) => {
     delete (settings as Record<string, unknown>)[key];
@@ -765,7 +765,7 @@ class Simulation {
       responses.push({ message, error });
     }
     vi.mocked(this.#index.chatbot_helper["say"]).mockImplementation(
-      pushMessage
+      pushMessage,
     );
   }
 
@@ -781,7 +781,7 @@ class Simulation {
     this.#index = await simRequireIndex(
       this.#index.volume,
       this.#settingsInput,
-      time
+      time,
     );
     this.updateChatBinding();
   }
@@ -803,7 +803,7 @@ class Simulation {
     //       and settings.js could be reloaded instead to validate settings
     replace(
       this.#index.settings,
-      Settings.parse(data ?? DEFAULT_TEST_SETTINGS)
+      Settings.parse(data ?? DEFAULT_TEST_SETTINGS),
     );
     this.#settingsInput = data;
     if (this.#settingsInput === undefined) {
@@ -831,10 +831,10 @@ class Simulation {
       this.#index.fs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          "../data/queue.json"
+          "../data/queue.json",
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   }
 
@@ -842,9 +842,9 @@ class Simulation {
     this.#index.fs.writeFileSync(
       path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
-        "../data/queue.json"
+        "../data/queue.json",
       ),
-      JSON.stringify(data)
+      JSON.stringify(data),
     );
   }
 
@@ -853,10 +853,10 @@ class Simulation {
       this.#index.fs.readFileSync(
         path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          `../data/extensions/${extensionName}.json`
+          `../data/extensions/${extensionName}.json`,
         ),
-        "utf8"
-      )
+        "utf8",
+      ),
     );
   }
 
@@ -864,9 +864,9 @@ class Simulation {
     this.#index.fs.writeFileSync(
       path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
-        `../data/extensions/${extensionName}.json`
+        `../data/extensions/${extensionName}.json`,
       ),
-      JSON.stringify(data)
+      JSON.stringify(data),
     );
   }
 
@@ -900,7 +900,7 @@ class Simulation {
     await this.#index.handle_func(
       message,
       sender,
-      this.#index.chatbot_helper.say
+      this.#index.chatbot_helper.say,
     );
   }
 
@@ -929,7 +929,7 @@ class Simulation {
 
   private toSourceLocation(
     fileContents: string,
-    { start, end }: { start: number; end: number }
+    { start, end }: { start: number; end: number },
   ): SourceLocation {
     const prev = fileContents.substring(0, start);
     const lines = fileContents.substring(start, end).split("\n");
@@ -969,7 +969,7 @@ class Simulation {
               this.currentMeta.fileContents,
               this.toSourceLocation(
                 this.currentMeta.fileContents,
-                this.currentMeta.position
+                this.currentMeta.position,
               ),
             ];
           } else if (this.currentMeta.sourceLocation !== undefined) {
@@ -1010,12 +1010,12 @@ class Simulation {
         if (response !== undefined) {
           error.stack = response.error.stack?.replace(
             response.error.message,
-            error.message + message
+            error.message + message,
           );
         } else {
           error.stack = error.stack?.replace(
             error.message,
-            error.message + message
+            error.message + message,
           );
         }
       }
@@ -1025,7 +1025,7 @@ class Simulation {
 
   public async withMeta<R>(
     meta: Partial<SimulationMeta>,
-    f: (simulation: Simulation) => PromiseLike<R> | R
+    f: (simulation: Simulation) => PromiseLike<R> | R,
   ): Promise<R> {
     this.#meta.push({ ...this.currentMeta, ...meta });
     const result = await this.test(async () => f(this));

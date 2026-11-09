@@ -14,7 +14,7 @@ const build_chatter = function (
   displayName: string,
   isSubscriber: boolean,
   isMod: boolean,
-  isBroadcaster: boolean
+  isBroadcaster: boolean,
 ): Chatter {
   return {
     toString() {
@@ -35,7 +35,7 @@ const build_chatter = function (
 type HandleFunc = (
   command: string,
   chatter: Chatter,
-  respond: (response_text: string) => void
+  respond: (response_text: string) => void,
 ) => Promise<void>;
 
 export type Chatbot = {
@@ -74,7 +74,7 @@ const chatbot_helper = function (channel: string): Chatbot {
           channel: string,
           tags: ChatUserstate,
           message: string,
-          self: boolean
+          self: boolean,
         ) => {
           if (self) {
             return;
@@ -87,7 +87,7 @@ const chatbot_helper = function (channel: string): Chatbot {
           let chatter;
           if (!tags.username || !tags["display-name"] || !tags["user-id"]) {
             throw new Error(
-              "Encountered a user with no user id, username or no display name"
+              "Encountered a user with no user id, username or no display name",
             );
           }
           if (tags.badges == null) {
@@ -97,7 +97,7 @@ const chatbot_helper = function (channel: string): Chatbot {
               tags["display-name"],
               false,
               false,
-              false
+              false,
             );
           } else {
             chatter = build_chatter(
@@ -107,7 +107,7 @@ const chatbot_helper = function (channel: string): Chatbot {
               tags.badges.subscriber != undefined ||
                 tags.badges.founder != undefined,
               tags.badges.moderator != undefined,
-              tags.badges.broadcaster != undefined
+              tags.badges.broadcaster != undefined,
             );
           }
           if (!this.handle_func) {

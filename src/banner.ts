@@ -40,15 +40,15 @@ const checkVersion = (): boolean | null => {
 const printBanner = () => {
   try {
     const banner = bannerTemplate.replace(/#+/g, (characters) =>
-      displayVersion().padStart(characters.length, " ")
+      displayVersion().padStart(characters.length, " "),
     );
     // Print this directly to avoid a timestamp
     console.log(banner);
     if (checkVersion() === false) {
       warn(
         `Warning: Running a different version of the queue (${String(
-          buildVersion()
-        )} instead of ${version()})`
+          buildVersion(),
+        )} instead of ${version()})`,
       );
       warn("(Use `npm run build` to build the current version)\n");
     }
